@@ -6,7 +6,8 @@ import {
   SkeletonCard, MatchFlash, NotifBadge, OnlineDot, BottomSheet,
   setDarkMode, isDark,
 } from '../components/CourtUI';
-import { PLAYERS, RECENT_ACTIVITY, REGIONS, MATCHES_HISTORY, INITIAL_CHATS, USER_PROFILE, computeELODelta, I18N } from '../data/courtData';
+import { REGIONS, computeELODelta, I18N } from '../data/courtData';
+import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
 import { usePrefs }         from '../context/PrefsContext';
 import { usePlayers }       from '../hooks/usePlayers';
@@ -330,7 +331,7 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
           <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>{p.city}</div>
           <div style={{ width: 3, height: 3, borderRadius: 2, background: stone }} />
           <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone }}>
-            {p.matches} matchs · {p.winrate}%
+            {p.matches} matchs{p.winrate != null ? ` · ${p.winrate}%` : ''}
           </div>
         </div>
 
@@ -353,9 +354,11 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
           <span>{t.confidence}</span>
           <div style={{ flex: 1, height: 1, background: `${COURT.green}25`, position: 'relative' }}>
-            <div style={{ width: `${p.confidence}%`, height: '100%', background: COURT.green }} />
+            <div style={{ width: `${p.confidenceRate ?? 50}%`, height: '100%', background: COURT.green }} />
           </div>
-          <span style={{ color: COURT.green, fontFamily: 'Playfair Display, serif', fontSize: 11, letterSpacing: 0 }}>{p.confidence}%</span>
+          <span style={{ color: COURT.green, fontFamily: 'Playfair Display, serif', fontSize: 11, letterSpacing: 0 }}>
+            {p.confidenceRate != null ? `${Math.round(p.confidenceRate)}%` : '—'}
+          </span>
         </div>
       </div>
 
@@ -679,21 +682,16 @@ function HomeScreen({ t, lang, level, confidence, dark }) {
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted: COURT.stone;
 
-  // Données du profil utilisateur (réel ou statique en fallback)
-  const userName = profile?.name || USER_PROFILE.name;
-  const userPhoto = profile?.photo_url || USER_PROFILE.photo;
-  const userMatches = profile?.matches_played ?? USER_PROFILE.matches;
-  const userWins = profile?.wins ?? 0;
-  const userWinrate = userMatches > 0 ? Math.round((userWins / userMatches) * 100) : USER_PROFILE.winrate;
+  // Données du profil utilisateur — uniquement depuis la DB
+  const userName    = profile?.name     || '';
+  const userPhoto   = profile?.photo_url || '';
+  const userMatches = profile?.matches_played ?? 0;
+  const userWins    = profile?.wins ?? 0;
+  // null si aucun match — jamais de faux pourcentage
+  const userWinrate = userMatches > 0 ? Math.round((userWins / userMatches) * 100) : null;
 
-  // Activité récente : depuis la DB si disponible, sinon statique
-  const recentItems = matchHistory.length > 0
-    ? matchHistory.slice(0, 4).map(matchToActivity)
-    : RECENT_ACTIVITY;
-
-  const wins  = matchHistory.length > 0
-    ? matchHistory.filter(m => m.result === 'win').length
-    : MATCHES_HISTORY.filter(m => m.result === 'win').length;
+  // Activité récente : depuis la DB uniquement (jamais de données statiques)
+  const recentItems = matchHistory.slice(0, 4).map(matchToActivity);
 
 
   return (
@@ -789,10 +787,10 @@ function HomeScreen({ t, lang, level, confidence, dark }) {
           <div style={{ position: 'relative' }}>
             <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.gold, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 6 }}>{t.currentLevel}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 68, color: COURT.cream, fontWeight: 400, lineHeight: 1, animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)' }}>
-                {level.toFixed(1)}
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: level != null ? 68 : 32, color: COURT.cream, fontWeight: 400, lineHeight: 1, animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)' }}>
+                {level != null ? level.toFixed(1) : (t.levelNotEvaluated || 'Niveau non évalué')}
               </div>
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: `${COURT.cream}90` }}>{t.outOf} 7.0</div>
+              {level != null && <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: `${COURT.cream}90` }}>{t.outOf} 7.0</div>}
             </div>
             <div style={{ height: 0.5, background: `${COURT.cream}30`, margin: '16px 0 12px' }} />
             <div style={{ display: 'flex', gap: 20 }}>
@@ -802,7 +800,9 @@ function HomeScreen({ t, lang, level, confidence, dark }) {
               </div>
               <div>
                 <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.winRateLabel}</div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.cream }}>{userWinrate}%</div>
+                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.cream }}>
+                  {userWinrate != null ? `${userWinrate}%` : '—'}
+                </div>
               </div>
               <div>
                 <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.confidence}</div>
@@ -816,6 +816,11 @@ function HomeScreen({ t, lang, level, confidence, dark }) {
         <div style={{ padding: '28px 24px 0' }}>
           <SectionHeading>{t.recent}</SectionHeading>
           <div style={{ marginTop: 16 }}>
+            {recentItems.length === 0 && (
+              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone, padding: '12px 0' }}>
+                {t.noActivity || 'Aucune activité récente.'}
+              </div>
+            )}
             {recentItems.map((a, i) => (
               <div key={a.id} style={{
                 padding: '14px 0',
@@ -861,9 +866,9 @@ function HomeScreen({ t, lang, level, confidence, dark }) {
 }
 
 // ─── Chat actif (messages temps réel) ──────────────────────────────────────
-function ActiveChat({ matchId, player, onBack, t, lang, dark, isFake, fakeMessages }) {
+function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   const { user } = useAuth();
-  const [messages, setMessages] = useState(fakeMessages || []);
+  const [messages, setMessages] = useState([]);
   const [input,    setInput]    = useState('');
   const bottomRef = useRef(null);
   const rtl   = lang === 'he';
@@ -872,9 +877,9 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark, isFake, fakeMessag
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
 
-  // Charge les messages réels (si pas un faux match)
+  // Charge les messages réels
   useEffect(() => {
-    if (isFake || !matchId || !user) return;
+    if (!matchId || !user) return;
 
     const fetchMsgs = async () => {
       const { data } = await supabase
@@ -1006,7 +1011,7 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark, isFake, fakeMessag
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
 function ChatScreen({ t, lang, dark }) {
   const { matches, loading: matchesLoading } = useUserMatches();
-  const [activeMatch, setActiveMatch] = useState(null); // { matchId, player, isFake, fakeMessages }
+  const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const rtl   = lang === 'he';
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
@@ -1018,8 +1023,6 @@ function ChatScreen({ t, lang, dark }) {
       <ActiveChat
         matchId={activeMatch.matchId}
         player={activeMatch.player}
-        isFake={activeMatch.isFake}
-        fakeMessages={activeMatch.fakeMessages}
         onBack={() => setActiveMatch(null)}
         t={t} lang={lang} dark={dark}
       />
@@ -1044,8 +1047,6 @@ function ChatScreen({ t, lang, dark }) {
         return (
           <div key={m.matchId} onClick={() => setActiveMatch({
             matchId: m.matchId, player,
-            isFake: m.isFake,
-            fakeMessages: m.isFake ? (INITIAL_CHATS[player.id] || []) : undefined,
           })} style={{
             padding: '14px 24px', borderBottom: `0.5px solid ${border}`,
             display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer',
@@ -1077,6 +1078,7 @@ function ChatScreen({ t, lang, dark }) {
 function MatchesScreen({ t, lang, level, dark }) {
   const { profile } = useAuth();
   const history = useMatchHistory();
+  const { stats } = usePlayerStats();
   const [tab, setTab] = useState('history');
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
@@ -1087,11 +1089,12 @@ function MatchesScreen({ t, lang, level, dark }) {
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
 
-  const wins    = history.filter(m => m.result === 'win').length;
-  const userMatches  = profile?.matches_played ?? USER_PROFILE.matches;
-  const userWinrate  = profile?.matches_played > 0 ? Math.round(((profile?.wins || 0) / profile.matches_played) * 100) : USER_PROFILE.winrate;
-  const bestStreak   = profile?.best_streak ?? USER_PROFILE.bestStreak;
-  const hardestName  = USER_PROFILE.hardestOpponent; // TODO: calculer depuis l'historique réel
+  const wins        = history.filter(m => m.result === 'win').length;
+  const userMatches = stats?.matchesPlayed ?? profile?.matches_played ?? 0;
+  const userWins    = stats?.wins ?? profile?.wins ?? 0;
+  // null si aucun match — jamais de faux %
+  const userWinrate = userMatches > 0 ? Math.round((userWins / userMatches) * 100) : null;
+  const streak      = stats?.streak ?? 0;
 
   const tabs = [{ id: 'history', label: t.history }, { id: 'stats', label: t.statsTitle }];
 
@@ -1157,9 +1160,9 @@ function MatchesScreen({ t, lang, level, dark }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
             {[
               { label: t.matchesPlayed,  value: userMatches },
-              { label: t.winRateLabel,   value: `${userWinrate}%` },
-              { label: t.bestStreakLabel, value: `${bestStreak}🔥` },
-              { label: t.currentLevel,   value: level.toFixed(1) },
+              { label: t.winRateLabel,   value: userWinrate != null ? `${userWinrate}%` : '—' },
+              { label: t.bestStreakLabel, value: streak > 0 ? `${streak}🔥` : '—' },
+              { label: t.currentLevel,   value: level != null ? level.toFixed(1) : '—' },
             ].map((s, i) => (
               <div key={i} style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '18px 16px', animation: `cardIn 0.4s ease ${i * 0.06}s both` }}>
                 <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
@@ -1207,10 +1210,10 @@ function ProfileScreen({ t }) {
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
 
-  const userName   = profile?.name     || USER_PROFILE.name;
-  const userCity   = profile?.region   || profile?.city || USER_PROFILE.city;
-  const userPhoto  = profile?.photo_url || USER_PROFILE.photo;
-  const userMatches= profile?.matches_played ?? USER_PROFILE.matches;
+  const userName   = profile?.name     || '';
+  const userCity   = profile?.region   || profile?.city || '';
+  const userPhoto  = profile?.photo_url || '';
+  const userMatches= profile?.matches_played ?? 0;
 
   function SettingRow({ icon, label, right, onClick }) {
     return (
@@ -1253,9 +1256,9 @@ function ProfileScreen({ t }) {
           <Ornament width={50} color={COURT.gold} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginTop: 18 }}>
             {[
-              { label: t.currentLevel, value: level.toFixed(1) },
+              { label: t.currentLevel,  value: level != null ? level.toFixed(1) : '—' },
               { label: t.matchesPlayed, value: userMatches },
-              { label: t.confidence,   value: `${confidence}%` },
+              { label: t.confidence,    value: `${confidence}%` },
             ].map((s, i) => (
               <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
                 <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
@@ -1410,9 +1413,11 @@ export default function MainApp() {
 
   // Sync le niveau depuis la DB vers localStorage (ex: connexion depuis un nouvel appareil)
   useEffect(() => {
-    if (profile?.level && Math.abs(profile.level - level) > 0.01) {
-      setLevel(profile.level);
-    }
+    if (profile === undefined || profile === null) return;
+    const dbLevel = profile.level ?? null;
+    const localLevel = level;
+    const differ = dbLevel !== localLevel && (dbLevel == null || localLevel == null || Math.abs(dbLevel - localLevel) > 0.01);
+    if (differ) setLevel(dbLevel);
   }, [profile?.level]);
 
   // Notifications temps réel depuis Supabase

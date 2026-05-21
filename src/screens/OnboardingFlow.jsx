@@ -18,8 +18,8 @@ export default function OnboardingFlow() {
   const { lang, dark, setLevel, setConfidence } = usePrefs()
   const navigate                             = useNavigate()
   const [phase,      setPhase]      = useState('welcome')
-  const [level,      setLocalLevel] = useState(3.5)
-  const [confidence, setLocalConf]  = useState(50)
+  const [level,      setLocalLevel] = useState(null)
+  const [confidence, setLocalConf]  = useState(50)  // toujours 50 — évolue via peer eval
 
   const t = I18N[lang] || I18N.fr
 
@@ -30,14 +30,13 @@ export default function OnboardingFlow() {
   const handleStartQuiz = () => setPhase('quiz')
 
   const handleSkipQuiz  = () => {
-    setLocalLevel(3.5)
-    setLocalConf(50)
+    setLocalLevel(null)  // quiz non effectué → niveau non évalué
     setPhase('result')
   }
 
-  const handleQuizDone  = (computedLevel, computedConfidence) => {
+  const handleQuizDone  = (computedLevel) => {
     setLocalLevel(computedLevel)
-    setLocalConf(computedConfidence || 0)
+    // confidence_rate reste à 50 — il évolue uniquement via peer evaluations
     setPhase('result')
   }
 

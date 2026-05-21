@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { COURT, PadelBall, Ornament, ThinButton } from '../components/CourtUI';
-import { QUIZ_QUESTIONS, computeLevel, computeConfidence } from '../data/courtData';
+import { QUIZ_QUESTIONS, computeLevel } from '../data/courtData';
 
 function SelfRatingSlider({ t, lang, onSubmit, dark }) {
   const [val, setVal] = useState(5);
@@ -63,8 +63,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark }) {
     setTimeout(() => {
       if (idx + 1 >= total) {
         const lvl = computeLevel(newAnswers);
-        const conf = computeConfidence(newAnswers);
-        onDone(lvl, conf);
+        onDone(lvl);
       } else {
         setIdx(idx + 1);
         setAnimDir('in');

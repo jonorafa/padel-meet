@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { NOTIFICATIONS, PLAYERS } from '../data/courtData' // fallback
 
 function relativeTime(ts) {
   const diff = Date.now() - new Date(ts).getTime()
@@ -17,7 +16,7 @@ function relativeTime(ts) {
 /**
  * Retourne les notifications de l'utilisateur connecté.
  * Écoute en temps réel les nouvelles notifications.
- * Fallback sur les données statiques si la DB est vide.
+ * Aucun fallback statique — état vide honnête si aucune notification.
  */
 export function useNotifications() {
   const { user } = useAuth()
@@ -46,17 +45,10 @@ export function useNotifications() {
         .order('created_at', { ascending: false })
         .limit(30)
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setNotifications(data.map(n => normalize(n, n.from)))
-      } else {
-        // Fallback : 1 seule notification fictive pour voir la mise en page
-        const n = NOTIFICATIONS[0]
-        const p = n.fromId ? PLAYERS.find(pl => pl.id === n.fromId) : null
-        setNotifications([{
-          ...n,
-          fromPlayer: p ? { id: p.id, name: p.name, photo: p.photo } : null,
-        }])
       }
+      // Erreur DB → liste vide, pas de fausses notifications
     }
 
     fetchNotifs()
@@ -71,7 +63,6 @@ export function useNotifications() {
         filter: `user_id=eq.${user.id}`,
       }, async (payload) => {
         const n = payload.new
-        // Charge le profil de l'expéditeur si besoin
         let fromProfile = null
         if (n.from_id) {
           const { data: fp } = await supabase

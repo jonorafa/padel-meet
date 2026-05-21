@@ -25,7 +25,7 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
           fontFamily: 'Inter', fontSize: 11, color: COURT.gold, letterSpacing: '0.32em',
           textTransform: 'uppercase', marginBottom: 24,
         }}>
-          {t.yourLevel}
+          {level != null ? t.yourLevel : (t.levelNotEvaluated || 'Niveau non évalué')}
         </div>
 
         <div style={{ position: 'relative', width: 220, height: 220, margin: '0 auto' }}>
@@ -43,8 +43,8 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             opacity: s >= 2 ? 1 : 0, transform: `scale(${s >= 2 ? 1 : 0.6})`, transition: 'all 0.7s cubic-bezier(.2,.8,.2,1)',
           }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 96, color: COURT.cream, fontWeight: 400, lineHeight: 1 }}>
-              {level.toFixed(1)}
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: level != null ? 96 : 48, color: COURT.cream, fontWeight: 400, lineHeight: 1, paddingTop: level != null ? 0 : 24 }}>
+              {level != null ? level.toFixed(1) : '—'}
             </div>
           </div>
           <div style={{ position: 'absolute', inset: 0, animation: s >= 1 ? 'orbit 6s linear infinite' : 'none' }}>

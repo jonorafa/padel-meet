@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { PLAYERS, INITIAL_CHATS } from '../data/courtData' // fallback
 
 /**
  * Retourne la liste des matches (likes mutuels) de l'utilisateur,
  * avec l'autre joueur et le dernier message.
- * Écoute en temps réel les nouveaux matches.
+ * Écoute en temps réel les nouveaux matches et nouveaux messages.
  */
 export function useUserMatches() {
   const { user } = useAuth()
@@ -34,19 +33,27 @@ export function useUserMatches() {
           const otherId = m.player1_id === user.id ? m.player2_id : m.player1_id
 
           const [{ data: otherProfile }, { data: lastMsgs }] = await Promise.all([
-            supabase.from('profiles').select('id, name, photo_url, online, last_seen').eq('id', otherId).maybeSingle(),
-            supabase.from('messages').select('content, sender_id, created_at')
-              .eq('match_id', m.id).order('created_at', { ascending: false }).limit(1),
+            supabase
+              .from('profiles')
+              .select('id, name, photo_url, online, last_seen')
+              .eq('id', otherId)
+              .maybeSingle(),
+            supabase
+              .from('messages')
+              .select('content, sender_id, created_at')
+              .eq('match_id', m.id)
+              .order('created_at', { ascending: false })
+              .limit(1),
           ])
 
           const lastMsg = lastMsgs?.[0]
           return {
             matchId: m.id,
             player: {
-              id: otherId,
-              name: otherProfile?.name || 'Joueur',
-              photo: otherProfile?.photo_url || `https://i.pravatar.cc/600?u=${otherId}`,
-              online: otherProfile?.online || false,
+              id:       otherId,
+              name:     otherProfile?.name     || 'Joueur',
+              photo:    otherProfile?.photo_url || `https://i.pravatar.cc/600?u=${otherId}`,
+              online:   otherProfile?.online    || false,
               lastSeen: otherProfile?.last_seen,
             },
             lastMessage: lastMsg ? {
@@ -60,32 +67,27 @@ export function useUserMatches() {
 
       if (!isMounted) return
 
-      // Fallback : 1 seule conversation fictive pour voir la mise en page
-      if (enriched.length === 0) {
-        const p = PLAYERS[5]
-        const msgs = INITIAL_CHATS[6] || []
-        const last = msgs[msgs.length - 1]
-        setMatches([{
-          matchId: 'fake-preview',
-          player: { id: p.id, name: p.name, photo: p.photo, online: p.online, lastSeen: p.lastSeen },
-          lastMessage: last ? { from: last.from, text: last.text, time: last.time } : null,
-          isFake: true,
-        }])
-      } else {
-        setMatches(enriched)
-      }
+      // Aucun match → tableau vide (jamais de fausse conversation)
+      setMatches(enriched)
       setLoading(false)
     }
 
-    // Charge les matches
     fetchMatches()
 
     // Écoute les nouveaux matches et messages en temps réel
     channel = supabase
       .channel(`matches-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches', filter: `player1_id=eq.${user.id}` }, () => { if (isMounted) fetchMatches() })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches', filter: `player2_id=eq.${user.id}` }, () => { if (isMounted) fetchMatches() })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => { if (isMounted) fetchMatches() })
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'matches',
+        filter: `player1_id=eq.${user.id}`,
+      }, () => { if (isMounted) fetchMatches() })
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'matches',
+        filter: `player2_id=eq.${user.id}`,
+      }, () => { if (isMounted) fetchMatches() })
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'messages',
+      }, () => { if (isMounted) fetchMatches() })
       .subscribe()
 
     return () => {

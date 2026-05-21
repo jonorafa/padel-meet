@@ -1,145 +1,5 @@
 export const REGIONS = ['Centre', 'Nord', 'Sud', 'Eilat'];
 
-export const PLAYERS = [
-  { id: 1, name: 'Yossi Levi', age: 28, city: 'Herzliya', level: 4.1, confidence: 82,
-    hand: 'right', side: 'backhand', style: 'all-court', motivation: 'compete', frequency: 4,
-    availability: ['Soir', 'Weekend'], height: 178, matches: 64, winrate: 71,
-    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80',
-    bioFr: "Le padel comme une partie d'échecs : patience, géométrie, dernier coup décisif.",
-    bioEn: "Padel like a chess game: patience, geometry, decisive final shot.",
-    bioHe: "פאדל כמו משחק שחמט: סבלנות, גאומטריה, ומכה אחרונה מכרעת.",
-    commonMatches: 3, lastSeen: '2h', online: true },
-  { id: 2, name: 'Tal Abramov', age: 35, city: 'Ramat Gan', level: 2.8, confidence: 64,
-    hand: 'right', side: 'forehand', style: 'defensive', motivation: 'fun', frequency: 2,
-    availability: ['Matin'], height: 181, matches: 23, winrate: 48,
-    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&q=80',
-    bioFr: 'Le mardi soir. Un café après le match, toujours.',
-    bioEn: "Tuesday evenings. A coffee after the match, always.",
-    bioHe: 'יום שלישי בערב. תמיד קפה אחרי המשחק.',
-    commonMatches: 0, lastSeen: '1j', online: false },
-  { id: 3, name: 'Ariel Cohen', age: 41, city: 'Jerusalem', level: 5.2, confidence: 91,
-    hand: 'right', side: 'backhand', style: 'aggressive', motivation: 'compete', frequency: 5,
-    availability: ['Matin', 'Soir'], height: 184, matches: 142, winrate: 78,
-    photo: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?w=600&q=80',
-    bioFr: 'Vingt ans de tennis avant le padel. La transition fut humble.',
-    bioEn: "Twenty years of tennis before padel. The transition was humble.",
-    bioHe: 'עשרים שנות טניס לפני הפאדל. המעבר היה צנוע.',
-    commonMatches: 5, lastSeen: '30min', online: true },
-  { id: 4, name: 'Noa Bensoussan', age: 29, city: 'Tel Aviv', level: 3.7, confidence: 76,
-    hand: 'right', side: 'forehand', style: 'all-court', motivation: 'improve', frequency: 3,
-    availability: ['Soir', 'Weekend'], height: 169, matches: 51, winrate: 65,
-    photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&q=80',
-    bioFr: 'Cherche une partenaire constante pour les tournois mixtes.',
-    bioEn: "Looking for a steady partner for mixed tournaments.",
-    bioHe: 'מחפשת שותפה קבועה לטורנירים מעורבים.',
-    commonMatches: 2, lastSeen: '5min', online: true },
-  { id: 5, name: 'Lior Mizrahi', age: 26, city: 'Kfar Saba', level: 2.5, confidence: 58,
-    hand: 'right', side: 'backhand', style: 'defensive', motivation: 'improve', frequency: 3,
-    availability: ['Soir'], height: 175, matches: 18, winrate: 42,
-    photo: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=600&q=80',
-    bioFr: 'Débutant motivé. Les longs échanges plutôt que les smashs.',
-    bioEn: "Motivated beginner. Long rallies over smashes.",
-    bioHe: 'מתחיל מוטיבציוני. עדיף חילופים ארוכים על סמאשים.',
-    commonMatches: 1, lastSeen: '3j', online: false },
-  { id: 6, name: 'Maya Tordjman', age: 33, city: 'Tel Aviv', level: 4.3, confidence: 84,
-    hand: 'left', side: 'forehand', style: 'aggressive', motivation: 'compete', frequency: 4,
-    availability: ['Matin'], height: 172, matches: 88, winrate: 73,
-    photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80',
-    bioFr: 'La bandeja est ma signature. Je joue tôt le matin.',
-    bioEn: "The bandeja is my signature. I play early in the morning.",
-    bioHe: 'הבנדחה היא החתימה שלי. משחקת מוקדם בבוקר.',
-    commonMatches: 4, lastSeen: '1h', online: true },
-  { id: 7, name: 'Elhai Friedman', age: 38, city: 'Herzliya', level: 3.9, confidence: 79,
-    hand: 'right', side: 'backhand', style: 'all-court', motivation: 'fun', frequency: 2,
-    availability: ['Weekend'], height: 180, matches: 76, winrate: 68,
-    photo: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=600&q=80',
-    bioFr: "Père de deux enfants. Le padel est ma deuxième famille.",
-    bioEn: "Father of two. Padel is my second family.",
-    bioHe: 'אבא לשניים. הפאדל הוא המשפחה השנייה שלי.',
-    commonMatches: 0, lastSeen: '2j', online: false },
-  { id: 8, name: 'Sarah Benayoun', age: 31, city: 'Tel Aviv', level: 3.5, confidence: 72,
-    hand: 'right', side: 'forehand', style: 'all-court', motivation: 'fun', frequency: 3,
-    availability: ['Soir', 'Weekend'], height: 167, matches: 44, winrate: 59,
-    photo: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&q=80',
-    bioFr: 'Élégance avant tout. Le padel est un art conversationnel.',
-    bioEn: "Elegance first. Padel is a conversational art.",
-    bioHe: 'אלגנטיות מעל הכל. פאדל הוא אמנות של שיחה.',
-    commonMatches: 2, lastSeen: '45min', online: true },
-  { id: 9, name: 'Oren Shapiro', age: 24, city: 'Tel Aviv', level: 4.8, confidence: 88,
-    hand: 'right', side: 'forehand', style: 'aggressive', motivation: 'compete', frequency: 5,
-    availability: ['Matin', 'Soir', 'Weekend'], height: 185, matches: 102, winrate: 74,
-    photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&q=80',
-    bioFr: 'Ex-joueur de tennis ATP junior. Je cherche la compétition sérieuse.',
-    bioEn: 'Ex ATP junior tennis player. Looking for serious competition.',
-    bioHe: 'שחקן טניס לשעבר. מחפש תחרות רצינית.',
-    commonMatches: 1, lastSeen: '10min', online: true },
-  { id: 10, name: 'Dina Peretz', age: 27, city: 'Haifa', level: 3.2, confidence: 69,
-    hand: 'right', side: 'backhand', style: 'defensive', motivation: 'improve', frequency: 2,
-    availability: ['Weekend'], height: 164, matches: 29, winrate: 52,
-    photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80',
-    bioFr: 'Passionnée de padel depuis 2 ans. Je progresse vite !',
-    bioEn: 'Padel passionate for 2 years. Improving fast!',
-    bioHe: 'אוהבת פאדל כבר שנתיים. משתפרת מהר!',
-    commonMatches: 0, lastSeen: '4h', online: false },
-  { id: 11, name: 'Barak Azoulay', age: 32, city: 'Ashdod', level: 4.5, confidence: 86,
-    hand: 'left', side: 'backhand', style: 'all-court', motivation: 'compete', frequency: 4,
-    availability: ['Soir', 'Weekend'], height: 179, matches: 118, winrate: 76,
-    photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&q=80',
-    bioFr: 'Gaucher assumé. Ma revers longue ligne est mon arme secrète.',
-    bioEn: 'Proud lefty. My cross-court backhand is my secret weapon.',
-    bioHe: 'שמאלי בגאווה. גב יד לאורך הקו הוא הנשק הסודי שלי.',
-    commonMatches: 3, lastSeen: '20min', online: true },
-  { id: 12, name: 'Michal Stern', age: 36, city: 'Netanya', level: 3.0, confidence: 61,
-    hand: 'right', side: 'forehand', style: 'defensive', motivation: 'fun', frequency: 1,
-    availability: ['Weekend'], height: 170, matches: 15, winrate: 40,
-    photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80',
-    bioFr: 'Weekend warrior. Le plaisir avant tout, le score après.',
-    bioEn: 'Weekend warrior. Fun first, score second.',
-    bioHe: 'שחקן סופשבוע. כיף קודם, תוצאה אחר כך.',
-    commonMatches: 0, lastSeen: '5j', online: false },
-];
-
-// ─── USER PROFILE (simulé — à remplacer par backend) ───
-export const USER_PROFILE = {
-  id: 0,
-  name: 'David Kahn',
-  city: 'Tel Aviv',
-  photo: PLAYERS[3].photo,
-  matches: 38,
-  winrate: 62,
-  bestStreak: 5,
-  hardestOpponent: 'Ariel Cohen',
-};
-
-// ─── MATCHES HISTORY (base réciproques) ───
-export const MATCHES_HISTORY = [
-  { id: 'M1', withId: 1, date: new Date(Date.now() - 1000 * 3600 * 22), result: 'win', score: '6-3 6-4', delta: +0.2 },
-  { id: 'M2', withId: 6, date: new Date(Date.now() - 1000 * 3600 * 48), result: 'loss', score: '4-6 5-7', delta: -0.1 },
-  { id: 'M3', withId: 3, date: new Date(Date.now() - 1000 * 3600 * 96), result: 'win', score: '6-2 6-1', delta: +0.2 },
-  { id: 'M4', withId: 8, date: new Date(Date.now() - 1000 * 3600 * 144), result: 'win', score: '7-5 6-3', delta: +0.1 },
-  { id: 'M5', withId: 2, date: new Date(Date.now() - 1000 * 3600 * 200), result: 'loss', score: '3-6 4-6', delta: -0.1 },
-];
-
-// ─── NOTIFICATIONS ───
-export const NOTIFICATIONS = [
-  { id: 'N1', type: 'match', fromId: 1, text: { fr: 'Yossi vous a matché !', en: 'Yossi matched you!', he: 'יוסי עשה לך מאץ׳!' }, time: '2h', read: false },
-  { id: 'N2', type: 'eval', fromId: 3, text: { fr: 'Ariel Cohen vous a évalué 4.0', en: 'Ariel Cohen rated you 4.0', he: 'אריאל כהן העריך אותך 4.0' }, time: '1j', read: false },
-  { id: 'N3', type: 'match', fromId: 6, text: { fr: 'Maya Tordjman vous a matché !', en: 'Maya Tordjman matched you!', he: 'מאיה תורג׳מן עשתה לך מאץ׳!' }, time: '2j', read: true },
-  { id: 'N4', type: 'level', fromId: null, text: { fr: 'Votre niveau a progressé à 3.6 !', en: 'Your level progressed to 3.6!', he: 'הרמה שלך עלתה ל-3.6!' }, time: '3j', read: true },
-];
-
-// ─── CHAT MESSAGES ───
-export const INITIAL_CHATS = {
-  1: [
-    { from: 'them', text: { fr: 'Salut ! Tu es dispo ce weekend ?', en: 'Hey! Are you free this weekend?', he: 'היי! אתה פנוי הסוף שבוע?' }, time: '20:14' },
-    { from: 'me', text: { fr: 'Oui ! Samedi matin ça marche ?', en: 'Yes! Saturday morning works?', he: 'כן! שבת בבוקר מתאים?' }, time: '20:31' },
-    { from: 'them', text: { fr: 'Parfait. Club Sportek à 9h ?', en: 'Perfect. Sportek Club at 9am?', he: 'מעולה. מועדון ספורטק בשעה 9?' }, time: '20:35' },
-  ],
-  6: [
-    { from: 'them', text: { fr: 'Belle victoire hier soir !', en: 'Nice win last night!', he: 'ניצחון יפה אמש!' }, time: '09:02' },
-  ],
-};
-
 // ─── LIVE SCORE ───
 export const EMPTY_SCORE = {
   running: false,
@@ -217,6 +77,14 @@ export const I18N = {
     addPlayer: 'Ajouter',
     requestSent: 'Demande envoyée ✓',
     noPlayer: 'Aucun joueur trouvé',
+    levelNotEvaluated: 'Niveau non évalué',
+    noActivity: 'Aucune activité récente.',
+    noMatchesYet: 'Aucun match encore joué.',
+    evaluateOpponent: 'Évaluer mon adversaire',
+    evalTitle: 'Évaluation de',
+    evalSub: 'Quel niveau lui donnez-vous ?',
+    evalSend: 'Envoyer',
+    evalThanks: 'Merci pour votre évaluation !',
   },
   en: {
     dir: 'ltr',
@@ -285,6 +153,14 @@ export const I18N = {
     addPlayer: 'Add',
     requestSent: 'Request sent ✓',
     noPlayer: 'No player found',
+    levelNotEvaluated: 'Level not evaluated',
+    noActivity: 'No recent activity.',
+    noMatchesYet: 'No matches played yet.',
+    evaluateOpponent: 'Rate my opponent',
+    evalTitle: 'Rating',
+    evalSub: 'What level would you give them?',
+    evalSend: 'Send',
+    evalThanks: 'Thanks for your rating!',
   },
   he: {
     dir: 'rtl',
@@ -353,6 +229,14 @@ export const I18N = {
     addPlayer: 'הוסף',
     requestSent: '✓ בקשה נשלחה',
     noPlayer: 'לא נמצא שחקן',
+    levelNotEvaluated: 'רמה לא הוערכה',
+    noActivity: 'אין פעילות אחרונה.',
+    noMatchesYet: 'אין משחקים עדיין.',
+    evaluateOpponent: 'הערך את היריב שלי',
+    evalTitle: 'הערכה של',
+    evalSub: 'איזה רמה תיתן לו?',
+    evalSend: 'שלח',
+    evalThanks: 'תודה על ההערכה!',
   },
 };
 
@@ -387,12 +271,6 @@ export const QUIZ_QUESTIONS = [
   { id: 8, type: 'self', q: { fr: 'Mental & sang-froid', en: "Mental & composure", he: 'מנטליות וקור רוח' }, sub: { fr: 'De 1 (réactif) à 10 (impassible).', en: "From 1 (reactive) to 10 (unflappable).", he: 'מ-1 (מגיב) עד 10 (קר רוח).' } },
 ];
 
-export const RECENT_ACTIVITY = [
-  { id: 1, kind: 'match', date: { fr: 'Hier · 19h', en: "Yesterday · 7pm", he: 'אתמול · 19:00' }, title: { fr: 'Victoire avec Yossi', en: "Win with Yossi", he: 'ניצחון עם יוסי' }, sub: { fr: 'contre M. Tordjman & E. Friedman', en: "vs M. Tordjman & E. Friedman", he: 'נגד מ. תורג׳מן וא. פרידמן' }, delta: +0.2, scoreL: '6-3', scoreR: '6-4' },
-  { id: 2, kind: 'eval', date: { fr: 'Lundi · 21h', en: "Monday · 9pm", he: 'יום שני · 21:00' }, title: { fr: 'Évaluation reçue', en: "Rating received", he: 'הערכה התקבלה' }, sub: { fr: 'A. Cohen vous a évalué 3.5', en: "A. Cohen rated you 3.5", he: 'א. כהן העריך אותך 3.5' }, delta: +0.1 },
-  { id: 3, kind: 'match', date: { fr: 'Dim. · 10h', en: "Sun · 10am", he: 'יום ראשון · 10:00' }, title: { fr: 'Défaite serrée', en: "Close loss", he: 'הפסד צמוד' }, sub: { fr: 'avec Tal contre N. Bensoussan & S. Benayoun', en: "with Tal vs N. Bensoussan & S. Benayoun", he: 'עם טל נגד נ. בנסוסאן וש. בניון' }, delta: -0.1, scoreL: '4-6', scoreR: '5-7' },
-  { id: 4, kind: 'match', date: { fr: '20 avril', en: "April 20", he: '20 באפריל' }, title: { fr: 'Victoire nette', en: "Clear win", he: 'ניצחון ברור' }, sub: { fr: 'avec Yossi contre L. Mizrahi & T. Abramov', en: "with Yossi vs L. Mizrahi & T. Abramov", he: 'עם יוסי נגד ל. מזרחי וט. אברמוב' }, delta: +0.2, scoreL: '6-2', scoreR: '6-1' },
-];
 
 export function computeLevel(answers) {
   let techScore = 0, techN = 0, selfScore = 0, selfN = 0;
@@ -409,14 +287,6 @@ export function computeLevel(answers) {
   const blended = techMapped * 0.7 + selfMapped * 0.3;
   const score = Math.max(1.0, blended - 0.3);
   return Math.max(1.0, Math.min(7.0, +score.toFixed(1)));
-}
-
-export function computeConfidence(answers) {
-  const selfKeys = QUIZ_QUESTIONS.filter(q => q.type === 'self').map(q => q.id);
-  const vals = selfKeys.map(k => answers[k]).filter(Boolean);
-  if (!vals.length) return 0;
-  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-  return Math.round((avg / 10) * 100);
 }
 
 // ELO simple: +/- selon résultat et différence de niveau

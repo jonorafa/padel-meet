@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { MATCHES_HISTORY, PLAYERS } from '../data/courtData' // fallback
 
 /**
  * Retourne l'historique des matchs de l'utilisateur connecté.
- * Fallback sur les données statiques si la DB est vide.
+ * Retourne un tableau vide si la DB est vide (jamais de faux matchs).
  */
 export function useMatchHistory() {
   const { user } = useAuth()
@@ -14,15 +13,14 @@ export function useMatchHistory() {
   useEffect(() => {
     if (!user) return
 
-    const fetch = async () => {
-      // Récupère l'historique avec le profil de l'adversaire
+    const fetchHistory = async () => {
       const { data, error } = await supabase
         .from('match_history')
         .select('*, opponent:opponent_id(id, name, photo_url)')
         .eq('player_id', user.id)
         .order('played_at', { ascending: false })
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         setHistory(data.map(m => ({
           id: m.id,
           withId: m.opponent_id,
@@ -31,42 +29,31 @@ export function useMatchHistory() {
           score: m.score,
           delta: m.elo_delta,
           player: {
-            id: m.opponent?.id,
-            name: m.opponent?.name || 'Adversaire',
+            id:    m.opponent?.id,
+            name:  m.opponent?.name     || 'Adversaire',
             photo: m.opponent?.photo_url || `https://i.pravatar.cc/600?u=${m.opponent_id}`,
           },
         })))
-      } else {
-        // Fallback : 1 seul match fictif pour voir la mise en page
-        const m = MATCHES_HISTORY[0]
-        const p = PLAYERS.find(pl => pl.id === m.withId)
-        setHistory([{ ...m, player: p ? { id: p.id, name: p.name, photo: p.photo } : null }])
       }
+      // Erreur DB → garder l'historique vide, ne pas polluer avec de faux matchs
     }
 
-    fetch()
+    fetchHistory()
   }, [user?.id])
 
   return history
 }
 
 /**
- * Enregistre un résultat de match en DB et met à jour le profil.
+ * Enregistre un résultat de match en DB.
+ * Le trigger SQL sync_profile_stats met à jour matches_played et wins automatiquement.
  */
 export async function saveMatchResult({ userId, opponentId, result, score, eloDelta }) {
-  const ops = [
-    supabase.from('match_history').insert({
-      player_id: userId,
-      opponent_id: opponentId,
-      result,
-      score,
-      elo_delta: eloDelta,
-    }),
-    // Met à jour les stats du profil
-    supabase.rpc('increment_match_stats', {
-      p_user_id: userId,
-      p_won: result === 'win' ? 1 : 0,
-    }),
-  ]
-  await Promise.all(ops)
+  await supabase.from('match_history').insert({
+    player_id:   userId,
+    opponent_id: opponentId,
+    result,
+    score,
+    elo_delta:   eloDelta,
+  })
 }
