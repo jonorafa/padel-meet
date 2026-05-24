@@ -19,6 +19,10 @@
 -- ============================================================================
 
 
+-- ── 0. Rendre username nullable pour les profils démo (pas de auth.users) ──
+ALTER TABLE public.profiles
+  ALTER COLUMN username DROP NOT NULL;
+
 -- ── 1. Ajouter la colonne is_demo si elle n'existe pas ─────────────────────
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
