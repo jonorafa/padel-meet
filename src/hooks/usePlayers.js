@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { usePresence } from './usePresence'
 
 function formatLastSeen(ts) {
   if (!ts) return '?'
@@ -11,7 +12,7 @@ function formatLastSeen(ts) {
   return `${Math.floor(diff / 86400)}j`
 }
 
-function transformDBProfile(p) {
+function transformDBProfile(p, onlineIds) {
   const matchesPlayed = p.matches_played || 0
   return {
     id: p.id,                   // UUID string
@@ -34,7 +35,8 @@ function transformDBProfile(p) {
     bioFr: p.bio_fr || '',
     bioEn: p.bio_en || '',
     bioHe: p.bio_he || '',
-    online: p.online || false,
+    // Présence réelle : priorité au Set onlineIds (Realtime), fallback DB
+    online: onlineIds ? onlineIds.has(p.id) : (p.online || false),
     lastSeen: p.last_seen,      // ISO string — formaté côté UI
     commonMatches: 0,
     isRealUser: true,
@@ -48,10 +50,15 @@ function transformDBProfile(p) {
  * - Exclut l'utilisateur courant
  * - Exclut les joueurs déjà swipés (gauche ou droite)
  * - Retourne [] si la DB est vide (jamais de faux joueurs)
+ * - Gère la présence en ligne via Supabase Realtime
  */
 export function usePlayers() {
   const { user } = useAuth()
-  const [players, setPlayers] = useState(null) // null = chargement
+  const [players, setPlayers]     = useState(null) // null = chargement
+  const [onlineIds, setOnlineIds] = useState(new Set())
+
+  // Enregistre la présence de l'utilisateur courant + écoute les changements
+  usePresence(setOnlineIds)
 
   const fetchAll = useCallback(async () => {
     if (!user) return
@@ -73,8 +80,16 @@ export function usePlayers() {
     const swipedIds = new Set((swipesResult.data || []).map(s => s.target_id))
 
     if (!error && profiles && profiles.length > 0) {
+      // Initialise le Set des utilisateurs en ligne depuis la DB
+      const initialOnline = new Set(profiles.filter(p => p.online).map(p => p.id))
+      setOnlineIds(prev => {
+        // Fusionne : garde les IDs déjà connus du Realtime + ceux de la DB
+        const merged = new Set([...prev, ...initialOnline])
+        return merged
+      })
+
       const fresh = profiles.filter(p => !swipedIds.has(p.id))
-      setPlayers(fresh.map(transformDBProfile))
+      setPlayers(fresh.map(p => transformDBProfile(p, null))) // onlineIds géré séparément
     } else {
       // DB vide ou erreur → état vide honnête, jamais de faux joueurs
       setPlayers([])
@@ -86,5 +101,17 @@ export function usePlayers() {
     fetchAll()
   }, [fetchAll])
 
-  return { players, loading: players === null, refetch: fetchAll }
+  // Mise à jour réactive : quand onlineIds change, on rafraîchit le statut online
+  // sans re-fetcher toute la liste
+  const [, forceUpdate] = useState(0)
+  useEffect(() => {
+    forceUpdate(n => n + 1)
+  }, [onlineIds])
+
+  // Applique onlineIds aux joueurs déjà chargés
+  const playersWithPresence = players
+    ? players.map(p => ({ ...p, online: onlineIds.has(p.id) }))
+    : null
+
+  return { players: playersWithPresence, loading: players === null, refetch: fetchAll }
 }

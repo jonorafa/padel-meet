@@ -556,7 +556,7 @@ function applyFilters(players, f) {
     if (f.style !== 'any' && p.style !== f.style) return false;
     if (f.motivation !== 'any' && p.motivation !== f.motivation) return false;
     if (f.region !== 'any' && CITY_REGION[p.city] !== f.region) return false;
-    if (p.level < f.levelMin || p.level > f.levelMax) return false;
+    if (p.level !== null && p.level !== undefined && (p.level < f.levelMin || p.level > f.levelMax)) return false;
     if (f.frequency > 0 && p.frequency < f.frequency) return false;
     if (f.availability?.length && !f.availability.some(a => p.availability?.includes(a))) return false;
     return true;

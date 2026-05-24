@@ -1,3 +1,5 @@
+import { useState, useRef } from 'react';
+
 // ─── Design tokens ───
 export const COURT = {
   green: '#1F5C3F',
@@ -333,20 +335,61 @@ export function OnlineDot({ online }) {
 export function BottomSheet({ children, onClose, title, dark }) {
   const bg = dark ? COURT.darkCard : COURT.cream;
   const border = dark ? COURT.darkBorder : `${COURT.green}30`;
+  const [dragY, setDragY] = useState(0);
+  const [snapping, setSnapping] = useState(false);
+  const touchStartY = useRef(null);
+  const touchStartTime = useRef(null);
+
+  function handleTouchStart(e) {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartTime.current = Date.now();
+    setSnapping(false);
+  }
+
+  function handleTouchMove(e) {
+    if (touchStartY.current === null) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) setDragY(delta);
+  }
+
+  function handleTouchEnd(e) {
+    if (touchStartY.current === null) return;
+    const delta = e.changedTouches[0].clientY - touchStartY.current;
+    const elapsed = Math.max(1, Date.now() - touchStartTime.current);
+    const velocity = delta / elapsed; // px/ms
+    touchStartY.current = null;
+
+    if (delta > 90 || velocity > 0.45) {
+      onClose?.();
+    } else {
+      setSnapping(true);
+      setDragY(0);
+      setTimeout(() => setSnapping(false), 320);
+    }
+  }
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 100,
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end',
     }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: '100%', maxHeight: '90vh',
-        background: bg, borderRadius: '20px 20px 0 0',
-        border: `0.5px solid ${border}`,
-        overflow: 'auto',
-        animation: 'sheetUp 0.35s cubic-bezier(.2,.9,.3,1)',
-        paddingBottom: 40,
-      }}>
+      <div
+        onClick={e => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          width: '100%', maxHeight: '90vh',
+          background: bg, borderRadius: '20px 20px 0 0',
+          border: `0.5px solid ${border}`,
+          overflow: dragY > 0 ? 'hidden' : 'auto',
+          animation: dragY === 0 && !snapping ? 'sheetUp 0.35s cubic-bezier(.2,.9,.3,1)' : 'none',
+          transform: dragY > 0 || snapping ? `translateY(${dragY}px)` : undefined,
+          transition: snapping ? 'transform 0.3s cubic-bezier(.2,.9,.3,1)' : 'none',
+          paddingBottom: 40,
+          willChange: 'transform',
+        }}>
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 8px' }}>
           <div style={{ width: 36, height: 3, borderRadius: 2, background: dark ? COURT.darkBorder : `${COURT.green}40` }} />
