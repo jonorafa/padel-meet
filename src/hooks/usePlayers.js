@@ -38,6 +38,8 @@ function transformDBProfile(p) {
     lastSeen: p.last_seen,      // ISO string — formaté côté UI
     commonMatches: 0,
     isRealUser: true,
+    // Chantier 4 : préférences partenaire (ce qu'il/elle cherche)
+    partnerPrefs: p.partner_prefs || {},
   }
 }
 

@@ -1,0 +1,198 @@
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
+
+/**
+ * Hook pour gérer la soumission et confirmation des scores de match
+ * Système anti-fraude : validation à 2 joueurs requise
+ *
+ * Retourne :
+ *   - pendingResults : liste des scores en attente (submitter OU opponent)
+ *   - submitResult(opponentId, result, score) : soumettre un nouveau score
+ *   - confirmResult(pendingId) : confirmer un score reçu
+ *   - rejectResult(pendingId) : rejeter un score reçu
+ *   - loading, error : états de chargement
+ */
+export function useMatchResults() {
+  const { user } = useAuth()
+  const [pendingResults, setPendingResults] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  // Fetch les pending results impliquant l'utilisateur
+  const fetchPendingResults = useCallback(async () => {
+    if (!user) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { data, error: queryError } = await supabase
+        .from('pending_match_results')
+        .select(`
+          id, submitter_id, opponent_id, match_id,
+          submitter_result, score, played_at, status, expires_at, created_at,
+          submitter:submitter_id(id, name, photo_url),
+          opponent:opponent_id(id, name, photo_url)
+        `)
+        .eq('status', 'pending')
+        .or(`submitter_id.eq.${user.id},opponent_id.eq.${user.id}`)
+        .order('created_at', { ascending: false })
+
+      if (queryError) throw queryError
+
+      // Transforme les données pour faciliter l'affichage
+      const transformed = (data || []).map(p => ({
+        id: p.id,
+        matchId: p.match_id,
+        score: p.score,
+        playedAt: new Date(p.played_at),
+        expiresAt: new Date(p.expires_at),
+        createdAt: new Date(p.created_at),
+        // Le user actuel est-il le soumetteur ou l'adversaire ?
+        isSubmitter: p.submitter_id === user.id,
+        // Résultat du point de vue du soumetteur
+        submitterResult: p.submitter_result,
+        // Résultat du point de vue du user actuel
+        myResult: p.submitter_id === user.id
+          ? p.submitter_result
+          : (p.submitter_result === 'win' ? 'loss' : p.submitter_result === 'loss' ? 'win' : 'draw'),
+        // L'autre joueur
+        otherPlayer: p.submitter_id === user.id ? p.opponent : p.submitter,
+      }))
+
+      setPendingResults(transformed)
+    } catch (err) {
+      console.error('Error fetching pending results:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id])
+
+  // Realtime : écoute les nouveaux pending et les changements de statut
+  useEffect(() => {
+    if (!user) return
+
+    fetchPendingResults()
+
+    const channel = supabase
+      .channel(`pending-results-${user.id}`)
+      .on('postgres_changes', {
+        event: '*', // INSERT, UPDATE, DELETE
+        schema: 'public',
+        table: 'pending_match_results',
+      }, (payload) => {
+        // Filtre côté client : ne réagit que si le user est concerné
+        const row = payload.new || payload.old
+        if (row && (row.submitter_id === user.id || row.opponent_id === user.id)) {
+          fetchPendingResults()
+        }
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [user?.id, fetchPendingResults])
+
+  // Soumettre un nouveau score
+  const submitResult = useCallback(async ({ opponentId, result, score, playedAt }) => {
+    if (!user) {
+      setError('Not authenticated')
+      return { success: false, error: 'Not authenticated' }
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data, error: rpcError } = await supabase.rpc('submit_match_result', {
+        p_opponent_id: opponentId,
+        p_result: result, // 'win' | 'loss' | 'draw'
+        p_score: score,
+        p_played_at: playedAt || new Date().toISOString(),
+      })
+
+      if (rpcError) throw rpcError
+
+      // Recharge la liste
+      await fetchPendingResults()
+
+      return { success: true, pendingId: data }
+    } catch (err) {
+      console.error('Error submitting result:', err)
+      const msg = err.message || 'Failed to submit result'
+      setError(msg)
+      return { success: false, error: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id, fetchPendingResults])
+
+  // Confirmer un score reçu
+  const confirmResult = useCallback(async (pendingId) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { error: rpcError } = await supabase.rpc('confirm_match_result', {
+        p_pending_id: pendingId,
+      })
+
+      if (rpcError) throw rpcError
+
+      // Recharge la liste
+      await fetchPendingResults()
+
+      return { success: true }
+    } catch (err) {
+      console.error('Error confirming result:', err)
+      const msg = err.message || 'Failed to confirm result'
+      setError(msg)
+      return { success: false, error: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchPendingResults])
+
+  // Rejeter un score reçu
+  const rejectResult = useCallback(async (pendingId) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { error: rpcError } = await supabase.rpc('reject_match_result', {
+        p_pending_id: pendingId,
+      })
+
+      if (rpcError) throw rpcError
+
+      // Recharge la liste
+      await fetchPendingResults()
+
+      return { success: true }
+    } catch (err) {
+      console.error('Error rejecting result:', err)
+      const msg = err.message || 'Failed to reject result'
+      setError(msg)
+      return { success: false, error: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchPendingResults])
+
+  // Helpers pour filtrer
+  const pendingToConfirm = pendingResults.filter(p => !p.isSubmitter)
+  const pendingAwaitingConfirmation = pendingResults.filter(p => p.isSubmitter)
+
+  return {
+    pendingResults,
+    pendingToConfirm,          // Scores que je dois confirmer/rejeter
+    pendingAwaitingConfirmation, // Scores que j'ai soumis, en attente
+    loading,
+    error,
+    submitResult,
+    confirmResult,
+    rejectResult,
+    refetch: fetchPendingResults,
+  }
+}

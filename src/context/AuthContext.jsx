@@ -6,6 +6,7 @@ const AuthContext = createContext({})
 export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null)
   const [profile, setProfile] = useState(null)
+  const [photos,  setPhotos]  = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -53,6 +54,17 @@ export function AuthProvider({ children }) {
         .update({ online: true, last_seen: new Date().toISOString() })
         .eq('id', userId)
     }
+    // Load profile photos
+    await loadProfilePhotos(userId)
+  }
+
+  const loadProfilePhotos = async (userId) => {
+    const { data } = await supabase
+      .from('profile_photos')
+      .select('id, url, storage_path, is_primary, display_order, created_at')
+      .eq('user_id', userId)
+      .order('display_order', { ascending: true })
+    setPhotos(data || [])
   }
 
   /** Connexion Google OAuth — redirige vers Google puis revient sur /auth */
@@ -118,7 +130,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, loading, isOnboarding,
+      user, profile, photos, loading, isOnboarding,
       signInWithGoogle, signOut, saveProfile, refreshProfile,
     }}>
       {children}

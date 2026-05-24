@@ -44,16 +44,7 @@ export function useMatchHistory() {
   return history
 }
 
-/**
- * Enregistre un résultat de match en DB.
- * Le trigger SQL sync_profile_stats met à jour matches_played et wins automatiquement.
- */
-export async function saveMatchResult({ userId, opponentId, result, score, eloDelta }) {
-  await supabase.from('match_history').insert({
-    player_id:   userId,
-    opponent_id: opponentId,
-    result,
-    score,
-    elo_delta:   eloDelta,
-  })
-}
+// ⚠️ Chantier 3 : saveMatchResult retiré pour raisons de sécurité.
+// L'écriture directe dans match_history est désormais bloquée par RLS.
+// Pour enregistrer un score, utilisez useMatchResults.submitResult() qui passe
+// par la fonction SQL submit_match_result() (validation à 2 joueurs).

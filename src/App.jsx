@@ -4,6 +4,7 @@ import AuthScreen     from './screens/AuthScreen'
 import OnboardingFlow from './screens/OnboardingFlow'
 import MainApp        from './screens/MatchScreen'
 import ProtectedRoute from './components/ProtectedRoute'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { usePrefs }   from './context/PrefsContext'
 import './index.css'
 
@@ -32,6 +33,7 @@ function MobileShell() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <Routes>
         {/* Toutes les routes vivent dans le shell 430px */}
@@ -50,5 +52,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </ErrorBoundary>
   )
 }

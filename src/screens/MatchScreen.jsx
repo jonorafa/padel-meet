@@ -15,9 +15,41 @@ import { useSwipes }        from '../hooks/useSwipes';
 import { useUserMatches }   from '../hooks/useUserMatches';
 import { useMatchHistory }  from '../hooks/useMatchHistory';
 import { useNotifications } from '../hooks/useNotifications';
+import { DetailedProfileModal } from '../components/DetailedProfileModal';
+import { ProfileEditScreen } from '../screens/ProfileEditScreen';
+import { PendingMatchesPanel } from '../components/PendingMatchesPanel';
+import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
+
+/** Compresse une image via canvas (max ~1200px côté long, qualité 0.82). */
+async function compressImage(file, maxDim = 1200, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => { img.src = e.target.result; };
+    reader.onerror = () => reject(new Error('Lecture du fichier impossible'));
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width >= height) { height = Math.round(height * (maxDim / width)); width = maxDim; }
+        else                 { width  = Math.round(width  * (maxDim / height)); height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error('Compression échouée')),
+        'image/jpeg', quality
+      );
+    };
+    img.onerror = () => reject(new Error('Image invalide'));
+    reader.readAsDataURL(file);
+  });
+}
+
 function formatLastSeen(ts) {
   if (!ts) return '?';
   const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
@@ -246,6 +278,38 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
 }
 
 // ─── Player Card ────────────────────────────────────────────────────────────
+// Mini info bloc (icône + label + valeur) pour la grille 2x2 de la PlayerCard
+function InfoChip({ icon, label, value, color, dark }) {
+  const ink   = dark ? COURT.darkText : COURT.ink;
+  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const bgChip = dark ? COURT.darkBg : `${COURT.green}08`;
+  const border = dark ? COURT.darkBorder : `${COURT.green}25`;
+  return (
+    <div style={{
+      flex: 1, minWidth: 0,
+      padding: '8px 10px',
+      background: bgChip, border: `0.5px solid ${border}`,
+      borderRadius: 8,
+      display: 'flex', alignItems: 'center', gap: 8,
+    }}>
+      <div style={{
+        width: 24, height: 24, borderRadius: 12,
+        background: `${color}18`, color,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, fontSize: 12,
+      }}>{icon}</div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+          {label}
+        </div>
+        <div style={{ fontFamily: 'Crimson Text, serif', fontSize: 13, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {value || '—'}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PlayerCard({ p, dragX, t, lang, dark }) {
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
@@ -257,12 +321,22 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
   const stone = dark ? COURT.darkMuted : COURT.stone;
   const border= dark ? COURT.darkBorder : `${COURT.green}50`;
 
-  const styleLabel = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[p.style];
-  const motivLabel = { fun: t.fun, improve: t.improve, compete: t.compete }[p.motivation];
+  const styleLabel = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[p.style] || t.allcourt;
   const sideLabel  = p.side === 'forehand' ? t.forehand : t.backhand;
   const handLabel  = p.hand === 'left' ? t.leftHand : t.rightHand;
+  const region     = CITY_REGION[p.city] || p.city || '—';
 
   const bio = lang === 'he' ? p.bioHe : (lang === 'en' ? (p.bioEn || p.bioFr) : p.bioFr);
+
+  // Préférences partenaire (Chantier 4)
+  const prefs = p.partnerPrefs || {};
+  const prefStyleLabel = prefs.style && prefs.style !== 'any' ? ({ aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[prefs.style]) : null;
+  const prefHandLabel  = prefs.hand  && prefs.hand  !== 'any' ? (prefs.hand === 'left' ? t.leftHand : t.rightHand) : null;
+  const prefSideLabel  = prefs.side  && prefs.side  !== 'any' ? (prefs.side === 'forehand' ? t.forehand : t.backhand) : null;
+  const prefRegion     = prefs.region && prefs.region !== 'any' ? prefs.region : null;
+  const prefLevel      = (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
+    ? `${prefs.levelMin}–${prefs.levelMax}` : null;
+  const hasAnyPrefs = prefStyleLabel || prefHandLabel || prefSideLabel || prefRegion || prefLevel;
 
   return (
     <div style={{
@@ -273,85 +347,156 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
         : '0 8px 32px rgba(15,61,41,0.12), 0 1px 0 rgba(0,0,0,0.04)',
       display: 'flex', flexDirection: 'column',
     }}>
-      <div style={{ width: '100%', aspectRatio: '1 / 1', flexShrink: 0, background: `url(${p.photo}) center 20%/cover`, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 50%, ${bg})` }} />
+      {/* ─── Photo (45% de la carte, plus compact) ──────────────────────── */}
+      <div style={{
+        width: '100%', height: '45%', flexShrink: 0,
+        background: `url(${p.photo}) center 25%/cover`,
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Dégradé bas pour lisibilité du nom */}
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.55) 100%)` }} />
+
+        {/* Badges haut */}
         <div style={{
-          position: 'absolute', top: 14, left: 14,
+          position: 'absolute', top: 12, left: 12,
           display: 'flex', gap: 6, alignItems: 'center',
           opacity: 1 - Math.max(yesOp, noOp),
         }}>
           {p.online && (
             <div style={{
-              background: `${bg}CC`, padding: '4px 8px', borderRadius: 20,
+              background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
               display: 'flex', alignItems: 'center', gap: 5,
-              fontFamily: 'Inter', fontSize: 9, color: '#4CAF50',
+              fontFamily: 'Inter', fontSize: 9, color: '#7ED957',
               letterSpacing: '0.14em', textTransform: 'uppercase',
             }}>
-              <div style={{ width: 6, height: 6, borderRadius: 3, background: '#4CAF50' }} />
+              <div style={{ width: 6, height: 6, borderRadius: 3, background: '#7ED957' }} />
               {t.online}
             </div>
           )}
-          {p.commonMatches > 0 && (
-            <div style={{
-              background: `${bg}CC`, padding: '4px 8px', borderRadius: 20,
-              fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em',
-            }}>⚡ {p.commonMatches} {t.commonMatches}</div>
-          )}
         </div>
+
+        {/* Niveau (haut droite) */}
         <div style={{
-          position: 'absolute', top: 14, right: 14,
-          background: dark ? `${COURT.darkCard}EE` : `${COURT.green}EE`,
-          color: COURT.cream, padding: '8px 12px 6px', borderRadius: 8,
+          position: 'absolute', top: 12, right: 12,
+          background: `${COURT.green}EE`, color: COURT.cream,
+          padding: '6px 10px 5px', borderRadius: 8,
           border: `0.5px solid ${COURT.gold}`,
           opacity: 1 - Math.max(yesOp, noOp),
         }}>
-          <div style={{ fontFamily: 'Inter', fontSize: 8, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, lineHeight: 1, fontWeight: 400 }}>{p.level.toFixed(1)}</div>
+          <div style={{ fontFamily: 'Inter', fontSize: 7, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, lineHeight: 1, fontWeight: 400 }}>
+            {p.level != null ? p.level.toFixed(1) : '—'}
+          </div>
+        </div>
+
+        {/* Nom + âge en overlay bas de photo */}
+        <div style={{
+          position: 'absolute', left: 16, right: 16, bottom: 10,
+          opacity: 1 - Math.max(yesOp, noOp),
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'baseline', gap: 8,
+            fontFamily: ff_serif, fontSize: 22, color: '#fff', fontWeight: 500,
+            textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+          }}>
+            <span style={{
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              minWidth: 0, maxWidth: '70%',
+            }}>
+              {p.name.split(' ')[0]}{' '}
+              <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.gold }}>
+                {p.name.split(' ').slice(1).join(' ')}
+              </span>
+            </span>
+            <span style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>
+              {p.age}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+            </svg>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
+              {p.city}{region && region !== p.city ? ` · ${region}` : ''}
+            </div>
+            <div style={{ width: 2, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.6)' }} />
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: 'rgba(255,255,255,0.85)' }}>
+              {p.matches} {t.matches?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}%` : ''}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: '12px 20px 16px', flex: 1, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-          <div style={{
-            fontFamily: ff_serif, fontSize: 22, color: ink, fontWeight: 500,
-            lineHeight: 1.15, minWidth: 0, flex: 1, whiteSpace: 'nowrap',
-            overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {p.name.split(' ')[0]}{' '}
-            <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.green }}>
-              {p.name.split(' ').slice(1).join(' ')}
-            </span>
-          </div>
-          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, flexShrink: 0 }}>{p.age}</div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.5">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-          </svg>
-          <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>{p.city}</div>
-          <div style={{ width: 3, height: 3, borderRadius: 2, background: stone }} />
-          <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone }}>
-            {p.matches} matchs{p.winrate != null ? ` · ${p.winrate}%` : ''}
-          </div>
+      {/* ─── Contenu scrollable ────────────────────────────────────────── */}
+      <div
+        className="card-scroll"
+        style={{
+          flex: 1, overflowY: 'auto', overflowX: 'hidden',
+          padding: '12px 16px 16px',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
+        }}
+        onPointerDownCapture={(e) => e.stopPropagation()}
+      >
+        {/* Grille 2x2 des 4 infos clés */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          <InfoChip
+            icon="⚡" label={t.styleLabel || 'Style'}
+            value={styleLabel} color={COURT.purple} dark={dark}
+          />
+          <InfoChip
+            icon="📍" label={t.regionLabel || 'Région'}
+            value={region} color={COURT.green} dark={dark}
+          />
+          <InfoChip
+            icon={p.hand === 'left' ? '🫲' : '🫱'} label={t.handLabel || 'Main'}
+            value={handLabel} color={COURT.green} dark={dark}
+          />
+          <InfoChip
+            icon="🎾" label={t.sideLabel || 'Côté'}
+            value={sideLabel} color={COURT.gold} dark={dark}
+          />
         </div>
 
-        <Ornament width={36} style={{ margin: '10px 0 8px' }} />
-
+        {/* Bio (si renseignée) */}
         {bio && (
-          <p style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: ink, lineHeight: 1.4, margin: 0 }}>
-            «{' '}{bio}{' '}»
-          </p>
+          <>
+            <Ornament width={32} style={{ margin: '14px auto 10px' }} />
+            <p style={{
+              fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 13, color: ink, lineHeight: 1.45, margin: 0,
+              textAlign: 'center',
+            }}>
+              «{' '}{bio}{' '}»
+            </p>
+          </>
         )}
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
-          {handLabel  && <HeritageTag color={COURT.green}>{handLabel}</HeritageTag>}
-          {sideLabel  && <HeritageTag color={COURT.green}>{sideLabel}</HeritageTag>}
-          {styleLabel && <HeritageTag color={COURT.purple}>{styleLabel}</HeritageTag>}
-          {motivLabel && <HeritageTag color={COURT.gold}>{motivLabel}</HeritageTag>}
-          <HeritageTag>{p.frequency}{t.times}</HeritageTag>
-        </div>
+        {/* ─── Section "Recherche" (partner_prefs) ─────────────────────── */}
+        {hasAnyPrefs && (
+          <>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1, height: 1, background: `${COURT.green}25` }} />
+              <div style={{
+                fontFamily: 'Inter', fontSize: 9, color: COURT.green,
+                letterSpacing: '0.28em', textTransform: 'uppercase', fontWeight: 600,
+              }}>
+                {t.lookingFor || 'Recherche'}
+              </div>
+              <div style={{ flex: 1, height: 1, background: `${COURT.green}25` }} />
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 10, justifyContent: 'center' }}>
+              {prefStyleLabel && <HeritageTag color={COURT.purple}>{prefStyleLabel}</HeritageTag>}
+              {prefHandLabel  && <HeritageTag color={COURT.green}>{prefHandLabel}</HeritageTag>}
+              {prefSideLabel  && <HeritageTag color={COURT.green}>{prefSideLabel}</HeritageTag>}
+              {prefRegion     && <HeritageTag color={COURT.gold}>📍 {prefRegion}</HeritageTag>}
+              {prefLevel      && <HeritageTag color={COURT.gold}>Niv. {prefLevel}</HeritageTag>}
+            </div>
+          </>
+        )}
 
-        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+        {/* Confidence bar */}
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
           <span>{t.confidence}</span>
           <div style={{ flex: 1, height: 1, background: `${COURT.green}25`, position: 'relative' }}>
             <div style={{ width: `${p.confidenceRate ?? 50}%`, height: '100%', background: COURT.green }} />
@@ -359,6 +504,15 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
           <span style={{ color: COURT.green, fontFamily: 'Playfair Display, serif', fontSize: 11, letterSpacing: 0 }}>
             {p.confidenceRate != null ? `${Math.round(p.confidenceRate)}%` : '—'}
           </span>
+        </div>
+
+        {/* Hint scroll/tap */}
+        <div style={{
+          marginTop: 14, paddingTop: 10, borderTop: `0.5px dashed ${COURT.green}25`,
+          fontFamily: 'Inter', fontSize: 9, color: stone,
+          letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center',
+        }}>
+          {t.tapToSeeMore || 'Toucher pour voir le profil détaillé'}
         </div>
       </div>
 
@@ -376,7 +530,7 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
 }
 
 function CircBtn({ children, onClick, color, large, dark }) {
-  const s = large ? 64 : 52;
+  const s = large ? 52 : 42;     // ↓ taille réduite (avant: 64 / 52)
   const bg = dark ? COURT.darkCard : COURT.cream;
   return (
     <button onClick={onClick} style={{
@@ -424,7 +578,7 @@ function EmptyStack({ t, lang, onReset, dark }) {
 }
 
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
-function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel }) {
+function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail }) {
   // ── Données réelles ──
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
   const { recordSwipe } = useSwipes();
@@ -492,10 +646,45 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel 
     setLastCard(null);
   };
 
-  const onDown = (e) => { startRef.current = { x: e.clientX, y: e.clientY }; setDrag({ x: 0, y: 0, active: true }); e.currentTarget.setPointerCapture?.(e.pointerId); };
-  const onMove = (e) => { if (!drag.active) return; setDrag({ x: e.clientX - startRef.current.x, y: e.clientY - startRef.current.y, active: true }); };
+  const onDown = (e) => {
+    // Ne pas hijacker le tap quand l'utilisateur scrolle/clique à l'intérieur
+    // de la zone de contenu scrollable (chips, bio, recherche...).
+    // Le swipe ne s'active que si on commence sur la photo (haut de la carte).
+    if (e.target?.closest?.('.card-scroll')) {
+      // Reset au cas où — laisse le navigateur scroller la zone interne
+      startRef.current = { x: 0, y: 0, t: 0, ignore: true };
+      return;
+    }
+    startRef.current = { x: e.clientX, y: e.clientY, t: Date.now(), ignore: false };
+    setDrag({ x: 0, y: 0, active: true });
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onMove = (e) => {
+    if (!drag.active || startRef.current.ignore) return;
+    const dx = e.clientX - startRef.current.x;
+    const dy = e.clientY - startRef.current.y;
+    // Si le geste est nettement vertical, on laisse tomber (ne bloque pas le scroll)
+    if (Math.abs(dy) > Math.abs(dx) * 1.5 && Math.abs(dy) > 12) {
+      setDrag({ x: 0, y: 0, active: false });
+      startRef.current.ignore = true;
+      return;
+    }
+    setDrag({ x: dx, y: dy, active: true });
+  };
   const onUp   = () => {
-    if (!drag.active) return;
+    if (!drag.active || startRef.current.ignore) {
+      setDrag({ x: 0, y: 0, active: false });
+      return;
+    }
+    const totalMove = Math.abs(drag.x) + Math.abs(drag.y);
+    const elapsed = Date.now() - (startRef.current.t || 0);
+    // Tap = peu de mouvement et durée courte ⇒ ouvrir le profil détaillé.
+    // Seuils relâchés (25 px / 600 ms) pour matcher la réalité d'un doigt humain.
+    if (totalMove < 25 && elapsed < 600) {
+      setDrag({ x: 0, y: 0, active: false });
+      if (top && onOpenDetail) onOpenDetail(top.id);
+      return;
+    }
     if (drag.x > 90) decide('right');
     else if (drag.x < -90) decide('left');
     else setDrag({ x: 0, y: 0, active: false });
@@ -549,7 +738,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel 
         </div>
       </div>
 
-      <div style={{ position: 'relative', height: 'calc(100% - 200px)', margin: '0 20px' }}>
+      <div style={{ position: 'relative', height: 'calc(100% - 180px)', margin: '0 20px 70px' }}>
         {stack === null ? (
           <div style={{ position: 'absolute', inset: 0 }}><SkeletonCard /></div>
         ) : displayStack.length === 0 ? (
@@ -573,7 +762,14 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel 
               onPointerDown={isTop ? onDown : undefined}
               onPointerMove={isTop ? onMove : undefined}
               onPointerUp={isTop ? onUp : undefined}
-              style={{ position: 'absolute', inset: 0, transform, opacity, transition, zIndex: 10 - i, touchAction: 'none', cursor: isTop ? 'grab' : 'default' }}>
+              style={{
+                position: 'absolute', inset: 0, transform, opacity, transition,
+                zIndex: 10 - i,
+                // pan-y autorise le scroll vertical natif ; nous prenons en charge
+                // le geste horizontal manuellement (swipe gauche/droite).
+                touchAction: isTop ? 'pan-y' : 'none',
+                cursor: isTop ? 'grab' : 'default',
+              }}>
               <PlayerCard p={p} dragX={isTop ? drag.x : 0} t={t} lang={lang} dark={dark} />
             </div>
           );
@@ -581,22 +777,32 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel 
       </div>
 
       {top && stack !== null && (
-        <div style={{ position: 'absolute', bottom: 110, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 14, alignItems: 'center' }}>
+        <div style={{
+          position: 'absolute', bottom: 116, left: 0, right: 0,
+          display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center',
+          pointerEvents: 'none', // les boutons gèrent leurs clics individuellement
+        }}>
           {lastCard && (
-            <CircBtn onClick={undo} color={COURT.gold} dark={dark}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-                <path d="M3 10h10a5 5 0 1 1 0 10H3" /><path d="M3 10l4-4M3 10l4 4" />
+            <div style={{ pointerEvents: 'auto' }}>
+              <CircBtn onClick={undo} color={COURT.gold} dark={dark}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M3 10h10a5 5 0 1 1 0 10H3" /><path d="M3 10l4-4M3 10l4 4" />
+                </svg>
+              </CircBtn>
+            </div>
+          )}
+          <div style={{ pointerEvents: 'auto' }}>
+            <CircBtn onClick={() => decide('left')} color={COURT.purple} dark={dark}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </CircBtn>
-          )}
-          <CircBtn onClick={() => decide('left')} color={COURT.purple} dark={dark}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </CircBtn>
-          <CircBtn onClick={() => decide('right')} color={COURT.green} large dark={dark}>
-            <PadelBall size={28} shadow={false} />
-          </CircBtn>
+          </div>
+          <div style={{ pointerEvents: 'auto' }}>
+            <CircBtn onClick={() => decide('right')} color={COURT.green} large dark={dark}>
+              <PadelBall size={22} shadow={false} />
+            </CircBtn>
+          </div>
         </div>
       )}
     </div>
@@ -604,7 +810,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel 
 }
 
 // ─── Search flow ────────────────────────────────────────────────────────────
-function SearchFlow({ t, lang, dark, userLevel, onNavigateChat }) {
+function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail }) {
   const [showPrefs, setShowPrefs]   = useState(false);
   const [matchPlayer, setMatchPlayer] = useState(null);
   const [filters, setFilters] = useState({
@@ -628,6 +834,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat }) {
         t={t} lang={lang} filters={filters} dark={dark}
         onEditFilters={() => setShowPrefs(true)}
         onMatch={setMatchPlayer}
+        onOpenDetail={onOpenDetail}
         userLevel={userLevel}
       />
       {showPrefs && (
@@ -642,7 +849,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat }) {
 }
 
 // ─── Home Screen ────────────────────────────────────────────────────────────
-function HomeScreen({ t, lang, level, confidence, dark }) {
+function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetailPlayerId }) {
   const { profile } = useAuth();
   const matchHistory = useMatchHistory();
 
@@ -742,13 +949,26 @@ function HomeScreen({ t, lang, level, confidence, dark }) {
               borderBottom: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
               animation: `cardIn 0.3s ease ${i * 0.05}s both`,
             }}>
-              <div style={{ width: 44, height: 44, borderRadius: 22, flexShrink: 0, background: `url(${p.photo_url || `https://i.pravatar.cc/600?u=${p.id}`}) center/cover` }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <button
+                onClick={() => setDetailPlayerId(p.id)}
+                style={{
+                  width: 44, height: 44, borderRadius: 22, flexShrink: 0,
+                  background: `url(${p.photo_url || `https://i.pravatar.cc/600?u=${p.id}`}) center/cover`,
+                  border: 'none', cursor: 'pointer', padding: 0,
+                }}
+              />
+              <button
+                onClick={() => setDetailPlayerId(p.id)}
+                style={{
+                  flex: 1, minWidth: 0, background: 'transparent', border: 'none',
+                  cursor: 'pointer', textAlign: 'left', padding: 0,
+                }}
+              >
                 <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontWeight: 500 }}>{p.name}</div>
                 <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>
                   {p.username ? `@${p.username}` : ''}{p.username && p.city ? ' · ' : ''}{p.city || ''}
                 </div>
-              </div>
+              </button>
               <button onClick={async () => {
                 if (addedIds.has(p.id)) return;
                 setAddedIds(prev => new Set([...prev, p.id]));
@@ -921,20 +1141,13 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [matchId, user?.id, isFake]);
+  }, [matchId, user?.id]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+    if (!matchId || !user) return;
     const text = input.trim();
     setInput('');
-
-    if (isFake || !matchId || !user) {
-      // Mode faux : update local uniquement
-      const newMsg = { from: 'me', text: { fr: text, en: text, he: text }, time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
-      setMessages(prev => [...prev, newMsg]);
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-      return;
-    }
 
     await supabase.from('messages').insert({ match_id: matchId, sender_id: user.id, content: text });
     // Le realtime ajoutera le message
@@ -1196,11 +1409,76 @@ function MatchesScreen({ t, lang, level, dark }) {
   );
 }
 
+// ─── Likes Received Sheet ────────────────────────────────────────────────────
+function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
+  const [likes, setLikes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const rtl = lang === 'he';
+  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ink   = dark ? COURT.darkText  : COURT.ink;
+  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const card  = dark ? COURT.darkCard  : COURT.cream;
+  const border= dark ? COURT.darkBorder: `${COURT.green}30`;
+
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('swipes')
+        .select('swiper:swiper_id(id, name, photo_url, level), created_at')
+        .eq('target_id', userId)
+        .eq('direction', 'right')
+        .order('created_at', { ascending: false })
+        .limit(40);
+      setLikes((data || []).map(r => r.swiper).filter(Boolean));
+      setLoading(false);
+    })();
+  }, [userId]);
+
+  return (
+    <BottomSheet onClose={onClose} title={t.likesReceived || 'Likes reçus'} dark={dark}>
+      <div style={{ padding: '8px 20px 24px', minHeight: 160 }}>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>…</div>
+        )}
+        {!loading && likes.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>💚</div>
+            <p style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 17, color: ink, margin: 0 }}>{t.noLikesYet || 'Aucun like pour l\'instant'}</p>
+          </div>
+        )}
+        {likes.map((p, i) => (
+          <div
+            key={p.id}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: `0.5px solid ${border}`, animation: `cardIn 0.3s ease ${i * 0.04}s both`, cursor: onOpenDetail ? 'pointer' : 'default' }}
+            onClick={() => onOpenDetail?.(p.id)}
+          >
+            <div style={{ width: 44, height: 44, borderRadius: 22, flexShrink: 0, background: `url(${p.photo_url || `https://i.pravatar.cc/600?u=${p.id}`}) center/cover`, border: `1.5px solid ${COURT.green}40` }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>{p.name || '—'}</div>
+              {p.level != null && (
+                <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
+              )}
+            </div>
+            <div style={{ color: COURT.green, fontSize: 18 }}>💚</div>
+          </div>
+        ))}
+      </div>
+    </BottomSheet>
+  );
+}
+
 // ─── Profile Screen ──────────────────────────────────────────────────────────
-function ProfileScreen({ t }) {
-  const { profile, signOut }                         = useAuth();
+function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail }) {
+  const { user, profile, signOut, saveProfile }      = useAuth();
   const { lang, dark, level, confidence, toggleLang, toggleDark } = usePrefs();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading]   = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [showPartnerPrefs, setShowPartnerPrefs] = useState(false);
+  const [showLikes, setShowLikes] = useState(false);
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
@@ -1214,6 +1492,81 @@ function ProfileScreen({ t }) {
   const userCity   = profile?.region   || profile?.city || '';
   const userPhoto  = profile?.photo_url || '';
   const userMatches= profile?.matches_played ?? 0;
+
+  // ─── Upload photo de profil ──────────────────────────────────────────────
+  // Sync à la fois `profile.photo_url` (legacy / avatar) et `profile_photos` (galerie
+  // Chantier 2). La photo devient automatiquement la photo "primary" de la galerie.
+  const handlePhotoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadError(null);
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setUploadError('Format invalide (JPEG, PNG ou WebP)');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image trop lourde (max 5 Mo)');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // 1. Compression Canvas → ~500-700 KB
+      const compressed = await compressImage(file);
+      const ext = 'jpg'; // compressImage produit toujours du JPEG
+      const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const path = `photos/${user.id}/${stamp}.${ext}`;
+
+      // 2. Upload Supabase Storage
+      const { error: upErr } = await supabase.storage
+        .from('profile-photos')
+        .upload(path, compressed, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: false,
+        });
+      if (upErr) throw upErr;
+
+      // 3. Récupère l'URL publique
+      const { data: pub } = supabase.storage.from('profile-photos').getPublicUrl(path);
+      const url = pub?.publicUrl;
+      if (!url) throw new Error('URL publique introuvable');
+
+      // 4. MAJ du champ legacy `photo_url` (utilisé partout pour l'avatar simple)
+      const { error: saveErr } = await saveProfile({ photo_url: url });
+      if (saveErr) throw saveErr;
+
+      // 5. Insère dans la galerie `profile_photos` en photo primary
+      //    (la trigger SQL Chantier 2 enlève le flag primary des autres photos)
+      try {
+        // Démarque toutes les autres en non-primary d'abord
+        await supabase
+          .from('profile_photos')
+          .update({ is_primary: false })
+          .eq('user_id', user.id);
+        // Insère la nouvelle en primary, en première position
+        await supabase
+          .from('profile_photos')
+          .insert({
+            user_id: user.id,
+            url,
+            storage_path: path,
+            is_primary: true,
+            display_order: 0,
+          });
+      } catch (galleryErr) {
+        // Erreur galerie non bloquante : l'avatar fonctionne quand même
+        console.warn('[gallery sync] non bloquant:', galleryErr);
+      }
+    } catch (err) {
+      console.error('[upload photo]', err);
+      setUploadError(err.message || 'Échec de l\'upload');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   function SettingRow({ icon, label, right, onClick }) {
     return (
@@ -1250,7 +1603,50 @@ function ProfileScreen({ t }) {
           </div>
         </div>
         <div style={{ padding: '0 22px 22px', marginTop: -36, position: 'relative' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 36, background: `url(${userPhoto}) center/cover`, border: `2.5px solid ${bg}`, boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }} />
+          {/* Avatar tappable pour changer la photo */}
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <div
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              style={{
+                width: 72, height: 72, borderRadius: 36,
+                background: userPhoto ? `url(${userPhoto}) center/cover` : `${COURT.green}30`,
+                border: `2.5px solid ${bg}`, boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                cursor: uploading ? 'wait' : 'pointer',
+                opacity: uploading ? 0.6 : 1,
+                transition: 'opacity 0.2s',
+              }}
+            />
+            {/* Petit badge 📷 sur le coin */}
+            <button
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              disabled={uploading}
+              style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 28, height: 28, borderRadius: 14,
+                background: COURT.green, color: COURT.cream,
+                border: `2px solid ${bg}`, cursor: uploading ? 'wait' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, lineHeight: 1, padding: 0,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+              }}
+              aria-label={t.changePhoto || 'Changer la photo'}
+            >
+              {uploading ? '…' : '📷'}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoSelect}
+              style={{ display: 'none' }}
+            />
+          </div>
+          {uploadError && (
+            <div style={{
+              marginTop: 6, fontFamily: ff_italic, fontStyle: 'italic',
+              fontSize: 11, color: COURT.purple,
+            }}>{uploadError}</div>
+          )}
           <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', marginTop: 10 }}>{userName}</div>
           <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginBottom: 14 }}>{userCity} · 2026</div>
           <Ornament width={50} color={COURT.gold} />
@@ -1271,6 +1667,9 @@ function ProfileScreen({ t }) {
 
       <div style={{ padding: '24px 24px 0' }}>
         <SectionHeading>{t.settings}</SectionHeading>
+        <SettingRow icon="✏️" label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'} onClick={() => setShowEditProfile(true)} />
+        <SettingRow icon="💚" label={t.likesReceived || 'Likes reçus'} onClick={() => setShowLikes(true)} />
+        <SettingRow icon="🎯" label={t.partnerPrefsTitle || 'Le partenaire idéal'} onClick={() => setShowPartnerPrefs(true)} />
         <SettingRow icon="🌍" label={lang === 'fr' ? '🇫🇷 Français' : lang === 'en' ? '🇬🇧 English' : '🇮🇱 עברית'} onClick={toggleLang} />
         <SettingRow
           icon={dark ? '☀️' : '🌙'}
@@ -1294,7 +1693,183 @@ function ProfileScreen({ t }) {
           {lang === 'fr' ? 'Se déconnecter' : lang === 'he' ? 'התנתק' : 'Sign out'}
         </button>
       </div>
+
+      {/* BottomSheet : Likes reçus */}
+      {showLikes && (
+        <LikesReceivedSheet
+          t={t} lang={lang} dark={dark} userId={user?.id}
+          onClose={() => setShowLikes(false)}
+          onOpenDetail={onOpenDetail}
+        />
+      )}
+
+      {/* BottomSheet : Le partenaire idéal (partner_prefs) */}
+      {showPartnerPrefs && (
+        <PartnerPrefsSheet
+          t={t} lang={lang} dark={dark}
+          initial={profile?.partner_prefs || {}}
+          onSave={async (prefs) => {
+            await saveProfile({ partner_prefs: prefs });
+            setShowPartnerPrefs(false);
+          }}
+          onClose={() => setShowPartnerPrefs(false)}
+        />
+      )}
     </div>
+  );
+}
+
+// ─── PartnerPrefs Sheet (Chantier 4) ─────────────────────────────────────────
+function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
+  const rtl   = lang === 'he';
+  const ink   = dark ? COURT.darkText : COURT.ink;
+  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const [prefs, setPrefs] = useState({
+    hand:   initial.hand   || 'any',
+    side:   initial.side   || 'any',
+    style:  initial.style  || 'any',
+    region: initial.region || 'any',
+    levelMin: initial.levelMin ?? 1,
+    levelMax: initial.levelMax ?? 7,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const ChipRow = ({ label, value, options, onChange }) => (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{
+        fontFamily: 'Inter', fontSize: 9, color: stone,
+        letterSpacing: '0.22em', textTransform: 'uppercase',
+        marginBottom: 8, fontWeight: 600,
+      }}>{label}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {options.map(opt => (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            style={{
+              padding: '7px 12px',
+              background: value === opt.value ? COURT.green : 'transparent',
+              color: value === opt.value ? COURT.cream : ink,
+              border: `0.5px solid ${value === opt.value ? COURT.green : (dark ? COURT.darkBorder : `${COURT.green}50`)}`,
+              borderRadius: 999,
+              fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 13, cursor: 'pointer',
+              transition: 'all 0.18s',
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const submit = async () => {
+    setSaving(true);
+    await onSave(prefs);
+    setSaving(false);
+  };
+
+  return (
+    <BottomSheet onClose={onClose} title={t.partnerPrefsTitle || 'Le partenaire idéal'} dark={dark}>
+      <div style={{ padding: '8px 20px 20px' }}>
+        <p style={{
+          fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+          fontSize: 13, color: stone, marginTop: 0, marginBottom: 18,
+          textAlign: 'center',
+        }}>
+          {t.partnerPrefsHint || 'Décris qui tu cherches comme partenaire'}
+        </p>
+
+        <ChipRow
+          label={t.hand || 'Main'} value={prefs.hand}
+          onChange={(v) => setPrefs(p => ({ ...p, hand: v }))}
+          options={[
+            { value: 'any',   label: t.anyHand   || t.anySide || 'Indifférent' },
+            { value: 'right', label: t.rightHand || 'Droitier' },
+            { value: 'left',  label: t.leftHand  || 'Gaucher' },
+          ]}
+        />
+
+        <ChipRow
+          label={t.side || 'Côté'} value={prefs.side}
+          onChange={(v) => setPrefs(p => ({ ...p, side: v }))}
+          options={[
+            { value: 'any',      label: t.anySide || 'Indifférent' },
+            { value: 'forehand', label: t.forehand || 'Drive' },
+            { value: 'backhand', label: t.backhand || 'Revers' },
+          ]}
+        />
+
+        <ChipRow
+          label={t.playerStyle || 'Style'} value={prefs.style}
+          onChange={(v) => setPrefs(p => ({ ...p, style: v }))}
+          options={[
+            { value: 'any',        label: t.anyStyle  || 'Indifférent' },
+            { value: 'aggressive', label: t.aggressive || 'Offensif' },
+            { value: 'defensive',  label: t.defensive  || 'Défensif' },
+            { value: 'all-court',  label: t.allcourt   || 'Polyvalent' },
+          ]}
+        />
+
+        <ChipRow
+          label={t.region || 'Région'} value={prefs.region}
+          onChange={(v) => setPrefs(p => ({ ...p, region: v }))}
+          options={[
+            { value: 'any', label: t.anySide || 'Indifférent' },
+            { value: 'Centre', label: 'Centre' },
+            { value: 'Nord',   label: 'Nord' },
+            { value: 'Sud',    label: 'Sud' },
+            { value: 'Eilat',  label: 'Eilat' },
+          ]}
+        />
+
+        {/* Plage de niveau */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{
+            fontFamily: 'Inter', fontSize: 9, color: stone,
+            letterSpacing: '0.22em', textTransform: 'uppercase',
+            marginBottom: 8, fontWeight: 600,
+          }}>{t.levelRange || 'Plage de niveau'} : {prefs.levelMin}–{prefs.levelMax}</div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="range" min="1" max="7" step="0.5"
+              value={prefs.levelMin}
+              onChange={(e) => {
+                const v = parseFloat(e.target.value);
+                setPrefs(p => ({ ...p, levelMin: v, levelMax: Math.max(v, p.levelMax) }));
+              }}
+              style={{ flex: 1 }}
+            />
+            <input
+              type="range" min="1" max="7" step="0.5"
+              value={prefs.levelMax}
+              onChange={(e) => {
+                const v = parseFloat(e.target.value);
+                setPrefs(p => ({ ...p, levelMax: v, levelMin: Math.min(v, p.levelMin) }));
+              }}
+              style={{ flex: 1 }}
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={submit}
+          disabled={saving}
+          style={{
+            width: '100%', marginTop: 16, padding: '14px',
+            background: COURT.green, color: COURT.cream,
+            border: 'none', borderRadius: 10,
+            fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 15, cursor: saving ? 'wait' : 'pointer',
+            opacity: saving ? 0.6 : 1,
+          }}
+        >
+          {saving ? '…' : (t.applyFilters || 'Appliquer')}
+        </button>
+      </div>
+    </BottomSheet>
   );
 }
 
@@ -1342,10 +1917,45 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
 function LiveScoreTracker({ t, lang, onClose, dark }) {
   const [score,   setScore]   = useState({ me: 0, them: 0, sets: [] });
   const [serving, setServing] = useState('me');
+  const [stage,   setStage]   = useState('playing'); // 'playing' | 'submitting'
+  const [selectedOpponentId, setSelectedOpponentId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [scoreMode, setScoreMode] = useState('live'); // 'live' | 'text'
+  const [scoreText, setScoreText] = useState('');
+  const [scoreTextError, setScoreTextError] = useState(null);
+  const { matches: userMatches } = useUserMatches();
+  const { submitResult } = useMatchResults();
+
+  // Parse "6-4 6-3" ou "6-3 3-6 6-2" → tableau de sets
+  const parseScoreText = (txt) => {
+    const parts = txt.trim().split(/\s+/);
+    if (parts.length === 0 || parts.length > 3) return null;
+    const sets = [];
+    for (const p of parts) {
+      const m = p.match(/^(\d+)-(\d+)$/);
+      if (!m) return null;
+      const me = parseInt(m[1]), them = parseInt(m[2]);
+      sets.push({ me, them, winner: me >= them ? 'me' : 'them' });
+    }
+    return sets;
+  };
+
+  const handleApplyTextScore = () => {
+    const sets = parseScoreText(scoreText);
+    if (!sets) { setScoreTextError(t.scoreInvalid || 'Format invalide — ex: 6-4 6-3'); return; }
+    setScore(prev => ({ ...prev, sets, me: 0, them: 0 }));
+    setScoreTextError(null);
+    setScoreText('');
+    setScoreMode('live');
+  };
   const bg    = dark ? COURT.darkCard : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}30`;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
+  const rtl   = lang === 'he';
+  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
 
   const addPoint = (who) => {
     setScore(prev => {
@@ -1358,9 +1968,223 @@ function LiveScoreTracker({ t, lang, onClose, dark }) {
     });
   };
 
+  // Calcul du résultat global à partir des sets joués
+  const setsWonByMe = score.sets.filter(s => s.winner === 'me').length;
+  const setsWonByThem = score.sets.filter(s => s.winner === 'them').length;
+  const myResult = setsWonByMe > setsWonByThem ? 'win'
+    : setsWonByMe < setsWonByThem ? 'loss' : 'draw';
+  const scoreString = score.sets.map(s => `${s.me}-${s.them}`).join(' ');
+
+  const handleEndMatch = () => {
+    if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
+    if (score.sets.length === 0) {
+      // Aucun set joué → ferme simplement
+      onClose();
+      return;
+    }
+    setStage('submitting');
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedOpponentId) {
+      setSubmitError(t.selectOpponent || 'Please select an opponent');
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(null);
+    const { success, error } = await submitResult({
+      opponentId: selectedOpponentId,
+      result: myResult,
+      score: scoreString,
+    });
+    setSubmitting(false);
+    if (success) {
+      if (navigator.vibrate) navigator.vibrate([10, 5, 10]);
+      onClose();
+    } else {
+      setSubmitError(error);
+    }
+  };
+
+  // ─── Vue "Soumission du score" ───
+  if (stage === 'submitting') {
+    return (
+      <BottomSheet onClose={onClose} title={t.submitScore || 'Soumettre le score'} dark={dark}>
+        <div style={{ padding: '0 24px 16px' }}>
+          {/* Récap du score */}
+          <div style={{
+            background: bg, border: `0.5px solid ${border}`, borderRadius: 14,
+            padding: 16, textAlign: 'center', marginBottom: 16,
+          }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8 }}>
+              {t.finalScore || 'Score final'}
+            </div>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 30, color: COURT.green, lineHeight: 1.2 }}>
+              {scoreString || '—'}
+            </div>
+            <div style={{
+              marginTop: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 14,
+              color: myResult === 'win' ? COURT.green : (myResult === 'loss' ? COURT.purple : COURT.gold),
+            }}>
+              {myResult === 'win' ? (t.youWon || 'Victoire') : (myResult === 'loss' ? (t.youLost || 'Défaite') : (t.draw || 'Égalité'))}
+            </div>
+          </div>
+
+          {/* Sélection de l'adversaire */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+              {t.selectOpponent || "Adversaire"}
+            </div>
+            {(!userMatches || userMatches.length === 0) ? (
+              <div style={{
+                padding: '14px 16px', background: bg, border: `0.5px dashed ${border}`,
+                borderRadius: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 13, color: stone, textAlign: 'center',
+              }}>
+                {t.noMatchesForSubmit || "Vous n'avez aucun partenaire de match. Trouvez-en un d'abord."}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 220, overflowY: 'auto' }}>
+                {userMatches.map(m => {
+                  const isSelected = selectedOpponentId === m.player.id;
+                  return (
+                    <button
+                      key={m.matchId}
+                      onClick={() => setSelectedOpponentId(m.player.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '10px 12px',
+                        background: isSelected ? `${COURT.green}15` : bg,
+                        border: `0.5px solid ${isSelected ? COURT.green : border}`,
+                        borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                      }}
+                    >
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 18, flexShrink: 0,
+                        background: `url(${m.player.photo}) center/cover`,
+                        border: isSelected ? `1.5px solid ${COURT.green}` : `0.5px solid ${border}`,
+                      }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>
+                          {m.player.name}
+                        </div>
+                      </div>
+                      {isSelected && <div style={{ color: COURT.green, fontSize: 20 }}>✓</div>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Erreur */}
+          {submitError && (
+            <div style={{
+              padding: '10px 12px', marginBottom: 12,
+              background: `${COURT.purple}15`,
+              border: `0.5px solid ${COURT.purple}60`,
+              borderRadius: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 12, color: COURT.purple,
+            }}>
+              {submitError}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+            <button
+              onClick={() => setStage('playing')}
+              disabled={submitting}
+              style={{
+                flex: 1, padding: '14px', background: 'transparent',
+                color: stone, border: `0.5px solid ${border}`,
+                borderRadius: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 14, cursor: submitting ? 'wait' : 'pointer',
+              }}
+            >
+              ← {t.back || 'Retour'}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !selectedOpponentId}
+              style={{
+                flex: 2, padding: '14px',
+                background: selectedOpponentId ? COURT.green : `${COURT.green}50`,
+                color: COURT.cream, border: 'none', borderRadius: 10,
+                fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 15, cursor: (submitting || !selectedOpponentId) ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <PadelBall size={14} shadow={false} />
+              {submitting ? '…' : (t.submitForConfirmation || 'Envoyer pour confirmation')}
+            </button>
+          </div>
+
+          <div style={{
+            marginTop: 12, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 11, color: stone, textAlign: 'center',
+          }}>
+            {t.submitHint || 'Votre adversaire devra confirmer le score sous 72h.'}
+          </div>
+        </div>
+      </BottomSheet>
+    );
+  }
+
   return (
     <BottomSheet onClose={onClose} title={t.scoreTracker} dark={dark}>
       <div style={{ padding: '0 24px 16px' }}>
+
+        {/* Mode tabs: Live | Texte */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {[{ k: 'live', label: t.liveMode || 'En direct' }, { k: 'text', label: t.textMode || 'Par texte' }].map(m => (
+            <button key={m.k} onClick={() => { setScoreMode(m.k); setScoreTextError(null); }} style={{
+              flex: 1, padding: '9px', borderRadius: 8,
+              background: scoreMode === m.k ? COURT.green : (dark ? COURT.darkCard : COURT.creamDark),
+              color: scoreMode === m.k ? COURT.cream : stone,
+              border: `0.5px solid ${scoreMode === m.k ? COURT.green : border}`,
+              fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}>{m.label}</button>
+          ))}
+        </div>
+
+        {/* Text mode: saisie directe "6-4 6-3" */}
+        {scoreMode === 'text' && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 6 }}>
+              {t.scoreInputHint || 'Séparer les sets par un espace'}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={scoreText}
+                onChange={e => { setScoreText(e.target.value); setScoreTextError(null); }}
+                onKeyDown={e => e.key === 'Enter' && handleApplyTextScore()}
+                placeholder={t.scoreInputPlaceholder || 'Ex: 6-4 6-3'}
+                style={{
+                  flex: 1, padding: '11px 14px', borderRadius: 10,
+                  background: dark ? COURT.darkCard : COURT.cream,
+                  border: `0.5px solid ${scoreTextError ? COURT.red : border}`,
+                  fontFamily: 'Playfair Display, serif', fontSize: 18,
+                  color: ink, outline: 'none', letterSpacing: '0.04em',
+                }}
+              />
+              <button onClick={handleApplyTextScore} style={{
+                padding: '11px 16px', borderRadius: 10, background: COURT.green, color: COURT.cream,
+                border: 'none', fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>✓ Ok</button>
+            </div>
+            {scoreTextError && (
+              <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12, color: COURT.red, marginTop: 5 }}>
+                {scoreTextError}
+              </div>
+            )}
+          </div>
+        )}
+
         {score.sets.length > 0 && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
             {score.sets.map((s, i) => (
@@ -1392,7 +2216,7 @@ function LiveScoreTracker({ t, lang, onClose, dark }) {
             }}>🎾 {s.label}</button>
           ))}
         </div>
-        <button onClick={() => { if (navigator.vibrate) navigator.vibrate([20, 10, 20]); onClose(); }} style={{
+        <button onClick={handleEndMatch} style={{
           width: '100%', padding: '14px', background: COURT.purple, color: COURT.cream,
           border: 'none', borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
         }}>{t.endMatch}</button>
@@ -1410,6 +2234,13 @@ export default function MainApp() {
   const [tab, setTab] = useState('home');
   const [showNotifs, setShowNotifs] = useState(false);
   const [showScore,  setShowScore]  = useState(false);
+  const [showPending, setShowPending] = useState(false);
+  const [detailPlayerId, setDetailPlayerId] = useState(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+
+  // Pending match results (anti-fraud system)
+  const { pendingToConfirm } = useMatchResults();
+  const pendingCount = pendingToConfirm.length;
 
   // Sync le niveau depuis la DB vers localStorage (ex: connexion depuis un nouvel appareil)
   useEffect(() => {
@@ -1428,11 +2259,11 @@ export default function MainApp() {
   const chatUnread = 0;
 
   const screens = {
-    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} />,
-    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} />,
+    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} />,
+    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} />,
-    profile: <ProfileScreen t={t} />,
+    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} />,
   };
 
   const bg    = darkMode ? COURT.darkBg : COURT.cream;
@@ -1441,6 +2272,22 @@ export default function MainApp() {
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       {screens[tab]}
+
+      {/* Bouton scores à confirmer (anti-fraude) */}
+      {pendingCount > 0 && (
+        <button onClick={() => setShowPending(true)} style={{
+          position: 'absolute', top: 14, right: 60, zIndex: 50,
+          height: 36, padding: '0 12px', borderRadius: 18,
+          background: COURT.green, color: COURT.cream,
+          border: `0.5px solid ${COURT.gold}`, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12,
+          boxShadow: '0 2px 8px rgba(15,61,41,0.25)', animation: 'notifPop 0.4s ease',
+        }}>
+          <PadelBall size={14} shadow={false} />
+          <span>{pendingCount} {pendingCount > 1 ? 'scores' : 'score'}</span>
+        </button>
+      )}
 
       {/* Cloche de notifications */}
       <button onClick={() => setShowNotifs(true)} style={{
@@ -1487,6 +2334,28 @@ export default function MainApp() {
 
       {showScore && (
         <LiveScoreTracker t={t} lang={lang} dark={darkMode} onClose={() => setShowScore(false)} />
+      )}
+
+      {detailPlayerId && (
+        <DetailedProfileModal
+          playerId={detailPlayerId}
+          onClose={() => setDetailPlayerId(null)}
+          dark={darkMode}
+        />
+      )}
+
+      {showEditProfile && (
+        <ProfileEditScreen
+          onClose={() => setShowEditProfile(false)}
+          dark={darkMode}
+        />
+      )}
+
+      {showPending && (
+        <PendingMatchesPanel
+          t={t} lang={lang} dark={darkMode}
+          onClose={() => setShowPending(false)}
+        />
       )}
     </div>
   );

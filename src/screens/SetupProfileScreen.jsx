@@ -30,6 +30,7 @@ const L = {
     taken:       'Ce pseudo est déjà pris.',
     tooShort:    'Minimum 3 caractères.',
     required:    'Remplis tous les champs.',
+    photoRequired: 'Ajoutez une photo pour continuer',
   },
   en: {
     title:       'My profile',
@@ -55,6 +56,7 @@ const L = {
     taken:       'This username is already taken.',
     tooShort:    'Minimum 3 characters.',
     required:    'Please fill in all fields.',
+    photoRequired: 'Add a photo to continue',
   },
   he: {
     title:       'הפרופיל שלי',
@@ -80,6 +82,7 @@ const L = {
     taken:       'שם המשתמש הזה תפוס.',
     tooShort:    'מינימום 3 תווים.',
     required:    'אנא מלא את כל השדות.',
+    photoRequired: 'הוסף תמונה כדי להמשיך',
   },
 }
 
@@ -273,7 +276,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     onDone()
   }
 
-  const canSubmit = username.length >= 3 && fullName.trim() && !usernameError && !submitting
+  const canSubmit = username.length >= 3 && fullName.trim() && !!avatar && !usernameError && !submitting
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
@@ -333,8 +336,16 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               fontFamily: 'Inter', fontSize: 11, color: COURT.green, textDecoration: 'underline',
             }}
           >
-            {t.changePhoto}
+            {avatar ? t.changePhoto : t.photo}
           </button>
+          {!avatar && (
+            <div style={{
+              marginTop: 4, fontFamily: 'Inter', fontSize: 11,
+              color: COURT.purple, fontStyle: 'italic',
+            }}>
+              {L[lang]?.photoRequired || 'Ajoutez une photo'}
+            </div>
+          )}
           <input
             ref={fileRef} type="file" accept="image/*"
             style={{ display: 'none' }}
