@@ -19,7 +19,13 @@
 -- ============================================================================
 
 
--- ── 0. Rendre username nullable pour les profils démo (pas de auth.users) ──
+-- ── 0. Préparer la table pour les profils démo ────────────────────────────
+-- Les démos n'ont pas de auth.users associé :
+--   a) Supprimer la FK profiles.id → auth.users (pas nécessaire pour le fonctionnement)
+--   b) Rendre username nullable (pas de compte Google/email)
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+
 ALTER TABLE public.profiles
   ALTER COLUMN username DROP NOT NULL;
 
