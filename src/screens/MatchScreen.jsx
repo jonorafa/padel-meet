@@ -593,6 +593,8 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
   const [decision,    setDecision]  = useState(null);
   const [drag,        setDrag]      = useState({ x: 0, y: 0, active: false });
   const [lastCard,    setLastCard]  = useState(null);
+  const [lastDir,     setLastDir]   = useState(null); // direction du dernier swipe
+  const stackInitialized = useRef(false);             // évite le flash blanc après swipe
   const startRef = useRef({ x: 0, y: 0 });
   const rtl   = lang === 'he';
   const bg    = dark ? COURT.darkBg : COURT.cream;
@@ -608,12 +610,23 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
   const matchedRef = useRef(matched)
   matchedRef.current = matched // toujours à jour, sans être une dépendance
 
-  // Charge le stack dès que les joueurs ou les filtres changent
+  // Charge le stack dès que les joueurs ou les filtres changent.
+  // Premier chargement → skeleton 700ms. Mise à jour (après swipe/refetch)
+  // → transition directe sans repasser par null pour éviter le flash blanc.
   useEffect(() => {
-    if (playersLoading) { setStack(null); return; }
-    setStack(null);
-    const timer = setTimeout(() => setStack(matchedRef.current), 700);
-    return () => clearTimeout(timer);
+    if (playersLoading) {
+      if (!stackInitialized.current) setStack(null);
+      return;
+    }
+    if (!stackInitialized.current) {
+      // Premier chargement : on attend 700ms (skeleton → carte)
+      stackInitialized.current = true;
+      const timer = setTimeout(() => setStack(matchedRef.current), 700);
+      return () => clearTimeout(timer);
+    } else {
+      // Mise à jour silencieuse : pas de skeleton intermédiaire
+      setStack(matchedRef.current);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playersLoading, matchedKey]);
 
@@ -629,6 +642,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
     if (!top) return;
     if (navigator.vibrate) navigator.vibrate(dir === 'right' ? [10, 5, 10] : [8]);
     setLastCard(top);
+    setLastDir(dir);
     setDecision({ dir, id: top.id });
 
     // Retire la carte après l'animation (n'attend pas le réseau)
@@ -649,35 +663,41 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
     }, 380);
   }, [top, onMatch, recordSwipe, refetch]);
 
+  // Undo disponible UNIQUEMENT après une croix (left) — jamais après un like
   const undo = () => {
-    if (!lastCard) return;
+    if (!lastCard || lastDir !== 'left') return;
     if (navigator.vibrate) navigator.vibrate(6);
     setStack(s => [lastCard, ...(s || [])]);
     setLastCard(null);
+    setLastDir(null);
   };
 
   const onDown = (e) => {
-    // Ne pas hijacker le tap quand l'utilisateur scrolle/clique à l'intérieur
-    // de la zone de contenu scrollable (chips, bio, recherche...).
-    // Le swipe ne s'active que si on commence sur la photo (haut de la carte).
-    if (e.target?.closest?.('.card-scroll')) {
-      // Reset au cas où — laisse le navigateur scroller la zone interne
-      startRef.current = { x: 0, y: 0, t: 0, ignore: true };
-      return;
-    }
-    startRef.current = { x: e.clientX, y: e.clientY, t: Date.now(), ignore: false };
+    // On commence le suivi depuis n'importe où sur la carte.
+    // La capture du pointer n'est faite qu'une fois le geste horizontal confirmé
+    // (dans onMove), ce qui permet au navigateur de gérer le scroll vertical
+    // dans la zone .card-scroll tant que la direction n'est pas décidée.
+    startRef.current = {
+      x: e.clientX, y: e.clientY, t: Date.now(),
+      ignore: false, captured: false,
+      pointerId: e.pointerId, target: e.currentTarget,
+    };
     setDrag({ x: 0, y: 0, active: true });
-    e.currentTarget.setPointerCapture?.(e.pointerId);
   };
   const onMove = (e) => {
     if (!drag.active || startRef.current.ignore) return;
     const dx = e.clientX - startRef.current.x;
     const dy = e.clientY - startRef.current.y;
-    // Si le geste est nettement vertical, on laisse tomber (ne bloque pas le scroll)
+    // Geste nettement vertical → scroll natif, abandon du swipe
     if (Math.abs(dy) > Math.abs(dx) * 1.5 && Math.abs(dy) > 12) {
       setDrag({ x: 0, y: 0, active: false });
       startRef.current.ignore = true;
       return;
+    }
+    // Geste horizontal confirmé → capturer le pointer pour swipe fluide
+    if (Math.abs(dx) > 8 && !startRef.current.captured) {
+      try { startRef.current.target?.setPointerCapture?.(startRef.current.pointerId); } catch (_) {}
+      startRef.current.captured = true;
     }
     setDrag({ x: dx, y: dy, active: true });
   };
@@ -701,8 +721,8 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
   };
 
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 12px' }}>
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(56px, calc(env(safe-area-inset-top, 0px) + 16px))', paddingBottom: 100, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 12px' }}>
         <div>
           <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
@@ -722,7 +742,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={lang === 'he' ? 'חפש...' : lang === 'en' ? 'Search...' : 'Chercher...'}
               style={{
-                paddingLeft: 28, paddingRight: 10, height: 36, width: 118,
+                paddingLeft: 28, paddingRight: 10, height: 32, width: 148,
                 background: dark ? COURT.darkCard : COURT.cream,
                 border: `0.5px solid ${searchQuery ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
                 borderRadius: 999,
@@ -792,7 +812,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
           display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center',
           pointerEvents: 'none', // les boutons gèrent leurs clics individuellement
         }}>
-          {lastCard && (
+          {lastCard && lastDir === 'left' && (
             <div style={{ pointerEvents: 'auto' }}>
               <CircBtn onClick={undo} color={COURT.gold} dark={dark}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
