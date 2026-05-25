@@ -5,17 +5,20 @@ import { useAuth } from '../context/AuthContext'
 /**
  * Hook pour gérer la soumission et confirmation des scores de match
  * Système anti-fraude : validation à 2 joueurs requise
+ * Système 3-tentatives : après 3 rejets, le match est verrouillé définitivement
  *
  * Retourne :
  *   - pendingResults : liste des scores en attente (submitter OU opponent)
+ *   - matchScoreStatus(matchId) : { attempts, locked, remaining } pour un match
  *   - submitResult(opponentId, result, score) : soumettre un nouveau score
  *   - confirmResult(pendingId) : confirmer un score reçu
- *   - rejectResult(pendingId) : rejeter un score reçu
+ *   - rejectResult(pendingId) : rejeter → { attempts, remaining, locked }
  *   - loading, error : états de chargement
  */
 export function useMatchResults() {
   const { user } = useAuth()
   const [pendingResults, setPendingResults] = useState([])
+  const [matchStatuses,  setMatchStatuses]  = useState({}) // matchId → { attempts, locked }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -49,19 +52,29 @@ export function useMatchResults() {
         playedAt: new Date(p.played_at),
         expiresAt: new Date(p.expires_at),
         createdAt: new Date(p.created_at),
-        // Le user actuel est-il le soumetteur ou l'adversaire ?
         isSubmitter: p.submitter_id === user.id,
-        // Résultat du point de vue du soumetteur
         submitterResult: p.submitter_result,
-        // Résultat du point de vue du user actuel
         myResult: p.submitter_id === user.id
           ? p.submitter_result
           : (p.submitter_result === 'win' ? 'loss' : p.submitter_result === 'loss' ? 'win' : 'draw'),
-        // L'autre joueur
         otherPlayer: p.submitter_id === user.id ? p.opponent : p.submitter,
       }))
 
       setPendingResults(transformed)
+
+      // Charge aussi le statut (score_attempts, score_locked) des matchs concernés
+      const matchIds = [...new Set((data || []).map(p => p.match_id).filter(Boolean))]
+      if (matchIds.length > 0) {
+        const { data: statuses } = await supabase
+          .from('matches')
+          .select('id, score_attempts, score_locked')
+          .in('id', matchIds)
+        if (statuses) {
+          const map = {}
+          statuses.forEach(m => { map[m.id] = { attempts: m.score_attempts, locked: m.score_locked } })
+          setMatchStatuses(map)
+        }
+      }
     } catch (err) {
       console.error('Error fetching pending results:', err)
       setError(err.message)
@@ -184,10 +197,28 @@ export function useMatchResults() {
   const pendingToConfirm = pendingResults.filter(p => !p.isSubmitter)
   const pendingAwaitingConfirmation = pendingResults.filter(p => p.isSubmitter)
 
+  // Retourne le statut score d'un match (attempts, locked, remaining)
+  const matchScoreStatus = useCallback(async (matchId) => {
+    if (matchStatuses[matchId]) return matchStatuses[matchId]
+    const { data } = await supabase
+      .from('matches')
+      .select('score_attempts, score_locked')
+      .eq('id', matchId)
+      .maybeSingle()
+    if (data) {
+      const status = { attempts: data.score_attempts, locked: data.score_locked }
+      setMatchStatuses(prev => ({ ...prev, [matchId]: status }))
+      return status
+    }
+    return { attempts: 0, locked: false }
+  }, [matchStatuses])
+
   return {
     pendingResults,
-    pendingToConfirm,          // Scores que je dois confirmer/rejeter
-    pendingAwaitingConfirmation, // Scores que j'ai soumis, en attente
+    pendingToConfirm,
+    pendingAwaitingConfirmation,
+    matchStatuses,             // { [matchId]: { attempts, locked } }
+    matchScoreStatus,          // fn async(matchId) → { attempts, locked }
     loading,
     error,
     submitResult,

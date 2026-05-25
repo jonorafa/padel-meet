@@ -1143,9 +1143,16 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   const ink    = dark ? COURT.darkText  : COURT.ink;
   const stone  = dark ? COURT.darkMuted : COURT.stone;
 
-  const { submitResult, confirmResult, rejectResult, pendingResults } = useMatchResults();
+  const { submitResult, confirmResult, rejectResult, pendingResults, matchStatuses, matchScoreStatus } = useMatchResults();
   // Scores en attente pour ce match précis
   const pendingForMatch = pendingResults.filter(p => p.matchId === matchId);
+  // Statut score pour ce match (tentatives, lock)
+  const scoreStatus = matchStatuses[matchId] || { attempts: 0, locked: false };
+  const scoreLocked  = scoreStatus.locked;
+  const scoreAttempt = scoreStatus.attempts; // nombre de rejets passés
+
+  // Charge le statut au mount
+  useEffect(() => { if (matchId) matchScoreStatus(matchId); }, [matchId]);
 
   // ── Chargement des messages ─────────────────────────────────────────────────
   useEffect(() => {
@@ -1259,32 +1266,67 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   // ── Score card dans le fil ──────────────────────────────────────────────────
   const renderScoreCard = (pending) => {
     if (!pending) return null;
-    const isWin  = pending.myResult === 'win';
-    const color  = isWin ? COURT.green : COURT.purple;
-    const label  = isWin ? (lang === 'en' ? 'Victory' : lang === 'he' ? 'ניצחון' : 'Victoire')
-                         : (lang === 'en' ? 'Defeat'  : lang === 'he' ? 'הפסד'  : 'Défaite');
+    const isWin      = pending.myResult === 'win';
+    const color      = isWin ? COURT.green : COURT.purple;
+    const label      = isWin ? (lang === 'en' ? 'Victory' : lang === 'he' ? 'ניצחון' : 'Victoire')
+                             : (lang === 'en' ? 'Defeat'  : lang === 'he' ? 'הפסד'  : 'Défaite');
+    const attemptNum = scoreAttempt + 1; // tentative en cours (1-based)
+    const remaining  = 3 - scoreAttempt;
     return (
-      <div style={{ margin: '4px 0', background: card, border: `1px solid ${color}40`, borderRadius: 14, padding: '12px 14px', maxWidth: '88%', alignSelf: 'stretch' }}>
-        <div style={{ fontFamily: 'Inter', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6 }}>
-          🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : 'Score à confirmer')}
+      <div style={{ margin: '4px 0', background: card, border: `1px solid ${color}40`, borderRadius: 14, padding: '12px 14px', width: '100%' }}>
+        {/* Header avec numéro de tentative */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={{ fontFamily: 'Inter', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+            🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : 'Score à confirmer')}
+          </div>
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
+            {attemptNum}/3
+          </div>
         </div>
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
+        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
         <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
-          {label} · {pending.isSubmitter ? (lang === 'en' ? 'Awaiting confirmation' : 'En attente de confirmation') : (lang === 'en' ? `${player?.name} requests your confirmation` : `${player?.name} demande votre confirmation`)}
+          {label} · {pending.isSubmitter
+            ? (lang === 'en' ? 'Awaiting confirmation…' : 'En attente de confirmation…')
+            : (lang === 'en' ? `${player?.name} asks you to confirm` : `${player?.name} demande votre confirmation`)}
         </div>
         {!pending.isSubmitter && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => handleConfirm(pending.id)} style={{ flex: 1, padding: '8px', borderRadius: 8, background: COURT.green, border: 'none', color: COURT.cream, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
-              {lang === 'en' ? 'Confirm' : lang === 'he' ? 'אשר' : 'Confirmer'}
-            </button>
-            <button onClick={() => rejectResult(pending.id)} style={{ flex: 1, padding: '8px', borderRadius: 8, background: COURT.purple + '18', border: `0.5px solid ${COURT.purple}`, color: COURT.purple, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
-              {lang === 'en' ? 'Contest' : lang === 'he' ? 'ערער' : 'Contester'}
-            </button>
-          </div>
+          <>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+              <button onClick={() => handleConfirm(pending.id)} style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.green, border: 'none', color: COURT.cream, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
+                {lang === 'en' ? '✓ Confirm' : lang === 'he' ? '✓ אשר' : '✓ Confirmer'}
+              </button>
+              <button onClick={() => rejectResult(pending.id)} style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`, color: COURT.purple, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
+                {lang === 'en' ? '✗ Reject' : lang === 'he' ? '✗ דחה' : '✗ Refuser'}
+              </button>
+            </div>
+            {remaining > 1 && (
+              <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, textAlign: 'center' }}>
+                {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : `${remaining - 1} tentative(s) restante(s) si refus`}
+              </div>
+            )}
+            {remaining === 1 && (
+              <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
+                ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : 'Dernière tentative — refus = match inenregistrable'}
+              </div>
+            )}
+          </>
         )}
       </div>
     );
   };
+
+  // ── Carte "match verrouillé" ────────────────────────────────────────────────
+  const renderLockedCard = () => (
+    <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.purple}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
+      <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
+      <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: COURT.purple, fontStyle: 'italic', marginBottom: 4 }}>
+        {lang === 'en' ? 'Match unrecordable' : 'Match inenregistrable'}
+      </div>
+      <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
+        {lang === 'en' ? '3 consecutive rejections — no score can be submitted for this match.' : '3 désaccords consécutifs — aucun score ne peut être enregistré pour ce match.'}
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: bg, display: 'flex', flexDirection: 'column', zIndex: 100 }}>
@@ -1311,17 +1353,21 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
       <div style={{ display: 'flex', gap: 8, padding: '8px 14px', borderBottom: `0.5px solid ${border}`, background: dark ? '#1a1f1a' : '#F7F4EE', overflowX: 'auto' }}>
         {[
           { key: 'proposal', icon: '📅', label: lang === 'en' ? 'Plan match' : lang === 'he' ? 'הצע משחק' : 'Proposer' },
-          { key: 'score',    icon: '🎾', label: lang === 'en' ? 'Enter score' : lang === 'he' ? 'הזן תוצאה' : 'Score' },
+          { key: 'score',    icon: '🎾', label: lang === 'en' ? 'Enter score' : lang === 'he' ? 'הזן תוצאה' : 'Score', disabled: scoreLocked || pendingForMatch.length > 0 },
           { key: 'eval',     icon: '⭐', label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' },
-        ].map(({ key, icon, label }) => (
-          <button key={key} onClick={() => setSheet(sheet === key ? null : key)} style={{
-            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
-            padding: '6px 12px', borderRadius: 999,
-            background: sheet === key ? COURT.green : 'transparent',
-            border: `0.5px solid ${sheet === key ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
-            color: sheet === key ? COURT.cream : COURT.green,
-            fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
-          }}>
+        ].map(({ key, icon, label, disabled }) => (
+          <button key={key}
+            onClick={() => !disabled && setSheet(sheet === key ? null : key)}
+            disabled={disabled}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+              padding: '6px 12px', borderRadius: 999,
+              background: sheet === key ? COURT.green : 'transparent',
+              border: `0.5px solid ${disabled ? stone : sheet === key ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
+              color: disabled ? stone : sheet === key ? COURT.cream : COURT.green,
+              fontFamily: 'Inter', fontSize: 12, cursor: disabled ? 'default' : 'pointer',
+              opacity: disabled ? 0.45 : 1,
+            }}>
             <span style={{ fontSize: 14 }}>{icon}</span> {label}
           </button>
         ))}
@@ -1417,8 +1463,10 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
 
       {/* ── Fil de messages ────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Carte verrouillée si 3 rejets */}
+        {scoreLocked && renderLockedCard()}
         {/* Cartes score en attente pour ce match */}
-        {pendingForMatch.length > 0 && (
+        {!scoreLocked && pendingForMatch.length > 0 && (
           <div style={{ marginBottom: 4 }}>
             {pendingForMatch.map(p => (
               <div key={p.id}>{renderScoreCard(p)}</div>
