@@ -33,6 +33,17 @@ export function useSwipes() {
     if (error) return { isMatch: false }
     if (direction !== 'right') return { isMatch: false }
 
+    // Si le profil cible est un démo → swipe enregistré mais jamais de match
+    const { data: targetProfile } = await supabase
+      .from('profiles')
+      .select('is_demo')
+      .eq('id', targetId)
+      .maybeSingle()
+
+    if (targetProfile?.is_demo) {
+      return { isMatch: false }
+    }
+
     // Vérifie si l'autre a déjà swipé droite sur nous
     const { data: mutual } = await supabase
       .from('swipes')

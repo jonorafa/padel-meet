@@ -516,84 +516,15 @@ INSERT INTO public.profiles (
  TRUE, NOW() - INTERVAL '15 days');
 
 
--- ── 4. Fonction utilitaire pour remplir l'app du user courant ──────────────
--- Crée des matches + messages + match_history entre l'utilisateur courant
--- et quelques démos, pour voir toutes les UIs remplies.
--- À appeler depuis l'app : supabase.rpc('seed_demo_data_for_me')
+-- ── 4. Fonction utilitaire supprimée ────────────────────────────────────────
+-- seed_demo_data_for_me() a été supprimée car elle créait des matches,
+-- des swipes et des messages fictifs entre vrais utilisateurs et profils démo,
+-- ce qui violait le principe "ghost" des démos.
+-- Les profils démo sont visibles dans la liste Partenaires pour le swipe
+-- mais un like sur un démo ne crée JAMAIS de match ni de conversation.
 -- ─────────────────────────────────────────────────────────────────────────
 
-CREATE OR REPLACE FUNCTION public.seed_demo_data_for_me()
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_user_id UUID := auth.uid();
-  v_demo_ids UUID[] := ARRAY[
-    '11111111-1111-1111-1111-000000000001'::uuid, -- Or Levy
-    '11111111-1111-1111-1111-000000000003'::uuid, -- Sarah Cohen
-    '11111111-1111-1111-1111-000000000006'::uuid, -- David Azoulay
-    '11111111-1111-1111-1111-000000000009'::uuid, -- Noa Benhamou
-    '11111111-1111-1111-1111-000000000014'::uuid  -- Roy Hadad
-  ];
-  v_match_id UUID;
-  v_demo UUID;
-  v_count INT := 0;
-BEGIN
-  IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'not_authenticated';
-  END IF;
-
-  FOREACH v_demo IN ARRAY v_demo_ids LOOP
-    -- Skip si déjà matché
-    IF EXISTS (
-      SELECT 1 FROM matches
-      WHERE (player1_id = v_user_id AND player2_id = v_demo)
-         OR (player1_id = v_demo AND player2_id = v_user_id)
-    ) THEN
-      CONTINUE;
-    END IF;
-
-    -- Crée le match
-    INSERT INTO matches (player1_id, player2_id)
-    VALUES (LEAST(v_user_id, v_demo), GREATEST(v_user_id, v_demo))
-    RETURNING id INTO v_match_id;
-
-    -- Swipes droit dans les 2 sens (pour cohérence)
-    INSERT INTO swipes (swiper_id, target_id, direction)
-    VALUES (v_user_id, v_demo, 'right'),
-           (v_demo, v_user_id, 'right')
-    ON CONFLICT DO NOTHING;
-
-    -- 2 messages démo (un dans chaque sens)
-    INSERT INTO messages (match_id, sender_id, content, created_at) VALUES
-      (v_match_id, v_demo,    'Hey ! Partant pour jouer ?',          NOW() - INTERVAL '2 days'),
-      (v_match_id, v_user_id, 'Salut ! Oui pourquoi pas, dispo WE ?', NOW() - INTERVAL '1 day');
-
-    v_count := v_count + 1;
-  END LOOP;
-
-  -- Quelques match_history (résultats déjà joués)
-  INSERT INTO match_history (player_id, opponent_id, result, score, elo_delta, played_at)
-  VALUES
-    (v_user_id, '11111111-1111-1111-1111-000000000001', 'win',  '6-4 6-3', 12,  NOW() - INTERVAL '15 days'),
-    (v_user_id, '11111111-1111-1111-1111-000000000006', 'loss', '4-6 5-7', -10, NOW() - INTERVAL '10 days'),
-    (v_user_id, '11111111-1111-1111-1111-000000000009', 'win',  '7-5 6-4',  9,  NOW() - INTERVAL '5 days')
-  ON CONFLICT DO NOTHING;
-
-  -- Notification d'évaluation
-  INSERT INTO notifications (user_id, type, from_id, text_fr, text_en, text_he)
-  VALUES (
-    v_user_id, 'eval', '11111111-1111-1111-1111-000000000001',
-    'Or Levy vous a donné 4 étoiles ⭐',
-    'Or Levy rated you 4 stars ⭐',
-    'אור לוי נתן לך 4 כוכבים ⭐'
-  );
-
-  RETURN jsonb_build_object('success', true, 'matches_created', v_count);
-END;
-$$;
+DROP FUNCTION IF EXISTS public.seed_demo_data_for_me();
 
 
 -- ============================================================================
