@@ -384,7 +384,9 @@ $$;
 --    • Incrémente score_attempts
 --    • Verrouille le match à 3 rejets
 --    • Notifie les 2 joueurs du lock ou du rejet simple
+-- Note : DROP requis car le type de retour a changé VOID → JSONB
 -- ─────────────────────────────────────────────────────────────────────────────
+DROP FUNCTION IF EXISTS public.reject_match_result(UUID);
 CREATE OR REPLACE FUNCTION public.reject_match_result(p_pending_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
