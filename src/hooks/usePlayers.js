@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { usePresence } from './usePresence'
@@ -102,17 +102,13 @@ export function usePlayers() {
     fetchAll()
   }, [fetchAll])
 
-  // Mise à jour réactive : quand onlineIds change, on rafraîchit le statut online
-  // sans re-fetcher toute la liste
-  const [, forceUpdate] = useState(0)
-  useEffect(() => {
-    forceUpdate(n => n + 1)
-  }, [onlineIds])
-
-  // Applique onlineIds aux joueurs déjà chargés
-  const playersWithPresence = players
-    ? players.map(p => ({ ...p, online: onlineIds.has(p.id) }))
-    : null
+  // Applique onlineIds aux joueurs déjà chargés via useMemo pour stabiliser
+  // la référence — évite de déclencher un reset du SwipeStack à chaque
+  // heartbeat Realtime Presence (toutes les 30s).
+  const playersWithPresence = useMemo(
+    () => players ? players.map(p => ({ ...p, online: onlineIds.has(p.id) })) : null,
+    [players, onlineIds]
+  )
 
   return { players: playersWithPresence, loading: players === null, refetch: fetchAll }
 }

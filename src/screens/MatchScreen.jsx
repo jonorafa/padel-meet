@@ -599,13 +599,23 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
 
+  // Clé stable basée uniquement sur les IDs des joueurs filtrés.
+  // "online" change à chaque heartbeat Presence (toutes les 30s) et créerait
+  // une boucle infinie si on dépendait de `matched` directement.
+  // En déclenchant l'effet seulement sur les IDs, le stack ne se réinitialise
+  // que quand la liste de joueurs change vraiment (swipe, filtre, refetch).
+  const matchedKey = matched.map(p => p.id).join(',')
+  const matchedRef = useRef(matched)
+  matchedRef.current = matched // toujours à jour, sans être une dépendance
+
   // Charge le stack dès que les joueurs ou les filtres changent
   useEffect(() => {
     if (playersLoading) { setStack(null); return; }
     setStack(null);
-    const timer = setTimeout(() => setStack(matched), 700);
+    const timer = setTimeout(() => setStack(matchedRef.current), 700);
     return () => clearTimeout(timer);
-  }, [playersLoading, matched]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playersLoading, matchedKey]);
 
   const displayStack = useMemo(() => {
     if (!stack || !searchQuery.trim()) return stack;
