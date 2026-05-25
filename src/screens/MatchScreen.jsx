@@ -1118,19 +1118,38 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
 // ─── Chat actif (messages temps réel) ──────────────────────────────────────
 function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   const { user } = useAuth();
-  const [messages, setMessages] = useState([]);
-  const [input,    setInput]    = useState('');
+  const [messages,        setMessages]        = useState([]);
+  const [input,           setInput]           = useState('');
+  const [sheet,           setSheet]           = useState(null); // 'proposal'|'score'|'eval'
+  // Proposition de match
+  const [propDate,        setPropDate]        = useState('');
+  const [propTime,        setPropTime]        = useState('');
+  const [propPlace,       setPropPlace]       = useState('');
+  const [propSending,     setPropSending]     = useState(false);
+  // Score
+  const [scoreResult,     setScoreResult]     = useState('win');
+  const [scoreText,       setScoreText]       = useState('');
+  const [scoreSending,    setScoreSending]    = useState(false);
+  const [scoreError,      setScoreError]      = useState('');
+  // Évaluation
+  const [evalLevel,       setEvalLevel]       = useState(3.5);
+  const [evalSending,     setEvalSending]     = useState(false);
+  const [evalDoneId,      setEvalDoneId]      = useState(null); // pendingId déjà évalué
   const bottomRef = useRef(null);
-  const rtl   = lang === 'he';
-  const bg    = dark ? COURT.darkBg   : COURT.cream;
-  const border= dark ? COURT.darkBorder : `${COURT.green}25`;
-  const ink   = dark ? COURT.darkText : COURT.ink;
-  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const rtl    = lang === 'he';
+  const bg     = dark ? COURT.darkBg    : COURT.cream;
+  const card   = dark ? COURT.darkCard  : '#F0EDE5';
+  const border = dark ? COURT.darkBorder : `${COURT.green}25`;
+  const ink    = dark ? COURT.darkText  : COURT.ink;
+  const stone  = dark ? COURT.darkMuted : COURT.stone;
 
-  // Charge les messages réels
+  const { submitResult, confirmResult, rejectResult, pendingResults } = useMatchResults();
+  // Scores en attente pour ce match précis
+  const pendingForMatch = pendingResults.filter(p => p.matchId === matchId);
+
+  // ── Chargement des messages ─────────────────────────────────────────────────
   useEffect(() => {
     if (!matchId || !user) return;
-
     const fetchMsgs = async () => {
       const { data } = await supabase
         .from('messages')
@@ -1138,117 +1157,353 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
         .eq('match_id', matchId)
         .order('created_at', { ascending: true });
       if (data) {
-        setMessages(data.map(m => ({
-          from: m.sender_id === user.id ? 'me' : 'them',
-          text: { fr: m.content, en: m.content, he: m.content },
-          time: new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        })));
+        setMessages(data.map(msgToState(user.id)));
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     };
-
     fetchMsgs();
-
-    // Temps réel
     const channel = supabase
       .channel(`chat-${matchId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `match_id=eq.${matchId}` },
         (payload) => {
           const m = payload.new;
-          // Évite le doublon si c'est notre propre message (optimistic UI)
           setMessages(prev => {
-            const isDup = prev.some(x => x._id === m.id);
-            if (isDup) return prev;
-            return [...prev, {
-              _id: m.id,
-              from: m.sender_id === user.id ? 'me' : 'them',
-              text: { fr: m.content, en: m.content, he: m.content },
-              time: new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-            }];
+            if (prev.some(x => x._id === m.id)) return prev;
+            return [...prev, msgToState(user.id)(m)];
           });
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
         })
       .subscribe();
-
     return () => supabase.removeChannel(channel);
   }, [matchId, user?.id]);
 
+  // ── Envoi texte ─────────────────────────────────────────────────────────────
   const sendMessage = async () => {
-    if (!input.trim()) return;
-    if (!matchId || !user) return;
+    if (!input.trim() || !matchId || !user) return;
     const text = input.trim();
     setInput('');
-
     await supabase.from('messages').insert({ match_id: matchId, sender_id: user.id, content: text });
-    // Le realtime ajoutera le message
+  };
+
+  // ── Envoyer une proposition de match ────────────────────────────────────────
+  const sendProposal = async () => {
+    if (!propDate || !propTime) return;
+    setPropSending(true);
+    const label = lang === 'he'
+      ? `📅 הצעת משחק — ${propDate} ${propTime}${propPlace ? ` · ${propPlace}` : ''}`
+      : lang === 'en'
+      ? `📅 Match proposal — ${propDate} at ${propTime}${propPlace ? ` · ${propPlace}` : ''}`
+      : `📅 Proposition de match — ${propDate} à ${propTime}${propPlace ? ` · ${propPlace}` : ''}`;
+    await supabase.from('messages').insert({
+      match_id: matchId, sender_id: user.id,
+      content: label,
+      msg_type: 'match_proposal',
+      metadata: { date: propDate, time: propTime, place: propPlace },
+    });
+    setPropDate(''); setPropTime(''); setPropPlace('');
+    setPropSending(false);
+    setSheet(null);
+  };
+
+  // ── Soumettre un score ──────────────────────────────────────────────────────
+  const sendScore = async () => {
+    if (!scoreText.trim()) { setScoreError('Entrez le score (ex: 6-4 6-3)'); return; }
+    setScoreError('');
+    setScoreSending(true);
+    const res = await submitResult({ opponentId: player.id, result: scoreResult, score: scoreText });
+    if (res.success) {
+      // Envoie aussi un message "score_card" dans le chat pour notifier visuellement
+      await supabase.from('messages').insert({
+        match_id: matchId, sender_id: user.id,
+        content: `🎾 Score soumis : ${scoreText}`,
+        msg_type: 'score_card',
+        metadata: { pending_id: res.pendingId, score: scoreText, result: scoreResult },
+      });
+      setScoreText(''); setScoreResult('win');
+      setSheet(null);
+    } else {
+      setScoreError(res.error || 'Erreur');
+    }
+    setScoreSending(false);
+  };
+
+  // ── Confirmer un score ──────────────────────────────────────────────────────
+  const handleConfirm = async (pendingId) => {
+    const res = await confirmResult(pendingId);
+    if (res.success) setSheet('eval'); // → ouvrir questionnaire
+  };
+
+  // ── Évaluation niveau ───────────────────────────────────────────────────────
+  const sendEval = async () => {
+    setEvalSending(true);
+    // On cherche le match_history le plus récent pour ce duo
+    const { data: mh } = await supabase
+      .from('match_history')
+      .select('id')
+      .eq('player_id', user.id)
+      .eq('opponent_id', player.id)
+      .order('played_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (mh) {
+      await supabase.rpc('submit_peer_evaluation', {
+        p_match_id:     mh.id,
+        p_evaluated_id: player.id,
+        p_level:        Math.round(evalLevel * 2) / 2, // arrondi au 0.5
+      });
+    }
+    setEvalSending(false);
+    setSheet(null);
+  };
+
+  // ── Score card dans le fil ──────────────────────────────────────────────────
+  const renderScoreCard = (pending) => {
+    if (!pending) return null;
+    const isWin  = pending.myResult === 'win';
+    const color  = isWin ? COURT.green : COURT.purple;
+    const label  = isWin ? (lang === 'en' ? 'Victory' : lang === 'he' ? 'ניצחון' : 'Victoire')
+                         : (lang === 'en' ? 'Defeat'  : lang === 'he' ? 'הפסד'  : 'Défaite');
+    return (
+      <div style={{ margin: '4px 0', background: card, border: `1px solid ${color}40`, borderRadius: 14, padding: '12px 14px', maxWidth: '88%', alignSelf: 'stretch' }}>
+        <div style={{ fontFamily: 'Inter', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6 }}>
+          🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : 'Score à confirmer')}
+        </div>
+        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
+        <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
+          {label} · {pending.isSubmitter ? (lang === 'en' ? 'Awaiting confirmation' : 'En attente de confirmation') : (lang === 'en' ? `${player?.name} requests your confirmation` : `${player?.name} demande votre confirmation`)}
+        </div>
+        {!pending.isSubmitter && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => handleConfirm(pending.id)} style={{ flex: 1, padding: '8px', borderRadius: 8, background: COURT.green, border: 'none', color: COURT.cream, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
+              {lang === 'en' ? 'Confirm' : lang === 'he' ? 'אשר' : 'Confirmer'}
+            </button>
+            <button onClick={() => rejectResult(pending.id)} style={{ flex: 1, padding: '8px', borderRadius: 8, background: COURT.purple + '18', border: `0.5px solid ${COURT.purple}`, color: COURT.purple, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
+              {lang === 'en' ? 'Contest' : lang === 'he' ? 'ערער' : 'Contester'}
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: bg, display: 'flex', flexDirection: 'column', zIndex: 100 }}>
-      {/* Header */}
-      <div style={{ paddingTop: 56, padding: '56px 20px 14px', borderBottom: `0.5px solid ${border}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div style={{ paddingTop: 'max(52px, env(safe-area-inset-top, 0px))', padding: `max(52px, env(safe-area-inset-top, 0px)) 16px 12px`, borderBottom: `0.5px solid ${border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4, flexShrink: 0 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
             <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <div style={{ width: 38, height: 38, borderRadius: 19, background: `url(${player?.photo}) center/cover`, position: 'relative' }}>
+        <div style={{ width: 38, height: 38, borderRadius: 19, background: `url(${player?.photo}) center/cover`, flexShrink: 0, position: 'relative' }}>
           <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 5, background: player?.online ? '#4CAF50' : stone, border: `1.5px solid ${bg}` }} />
         </div>
-        <div>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, color: ink, fontWeight: 500 }}>{player?.name}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
           <div style={{ fontFamily: 'Inter', fontSize: 10, color: player?.online ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
-            {player?.online ? t.online : `${t.lastSeen} ${formatLastSeen(player?.lastSeen)}`}
+            {player?.online ? (t.online || 'En ligne') : `${t.lastSeen || 'Vu'} ${formatLastSeen(player?.lastSeen)}`}
           </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* ── Barre d'actions rapides ─────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: 8, padding: '8px 14px', borderBottom: `0.5px solid ${border}`, background: dark ? '#1a1f1a' : '#F7F4EE', overflowX: 'auto' }}>
+        {[
+          { key: 'proposal', icon: '📅', label: lang === 'en' ? 'Plan match' : lang === 'he' ? 'הצע משחק' : 'Proposer' },
+          { key: 'score',    icon: '🎾', label: lang === 'en' ? 'Enter score' : lang === 'he' ? 'הזן תוצאה' : 'Score' },
+          { key: 'eval',     icon: '⭐', label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' },
+        ].map(({ key, icon, label }) => (
+          <button key={key} onClick={() => setSheet(sheet === key ? null : key)} style={{
+            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+            padding: '6px 12px', borderRadius: 999,
+            background: sheet === key ? COURT.green : 'transparent',
+            border: `0.5px solid ${sheet === key ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
+            color: sheet === key ? COURT.cream : COURT.green,
+            fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+          }}>
+            <span style={{ fontSize: 14 }}>{icon}</span> {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Sheet Proposer un match ─────────────────────────────────────────── */}
+      {sheet === 'proposal' && (
+        <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+            {lang === 'en' ? 'Propose a match' : lang === 'he' ? 'הצע משחק' : 'Proposer un match'}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input type="date" value={propDate} onChange={e => setPropDate(e.target.value)}
+              style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 13, outline: 'none' }} />
+            <input type="time" value={propTime} onChange={e => setPropTime(e.target.value)}
+              style={{ width: 100, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 13, outline: 'none' }} />
+          </div>
+          <input placeholder={lang === 'en' ? 'Court / location (optional)' : 'Club / terrain (optionnel)'}
+            value={propPlace} onChange={e => setPropPlace(e.target.value)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, outline: 'none' }} />
+          <button onClick={sendProposal} disabled={propSending || !propDate || !propTime} style={{
+            padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
+            color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', opacity: (!propDate || !propTime) ? 0.4 : 1,
+          }}>
+            {propSending ? '…' : (lang === 'en' ? 'Send proposal' : 'Envoyer la proposition')}
+          </button>
+        </div>
+      )}
+
+      {/* ── Sheet Entrer un score ───────────────────────────────────────────── */}
+      {sheet === 'score' && (
+        <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+            {lang === 'en' ? 'Submit a score' : 'Soumettre un score'}
+          </div>
+          {/* Résultat */}
+          <div style={{ display: 'flex', gap: 6 }}>
+            {['win', 'loss'].map(r => (
+              <button key={r} onClick={() => setScoreResult(r)} style={{
+                flex: 1, padding: '8px', borderRadius: 8,
+                background: scoreResult === r ? (r === 'win' ? COURT.green : COURT.purple) : 'transparent',
+                border: `0.5px solid ${r === 'win' ? COURT.green : COURT.purple}`,
+                color: scoreResult === r ? COURT.cream : (r === 'win' ? COURT.green : COURT.purple),
+                fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
+              }}>
+                {r === 'win' ? (lang === 'en' ? 'Victory' : 'Victoire 🏆') : (lang === 'en' ? 'Defeat' : 'Défaite')}
+              </button>
+            ))}
+          </div>
+          {/* Score texte */}
+          <input placeholder="ex: 6-4 6-3 ou 4-6 7-5 6-2"
+            value={scoreText} onChange={e => setScoreText(e.target.value)}
+            style={{ padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${scoreError ? COURT.purple : border}`, background: bg, color: ink, fontFamily: 'Playfair Display, serif', fontSize: 15, outline: 'none', letterSpacing: '0.08em' }} />
+          {scoreError && <div style={{ fontFamily: 'Inter', fontSize: 11, color: COURT.purple }}>{scoreError}</div>}
+          <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
+            {lang === 'en' ? `${player?.name} will need to confirm the score.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
+          </div>
+          <button onClick={sendScore} disabled={scoreSending || !scoreText.trim()} style={{
+            padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
+            color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', opacity: !scoreText.trim() ? 0.4 : 1,
+          }}>
+            {scoreSending ? '…' : (lang === 'en' ? 'Submit score' : 'Soumettre le score')}
+          </button>
+        </div>
+      )}
+
+      {/* ── Sheet Évaluer le niveau ─────────────────────────────────────────── */}
+      {sheet === 'eval' && (
+        <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+            {lang === 'en' ? `Rate ${player?.name}'s level` : `Évaluer le niveau de ${player?.name}`}
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 40, color: COURT.green }}>{evalLevel.toFixed(1)}</div>
+            <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>/ 7.0</div>
+          </div>
+          <input type="range" min="1" max="7" step="0.5" value={evalLevel} onChange={e => setEvalLevel(+e.target.value)}
+            style={{ width: '100%', accentColor: COURT.green }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Inter', fontSize: 10, color: stone }}>
+            {['Débutant', 'Intermédiaire', 'Confirmé', 'Avancé', 'Expert'].map(l => <span key={l}>{l}</span>)}
+          </div>
+          <button onClick={sendEval} disabled={evalSending} style={{
+            padding: '10px', borderRadius: 10, background: COURT.gold, border: 'none',
+            color: COURT.ink, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
+          }}>
+            {evalSending ? '…' : (lang === 'en' ? 'Submit rating' : 'Envoyer l\'évaluation')}
+          </button>
+          <button onClick={() => setSheet(null)} style={{ background: 'none', border: 'none', color: stone, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
+            {lang === 'en' ? 'Skip' : 'Passer'}
+          </button>
+        </div>
+      )}
+
+      {/* ── Fil de messages ────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Cartes score en attente pour ce match */}
+        {pendingForMatch.length > 0 && (
+          <div style={{ marginBottom: 4 }}>
+            {pendingForMatch.map(p => (
+              <div key={p.id}>{renderScoreCard(p)}</div>
+            ))}
+          </div>
+        )}
         {messages.map((m, i) => (
           <div key={m._id || i} style={{ display: 'flex', justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start' }}>
-            <div style={{
-              maxWidth: '72%', padding: '10px 14px',
-              borderRadius: m.from === 'me' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              background: m.from === 'me' ? COURT.green : (dark ? '#243020' : COURT.creamDark),
-              color: m.from === 'me' ? COURT.cream : ink,
-              fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            }}>
-              {m.text[lang] || m.text.fr}
-              <div style={{ fontFamily: 'Inter', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}80` : stone, marginTop: 4, textAlign: 'right' }}>{m.time}</div>
-            </div>
+            {m.msgType === 'match_proposal' ? (
+              /* Carte proposition de match */
+              <div style={{
+                maxWidth: '82%', padding: '12px 14px',
+                borderRadius: 14, background: card,
+                border: `1px solid ${COURT.gold}50`,
+                boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+              }}>
+                <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  📅 {lang === 'en' ? 'Match proposal' : 'Proposition de match'}
+                </div>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
+                  {m.metadata?.date} {lang === 'en' ? 'at' : 'à'} {m.metadata?.time}
+                </div>
+                {m.metadata?.place && (
+                  <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
+                )}
+                <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
+              </div>
+            ) : (
+              /* Message texte normal */
+              <div style={{
+                maxWidth: '74%', padding: '10px 14px',
+                borderRadius: m.from === 'me' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                background: m.from === 'me' ? COURT.green : (dark ? '#243020' : '#EDE9DF'),
+                color: m.from === 'me' ? COURT.cream : ink,
+                fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+              }}>
+                {m.text[lang] || m.text.fr}
+                <div style={{ fontFamily: 'Inter', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}70` : stone, marginTop: 4, textAlign: 'right' }}>{m.time}</div>
+              </div>
+            )}
           </div>
         ))}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div style={{ padding: '12px 16px 32px', borderTop: `0.5px solid ${border}`, display: 'flex', gap: 10 }}>
+      {/* ── Input texte ────────────────────────────────────────────────────── */}
+      <div style={{ padding: '10px 14px 32px', borderTop: `0.5px solid ${border}`, display: 'flex', gap: 10, alignItems: 'center' }}>
         <input
           value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder={t.typeMessage}
+          placeholder={t.typeMessage || (lang === 'en' ? 'Message…' : 'Message…')}
           style={{
-            flex: 1, padding: '12px 16px', borderRadius: 24,
-            background: dark ? COURT.darkCard : COURT.creamDark,
+            flex: 1, padding: '11px 16px', borderRadius: 24,
+            background: dark ? COURT.darkCard : '#EDE9DF',
             border: `0.5px solid ${border}`,
             fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
             fontSize: 15, color: ink, outline: 'none',
           }}
         />
-        <button onClick={sendMessage} style={{
+        <button onClick={sendMessage} disabled={!input.trim()} style={{
           width: 44, height: 44, borderRadius: 22, background: COURT.green,
           border: 'none', cursor: 'pointer', color: COURT.cream,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: !input.trim() ? 0.4 : 1, transition: 'opacity 0.2s',
         }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
             <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
       </div>
     </div>
   );
+}
+
+// ── Transforme une row DB en état local pour le chat ──────────────────────────
+function msgToState(userId) {
+  return (m) => ({
+    _id:      m.id,
+    from:     m.sender_id === userId ? 'me' : 'them',
+    text:     { fr: m.content, en: m.content, he: m.content },
+    msgType:  m.msg_type || 'text',
+    metadata: m.metadata || null,
+    time:     new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+  });
 }
 
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
