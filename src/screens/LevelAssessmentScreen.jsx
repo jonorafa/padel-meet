@@ -66,6 +66,22 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
           }}>
             {t.members}
           </div>
+          {onSkip && (
+            <div
+              onClick={onSkip}
+              style={{
+                marginTop: 18,
+                fontFamily: 'Inter', fontSize: 11,
+                color: stone, letterSpacing: '0.16em', textTransform: 'uppercase',
+                cursor: 'pointer',
+                opacity: visible ? 0.6 : 0,
+                transform: `translateY(${visible ? 0 : 8}px)`,
+                transition: 'opacity 0.8s ease 0.8s, transform 0.8s ease 0.8s',
+              }}
+            >
+              {t.skipForNow || 'Passer pour l\'instant'}
+            </div>
+          )}
         </div>
       </div>
     </div>

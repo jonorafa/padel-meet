@@ -20,6 +20,17 @@ function formatTimeRemaining(expiresAt) {
 }
 
 /**
+ * Retourne le label textuel d'un niveau selon la langue
+ */
+function getLevelLabel(level, t) {
+  if (level <= 2.0) return t.levelBeginner     || 'Débutant'
+  if (level <= 3.5) return t.levelIntermediate || 'Intermédiaire'
+  if (level <= 5.0) return t.levelConfirmed    || 'Confirmé'
+  if (level <= 6.0) return t.levelAdvanced     || 'Avancé'
+  return t.levelExpert || 'Expert'
+}
+
+/**
  * Card pour un score à confirmer (reçu de l'adversaire)
  */
 function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy }) {
@@ -176,9 +187,9 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
   } = useMatchResults()
 
   const [busy, setBusy] = useState(false)
-  // Peer evaluation state: { matchId, playerId, playerName } | null
+  // Peer evaluation state: { matchId, playerId, playerName, playerPhoto, playerCurrentLevel } | null
   const [evalPending, setEvalPending] = useState(null)
-  const [evalRating, setEvalRating] = useState(4)
+  const [evalProposedLevel, setEvalProposedLevel] = useState(3.5)
   const [evalSent, setEvalSent] = useState(false)
   const [evalSending, setEvalSending] = useState(false)
   const rtl = lang === 'he'
@@ -188,21 +199,21 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif'
 
   const handleConfirm = async (pendingId) => {
-    // Find the pending item before confirming to extract match + player info
     const item = pendingToConfirm.find(p => p.id === pendingId)
     setBusy(true)
     const { error: err } = await confirmResult(pendingId)
     setBusy(false)
     if (err) { alert(`${t.error}: ${err}`); return }
-    // Propose peer evaluation right after confirmation
     if (item) {
+      const currentLevel = item.otherPlayer?.level ?? 3.5
       setEvalPending({
-        matchId: item.matchId,
-        playerId: item.otherPlayer?.id,
-        playerName: item.otherPlayer?.name || t.opponent,
-        playerPhoto: item.otherPlayer?.photo_url,
+        matchId:            item.matchId,
+        playerId:           item.otherPlayer?.id,
+        playerName:         item.otherPlayer?.name || t.opponent,
+        playerPhoto:        item.otherPlayer?.photo_url,
+        playerCurrentLevel: currentLevel,
       })
-      setEvalRating(4)
+      setEvalProposedLevel(currentLevel)
       setEvalSent(false)
     }
   }
@@ -212,9 +223,9 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
     setEvalSending(true)
     try {
       await supabase.rpc('submit_peer_evaluation', {
-        p_match_id: evalPending.matchId,
-        p_evaluated_id: evalPending.playerId,
-        p_rating: evalRating,
+        p_match_id:       evalPending.matchId,
+        p_evaluated_id:   evalPending.playerId,
+        p_proposed_level: evalProposedLevel,
       })
     } catch (e) {
       console.warn('[peer_eval]', e)
@@ -320,13 +331,13 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         )}
       </div>
 
-      {/* ── Peer Evaluation overlay ─────────────────────────────────── */}
+      {/* ── Peer Evaluation overlay — slider de niveau ──────────────────── */}
       {evalPending && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 10,
-          background: dark ? 'rgba(18,26,21,0.95)' : 'rgba(245,241,232,0.97)',
+          background: dark ? 'rgba(18,26,21,0.96)' : 'rgba(245,241,232,0.97)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', padding: '32px 24px',
+          justifyContent: 'center', padding: '32px 28px',
         }}>
           {evalSent ? (
             <div style={{ textAlign: 'center' }}>
@@ -337,46 +348,114 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             </div>
           ) : (
             <>
-              {/* Player avatar */}
+              {/* Avatar */}
               {evalPending.playerPhoto && (
                 <div style={{
-                  width: 72, height: 72, borderRadius: 36, marginBottom: 12,
+                  width: 64, height: 64, borderRadius: 32, marginBottom: 14,
                   background: `url(${evalPending.playerPhoto}) center/cover`,
                   border: `2px solid ${COURT.gold}60`,
                 }} />
               )}
+
+              {/* Titre */}
               <p style={{
                 fontFamily: 'Playfair Display, serif', fontSize: 18,
-                color: dark ? COURT.darkText : COURT.ink, margin: '0 0 4px', textAlign: 'center',
+                color: ink, margin: '0 0 4px', textAlign: 'center',
               }}>
-                {t.rateMatch || 'Évaluer ce match'}
+                {t.evalLevelTitle || 'Quel est son vrai niveau ?'}
               </p>
               <p style={{
-                fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
-                fontSize: 14, color: dark ? COURT.darkMuted : COURT.stone,
-                margin: '0 0 20px', textAlign: 'center',
+                fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 13, color: stone, margin: '0 0 28px', textAlign: 'center',
               }}>
-                {t.evalSub} {evalPending.playerName}
+                {t.evalLevelSub || 'Évaluez honnêtement le niveau de'} {evalPending.playerName}
               </p>
 
-              {/* Stars */}
-              <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <button
-                    key={star}
-                    onClick={() => setEvalRating(star)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: 34, padding: 2,
-                      filter: star <= evalRating ? 'none' : 'grayscale(1) opacity(0.35)',
-                      transition: 'filter 0.15s, transform 0.1s',
-                      transform: star <= evalRating ? 'scale(1.08)' : 'scale(1)',
-                    }}
-                  >⭐</button>
-                ))}
+              {/* Niveau affiché en grand */}
+              <div style={{
+                display: 'flex', alignItems: 'baseline', gap: 4,
+                marginBottom: 8,
+              }}>
+                <span style={{
+                  fontFamily: 'Playfair Display, serif',
+                  fontSize: 72, lineHeight: 1,
+                  color: COURT.green, fontWeight: 600,
+                }}>
+                  {evalProposedLevel % 1 === 0 ? evalProposedLevel.toFixed(1) : evalProposedLevel}
+                </span>
+                <span style={{
+                  fontFamily: 'Cormorant Garamond, serif',
+                  fontSize: 22, color: stone, fontStyle: 'italic',
+                }}>
+                  /7
+                </span>
               </div>
 
-              {/* Actions */}
+              {/* Label de description */}
+              <div style={{
+                fontFamily: 'Inter', fontSize: 11, letterSpacing: '0.18em',
+                textTransform: 'uppercase', color: COURT.green,
+                marginBottom: 20,
+              }}>
+                {getLevelLabel(evalProposedLevel, t)}
+              </div>
+
+              {/* Slider 1.0 → 7.0 pas 0.5 */}
+              <div style={{ width: '100%', maxWidth: 280, position: 'relative', marginBottom: 32 }}>
+                {/* Track de fond */}
+                <div style={{
+                  height: 3, borderRadius: 2,
+                  background: dark ? COURT.darkBorder : `${COURT.green}25`,
+                  width: '100%', position: 'absolute', top: '50%',
+                  transform: 'translateY(-50%)',
+                }} />
+                {/* Track actif */}
+                <div style={{
+                  height: 3, borderRadius: 2,
+                  background: COURT.green,
+                  width: `${((evalProposedLevel - 1) / 6) * 100}%`,
+                  position: 'absolute', top: '50%',
+                  transform: 'translateY(-50%)',
+                  transition: 'width 0.12s ease',
+                }} />
+                {/* Input range invisible par-dessus */}
+                <input
+                  type="range"
+                  min="1" max="7" step="0.5"
+                  value={evalProposedLevel}
+                  onChange={e => setEvalProposedLevel(parseFloat(e.target.value))}
+                  style={{
+                    width: '100%', height: 28,
+                    WebkitAppearance: 'none', appearance: 'none',
+                    background: 'transparent', cursor: 'pointer',
+                    position: 'relative', zIndex: 1,
+                    outline: 'none',
+                    // Thumb
+                    // (styles thumb via CSS global — cf. index.css ou via ::pseudo)
+                  }}
+                />
+                <style>{`
+                  input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    width: 20px; height: 20px;
+                    border-radius: 50%;
+                    background: ${COURT.green};
+                    border: 2.5px solid ${dark ? COURT.darkCard : COURT.cream};
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+                    cursor: pointer;
+                  }
+                  input[type=range]::-moz-range-thumb {
+                    width: 20px; height: 20px;
+                    border-radius: 50%;
+                    background: ${COURT.green};
+                    border: 2.5px solid ${dark ? COURT.darkCard : COURT.cream};
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+                    cursor: pointer;
+                  }
+                `}</style>
+              </div>
+
+              {/* Boutons */}
               <div style={{ display: 'flex', gap: 10, width: '100%', maxWidth: 280 }}>
                 <button
                   onClick={() => setEvalPending(null)}
@@ -384,8 +463,8 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
                     flex: 1, padding: '12px', borderRadius: 10,
                     background: 'transparent',
                     border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '40'}`,
-                    fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
-                    fontSize: 14, color: dark ? COURT.darkMuted : COURT.stone, cursor: 'pointer',
+                    fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                    fontSize: 14, color: stone, cursor: 'pointer',
                   }}
                 >
                   {t.skipEval || 'Passer'}
@@ -396,7 +475,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
                   style={{
                     flex: 2, padding: '12px', borderRadius: 10,
                     background: COURT.green, color: COURT.cream, border: 'none',
-                    fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                    fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
                     fontSize: 14, cursor: evalSending ? 'wait' : 'pointer',
                     opacity: evalSending ? 0.7 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
