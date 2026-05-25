@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { initialsAvatar } from '../components/CourtUI'
 
 /**
  * Retourne la liste des matches (likes mutuels) de l'utilisateur,
@@ -52,7 +53,7 @@ export function useUserMatches() {
             player: {
               id:       otherId,
               name:     otherProfile?.name     || 'Joueur',
-              photo:    otherProfile?.photo_url || `https://i.pravatar.cc/600?u=${otherId}`,
+              photo:    otherProfile?.photo_url || initialsAvatar(otherProfile?.name || otherId),
               online:   otherProfile?.online    || false,
               lastSeen: otherProfile?.last_seen,
             },

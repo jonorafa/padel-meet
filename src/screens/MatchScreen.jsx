@@ -4,7 +4,7 @@ import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
   SectionHeading, ThinButton, HeritageTag, BottomNav,
   SkeletonCard, MatchFlash, NotifBadge, OnlineDot, BottomSheet,
-  setDarkMode, isDark,
+  setDarkMode, isDark, initialsAvatar,
 } from '../components/CourtUI';
 import { REGIONS, computeELODelta, I18N } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
@@ -953,7 +953,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                 onClick={() => setDetailPlayerId(p.id)}
                 style={{
                   width: 44, height: 44, borderRadius: 22, flexShrink: 0,
-                  background: `url(${p.photo_url || `https://i.pravatar.cc/600?u=${p.id}`}) center/cover`,
+                  background: `url(${p.photo_url || initialsAvatar(p.name || p.id)}) center/cover`,
                   border: 'none', cursor: 'pointer', padding: 0,
                 }}
               />
@@ -1454,7 +1454,7 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: `0.5px solid ${border}`, animation: `cardIn 0.3s ease ${i * 0.04}s both`, cursor: onOpenDetail ? 'pointer' : 'default' }}
             onClick={() => onOpenDetail?.(p.id)}
           >
-            <div style={{ width: 44, height: 44, borderRadius: 22, flexShrink: 0, background: `url(${p.photo_url || `https://i.pravatar.cc/600?u=${p.id}`}) center/cover`, border: `1.5px solid ${COURT.green}40` }} />
+            <div style={{ width: 44, height: 44, borderRadius: 22, flexShrink: 0, background: `url(${p.photo_url || initialsAvatar(p.name || p.id)}) center/cover`, border: `1.5px solid ${COURT.green}40` }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>{p.name || '—'}</div>
               {p.level != null && (

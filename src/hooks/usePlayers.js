@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { usePresence } from './usePresence'
+import { initialsAvatar } from '../components/CourtUI'
 
 function formatLastSeen(ts) {
   if (!ts) return '?'
@@ -31,7 +32,7 @@ function transformDBProfile(p, onlineIds) {
     matches: matchesPlayed,
     // null si aucun match — jamais 0% affiché sans données réelles
     winrate: matchesPlayed > 0 ? Math.round((p.wins / matchesPlayed) * 100) : null,
-    photo: p.photo_url || `https://i.pravatar.cc/600?u=${encodeURIComponent(p.name || p.id)}`,
+    photo: p.photo_url || initialsAvatar(p.name || p.id),
     bioFr: p.bio_fr || '',
     bioEn: p.bio_en || '',
     bioHe: p.bio_he || '',

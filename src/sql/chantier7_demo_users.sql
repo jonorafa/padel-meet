@@ -61,7 +61,7 @@ INSERT INTO public.profiles (
  'Joueur compétitif depuis 6 ans. Tournois locaux le weekend.',
  'Competitive player for 6 years. Local tournaments on weekends.',
  'שחקן תחרותי כבר 6 שנים. טורנירים מקומיים בסופי שבוע.',
- NULL, TRUE, NOW() - INTERVAL '2 minutes', 42, 27,
+ NULL, FALSE, NOW() - INTERVAL '2 minutes', 42, 27,
  '{"side":"any","hand":"right","style":"aggressive","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '15 days'),
 
@@ -70,7 +70,7 @@ INSERT INTO public.profiles (
  'Padel après le boulot, 3 fois par semaine. Niveau moyen, motivé.',
  'Padel after work, 3x a week. Mid level, motivated.',
  'פאדל אחרי העבודה, 3 פעמים בשבוע. רמה בינונית, מוטיבציה.',
- NULL, TRUE, NOW() - INTERVAL '1 hour', 18, 11,
+ NULL, FALSE, NOW() - INTERVAL '1 hour', 18, 11,
  '{"side":"any","hand":"any","style":"all-court","region":"Centre","levelMin":4,"levelMax":5}'::jsonb,
  TRUE, NOW() - INTERVAL '12 days'),
 
@@ -97,7 +97,7 @@ INSERT INTO public.profiles (
  'Padel 4 fois par semaine. Coup droit solide, revers à travailler.',
  'Padel 4x a week. Solid forehand, working on backhand.',
  'פאדל 4 פעמים בשבוע. ימני חזק, שמאלי בתהליך.',
- NULL, TRUE, NOW() - INTERVAL '5 minutes', 32, 19,
+ NULL, FALSE, NOW() - INTERVAL '5 minutes', 32, 19,
  '{"side":"forehand","hand":"right","style":"all-court","region":"Centre","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '18 days'),
 
@@ -107,7 +107,7 @@ INSERT INTO public.profiles (
  'Joueur 6.5, compétitions régionales. Cherche partenaire de double sérieux.',
  'Player 6.5, regional comps. Looking for serious doubles partner.',
  'שחקן 6.5, תחרויות אזוריות. מחפש שותף רציני.',
- NULL, TRUE, NOW() - INTERVAL '8 minutes', 88, 62,
+ NULL, FALSE, NOW() - INTERVAL '8 minutes', 88, 62,
  '{"side":"any","hand":"any","style":"aggressive","region":"Centre","levelMin":6,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '25 days'),
 
@@ -134,7 +134,7 @@ INSERT INTO public.profiles (
  'Gauchère, jeu offensif. Cherche un droitier complémentaire.',
  'Lefty, offensive game. Looking for a complementary righty.',
  'שמאלית, משחק התקפי. מחפשת ימני משלים.',
- NULL, TRUE, NOW() - INTERVAL '20 minutes', 51, 34,
+ NULL, FALSE, NOW() - INTERVAL '20 minutes', 51, 34,
  '{"side":"forehand","hand":"right","style":"all-court","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '22 days'),
 
@@ -153,7 +153,7 @@ INSERT INTO public.profiles (
  'Padel 4 fois/semaine. Recherche entrainement structuré.',
  'Padel 4x a week. Looking for structured training.',
  'פאדל 4 פעמים בשבוע. מחפשת אימון מובנה.',
- NULL, TRUE, NOW() - INTERVAL '30 minutes', 38, 24,
+ NULL, FALSE, NOW() - INTERVAL '30 minutes', 38, 24,
  '{"side":"any","hand":"any","style":"all-court","region":"Centre","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '16 days'),
 
@@ -180,7 +180,7 @@ INSERT INTO public.profiles (
  'Ex-tennis, padel 5x/sem. Sérieux mais convivial.',
  'Ex-tennis, padel 5x/week. Serious but friendly.',
  'לשעבר טניס, פאדל 5/שבוע. רציני אך ידידותי.',
- NULL, TRUE, NOW() - INTERVAL '1 minute', 47, 33,
+ NULL, FALSE, NOW() - INTERVAL '1 minute', 47, 33,
  '{"side":"any","hand":"any","style":"any","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '19 days'),
 
@@ -208,7 +208,7 @@ INSERT INTO public.profiles (
  'Niveau 5 progression rapide. Cherche partenaires plus forts.',
  'Level 5 fast progress. Looking for stronger partners.',
  'רמה 5 מתקדם מהר. מחפש שותפים חזקים יותר.',
- NULL, TRUE, NOW() - INTERVAL '12 minutes', 29, 17,
+ NULL, FALSE, NOW() - INTERVAL '12 minutes', 29, 17,
  '{"side":"any","hand":"any","style":"any","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '15 days'),
 
@@ -226,7 +226,7 @@ INSERT INTO public.profiles (
  '40 ans, niveau 5.5, joue en tournoi vétéran.',
  '40yo, level 5.5, plays in veteran tournaments.',
  'בן 40, רמה 5.5, טורנירים ותיקים.',
- NULL, TRUE, NOW() - INTERVAL '45 minutes', 96, 67,
+ NULL, FALSE, NOW() - INTERVAL '45 minutes', 96, 67,
  '{"side":"any","hand":"any","style":"any","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '30 days'),
 
@@ -254,7 +254,7 @@ INSERT INTO public.profiles (
  'Padel 4x/sem, gros travail sur la régularité.',
  'Padel 4x/week, working on consistency.',
  'פאדל 4 בשבוע, עובדת על עקביות.',
- NULL, TRUE, NOW() - INTERVAL '4 minutes', 28, 15,
+ NULL, FALSE, NOW() - INTERVAL '4 minutes', 28, 15,
  '{"side":"any","hand":"any","style":"all-court","region":"Centre","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '12 days'),
 
@@ -281,7 +281,7 @@ INSERT INTO public.profiles (
  'Gaucher vétéran. Stratégie et placement.',
  'Veteran lefty. Strategy and placement.',
  'שמאלי ותיק. אסטרטגיה ומיקום.',
- NULL, TRUE, NOW() - INTERVAL '25 minutes', 102, 71,
+ NULL, FALSE, NOW() - INTERVAL '25 minutes', 102, 71,
  '{"side":"forehand","hand":"right","style":"all-court","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '32 days'),
 
@@ -300,7 +300,7 @@ INSERT INTO public.profiles (
  'Niveau 5, beaucoup d''énergie. Compétitions locales.',
  'Level 5, lots of energy. Local comps.',
  'רמה 5, הרבה אנרגיה.',
- NULL, TRUE, NOW() - INTERVAL '15 minutes', 41, 26,
+ NULL, FALSE, NOW() - INTERVAL '15 minutes', 41, 26,
  '{"side":"any","hand":"any","style":"all-court","region":"Nord","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '20 days'),
 
@@ -337,7 +337,7 @@ INSERT INTO public.profiles (
  'Padel à Jerusalem, on est peu — cherche des partenaires !',
  'Padel in Jerusalem, few of us — looking for partners!',
  'פאדל בירושלים, מעטים אנחנו.',
- NULL, TRUE, NOW() - INTERVAL '6 minutes', 22, 12,
+ NULL, FALSE, NOW() - INTERVAL '6 minutes', 22, 12,
  '{"side":"any","hand":"any","style":"any","region":"Sud","levelMin":3,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '14 days'),
 
@@ -355,7 +355,7 @@ INSERT INTO public.profiles (
  'Gaucher offensif. Préfère le filet et les coups droits puissants.',
  'Offensive lefty. Prefer net and powerful forehands.',
  'שמאלי התקפי.',
- NULL, TRUE, NOW() - INTERVAL '18 minutes', 44, 29,
+ NULL, FALSE, NOW() - INTERVAL '18 minutes', 44, 29,
  '{"side":"backhand","hand":"right","style":"defensive","region":"Sud","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '21 days'),
 
@@ -383,7 +383,7 @@ INSERT INTO public.profiles (
  'Padel à Ashdod 3x/sem. Cherche du Sud surtout.',
  'Padel in Ashdod 3x/week. Looking for South mostly.',
  'פאדל באשדוד.',
- NULL, TRUE, NOW() - INTERVAL '3 minutes', 26, 14,
+ NULL, FALSE, NOW() - INTERVAL '3 minutes', 26, 14,
  '{"side":"any","hand":"any","style":"any","region":"Sud","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '13 days'),
 
@@ -410,7 +410,7 @@ INSERT INTO public.profiles (
  'Gauchère, revers solide. Cherche niveau égal ou supérieur.',
  'Lefty, solid backhand. Looking for equal or better.',
  'שמאלית, שמאל חזק.',
- NULL, TRUE, NOW() - INTERVAL '12 minutes', 48, 32,
+ NULL, FALSE, NOW() - INTERVAL '12 minutes', 48, 32,
  '{"side":"any","hand":"any","style":"any","region":"Sud","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '19 days'),
 
@@ -429,7 +429,7 @@ INSERT INTO public.profiles (
  'Padel à Eilat, soleil et matchs ! Niveau 4.5.',
  'Padel in Eilat, sun and matches! Level 4.5.',
  'פאדל באילת, שמש ומשחקים.',
- NULL, TRUE, NOW() - INTERVAL '8 minutes', 24, 13,
+ NULL, FALSE, NOW() - INTERVAL '8 minutes', 24, 13,
  '{"side":"any","hand":"any","style":"any","region":"any","levelMin":3,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '16 days'),
 
@@ -465,7 +465,7 @@ INSERT INTO public.profiles (
  'Gaucher patient et stratégique.',
  'Patient and strategic lefty.',
  'שמאלי סבלני.',
- NULL, TRUE, NOW() - INTERVAL '22 minutes', 31, 17,
+ NULL, FALSE, NOW() - INTERVAL '22 minutes', 31, 17,
  '{"side":"any","hand":"any","style":"any","region":"any","levelMin":4,"levelMax":6}'::jsonb,
  TRUE, NOW() - INTERVAL '14 days'),
 
@@ -475,7 +475,7 @@ INSERT INTO public.profiles (
  'Coup droit puissant, jeu rapide. Niveau 5 stable.',
  'Powerful forehand, fast play. Stable level 5.',
  'ימני חזק, משחק מהיר.',
- NULL, TRUE, NOW() - INTERVAL '1 minute', 39, 27,
+ NULL, FALSE, NOW() - INTERVAL '1 minute', 39, 27,
  '{"side":"any","hand":"any","style":"any","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '20 days'),
 
@@ -502,7 +502,7 @@ INSERT INTO public.profiles (
  'Niveau 5.5, je travaille mon revers. Cherche partenaire technique.',
  'Level 5.5, working on my backhand. Looking for technical partner.',
  'רמה 5.5, עובד על השמאל.',
- NULL, TRUE, NOW() - INTERVAL '7 minutes', 50, 33,
+ NULL, FALSE, NOW() - INTERVAL '7 minutes', 50, 33,
  '{"side":"any","hand":"any","style":"all-court","region":"Centre","levelMin":5,"levelMax":7}'::jsonb,
  TRUE, NOW() - INTERVAL '24 days'),
 

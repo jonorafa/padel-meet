@@ -32,6 +32,28 @@ export function C(light, dark) {
   return _darkMode ? dark : light;
 }
 
+/**
+ * Génère un avatar SVG inline avec l'initiale du nom.
+ * Utilisé comme fallback quand photo_url est NULL (profils sans photo).
+ * Ne charge aucune image externe — 100 % local.
+ *
+ * @param {string} name - Nom du joueur (prend la 1ère lettre)
+ * @param {string} bg   - Couleur de fond (défaut : vert court)
+ * @param {string} fg   - Couleur du texte (défaut : crème)
+ * @returns {string}    - data URI utilisable dans background: url(...)
+ */
+export function initialsAvatar(name, bg = '#1F5C3F', fg = '#F5F1E8') {
+  const letter = (name || '?').trim().charAt(0).toUpperCase();
+  const svg = [
+    '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">',
+    `<rect width="200" height="200" fill="${bg}"/>`,
+    `<text x="100" y="130" font-family="serif" font-size="96" font-weight="400" `,
+    `fill="${fg}" text-anchor="middle" dominant-baseline="auto">${letter}</text>`,
+    '</svg>',
+  ].join('');
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 export function PadelBall({ size = 28, color = '#D8E66A', seam = '#fff', shadow = true, style = {} }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" style={style}>

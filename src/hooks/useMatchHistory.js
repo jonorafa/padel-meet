@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { initialsAvatar } from '../components/CourtUI'
 
 /**
  * Retourne l'historique des matchs de l'utilisateur connecté.
@@ -31,7 +32,7 @@ export function useMatchHistory() {
           player: {
             id:    m.opponent?.id,
             name:  m.opponent?.name     || 'Adversaire',
-            photo: m.opponent?.photo_url || `https://i.pravatar.cc/600?u=${m.opponent_id}`,
+            photo: m.opponent?.photo_url || initialsAvatar(m.opponent?.name || m.opponent_id),
           },
         })))
       }

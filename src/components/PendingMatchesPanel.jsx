@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { COURT, PadelBall, Ornament, BottomSheet } from './CourtUI'
+import { COURT, PadelBall, Ornament, BottomSheet, initialsAvatar } from './CourtUI'
 import { supabase } from '../lib/supabase'
 import { useMatchResults } from '../hooks/useMatchResults'
 
@@ -56,7 +56,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 22, flexShrink: 0,
-          background: `url(${pending.otherPlayer?.photo_url || `https://i.pravatar.cc/600?u=${pending.otherPlayer?.id}`}) center/cover`,
+          background: `url(${pending.otherPlayer?.photo_url || initialsAvatar(pending.otherPlayer?.name || pending.otherPlayer?.id)}) center/cover`,
           border: `1.5px solid ${resultColor}`,
         }} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -150,7 +150,7 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: 18, flexShrink: 0,
-          background: `url(${pending.otherPlayer?.photo_url || `https://i.pravatar.cc/600?u=${pending.otherPlayer?.id}`}) center/cover`,
+          background: `url(${pending.otherPlayer?.photo_url || initialsAvatar(pending.otherPlayer?.name || pending.otherPlayer?.id)}) center/cover`,
           opacity: 0.7,
         }} />
         <div style={{ flex: 1, minWidth: 0 }}>
