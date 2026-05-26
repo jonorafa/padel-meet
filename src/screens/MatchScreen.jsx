@@ -733,10 +733,6 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
         <div>
           <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, color: COURT.green, fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12 }}>
-            <PadelBall size={12} shadow={false} />
-            <span>{displayStack?.length ?? '…'} {t.available}</span>
-          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, marginLeft: 12 }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
