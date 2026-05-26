@@ -59,7 +59,10 @@ export function useMatchResults() {
         submitterResult: p.submitter_result,
         myResult: p.submitter_id === user.id
           ? p.submitter_result
-          : (p.submitter_result === 'win' ? 'loss' : p.submitter_result === 'loss' ? 'win' : 'draw'),
+          : (p.submitter_result === 'win'      ? 'loss'
+           : p.submitter_result === 'loss'     ? 'win'
+           : p.submitter_result === 'teammate' ? 'win'   // coéquipier → les deux gagnent
+           : 'draw'),
         otherPlayer: p.submitter_id === user.id ? p.opponent : p.submitter,
       }))
 

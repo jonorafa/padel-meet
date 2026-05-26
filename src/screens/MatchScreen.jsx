@@ -21,6 +21,7 @@ import { PendingMatchesPanel } from '../components/PendingMatchesPanel';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
+import QuizScreen           from './ScoreScreen';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -1139,10 +1140,9 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   const [scoreText,       setScoreText]       = useState('');
   const [scoreSending,    setScoreSending]    = useState(false);
   const [scoreError,      setScoreError]      = useState('');
-  // Évaluation
-  const [evalLevel,       setEvalLevel]       = useState(3.5);
+  // Évaluation — overlay quiz complet (même questionnaire qu'à l'onboarding)
+  const [evalOpen,        setEvalOpen]        = useState(false);
   const [evalSending,     setEvalSending]     = useState(false);
-  const [evalDoneId,      setEvalDoneId]      = useState(null); // pendingId déjà évalué
   const bottomRef = useRef(null);
   const rtl    = lang === 'he';
   const bg     = dark ? COURT.darkBg    : COURT.cream;
@@ -1160,6 +1160,19 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   const pendingForMatch = pendingResults.filter(p => p.matchId === matchId);
   // Statut score pour ce match (tentatives, lock)
   const scoreStatus = matchStatuses[matchId] || { attempts: 0, locked: false };
+
+  // Blocage par date : si une proposition acceptée est dans le futur, pas de score encore
+  const latestAcceptedProposal = messages
+    .filter(m => m.msgType === 'match_proposal' && m.metadata?.status === 'accepted')
+    .sort((a, b) => new Date(b.metadata?.date || 0) - new Date(a.metadata?.date || 0))[0];
+  const scoreDateBlocked = latestAcceptedProposal
+    ? (() => {
+        const { date, time } = latestAcceptedProposal.metadata || {};
+        if (!date) return false;
+        const matchDT = new Date(`${date}T${time || '23:59'}`);
+        return matchDT > new Date();
+      })()
+    : false;
   const scoreLocked  = scoreStatus.locked;
   const scoreAttempt = scoreStatus.attempts; // nombre de rejets passés
 
@@ -1264,42 +1277,47 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
     setScoreSending(false);
   };
 
-  // ── Confirmer un score ──────────────────────────────────────────────────────
+  // ── Confirmer un score → ouvre le quiz d'évaluation ────────────────────────
   const handleConfirm = async (pendingId) => {
     const res = await confirmResult(pendingId);
-    if (res.success) setSheet('eval'); // → ouvrir questionnaire
+    if (res.success) { setSheet(null); setEvalOpen(true); }
   };
 
-  // ── Évaluation niveau ───────────────────────────────────────────────────────
-  const sendEval = async () => {
+  // ── Évaluation niveau — appelé après le quiz avec le niveau calculé ─────────
+  const sendEval = async (computedLevel) => {
     setEvalSending(true);
-    // On cherche le match_history le plus récent pour ce duo
-    const { data: mh } = await supabase
-      .from('match_history')
-      .select('id')
-      .eq('player_id', user.id)
-      .eq('opponent_id', player.id)
-      .order('played_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (mh) {
-      await supabase.rpc('submit_peer_evaluation', {
-        p_match_id:       mh.id,
-        p_evaluated_id:   player.id,
-        p_proposed_level: Math.round(evalLevel * 2) / 2, // arrondi au 0.5
-      });
+    try {
+      const { data: mh } = await supabase
+        .from('match_history')
+        .select('id')
+        .eq('player_id', user.id)
+        .eq('opponent_id', player.id)
+        .order('played_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (mh) {
+        await supabase.rpc('submit_peer_evaluation', {
+          p_match_id:       mh.id,
+          p_evaluated_id:   player.id,
+          p_proposed_level: Math.round(computedLevel * 2) / 2,
+        });
+      }
+    } catch (err) {
+      console.warn('[sendEval]', err);
     }
     setEvalSending(false);
-    setSheet(null);
+    setEvalOpen(false);
   };
 
   // ── Score card dans le fil ──────────────────────────────────────────────────
   const renderScoreCard = (pending) => {
     if (!pending) return null;
-    const isWin      = pending.myResult === 'win';
-    const color      = isWin ? COURT.green : COURT.purple;
-    const label      = isWin ? (lang === 'en' ? 'Victory' : lang === 'he' ? 'ניצחון' : 'Victoire')
-                             : (lang === 'en' ? 'Defeat'  : lang === 'he' ? 'הפסד'  : 'Défaite');
+    const isTeammate = pending.submitterResult === 'teammate';
+    const isWin      = isTeammate || pending.myResult === 'win';
+    const color      = isTeammate ? COURT.gold : (isWin ? COURT.green : COURT.purple);
+    const label      = isTeammate ? (lang === 'en' ? '🤝 Teammates' : lang === 'he' ? '🤝 שותפים' : '🤝 Coéquipiers')
+                     : isWin      ? (lang === 'en' ? 'Victory'      : lang === 'he' ? 'ניצחון'    : 'Victoire')
+                                  : (lang === 'en' ? 'Defeat'       : lang === 'he' ? 'הפסד'      : 'Défaite');
     const attemptNum = scoreAttempt + 1; // tentative en cours (1-based)
     const remaining  = 3 - scoreAttempt;
     return (
@@ -1387,7 +1405,11 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
           { key: 'eval',     icon: '⭐', label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' },
         ].map(({ key, icon, label, disabled }) => (
           <button key={key}
-            onClick={() => !disabled && setSheet(sheet === key ? null : key)}
+            onClick={() => {
+              if (disabled) return;
+              if (key === 'eval') { setSheet(null); setEvalOpen(true); return; }
+              setSheet(sheet === key ? null : key);
+            }}
             disabled={disabled}
             style={{
               display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
@@ -1433,20 +1455,46 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
           <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
             {lang === 'en' ? 'Submit a score' : 'Soumettre un score'}
           </div>
-          {/* Résultat */}
-          <div style={{ display: 'flex', gap: 6 }}>
-            {['win', 'loss'].map(r => (
-              <button key={r} onClick={() => setScoreResult(r)} style={{
-                flex: 1, padding: '8px', borderRadius: 8,
-                background: scoreResult === r ? (r === 'win' ? COURT.green : COURT.purple) : 'transparent',
-                border: `0.5px solid ${r === 'win' ? COURT.green : COURT.purple}`,
-                color: scoreResult === r ? COURT.cream : (r === 'win' ? COURT.green : COURT.purple),
-                fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
-              }}>
-                {r === 'win' ? (lang === 'en' ? 'Victory' : 'Victoire 🏆') : (lang === 'en' ? 'Defeat' : 'Défaite')}
-              </button>
-            ))}
+
+          {/* Avertissement date : match pas encore joué */}
+          {scoreDateBlocked && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 12px', background: `${COURT.gold}18`, border: `0.5px solid ${COURT.gold}60`, borderRadius: 8 }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>⏳</span>
+              <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: ink }}>
+                {lang === 'en'
+                  ? `Match scheduled for ${latestAcceptedProposal?.metadata?.date} — submit the score after the match.`
+                  : `Match prévu le ${latestAcceptedProposal?.metadata?.date} — soumettez le score après le match.`}
+              </div>
+            </div>
+          )}
+
+          {/* Résultat — Victoire / Coéquipier / Défaite */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['win', 'loss'].map(r => (
+                <button key={r} onClick={() => setScoreResult(r)} style={{
+                  flex: 1, padding: '8px', borderRadius: 8,
+                  background: scoreResult === r ? (r === 'win' ? COURT.green : COURT.purple) : 'transparent',
+                  border: `0.5px solid ${r === 'win' ? COURT.green : COURT.purple}`,
+                  color: scoreResult === r ? COURT.cream : (r === 'win' ? COURT.green : COURT.purple),
+                  fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
+                }}>
+                  {r === 'win' ? (lang === 'en' ? 'Victory 🏆' : 'Victoire 🏆') : (lang === 'en' ? 'Defeat' : 'Défaite')}
+                </button>
+              ))}
+            </div>
+            {/* Mode coéquipier — les deux ont gagné */}
+            <button onClick={() => setScoreResult('teammate')} style={{
+              width: '100%', padding: '8px 12px', borderRadius: 8,
+              background: scoreResult === 'teammate' ? `${COURT.gold}25` : 'transparent',
+              border: `0.5px solid ${COURT.gold}`,
+              color: scoreResult === 'teammate' ? COURT.ink : COURT.gold,
+              fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', textAlign: 'left',
+            }}>
+              {lang === 'en' ? '🤝 Teammate — we both won' : lang === 'he' ? '🤝 שותף — שנינו ניצחנו' : '🤝 Coéquipier — on a tous les deux gagné'}
+            </button>
           </div>
+
           {/* Score texte */}
           <input placeholder="ex: 6-4 6-3 ou 4-6 7-5 6-2"
             value={scoreText} onChange={e => setScoreText(e.target.value)}
@@ -1455,41 +1503,18 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
           <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
             {lang === 'en' ? `${player?.name} will need to confirm the score.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
           </div>
-          <button onClick={sendScore} disabled={scoreSending || !scoreText.trim()} style={{
+          <button onClick={sendScore} disabled={scoreSending || !scoreText.trim() || scoreDateBlocked} style={{
             padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
-            color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', opacity: !scoreText.trim() ? 0.4 : 1,
+            color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
+            opacity: (!scoreText.trim() || scoreDateBlocked) ? 0.4 : 1,
           }}>
             {scoreSending ? '…' : (lang === 'en' ? 'Submit score' : 'Soumettre le score')}
           </button>
         </div>
       )}
 
-      {/* ── Sheet Évaluer le niveau ─────────────────────────────────────────── */}
-      {sheet === 'eval' && (
-        <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
-            {lang === 'en' ? `Rate ${player?.name}'s level` : `Évaluer le niveau de ${player?.name}`}
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 40, color: COURT.green }}>{evalLevel.toFixed(1)}</div>
-            <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>/ 7.0</div>
-          </div>
-          <input type="range" min="1" max="7" step="0.5" value={evalLevel} onChange={e => setEvalLevel(+e.target.value)}
-            style={{ width: '100%', accentColor: COURT.green }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Inter', fontSize: 10, color: stone }}>
-            {['Débutant', 'Intermédiaire', 'Confirmé', 'Avancé', 'Expert'].map(l => <span key={l}>{l}</span>)}
-          </div>
-          <button onClick={sendEval} disabled={evalSending} style={{
-            padding: '10px', borderRadius: 10, background: COURT.gold, border: 'none',
-            color: COURT.ink, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
-          }}>
-            {evalSending ? '…' : (lang === 'en' ? 'Submit rating' : 'Envoyer l\'évaluation')}
-          </button>
-          <button onClick={() => setSheet(null)} style={{ background: 'none', border: 'none', color: stone, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
-            {lang === 'en' ? 'Skip' : 'Passer'}
-          </button>
-        </div>
-      )}
+      {/* ── Sheet Évaluer : le bouton ⭐ ouvre le quiz complet (overlay) ─────── */}
+      {/* (le quiz est rendu en overlay en bas du composant) */}
 
       {/* ── Fil de messages ────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1630,6 +1655,56 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
           </svg>
         </button>
       </div>
+
+      {/* ── Overlay quiz évaluation du niveau ──────────────────────────────── */}
+      {evalOpen && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 200,
+          background: dark ? COURT.darkBg : COURT.cream,
+        }}>
+          {/* Bandeau intro */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            paddingTop: 'max(52px, env(safe-area-inset-top, 0px))',
+            padding: `max(52px, env(safe-area-inset-top, 0px)) 16px 8px`,
+            background: dark ? COURT.darkBg : COURT.cream,
+            borderBottom: `0.5px solid ${border}`,
+            zIndex: 201, display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <button onClick={() => setEvalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500 }}>
+                {lang === 'en' ? `Evaluate ${player?.name}` : lang === 'he' ? `העריך את ${player?.name}` : `Évaluer ${player?.name}`}
+              </div>
+              <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: dark ? COURT.darkMuted : COURT.stone }}>
+                {lang === 'en' ? 'Answer as if rating their level' : 'Répondez en pensant à son niveau'}
+              </div>
+            </div>
+          </div>
+          <QuizScreen
+            t={t} lang={lang} dark={dark}
+            onDone={(computedLevel) => sendEval(computedLevel)}
+            onBack={() => setEvalOpen(false)}
+          />
+          {/* Spinner pendant l'envoi */}
+          {evalSending && (
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300,
+            }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%',
+                border: `3px solid ${COURT.green}30`, borderTopColor: COURT.green,
+                animation: 'spin 0.7s linear infinite',
+              }} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -2340,313 +2415,132 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
   );
 }
 
-// ─── Live Score Tracker ──────────────────────────────────────────────────────
-function LiveScoreTracker({ t, lang, onClose, dark }) {
-  const [score,   setScore]   = useState({ me: 0, them: 0, sets: [] });
-  const [serving, setServing] = useState('me');
-  const [stage,   setStage]   = useState('playing'); // 'playing' | 'submitting'
-  const [selectedOpponentId, setSelectedOpponentId] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
-  const [scoreMode, setScoreMode] = useState('live'); // 'live' | 'text'
-  const [scoreText, setScoreText] = useState('');
-  const [scoreTextError, setScoreTextError] = useState(null);
+// ─── Schedule Match Sheet ────────────────────────────────────────────────────
+// Remplace le Live Score Tracker : choisir partenaire + date → proposition envoyée
+function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent }) {
+  const { user } = useAuth();
   const { matches: userMatches } = useUserMatches();
-  const { submitResult } = useMatchResults();
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [propDate,  setPropDate]  = useState('');
+  const [propTime,  setPropTime]  = useState('');
+  const [propPlace, setPropPlace] = useState('');
+  const [sending,   setSending]   = useState(false);
 
-  // Parse "6-4 6-3" ou "6-3 3-6 6-2" → tableau de sets
-  const parseScoreText = (txt) => {
-    const parts = txt.trim().split(/\s+/);
-    if (parts.length === 0 || parts.length > 3) return null;
-    const sets = [];
-    for (const p of parts) {
-      const m = p.match(/^(\d+)-(\d+)$/);
-      if (!m) return null;
-      const me = parseInt(m[1]), them = parseInt(m[2]);
-      sets.push({ me, them, winner: me >= them ? 'me' : 'them' });
-    }
-    return sets;
-  };
-
-  const handleApplyTextScore = () => {
-    const sets = parseScoreText(scoreText);
-    if (!sets) { setScoreTextError(t.scoreInvalid || 'Format invalide — ex: 6-4 6-3'); return; }
-    setScore(prev => ({ ...prev, sets, me: 0, them: 0 }));
-    setScoreTextError(null);
-    setScoreText('');
-    setScoreMode('live');
-  };
-  const bg    = dark ? COURT.darkCard : COURT.cream;
-  const border= dark ? COURT.darkBorder : `${COURT.green}30`;
-  const ink   = dark ? COURT.darkText : COURT.ink;
-  const stone = dark ? COURT.darkMuted : COURT.stone;
-  const rtl   = lang === 'he';
-  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const rtl      = lang === 'he';
+  const bg       = dark ? COURT.darkBg    : COURT.cream;
+  const card     = dark ? COURT.darkCard  : '#F0EDE5';
+  const border   = dark ? COURT.darkBorder : `${COURT.green}25`;
+  const ink      = dark ? COURT.darkText  : COURT.ink;
+  const stone    = dark ? COURT.darkMuted : COURT.stone;
+  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const canSend  = selectedMatch && propDate && propTime;
 
-  const addPoint = (who) => {
-    setScore(prev => {
-      const other = who === 'me' ? 'them' : 'me';
-      const newScore = { ...prev, [who]: prev[who] + 1 };
-      if (newScore[who] >= 6 && newScore[who] - newScore[other] >= 2) {
-        return { me: 0, them: 0, sets: [...prev.sets, { me: newScore.me, them: newScore.them, winner: who }] };
-      }
-      return newScore;
+  const handleSend = async () => {
+    if (!canSend || !user) return;
+    setSending(true);
+    const label = lang === 'en'
+      ? `📅 Match proposal — ${propDate} at ${propTime}${propPlace ? ` · ${propPlace}` : ''}`
+      : lang === 'he'
+      ? `📅 הצעת משחק — ${propDate} ${propTime}${propPlace ? ` · ${propPlace}` : ''}`
+      : `📅 Proposition de match — ${propDate} à ${propTime}${propPlace ? ` · ${propPlace}` : ''}`;
+    await supabase.from('messages').insert({
+      match_id:  selectedMatch.matchId,
+      sender_id: user.id,
+      content:   label,
+      msg_type:  'match_proposal',
+      metadata:  { date: propDate, time: propTime, place: propPlace },
     });
+    setSending(false);
+    onProposalSent?.(selectedMatch);
+    onClose();
   };
 
-  // Calcul du résultat global à partir des sets joués
-  const setsWonByMe = score.sets.filter(s => s.winner === 'me').length;
-  const setsWonByThem = score.sets.filter(s => s.winner === 'them').length;
-  const myResult = setsWonByMe > setsWonByThem ? 'win'
-    : setsWonByMe < setsWonByThem ? 'loss' : 'draw';
-  const scoreString = score.sets.map(s => `${s.me}-${s.them}`).join(' ');
+  // Placeholder — le vieux LiveScoreTracker n'est plus utilisé
+  return (
+    <BottomSheet
+      onClose={onClose}
+      title={lang === 'en' ? 'Schedule a match' : lang === 'he' ? 'תזמן משחק' : 'Planifier un match'}
+      dark={dark}
+    >
+      <div style={{ padding: '4px 20px 28px' }}>
 
-  const handleEndMatch = () => {
-    if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
-    if (score.sets.length === 0) {
-      // Aucun set joué → ferme simplement
-      onClose();
-      return;
-    }
-    setStage('submitting');
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedOpponentId) {
-      setSubmitError(t.selectOpponent || 'Please select an opponent');
-      return;
-    }
-    setSubmitting(true);
-    setSubmitError(null);
-    const { success, error } = await submitResult({
-      opponentId: selectedOpponentId,
-      result: myResult,
-      score: scoreString,
-    });
-    setSubmitting(false);
-    if (success) {
-      if (navigator.vibrate) navigator.vibrate([10, 5, 10]);
-      onClose();
-    } else {
-      setSubmitError(error);
-    }
-  };
-
-  // ─── Vue "Soumission du score" ───
-  if (stage === 'submitting') {
-    return (
-      <BottomSheet onClose={onClose} title={t.submitScore || 'Soumettre le score'} dark={dark}>
-        <div style={{ padding: '0 24px 16px' }}>
-          {/* Récap du score */}
-          <div style={{
-            background: bg, border: `0.5px solid ${border}`, borderRadius: 14,
-            padding: 16, textAlign: 'center', marginBottom: 16,
-          }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8 }}>
-              {t.finalScore || 'Score final'}
-            </div>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 30, color: COURT.green, lineHeight: 1.2 }}>
-              {scoreString || '—'}
-            </div>
-            <div style={{
-              marginTop: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 14,
-              color: myResult === 'win' ? COURT.green : (myResult === 'loss' ? COURT.purple : COURT.gold),
-            }}>
-              {myResult === 'win' ? (t.youWon || 'Victoire') : (myResult === 'loss' ? (t.youLost || 'Défaite') : (t.draw || 'Égalité'))}
-            </div>
+        {/* ── Choix du partenaire ─────────────────────────────────────── */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+            {lang === 'en' ? 'Partner' : lang === 'he' ? 'שותף' : 'Avec qui ?'}
           </div>
-
-          {/* Sélection de l'adversaire */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
-              {t.selectOpponent || "Adversaire"}
+          {(!userMatches || userMatches.length === 0) ? (
+            <div style={{ padding: '14px 16px', background: bg, border: `0.5px dashed ${border}`, borderRadius: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, textAlign: 'center' }}>
+              {lang === 'en' ? 'No matched players yet.' : 'Aucun partenaire encore. Swipez pour en trouver un !'}
             </div>
-            {(!userMatches || userMatches.length === 0) ? (
-              <div style={{
-                padding: '14px 16px', background: bg, border: `0.5px dashed ${border}`,
-                borderRadius: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-                fontSize: 13, color: stone, textAlign: 'center',
-              }}>
-                {t.noMatchesForSubmit || "Vous n'avez aucun partenaire de match. Trouvez-en un d'abord."}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 220, overflowY: 'auto' }}>
-                {userMatches.map(m => {
-                  const isSelected = selectedOpponentId === m.player.id;
-                  return (
-                    <button
-                      key={m.matchId}
-                      onClick={() => setSelectedOpponentId(m.player.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '10px 12px',
-                        background: isSelected ? `${COURT.green}15` : bg,
-                        border: `0.5px solid ${isSelected ? COURT.green : border}`,
-                        borderRadius: 10, cursor: 'pointer', textAlign: 'left',
-                      }}
-                    >
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 18, flexShrink: 0,
-                        background: `url(${m.player.photo}) center/cover`,
-                        border: isSelected ? `1.5px solid ${COURT.green}` : `0.5px solid ${border}`,
-                      }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>
-                          {m.player.name}
-                        </div>
-                      </div>
-                      {isSelected && <div style={{ color: COURT.green, fontSize: 20 }}>✓</div>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Erreur */}
-          {submitError && (
-            <div style={{
-              padding: '10px 12px', marginBottom: 12,
-              background: `${COURT.purple}15`,
-              border: `0.5px solid ${COURT.purple}60`,
-              borderRadius: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 12, color: COURT.purple,
-            }}>
-              {submitError}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 210, overflowY: 'auto' }}>
+              {userMatches.map(m => {
+                const isSel = selectedMatch?.matchId === m.matchId;
+                return (
+                  <button key={m.matchId} onClick={() => setSelectedMatch(m)} style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
+                    background: isSel ? `${COURT.green}15` : bg,
+                    border: `0.5px solid ${isSel ? COURT.green : border}`,
+                    borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                  }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 19, flexShrink: 0, background: `url(${m.player.photo}) center/cover`, border: isSel ? `2px solid ${COURT.green}` : `0.5px solid ${border}` }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500 }}>{m.player.name}</div>
+                    </div>
+                    {isSel && <div style={{ color: COURT.green, fontSize: 18, fontWeight: 700 }}>✓</div>}
+                  </button>
+                );
+              })}
             </div>
           )}
-
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-            <button
-              onClick={() => setStage('playing')}
-              disabled={submitting}
-              style={{
-                flex: 1, padding: '14px', background: 'transparent',
-                color: stone, border: `0.5px solid ${border}`,
-                borderRadius: 10, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-                fontSize: 14, cursor: submitting ? 'wait' : 'pointer',
-              }}
-            >
-              ← {t.back || 'Retour'}
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={submitting || !selectedOpponentId}
-              style={{
-                flex: 2, padding: '14px',
-                background: selectedOpponentId ? COURT.green : `${COURT.green}50`,
-                color: COURT.cream, border: 'none', borderRadius: 10,
-                fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-                fontSize: 15, cursor: (submitting || !selectedOpponentId) ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              }}
-            >
-              <PadelBall size={14} shadow={false} />
-              {submitting ? '…' : (t.submitForConfirmation || 'Envoyer pour confirmation')}
-            </button>
-          </div>
-
-          <div style={{
-            marginTop: 12, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 11, color: stone, textAlign: 'center',
-          }}>
-            {t.submitHint || 'Votre adversaire devra confirmer le score sous 72h.'}
-          </div>
-        </div>
-      </BottomSheet>
-    );
-  }
-
-  return (
-    <BottomSheet onClose={onClose} title={t.scoreTracker} dark={dark}>
-      <div style={{ padding: '0 24px 16px' }}>
-
-        {/* Mode tabs: Live | Texte */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {[{ k: 'live', label: t.liveMode || 'En direct' }, { k: 'text', label: t.textMode || 'Par texte' }].map(m => (
-            <button key={m.k} onClick={() => { setScoreMode(m.k); setScoreTextError(null); }} style={{
-              flex: 1, padding: '9px', borderRadius: 8,
-              background: scoreMode === m.k ? COURT.green : (dark ? COURT.darkCard : COURT.creamDark),
-              color: scoreMode === m.k ? COURT.cream : stone,
-              border: `0.5px solid ${scoreMode === m.k ? COURT.green : border}`,
-              fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}>{m.label}</button>
-          ))}
         </div>
 
-        {/* Text mode: saisie directe "6-4 6-3" */}
-        {scoreMode === 'text' && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 6 }}>
-              {t.scoreInputHint || 'Séparer les sets par un espace'}
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                value={scoreText}
-                onChange={e => { setScoreText(e.target.value); setScoreTextError(null); }}
-                onKeyDown={e => e.key === 'Enter' && handleApplyTextScore()}
-                placeholder={t.scoreInputPlaceholder || 'Ex: 6-4 6-3'}
-                style={{
-                  flex: 1, padding: '11px 14px', borderRadius: 10,
-                  background: dark ? COURT.darkCard : COURT.cream,
-                  border: `0.5px solid ${scoreTextError ? COURT.red : border}`,
-                  fontFamily: 'Playfair Display, serif', fontSize: 18,
-                  color: ink, outline: 'none', letterSpacing: '0.04em',
-                }}
-              />
-              <button onClick={handleApplyTextScore} style={{
-                padding: '11px 16px', borderRadius: 10, background: COURT.green, color: COURT.cream,
-                border: 'none', fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-                fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap',
-              }}>✓ Ok</button>
-            </div>
-            {scoreTextError && (
-              <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12, color: COURT.red, marginTop: 5 }}>
-                {scoreTextError}
-              </div>
-            )}
+        {/* ── Date + Heure ────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+            {lang === 'en' ? 'Date & Time' : lang === 'he' ? 'תאריך ושעה' : 'Date et heure'}
           </div>
-        )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input type="date" value={propDate} onChange={e => setPropDate(e.target.value)}
+              style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 14, outline: 'none' }} />
+            <input type="time" value={propTime} onChange={e => setPropTime(e.target.value)}
+              style={{ width: 110, padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 14, outline: 'none' }} />
+          </div>
+        </div>
 
-        {score.sets.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-            {score.sets.map((s, i) => (
-              <div key={i} style={{ padding: '6px 14px', borderRadius: 20, background: COURT.green, color: COURT.cream, fontFamily: 'Playfair Display, serif', fontSize: 14 }}>{s.me}–{s.them}</div>
-            ))}
-          </div>
-        )}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          {[{ key: 'me', label: t.myScore }, { key: 'them', label: t.theirScore }].map(side => (
-            <div key={side.key} style={{ background: bg, border: `0.5px solid ${border}`, borderRadius: 14, padding: '20px 16px', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>{side.label}</div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 64, color: COURT.green, lineHeight: 1 }}>{score[side.key]}</div>
-              <button onClick={() => addPoint(side.key)} style={{
-                marginTop: 14, width: '100%', padding: '12px', background: COURT.green,
-                color: COURT.cream, border: 'none', borderRadius: 10,
-                fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
-              }}>+ Point</button>
-            </div>
-          ))}
+        {/* ── Club / terrain (optionnel) ───────────────────────────────── */}
+        <div style={{ marginBottom: 20 }}>
+          <input
+            placeholder={lang === 'en' ? 'Club / court (optional)' : 'Club / terrain (optionnel)'}
+            value={propPlace} onChange={e => setPropPlace(e.target.value)}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, outline: 'none' }}
+          />
         </div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {[{ key: 'me', label: t.myScore }, { key: 'them', label: t.theirScore }].map(s => (
-            <button key={s.key} onClick={() => setServing(s.key)} style={{
-              flex: 1, padding: '10px', borderRadius: 8,
-              background: serving === s.key ? COURT.gold : (dark ? COURT.darkCard : COURT.creamDark),
-              color: serving === s.key ? COURT.ink : stone,
-              border: `0.5px solid ${serving === s.key ? COURT.gold : border}`,
-              fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, cursor: 'pointer',
-            }}>🎾 {s.label}</button>
-          ))}
+
+        {/* ── Bouton envoyer ───────────────────────────────────────────── */}
+        <button onClick={handleSend} disabled={!canSend || sending} style={{
+          width: '100%', padding: '14px', borderRadius: 12,
+          background: canSend ? COURT.green : `${COURT.green}40`,
+          color: COURT.cream, border: 'none',
+          fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+          fontSize: 15, cursor: canSend && !sending ? 'pointer' : 'default',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          transition: 'background 0.2s',
+        }}>
+          <PadelBall size={16} shadow={false} />
+          {sending ? '…' : (lang === 'en' ? 'Send proposal' : lang === 'he' ? 'שלח הצעה' : 'Envoyer la proposition')}
+        </button>
+
+        {/* ── Note explicative ─────────────────────────────────────────── */}
+        <div style={{ marginTop: 12, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: stone, textAlign: 'center' }}>
+          {selectedMatch
+            ? (lang === 'en'
+                ? `${selectedMatch.player.name} will need to accept. The score can be entered after the match.`
+                : `${selectedMatch.player.name} devra accepter. Le score sera saisissable après le match.`)
+            : (lang === 'en' ? 'Select a partner to continue.' : 'Choisissez un partenaire pour continuer.')}
         </div>
-        <button onClick={handleEndMatch} style={{
-          width: '100%', padding: '14px', background: COURT.purple, color: COURT.cream,
-          border: 'none', borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
-        }}>{t.endMatch}</button>
       </div>
     </BottomSheet>
   );
@@ -2659,9 +2553,9 @@ export default function MainApp() {
   const t = I18N[lang] || I18N.fr;
 
   const [tab, setTab] = useState('home');
-  const [showNotifs, setShowNotifs] = useState(false);
-  const [showScore,  setShowScore]  = useState(false);
-  const [showPending, setShowPending] = useState(false);
+  const [showNotifs,   setShowNotifs]   = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [showPending,  setShowPending]  = useState(false);
   const [detailPlayerId, setDetailPlayerId] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
 
@@ -2733,9 +2627,9 @@ export default function MainApp() {
         )}
       </button>
 
-      {/* Bouton score flottant */}
+      {/* Bouton planifier un match (flottant) */}
       {tab === 'home' && (
-        <button onClick={() => setShowScore(true)} style={{
+        <button onClick={() => setShowSchedule(true)} style={{
           position: 'absolute', bottom: 115, right: 20, zIndex: 50,
           padding: '10px 16px', borderRadius: 24,
           background: COURT.green, color: COURT.cream,
@@ -2759,9 +2653,13 @@ export default function MainApp() {
         />
       )}
 
-      {showScore && (
-        <ErrorBoundary key="live-score-tracker">
-          <LiveScoreTracker t={t} lang={lang} dark={darkMode} onClose={() => setShowScore(false)} />
+      {showSchedule && (
+        <ErrorBoundary key="schedule-match-sheet">
+          <ScheduleMatchSheet
+            t={t} lang={lang} dark={darkMode}
+            onClose={() => setShowSchedule(false)}
+            onProposalSent={() => { setShowSchedule(false); setTab('chat'); }}
+          />
         </ErrorBoundary>
       )}
 
