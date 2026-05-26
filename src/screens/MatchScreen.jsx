@@ -1187,9 +1187,30 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
           });
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
         })
+      // Écoute aussi les UPDATE (pour les réponses Accept/Decline sur proposals)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `match_id=eq.${matchId}` },
+        (payload) => {
+          const m = payload.new;
+          setMessages(prev => prev.map(x => x._id === m.id ? msgToState(user.id)(m) : x));
+        })
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, [matchId, user?.id]);
+
+  // ── Répondre à une proposition de match (Accept / Decline) ──────────────────
+  const [respondingId, setRespondingId] = useState(null);
+  const respondToProposal = async (messageId, accepted) => {
+    setRespondingId(messageId);
+    const { error } = await supabase.rpc('respond_to_match_proposal', {
+      p_message_id: messageId,
+      p_accepted:   accepted,
+    });
+    setRespondingId(null);
+    if (error) {
+      console.error('Error responding to proposal:', error);
+    }
+    // Pas besoin de refetch — le UPDATE postgres_changes met à jour le state
+  };
 
   // ── Envoi texte ─────────────────────────────────────────────────────────────
   const sendMessage = async () => {
@@ -1484,23 +1505,85 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
           <div key={m._id || i} style={{ display: 'flex', justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start' }}>
             {m.msgType === 'match_proposal' ? (
               /* Carte proposition de match */
-              <div style={{
-                maxWidth: '82%', padding: '12px 14px',
-                borderRadius: 14, background: card,
-                border: `1px solid ${COURT.gold}50`,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-              }}>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
-                  📅 {lang === 'en' ? 'Match proposal' : 'Proposition de match'}
-                </div>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
-                  {m.metadata?.date} {lang === 'en' ? 'at' : 'à'} {m.metadata?.time}
-                </div>
-                {m.metadata?.place && (
-                  <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
-                )}
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
-              </div>
+              (() => {
+                const status     = m.metadata?.status;          // 'accepted' | 'declined' | undefined
+                const isMine     = m.from === 'me';
+                const canRespond = !isMine && !status;          // l'autre joueur, pas encore répondu
+                const accentColor = status === 'accepted' ? COURT.green
+                                  : status === 'declined' ? COURT.purple
+                                  : COURT.gold;
+                return (
+                  <div style={{
+                    maxWidth: '82%', padding: '12px 14px',
+                    borderRadius: 14, background: card,
+                    border: `1px solid ${accentColor}50`,
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                  }}>
+                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: accentColor, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+                      📅 {lang === 'en' ? 'Match proposal' : 'Proposition de match'}
+                    </div>
+                    <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
+                      {m.metadata?.date} {lang === 'en' ? 'at' : 'à'} {m.metadata?.time}
+                    </div>
+                    {m.metadata?.place && (
+                      <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
+                    )}
+
+                    {/* Boutons Accept/Decline (uniquement pour l'autre joueur, pas encore répondu) */}
+                    {canRespond && (
+                      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                        <button
+                          onClick={() => respondToProposal(m._id, true)}
+                          disabled={respondingId === m._id}
+                          style={{
+                            flex: 1, padding: '8px', borderRadius: 8,
+                            background: COURT.green, border: 'none', color: COURT.cream,
+                            fontFamily: 'Inter', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                            opacity: respondingId === m._id ? 0.5 : 1,
+                          }}>
+                          ✓ {lang === 'en' ? 'Accept' : lang === 'he' ? 'אשר' : 'Accepter'}
+                        </button>
+                        <button
+                          onClick={() => respondToProposal(m._id, false)}
+                          disabled={respondingId === m._id}
+                          style={{
+                            flex: 1, padding: '8px', borderRadius: 8,
+                            background: 'transparent', color: COURT.purple,
+                            border: `0.5px solid ${COURT.purple}`,
+                            fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+                            opacity: respondingId === m._id ? 0.5 : 1,
+                          }}>
+                          ✗ {lang === 'en' ? 'Decline' : lang === 'he' ? 'דחה' : 'Refuser'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Badge statut une fois répondu */}
+                    {status === 'accepted' && (
+                      <div style={{
+                        marginTop: 10, padding: '6px 10px',
+                        background: `${COURT.green}15`, borderRadius: 8,
+                        fontFamily: 'Inter', fontSize: 11, color: COURT.green, fontWeight: 500,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}>
+                        ✓ {lang === 'en' ? 'Match accepted' : lang === 'he' ? 'משחק אושר' : 'Match accepté'}
+                      </div>
+                    )}
+                    {status === 'declined' && (
+                      <div style={{
+                        marginTop: 10, padding: '6px 10px',
+                        background: `${COURT.purple}15`, borderRadius: 8,
+                        fontFamily: 'Inter', fontSize: 11, color: COURT.purple,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}>
+                        ✗ {lang === 'en' ? 'Match declined' : lang === 'he' ? 'משחק נדחה' : 'Match refusé'}
+                      </div>
+                    )}
+
+                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
+                  </div>
+                );
+              })()
             ) : (
               /* Message texte normal */
               <div style={{
