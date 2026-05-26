@@ -587,11 +587,13 @@ export function computeLevel(answers) {
     }
   });
 
-  // Score technique — moyenne sur [1, 7]
-  const techScore = techN > 0 ? techSum / techN : 3.5;
+  // Quiz incomplet (aucune réponse tech ou aucun slider) → pas de niveau attribué
+  if (techN === 0 || selfN === 0) return null;
+
+  const techScore = techSum / techN;
 
   // Score auto-éval — slider [1,10] → [0.5, 7.0]
-  const selfAvg   = selfN > 0 ? selfSum / selfN : 5;
+  const selfAvg   = selfSum / selfN;
   const selfScore = 0.5 + (selfAvg - 1) * (6.5 / 9);
 
   // Pondération : 85% technique / 15% auto-évaluation
