@@ -25,12 +25,19 @@ const LABELS = {
   },
 }
 
+const GUEST_LABELS = {
+  fr: { guest: 'Continuer en tant qu\'invité', guestNote: 'Explorez sans créer de compte.' },
+  en: { guest: 'Continue as guest', guestNote: 'Browse without an account.' },
+  he: { guest: 'המשך כאורח', guestNote: 'עיין ללא חשבון.' },
+}
+
 export default function AuthScreen() {
-  const { user, loading: authLoading, isOnboarding, signInWithGoogle } = useAuth()
+  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest } = useAuth()
   const { lang, dark } = usePrefs()
   const navigate = useNavigate()
 
   const L   = LABELS[lang] || LABELS.en
+  const G   = GUEST_LABELS[lang] || GUEST_LABELS.fr
   const rtl = lang === 'he'
 
   // Redirect once authenticated
@@ -52,6 +59,11 @@ export default function AuthScreen() {
     } catch (err) {
       console.error('Google sign-in error:', err)
     }
+  }
+
+  const handleGuestMode = () => {
+    enterAsGuest()
+    navigate('/app', { replace: true })
   }
 
   return (
@@ -137,6 +149,28 @@ export default function AuthScreen() {
         }}>
           🔒 {L.secure}
         </div>
+
+        {/* Guest mode */}
+        <button
+          onClick={handleGuestMode}
+          style={{
+            marginTop: 28, width: '100%', background: 'none',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+          }}
+        >
+          <span style={{
+            fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+            fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 15, color: stone,
+            textDecoration: 'underline', textUnderlineOffset: 3,
+          }}>
+            {G.guest}
+          </span>
+          <span style={{ fontFamily: 'Inter', fontSize: 10, color: `${stone}90`, letterSpacing: '0.06em' }}>
+            {G.guestNote}
+          </span>
+        </button>
       </div>
     </div>
   )

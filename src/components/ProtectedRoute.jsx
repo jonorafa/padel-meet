@@ -8,13 +8,14 @@ import { useAuth } from '../context/AuthContext'
  * - Sinon → affiche le contenu enfant via <Outlet />
  */
 export default function ProtectedRoute() {
-  const { user, loading, isOnboarding } = useAuth()
+  const { user, loading, isOnboarding, isGuest } = useAuth()
 
   // Pendant le chargement initial, on n'affiche rien
   if (loading) return null
 
-  if (!user) return <Navigate to="/auth" replace />
-  if (isOnboarding) return <Navigate to="/onboarding" replace />
+  // Les invités peuvent accéder à l'app en lecture seule
+  if (!user && !isGuest) return <Navigate to="/auth" replace />
+  if (user && isOnboarding) return <Navigate to="/onboarding" replace />
 
   return <Outlet />
 }

@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [photos,  setPhotos]  = useState([])
   const [loading, setLoading] = useState(true)
+  const [isGuest, setIsGuest] = useState(() => sessionStorage.getItem('padel-guest') === 'true')
 
   useEffect(() => {
     // Session initiale (gère aussi le retour OAuth depuis Google)
@@ -20,8 +21,12 @@ export function AuthProvider({ children }) {
     // Écoute tous les changements d'état auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      if (session?.user) loadProfile(session.user.id)
-      else { setProfile(null); setLoading(false) }
+      if (session?.user) {
+        // User signed in — exit guest mode automatically
+        sessionStorage.removeItem('padel-guest')
+        setIsGuest(false)
+        loadProfile(session.user.id)
+      } else { setProfile(null); setLoading(false) }
     })
 
     return () => subscription.unsubscribe()
@@ -79,6 +84,16 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }
 
+  /** Mode invité — aucun compte, accès lecture seule */
+  const enterAsGuest = () => {
+    sessionStorage.setItem('padel-guest', 'true')
+    setIsGuest(true)
+  }
+  const exitGuest = () => {
+    sessionStorage.removeItem('padel-guest')
+    setIsGuest(false)
+  }
+
   /** Déconnexion — marque hors-ligne avant de couper la session */
   const signOut = async () => {
     if (user) {
@@ -130,8 +145,8 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, photos, loading, isOnboarding,
-      signInWithGoogle, signOut, saveProfile, refreshProfile,
+      user, profile, photos, loading, isOnboarding, isGuest,
+      signInWithGoogle, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest,
     }}>
       {children}
     </AuthContext.Provider>

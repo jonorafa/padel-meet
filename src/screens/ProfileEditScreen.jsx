@@ -31,11 +31,12 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const t = I18N[lang] || I18N.fr
 
   const [formData, setFormData] = useState({
+    name:           profile?.name           || '',
     bio_fr:         profile?.bio_fr         || '',
     bio_en:         profile?.bio_en         || '',
     bio_he:         profile?.bio_he         || '',
     dominant_hand:  profile?.dominant_hand  || 'right',
-    preferred_side: profile?.preferred_side || 'baseline',
+    preferred_side: profile?.preferred_side || 'forehand',
     play_style:     profile?.play_style     || 'aggressive',
     motivation:     profile?.motivation     || 'fun',
     frequency:      profile?.frequency      || 3,
@@ -72,7 +73,10 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       setSaving(true)
       setError(null)
       setSuccess(false)
-      const { error: saveError } = await saveProfile(formData)
+      // Also save full_name in sync with name
+      const payload = { ...formData }
+      if (payload.name) payload.full_name = payload.name
+      const { error: saveError } = await saveProfile(payload)
       if (saveError) {
         setError(saveError.message || 'Échec de la sauvegarde')
       } else {
@@ -159,6 +163,23 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', background: bg }}>
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+          {/* ── Nom complet ───────────────────────────────────── */}
+          <section>
+            <SectionTitle>{lang === 'he' ? 'שם מלא' : lang === 'en' ? 'Full name' : 'Nom complet'}</SectionTitle>
+            <input
+              value={formData.name}
+              onChange={e => handleInputChange('name', e.target.value)}
+              placeholder={lang === 'he' ? 'שם פרטי שם משפחה' : lang === 'en' ? 'First Last' : 'Prénom Nom'}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '12px 14px', borderRadius: 10,
+                background: card, color: ink,
+                border: `1px solid ${border}`,
+                fontFamily: 'Inter', fontSize: 15, outline: 'none',
+              }}
+            />
+          </section>
 
           {/* ── Photos ────────────────────────────────────────── */}
           <section>
@@ -258,9 +279,12 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
             <div style={{ marginBottom: 16 }}>
               <FieldLabel>{t.preferredSide || 'Côté préféré'}</FieldLabel>
               <div style={{ display: 'flex', gap: 8 }}>
-                {['baseline', 'net', 'both'].map(side => (
-                  <Chip key={side} active={formData.preferred_side === side} onClick={() => handleInputChange('preferred_side', side)}>
-                    {t[side] || side}
+                {[
+                  { v: 'forehand', label: lang === 'he' ? 'שמאל' : lang === 'en' ? 'Left' : 'Gauche' },
+                  { v: 'backhand', label: lang === 'he' ? 'ימין' : lang === 'en' ? 'Right' : 'Droite' },
+                ].map(({ v, label }) => (
+                  <Chip key={v} active={formData.preferred_side === v} onClick={() => handleInputChange('preferred_side', v)}>
+                    {label}
                   </Chip>
                 ))}
               </div>
