@@ -2152,18 +2152,52 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail })
           <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', marginTop: 10 }}>{userName}</div>
           <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginBottom: 14 }}>{userCity} · 2026</div>
           <Ornament width={50} color={COURT.gold} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginTop: 18 }}>
-            {[
-              { label: t.currentLevel,  value: level != null ? level.toFixed(1) : '—' },
-              { label: t.matchesPlayed, value: userMatches },
-              { label: t.confidence,    value: `${confidence}%` },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+          {level == null ? (
+            /* ── Niveau non évalué — CTA ── */
+            <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, textAlign: 'center' }}>
+                {lang === 'he' ? 'רמה לא מוערכת' : lang === 'en' ? 'Level not evaluated' : 'Niveau non évalué'}
               </div>
-            ))}
-          </div>
+              <button
+                onClick={() => setShowReEval(true)}
+                style={{
+                  padding: '10px 20px', borderRadius: 10,
+                  background: COURT.green, color: COURT.cream,
+                  border: `0.5px solid ${COURT.gold}60`, cursor: 'pointer',
+                  fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14,
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                <PadelBall size={14} shadow={false} />
+                {lang === 'he' ? 'השלם את ההערכה שלי' : lang === 'en' ? 'Complete my evaluation' : 'Compléter mon évaluation'}
+              </button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, width: '100%', marginTop: 4 }}>
+                {[
+                  { label: t.matchesPlayed, value: userMatches },
+                  { label: t.confidence,    value: `${confidence}%` },
+                ].map((s, i) => (
+                  <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
+                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* ── Niveau évalué — grille standard ── */
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginTop: 18 }}>
+              {[
+                { label: t.currentLevel,  value: level.toFixed(1) },
+                { label: t.matchesPlayed, value: userMatches },
+                { label: t.confidence,    value: `${confidence}%` },
+              ].map((s, i) => (
+                <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
+                  <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

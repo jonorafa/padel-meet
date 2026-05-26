@@ -462,53 +462,144 @@ export const I18N = {
   },
 };
 
+/**
+ * QUIZ D'ÉVALUATION DU NIVEAU
+ *
+ * Échelle de référence (calquée Playtomic) : 0.5 → 7.0
+ *   0.5 – 1.5  Débutant
+ *   1.5 – 3.5  Intermédiaire
+ *   3.5 – 5.5  Avancé
+ *   5.5 – 7.0  Expert / Pro
+ *
+ * Barème des réponses techniques (4 niveaux) :
+ *   1 = Débutant   |   3 = Intermédiaire   |   5 = Avancé   |   7 = Expert compétition
+ *
+ * Questions couvertes : Bandeja · Vibora · Sorties de vitre · Lecture tactique
+ */
 export const QUIZ_QUESTIONS = [
-  { id: 1, type: 'tech', q: { fr: "À quelle fréquence réussis-tu une bandeja contrôlée ?", en: "How often do you land a controlled bandeja?", he: "באיזו תדירות אתה מבצע בנדחה מבוקרת?" }, options: [
-    { fr: 'Rarement', en: "Rarely", he: 'לעיתים רחוקות', subFr: "Je découvre encore le geste.", subEn: "Still learning the shot.", subHe: 'עדיין לומד את התנועה.', value: 1 },
-    { fr: 'Occasionnellement', en: "Occasionally", he: 'מדי פעם', subFr: "Réussite une fois sur trois.", subEn: "About one in three.", subHe: 'הצלחה בכ-שליש מהמקרים.', value: 2 },
-    { fr: 'Souvent', en: "Often", he: 'לעיתים קרובות', subFr: "Coup de routine.", subEn: "A routine shot.", subHe: 'מכה שגרתית במשחק.', value: 3 },
-    { fr: 'Toujours', en: "Always", he: 'תמיד', subFr: "Maîtrisé, placé à volonté.", subEn: "Mastered, placed at will.", subHe: 'בשליטה מלאה.', value: 4 },
-  ]},
-  { id: 2, type: 'tech', q: { fr: "Maîtrises-tu la sortie de mur du fond ?", en: "Do you handle the back-wall exit?", he: 'אתה שולט ביציאה מקיר אחורי?' }, options: [
-    { fr: "Pas encore", en: "Not yet", he: 'עוד לא', subFr: "Le mur me surprend.", subEn: "The wall surprises me.", subHe: 'הקיר מפתיע אותי.', value: 1 },
-    { fr: 'Lecture correcte', en: "Decent read", he: 'קריאה סבירה', subFr: "Je récupère, sans précision.", subEn: "I recover, without precision.", subHe: 'מציל בלי דיוק.', value: 2 },
-    { fr: "Sortie propre", en: "Clean exit", he: 'יציאה נקייה', subFr: "Je relance avec intention.", subEn: "I return with intent.", subHe: 'מחזיר במחשבה.', value: 3 },
-    { fr: 'Arme offensive', en: "Offensive weapon", he: 'נשק התקפי', subFr: "Je transforme défense en attaque.", subEn: "I turn defense into attack.", subHe: 'הופך הגנה להתקפה.', value: 4 },
-  ]},
-  { id: 3, type: 'self', q: { fr: "Régularité dans l'échange", en: "Consistency in rallies", he: 'יציבות בחילופים' }, sub: { fr: 'De 1 (variable) à 10 (métronome).', en: "From 1 (erratic) to 10 (metronome).", he: 'מ-1 (משתנה) עד 10 (מטרונום).' } },
-  { id: 4, type: 'tech', q: { fr: "Où préfères-tu jouer ?", en: "Where do you prefer to play?", he: 'איפה אתה אוהב לשחק?' }, options: [
-    { fr: 'Attaque au filet', en: "Net attack", he: 'התקפה ברשת', subFr: "Volées, smashs, finition.", subEn: "Volleys, smashes, finishing.", subHe: 'וולה, סמאש, סיום.', value: 4 },
-    { fr: 'Polyvalent', en: "Versatile", he: 'מאוזן', subFr: "Je m'adapte.", subEn: "I adapt.", subHe: 'מתאים את עצמי.', value: 3 },
-    { fr: 'Fond de court', en: "Back of the court", he: 'קו הקצה', subFr: "Construction, patience.", subEn: "Construction, patience.", subHe: 'בנייה וסבלנות.', value: 2 },
-    { fr: "En recherche", en: "Searching", he: 'בחיפוש', subFr: "Je teste.", subEn: "I'm testing.", subHe: 'בודק עמדות.', value: 1 },
-  ]},
-  { id: 5, type: 'self', q: { fr: 'Puissance de frappe', en: "Striking power", he: 'עוצמת החבטה' }, sub: { fr: 'De 1 (mesurée) à 10 (foudroyante).', en: "From 1 (measured) to 10 (thunderous).", he: 'מ-1 (מדודה) עד 10 (חזקה מאוד).' } },
-  { id: 6, type: 'tech', q: { fr: "Comment lis-tu le jeu adverse ?", en: "How do you read your opponents?", he: 'איך אתה קורא את המשחק?' }, options: [
-    { fr: "Je réagis tard", en: "I react late", he: 'מאחר להגיב', subFr: "Le coup est déjà parti.", subEn: "The shot is already gone.", subHe: 'המכה כבר יצאה.', value: 1 },
-    { fr: 'Anticipation correcte', en: "Decent anticipation", he: 'ציפייה סבירה', subFr: "Je devine la zone.", subEn: "I guess the zone.", subHe: 'מנחש את האזור.', value: 2 },
-    { fr: 'Bonne lecture', en: "Good read", he: 'קריאה טובה', subFr: "Intention + zone.", subEn: "Intent + zone.", subHe: 'כוונה ואזור.', value: 3 },
-    { fr: 'Lecture experte', en: "Expert read", he: 'קריאה מומחית', subFr: "Je lis aussi le partenaire.", subEn: "I read my partner too.", subHe: 'קורא גם את השותף.', value: 4 },
-  ]},
-  { id: 7, type: 'self', q: { fr: 'Placement', en: "Placement", he: 'מיקום' }, sub: { fr: 'De 1 (instinctif) à 10 (chirurgical).', en: "From 1 (instinctive) to 10 (surgical).", he: 'מ-1 (אינסטינקטיבי) עד 10 (כירורגי).' } },
-  { id: 8, type: 'self', q: { fr: 'Mental & sang-froid', en: "Mental & composure", he: 'מנטליות וקור רוח' }, sub: { fr: 'De 1 (réactif) à 10 (impassible).', en: "From 1 (reactive) to 10 (unflappable).", he: 'מ-1 (מגיב) עד 10 (קר רוח).' } },
+  // ── Q1 · Technique : Bandeja ──────────────────────────────────────────────
+  { id: 1, type: 'tech',
+    q: { fr: "À quelle fréquence réussis-tu une bandeja contrôlée ?", en: "How often do you land a controlled bandeja?", he: "באיזו תדירות אתה מבצע בנדחה מבוקרת?" },
+    options: [
+      { fr: 'Rarement',        en: 'Rarely',        he: 'לעיתים רחוקות', subFr: "Je découvre encore le geste.",           subEn: "Still learning the shot.",         subHe: 'עדיין לומד את התנועה.',       value: 1 },
+      { fr: 'Occasionnellement',en:'Occasionally',  he: 'מדי פעם',       subFr: "Réussite une fois sur trois.",          subEn: "About one in three.",              subHe: 'הצלחה בכ-שליש מהמקרים.',     value: 3 },
+      { fr: 'Souvent',         en: 'Often',         he: 'לעיתים קרובות', subFr: "Coup de routine, placement correct.",  subEn: "Routine shot, decent placement.",  subHe: 'מכה שגרתית, מיקום סביר.',    value: 5.5 },
+      { fr: 'Arme de compétition', en: 'Competition weapon', he: 'נשק תחרותי', subFr: "Placée à volonté, direction et effet maîtrisés.", subEn: "Placed at will — direction and spin mastered.", subHe: 'שליטה מלאה בכיוון ובספין.', value: 7 },
+    ]},
+
+  // ── Q2 · Technique : Sorties de vitre ────────────────────────────────────
+  { id: 2, type: 'tech',
+    q: { fr: "Maîtrises-tu les sorties de vitre (fond et côté) ?", en: "Do you handle back-wall and side-glass exits?", he: 'אתה שולט ביציאות מהקירות?' },
+    options: [
+      { fr: 'Pas encore',         en: 'Not yet',           he: 'עוד לא',         subFr: "Le mur me surprend.",                          subEn: "The wall catches me off-guard.",       subHe: 'הקיר מפתיע אותי.',                value: 1 },
+      { fr: 'Lecture correcte',   en: 'Decent read',       he: 'קריאה סבירה',    subFr: "Je récupère la balle, sans précision.",        subEn: "I recover, without precision.",        subHe: 'מציל את הכדור, בלי דיוק.',        value: 3 },
+      { fr: 'Sortie propre',      en: 'Clean exit',        he: 'יציאה נקייה',    subFr: "Je relance avec intention et placement.",      subEn: "I return with intent and placement.",  subHe: 'חזרה מכוונת עם מיקום.',           value: 5.5 },
+      { fr: 'Double vitre maîtrisée', en: 'Double-glass mastered', he: 'שליטה בכפל קיר', subFr: "Je transforme double vitre en attaque — niveau compétition.", subEn: "I turn double-glass into attack — competition level.", subHe: 'הופך כפל קיר להתקפה — רמת תחרות.', value: 7 },
+    ]},
+
+  // ── Q3 · Auto-éval : Régularité ───────────────────────────────────────────
+  { id: 3, type: 'self',
+    q:   { fr: "Régularité dans l'échange", en: "Consistency in rallies", he: 'יציבות בחילופים' },
+    sub: { fr: 'De 1 (variable) à 10 (métronome).', en: "From 1 (erratic) to 10 (metronome).", he: 'מ-1 (משתנה) עד 10 (מטרונום).' }},
+
+  // ── Q4 · Technique : Vibora ───────────────────────────────────────────────
+  { id: 4, type: 'tech',
+    q: { fr: "Maîtrises-tu la vibora ?", en: "How well do you master the vibora?", he: 'עד כמה אתה שולט בויברה?' },
+    options: [
+      { fr: 'Je ne la connais pas encore', en: "I don't know it yet",    he: 'עוד לא מכיר את המכה', subFr: "Coup découvert récemment.",                    subEn: "Just discovered the shot.",                  subHe: 'גיליתי את המכה לאחרונה.',             value: 1 },
+      { fr: 'En apprentissage',            en: 'Still learning',          he: 'בשלב הלמידה',         subFr: "Résultat aléatoire, timing inconsistant.",    subEn: "Inconsistent timing, random results.",       subHe: 'תזמון לא עקבי, תוצאות אקראיות.',     value: 3 },
+      { fr: 'Je la place avec intention',  en: 'I place it with intent',  he: 'משתמש בה בכוונה',    subFr: "Bonne exécution, placement correct.",         subEn: "Good execution, correct placement.",         subHe: 'ביצוע טוב, מיקום נכון.',              value: 5.5 },
+      { fr: 'Arme de compétition',         en: 'Competition weapon',      he: 'נשק תחרותי',          subFr: "Vibora croisée ou à la ligne — maîtrise totale.", subEn: "Cross or line vibora — total mastery.", subHe: 'ויברה אלכסונית או קווית — שליטה מלאה.', value: 7 },
+    ]},
+
+  // ── Q5 · Auto-éval : Puissance ────────────────────────────────────────────
+  { id: 5, type: 'self',
+    q:   { fr: 'Puissance de frappe', en: "Striking power", he: 'עוצמת החבטה' },
+    sub: { fr: 'De 1 (mesurée) à 10 (foudroyante).', en: "From 1 (measured) to 10 (thunderous).", he: 'מ-1 (מדודה) עד 10 (חזקה מאוד).' }},
+
+  // ── Q6 · Technique : Lecture tactique ────────────────────────────────────
+  { id: 6, type: 'tech',
+    q: { fr: "Comment lis-tu le jeu adverse ?", en: "How do you read your opponents?", he: 'איך אתה קורא את המשחק?' },
+    options: [
+      { fr: 'Je réagis tard',        en: 'I react late',           he: 'מאחר להגיב',     subFr: "Le coup est déjà parti quand je bouge.",       subEn: "The shot is already gone when I move.",  subHe: 'המכה כבר יצאה כשאני זז.',          value: 1 },
+      { fr: 'Anticipation correcte', en: 'Decent anticipation',    he: 'ציפייה סבירה',   subFr: "Je devine la zone, pas toujours la direction.", subEn: "I guess the zone, not always direction.", subHe: 'מנחש את האזור, לא תמיד הכיוון.',    value: 3 },
+      { fr: 'Bonne lecture',         en: 'Good read',              he: 'קריאה טובה',     subFr: "Intention + zone + déplacement anticipé.",     subEn: "Intent + zone + early movement.",         subHe: 'כוונה + אזור + תנועה מוקדמת.',      value: 5.5 },
+      { fr: 'Lecture experte',       en: 'Expert read',            he: 'קריאה מומחית',   subFr: "Je lis mon partenaire ET les adversaires — anticipation double, niveau tournoi.", subEn: "I read partner AND opponents — double anticipation, tournament level.", subHe: 'קורא שותף ויריבים — ציפייה כפולה, רמת טורניר.', value: 7 },
+    ]},
+
+  // ── Q7 · Auto-éval : Placement ────────────────────────────────────────────
+  { id: 7, type: 'self',
+    q:   { fr: 'Placement sur le court', en: "Court positioning", he: 'מיקום במגרש' },
+    sub: { fr: 'De 1 (instinctif) à 10 (chirurgical).', en: "From 1 (instinctive) to 10 (surgical).", he: 'מ-1 (אינסטינקטיבי) עד 10 (כירורגי).' }},
+
+  // ── Q8 · Auto-éval : Mental ───────────────────────────────────────────────
+  { id: 8, type: 'self',
+    q:   { fr: 'Mental & sang-froid', en: "Mental & composure", he: 'מנטליות וקור רוח' },
+    sub: { fr: 'De 1 (réactif) à 10 (impassible).', en: "From 1 (reactive) to 10 (unflappable).", he: 'מ-1 (מגיב) עד 10 (קר רוח).' }},
 ];
 
-
+/**
+ * computeLevel — Calcul du niveau Playtomic (0.5 – 7.0)
+ * ════════════════════════════════════════════════════════════════
+ *
+ * ÉCHELLE DE RÉFÉRENCE
+ *   0.5 – 1.5  Débutant
+ *   1.5 – 3.5  Intermédiaire
+ *   3.5 – 5.5  Avancé
+ *   5.5 – 7.0  Expert / Compétition
+ *
+ * BARÈME DES OPTIONS TECHNIQUES
+ *   Débutant      → value: 1.0
+ *   Intermédiaire → value: 3.0
+ *   Avancé        → value: 5.5
+ *   Expert        → value: 7.0
+ *
+ * FORMULE  (anti-surestimation — tech prime sur l'auto-éval)
+ *   Score_Final = (Score_Technique × 0.85) + (Score_AutoEval × 0.15)
+ *
+ * Score_Technique : moyenne des options tech, déjà sur [1, 7]
+ * Score_AutoEval  : moyenne des sliders [1,10] remappée → [0.5, 7.0]
+ *                   via : 0.5 + (avg − 1) × (6.5 / 9)
+ *
+ * SIMULATIONS DE VÉRIFICATION
+ *   MAX    tech=7.0  autoEval=7.0  → (7.0×0.85)+(7.0×0.15) = 5.95+1.05 = 7.0  ✓
+ *   EXPERT tech=7.0  autoEval=5.5  → (7.0×0.85)+(5.5×0.15) = 5.95+0.825 = 6.8 ✓
+ *   AVANCÉ tech=5.5  autoEval=5.5  → (5.5×0.85)+(5.5×0.15) = 4.675+0.825 = 5.5 ✓
+ *
+ * CAS SKIP : retourne null — ne jamais inventer de valeur par défaut.
+ */
 export function computeLevel(answers) {
-  let techScore = 0, techN = 0, selfScore = 0, selfN = 0;
+  if (!answers || Object.keys(answers).length === 0) return null;
+
+  let techSum = 0, techN = 0, selfSum = 0, selfN = 0;
+
   QUIZ_QUESTIONS.forEach(q => {
     const v = answers[q.id];
     if (v == null) return;
-    if (q.type === 'tech') { techScore += v; techN++; }
-    else                   { selfScore += v; selfN++; }
+    if (q.type === 'tech') {
+      // Valeurs : 1.0 | 3.0 | 5.5 | 7.0 — déjà sur l'échelle [1, 7]
+      techSum += v;
+      techN++;
+    } else {
+      // Slider [1, 10]
+      selfSum += v;
+      selfN++;
+    }
   });
-  const techAvg = techN ? techScore / techN : 2;
-  const techMapped = 1.0 + (techAvg - 1) * 1.5;
-  const selfAvg = selfN ? selfScore / selfN : 5;
-  const selfMapped = 1.0 + (selfAvg - 1) * (5 / 9);
-  const blended = techMapped * 0.7 + selfMapped * 0.3;
-  const score = Math.max(1.0, blended - 0.3);
-  return Math.max(1.0, Math.min(7.0, +score.toFixed(1)));
+
+  // Score technique — moyenne sur [1, 7]
+  const techScore = techN > 0 ? techSum / techN : 3.5;
+
+  // Score auto-éval — slider [1,10] → [0.5, 7.0]
+  const selfAvg   = selfN > 0 ? selfSum / selfN : 5;
+  const selfScore = 0.5 + (selfAvg - 1) * (6.5 / 9);
+
+  // Pondération : 85% technique / 15% auto-évaluation
+  const raw = techScore * 0.85 + selfScore * 0.15;
+
+  // Arrondi à 1 décimale, clamp [0.5, 7.0]
+  const finalScore = Math.round(raw * 10) / 10;
+  return Math.max(0.5, Math.min(7.0, finalScore));
 }
 
 // ELO simple: +/- selon résultat et différence de niveau
