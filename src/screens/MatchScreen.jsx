@@ -428,6 +428,12 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
       </div>
 
       {/* ─── Contenu scrollable ────────────────────────────────────────── */}
+      {/*
+        Pas de stopPropagation : les pointer events doivent remonter au SwipeStack
+        pour permettre le swipe horizontal et le tap-to-open-profile depuis tout
+        l'écran de la carte. Le scroll vertical reste géré nativement via touchAction:'pan-y'
+        et la détection verticale dans SwipeStack.onMove.
+      */}
       <div
         className="card-scroll"
         style={{
@@ -436,7 +442,6 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
           touchAction: 'pan-y',
           WebkitOverflowScrolling: 'touch',
         }}
-        onPointerDownCapture={(e) => e.stopPropagation()}
       >
         {/* Grille 2x2 des 4 infos clés */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
@@ -731,8 +736,8 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
             <span>{displayStack?.length ?? '…'} {t.available}</span>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, marginLeft: 12 }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.6"
               style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -742,23 +747,25 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={lang === 'he' ? 'חפש...' : lang === 'en' ? 'Search...' : 'Chercher...'}
               style={{
-                paddingLeft: 28, paddingRight: 10, height: 32, width: 148,
+                paddingLeft: 28, paddingRight: 10, height: 26, width: '100%',
                 background: dark ? COURT.darkCard : COURT.cream,
                 border: `0.5px solid ${searchQuery ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
                 borderRadius: 999,
                 fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
                 fontStyle: rtl ? 'normal' : 'italic',
                 fontSize: 13, color: ink, outline: 'none', transition: 'border-color 0.2s',
+                boxSizing: 'border-box',
               }}
             />
           </div>
           <button onClick={onEditFilters} style={{
             background: dark ? COURT.darkCard : COURT.cream,
             border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
-            borderRadius: 999, padding: '8px 14px',
+            borderRadius: 999, padding: '0 12px', height: 26,
             fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
             fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: COURT.green, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 6,
+            display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+            boxSizing: 'border-box',
           }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
               <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
@@ -1254,9 +1261,9 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
       .maybeSingle();
     if (mh) {
       await supabase.rpc('submit_peer_evaluation', {
-        p_match_id:     mh.id,
-        p_evaluated_id: player.id,
-        p_level:        Math.round(evalLevel * 2) / 2, // arrondi au 0.5
+        p_match_id:       mh.id,
+        p_evaluated_id:   player.id,
+        p_proposed_level: Math.round(evalLevel * 2) / 2, // arrondi au 0.5
       });
     }
     setEvalSending(false);

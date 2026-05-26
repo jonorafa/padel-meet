@@ -301,7 +301,7 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, dark }) {
         fontFamily: 'Inter', fontSize: 11, color: COURT.gold,
         letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4,
         animation: 'fadeUp 0.6s ease 0.5s both',
-      }}>Niv. {player.level.toFixed(1)} · {player.city}</div>
+      }}>Niv. {player.level != null ? player.level.toFixed(1) : '—'} · {player.city || '—'}</div>
 
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 10, width: '100%',
@@ -361,27 +361,43 @@ export function BottomSheet({ children, onClose, title, dark }) {
   const [snapping, setSnapping] = useState(false);
   const touchStartY = useRef(null);
   const touchStartTime = useRef(null);
+  const dragEnabled = useRef(false);       // drag-to-close activé seulement si touch sur la poignée OU contenu en haut
+  const sheetRef = useRef(null);
 
   function handleTouchStart(e) {
     touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
+    // N'active le drag QUE si on est tout en haut du scroll
+    // (sinon on laisse le scroll natif fonctionner sans interférence)
+    dragEnabled.current = (sheetRef.current?.scrollTop ?? 0) <= 0;
     setSnapping(false);
   }
 
   function handleTouchMove(e) {
-    if (touchStartY.current === null) return;
+    if (touchStartY.current === null || !dragEnabled.current) return;
     const delta = e.touches[0].clientY - touchStartY.current;
+    // Si on swipe vers le haut, on désactive le drag (l'utilisateur scrolle)
+    if (delta < -4) {
+      dragEnabled.current = false;
+      setDragY(0);
+      return;
+    }
     if (delta > 0) setDragY(delta);
   }
 
   function handleTouchEnd(e) {
-    if (touchStartY.current === null) return;
+    if (touchStartY.current === null) {
+      dragEnabled.current = false;
+      return;
+    }
+    const wasDragging = dragEnabled.current;
     const delta = e.changedTouches[0].clientY - touchStartY.current;
     const elapsed = Math.max(1, Date.now() - touchStartTime.current);
     const velocity = delta / elapsed; // px/ms
     touchStartY.current = null;
+    dragEnabled.current = false;
 
-    if (delta > 90 || velocity > 0.45) {
+    if (wasDragging && (delta > 90 || velocity > 0.45)) {
       onClose?.();
     } else {
       setSnapping(true);
@@ -397,6 +413,7 @@ export function BottomSheet({ children, onClose, title, dark }) {
       display: 'flex', alignItems: 'flex-end',
     }} onClick={onClose}>
       <div
+        ref={sheetRef}
         onClick={e => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -405,24 +422,54 @@ export function BottomSheet({ children, onClose, title, dark }) {
           width: '100%', maxHeight: '90vh',
           background: bg, borderRadius: '20px 20px 0 0',
           border: `0.5px solid ${border}`,
-          overflow: dragY > 0 ? 'hidden' : 'auto',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           animation: dragY === 0 && !snapping ? 'sheetUp 0.35s cubic-bezier(.2,.9,.3,1)' : 'none',
           transform: dragY > 0 || snapping ? `translateY(${dragY}px)` : undefined,
           transition: snapping ? 'transform 0.3s cubic-bezier(.2,.9,.3,1)' : 'none',
           paddingBottom: 40,
           willChange: 'transform',
         }}>
-        {/* Handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 8px' }}>
-          <div style={{ width: 36, height: 3, borderRadius: 2, background: dark ? COURT.darkBorder : `${COURT.green}40` }} />
+        {/* Handle + bouton fermer (croix) en haut pour sortie facile */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 1,
+          background: bg,
+          display: 'flex', flexDirection: 'column',
+          borderBottom: title ? `0.5px solid ${border}` : 'none',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 8px' }}>
+            <div style={{ width: 36, height: 3, borderRadius: 2, background: dark ? COURT.darkBorder : `${COURT.green}40` }} />
+          </div>
+          {title && (
+            <div style={{
+              padding: '4px 24px 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            }}>
+              <div style={{
+                fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                fontSize: 22, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500,
+                flex: 1, minWidth: 0,
+              }}>{title}</div>
+              <button
+                onClick={onClose}
+                aria-label="Fermer"
+                style={{
+                  width: 32, height: 32, borderRadius: 16,
+                  background: dark ? COURT.darkBg : `${COURT.green}10`,
+                  border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '40'}`,
+                  color: dark ? COURT.darkText : COURT.green,
+                  cursor: 'pointer', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
-        {title && (
-          <div style={{
-            padding: '4px 24px 16px',
-            fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
-            fontSize: 22, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500,
-          }}>{title}</div>
-        )}
         {children}
       </div>
     </div>
