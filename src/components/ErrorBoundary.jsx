@@ -29,6 +29,11 @@ export class ErrorBoundary extends Component {
     window.location.reload()
   }
 
+  handleReset() {
+    this.setState({ hasError: false, error: null, errorInfo: null, copied: false })
+    this.props.onReset?.()
+  }
+
   handleCopy() {
     const { error, errorInfo } = this.state
     const text = [
@@ -112,19 +117,35 @@ export class ErrorBoundary extends Component {
           </div>
         )}
 
-        <button
-          onClick={this.handleReload}
-          style={{
-            padding: '14px 32px', borderRadius: 12,
-            background: COURT.green, color: COURT.cream,
-            border: `0.5px solid ${COURT.gold}50`,
-            fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
-            fontSize: 16, cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(15,61,41,0.2)',
-          }}
-        >
-          Recharger l'app
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {this.props.onReset && (
+            <button
+              onClick={() => this.handleReset()}
+              style={{
+                padding: '12px 24px', borderRadius: 12,
+                background: 'transparent', color: stone,
+                border: `0.5px solid ${stone}`,
+                fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                fontSize: 15, cursor: 'pointer',
+              }}
+            >
+              ← Retour
+            </button>
+          )}
+          <button
+            onClick={this.handleReload}
+            style={{
+              padding: '14px 32px', borderRadius: 12,
+              background: COURT.green, color: COURT.cream,
+              border: `0.5px solid ${COURT.gold}50`,
+              fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+              fontSize: 16, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(15,61,41,0.2)',
+            }}
+          >
+            Recharger l'app
+          </button>
+        </div>
       </div>
     )
   }

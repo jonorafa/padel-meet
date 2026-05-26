@@ -18,6 +18,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { DetailedProfileModal } from '../components/DetailedProfileModal';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
 import { PendingMatchesPanel } from '../components/PendingMatchesPanel';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
 
@@ -1151,6 +1152,10 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   const stone  = dark ? COURT.darkMuted : COURT.stone;
 
   const { submitResult, confirmResult, rejectResult, pendingResults, matchStatuses, matchScoreStatus } = useMatchResults();
+  // ── Répondre à une proposition de match (Accept / Decline) ──────────────────
+  // NOTE: useState doit être déclaré AVANT les useEffect (règles des hooks React)
+  const [respondingId, setRespondingId] = useState(null);
+
   // Scores en attente pour ce match précis
   const pendingForMatch = pendingResults.filter(p => p.matchId === matchId);
   // Statut score pour ce match (tentatives, lock)
@@ -1196,9 +1201,6 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, [matchId, user?.id]);
-
-  // ── Répondre à une proposition de match (Accept / Decline) ──────────────────
-  const [respondingId, setRespondingId] = useState(null);
   const respondToProposal = async (messageId, accepted) => {
     setRespondingId(messageId);
     const { error } = await supabase.rpc('respond_to_match_proposal', {
@@ -1656,12 +1658,14 @@ function ChatScreen({ t, lang, dark }) {
 
   if (activeMatch) {
     return (
-      <ActiveChat
-        matchId={activeMatch.matchId}
-        player={activeMatch.player}
-        onBack={() => setActiveMatch(null)}
-        t={t} lang={lang} dark={dark}
-      />
+      <ErrorBoundary key={activeMatch.matchId} onReset={() => setActiveMatch(null)}>
+        <ActiveChat
+          matchId={activeMatch.matchId}
+          player={activeMatch.player}
+          onBack={() => setActiveMatch(null)}
+          t={t} lang={lang} dark={dark}
+        />
+      </ErrorBoundary>
     );
   }
 
@@ -2756,7 +2760,9 @@ export default function MainApp() {
       )}
 
       {showScore && (
-        <LiveScoreTracker t={t} lang={lang} dark={darkMode} onClose={() => setShowScore(false)} />
+        <ErrorBoundary key="live-score-tracker">
+          <LiveScoreTracker t={t} lang={lang} dark={darkMode} onClose={() => setShowScore(false)} />
+        </ErrorBoundary>
       )}
 
       {detailPlayerId && (
