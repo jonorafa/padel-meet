@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { COURT } from '../components/CourtUI'
+import { COURT, PadelSlider } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { useProfilePhotos } from '../hooks/useProfilePhotos'
@@ -317,20 +317,15 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
             {/* Frequency */}
             <div style={{ marginBottom: 4 }}>
               <FieldLabel>
-                {t.playFrequency || 'Fréquence'}: {formData.frequency}× / sem.
+                {t.playFrequency || 'Fréquence de jeu'} : {formData.frequency}× / {lang === 'he' ? 'שבוע' : lang === 'en' ? 'week' : 'sem.'}
               </FieldLabel>
-              <input
-                type="range"
-                min="0"
-                max="7"
+              <PadelSlider
+                min={0} max={7} step={1}
                 value={formData.frequency}
-                onChange={(e) => handleInputChange('frequency', parseInt(e.target.value))}
-                style={{ width: '100%', accentColor: COURT.green }}
+                onChange={(v) => handleInputChange('frequency', v)}
+                dark={dark}
+                leftLabel="0" rightLabel="7"
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <span style={{ fontFamily: 'Inter', fontSize: 11, color: muted }}>0</span>
-                <span style={{ fontFamily: 'Inter', fontSize: 11, color: muted }}>7</span>
-              </div>
             </div>
           </section>
 

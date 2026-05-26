@@ -1981,6 +1981,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail })
   const [showLikes, setShowLikes] = useState(false);
   const [showReEval, setShowReEval] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
+  const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
@@ -2258,16 +2259,25 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail })
           position: 'fixed', inset: 0, zIndex: 300,
           background: dark ? COURT.darkBg : COURT.cream,
         }}>
+          {/* Quiz seul — pas d'éditeur de profil, pas de navigation */}
           <QuizScreen
             t={t} lang={lang} dark={dark}
             onDone={async (computedLevel) => {
               setReEvalSaving(true);
+              // IMPORTANT : on ne touche QUE au champ level. Username, photo,
+              // nom, hand, side, style, region restent inchangés.
               await saveProfile({ level: computedLevel });
               setReEvalSaving(false);
-              setShowReEval(false);
+              setReEvalDone(computedLevel);
+              // Ferme automatiquement après confirmation visuelle (1.6s)
+              setTimeout(() => {
+                setReEvalDone(null);
+                setShowReEval(false);
+              }, 1600);
             }}
             onBack={() => setShowReEval(false)}
           />
+
           {reEvalSaving && (
             <div style={{
               position: 'absolute', inset: 0, zIndex: 10,
@@ -2279,6 +2289,34 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail })
                 border: `3px solid ${COURT.cream}40`, borderTopColor: COURT.cream,
                 animation: 'spin 0.7s linear infinite',
               }} />
+            </div>
+          )}
+
+          {reEvalDone != null && (
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: dark ? COURT.darkBg : COURT.cream,
+              animation: 'fadeIn 0.3s ease',
+            }}>
+              <div style={{ textAlign: 'center', padding: 32 }}>
+                <Ornament width={50} style={{ margin: '0 auto 16px', display: 'block' }} />
+                <div style={{
+                  fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                  fontSize: 14, color: dark ? COURT.darkMuted : COURT.stone,
+                  letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12,
+                }}>
+                  {lang === 'fr' ? 'Niveau mis à jour' : lang === 'en' ? 'Level updated' : 'הרמה עודכנה'}
+                </div>
+                <div style={{
+                  fontFamily: 'Playfair Display, serif', fontSize: 88,
+                  color: COURT.green, lineHeight: 1,
+                  animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)',
+                }}>
+                  {reEvalDone.toFixed(1)}
+                  <span style={{ fontSize: 28, color: dark ? COURT.darkMuted : COURT.stone, fontStyle: 'italic', fontFamily: 'Crimson Text, serif' }}>/7.0</span>
+                </div>
+              </div>
             </div>
           )}
         </div>

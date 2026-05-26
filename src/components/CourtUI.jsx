@@ -73,6 +73,56 @@ export function PadelBall({ size = 28, color = '#D8E66A', seam = '#fff', shadow 
   );
 }
 
+/**
+ * PadelSlider — slider générique avec une balle de padel comme curseur.
+ * Utilise un <input type="range"> natif pour garantir le drag tactile sur iOS.
+ *
+ * Props :
+ *   min, max, step    : bornes (par défaut 1, 10, 1)
+ *   value, onChange   : valeur contrôlée
+ *   dark              : variante sombre
+ *   leftLabel, rightLabel : optionnels — labels sous le slider (ex: "1", "10")
+ *   bigValue          : si true, affiche la valeur en gros au-dessus
+ *   suffix            : suffixe pour la grosse valeur (ex: "/10")
+ */
+export function PadelSlider({
+  min = 1, max = 10, step = 1,
+  value, onChange,
+  dark = false,
+  leftLabel, rightLabel,
+  bigValue = false, suffix = '',
+}) {
+  const stone = dark ? '#7C8B81' : '#6F7B70';
+  return (
+    <div style={{ width: '100%' }} dir="ltr">
+      {bigValue && (
+        <div style={{
+          textAlign: 'center', fontFamily: 'Playfair Display, serif',
+          fontSize: 88, lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
+        }}>
+          {value}
+          {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: 'italic', fontFamily: 'Crimson Text, serif' }}>{suffix}</span>}
+        </div>
+      )}
+      <input
+        type="range"
+        min={min} max={max} step={step}
+        value={value}
+        onChange={e => onChange(+e.target.value)}
+        className={`padel-slider${dark ? ' dark' : ''}`}
+      />
+      {(leftLabel != null || rightLabel != null) && (
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          fontFamily: 'Inter', fontSize: 11, color: stone, marginTop: 4,
+        }}>
+          <span>{leftLabel}</span><span>{rightLabel}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function PadelRacket({ size = 80, frame = COURT.green, grip = COURT.ink, accent = COURT.gold, face, style = {} }) {
   const faceColor = face || COURT.creamDark;
   const holes = [];

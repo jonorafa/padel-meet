@@ -1,69 +1,18 @@
-import { useState, useRef, useCallback } from 'react';
-import { COURT, PadelBall, Ornament, ThinButton } from '../components/CourtUI';
+import { useState } from 'react';
+import { COURT, Ornament, ThinButton, PadelSlider } from '../components/CourtUI';
 import { QUIZ_QUESTIONS, computeLevel } from '../data/courtData';
 
-function SelfRatingSlider({ t, lang, onSubmit, dark }) {
+function SelfRatingSlider({ t, onSubmit, dark }) {
   const [val, setVal] = useState(5);
-  const trackRef = useRef(null);
-  const dragging = useRef(false);
-  const pct = (val - 1) / 9 * 100;
-  const stone = dark ? COURT.darkMuted : COURT.stone;
-
-  const calcVal = useCallback((clientX) => {
-    const rect = trackRef.current?.getBoundingClientRect();
-    if (!rect) return val;
-    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    return Math.round(1 + ratio * 9);
-  }, [val]);
-
-  // Pointer Events — works on both mouse and touch (iOS/Android)
-  const onPointerDown = (e) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragging.current = true;
-    setVal(calcVal(e.clientX));
-  };
-  const onPointerMove = (e) => {
-    if (!dragging.current) return;
-    setVal(calcVal(e.clientX));
-  };
-  const onPointerUp = () => { dragging.current = false; };
-
   return (
     <div style={{ marginTop: 8 }} dir="ltr">
-      <div style={{
-        textAlign: 'center', fontFamily: 'Playfair Display, serif', fontSize: 88,
-        lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
-      }}>
-        {val}<span style={{ fontSize: 28, color: stone, fontStyle: 'italic', fontFamily: 'Crimson Text, serif' }}>/10</span>
-      </div>
-
-      {/* Slider track — touch-friendly via Pointer Events */}
-      <div
-        ref={trackRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        style={{
-          position: 'relative', padding: '28px 0',
-          touchAction: 'none', cursor: 'pointer', userSelect: 'none',
-        }}
-      >
-        <div style={{ position: 'relative', height: 2, background: `${COURT.green}25` }}>
-          <div style={{
-            position: 'absolute', top: 0, bottom: 0, left: 0,
-            width: `${pct}%`, background: COURT.green,
-          }} />
-          <div style={{
-            position: 'absolute', top: '50%',
-            left: `${pct}%`, transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-          }}>
-            <PadelBall size={32} />
-          </div>
-        </div>
-      </div>
-
+      <PadelSlider
+        min={1} max={10} step={1}
+        value={val} onChange={setVal}
+        dark={dark}
+        bigValue suffix="/10"
+        leftLabel="1" rightLabel="10"
+      />
       <div style={{ height: 28 }} />
       <ThinButton variant="green" onClick={() => onSubmit(val)} full>{t.continue}</ThinButton>
     </div>

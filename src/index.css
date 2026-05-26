@@ -19,6 +19,64 @@ html, body {
 
 input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
 
+/* ─── PadelSlider — native input range stylé "balle de padel" ─── */
+/* iOS / Android : le drag fonctionne nativement, aucune logique JS */
+.padel-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 42px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  touch-action: pan-y;
+  padding: 0;
+  margin: 0;
+}
+/* ── WebKit (iOS Safari, Chrome) ── */
+.padel-slider::-webkit-slider-runnable-track {
+  height: 2px;
+  background: rgba(15, 61, 41, 0.25);
+  border-radius: 1px;
+}
+.padel-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  margin-top: -16px;
+  cursor: grab;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.55) 0%, transparent 28%),
+    radial-gradient(circle at 35% 30%, #F0F8B0 0%, #D8E66A 55%, #9BB343 100%);
+  border: 0.5px solid rgba(15, 61, 41, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+  transition: transform 0.12s ease;
+}
+.padel-slider:active::-webkit-slider-thumb { transform: scale(1.08); cursor: grabbing; }
+/* ── Firefox ── */
+.padel-slider::-moz-range-track {
+  height: 2px;
+  background: rgba(15, 61, 41, 0.25);
+  border-radius: 1px;
+  border: none;
+}
+.padel-slider::-moz-range-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: grab;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.55) 0%, transparent 28%),
+    radial-gradient(circle at 35% 30%, #F0F8B0 0%, #D8E66A 55%, #9BB343 100%);
+  border: 0.5px solid rgba(15, 61, 41, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+/* Variante sombre : track plus clair */
+.padel-slider.dark::-webkit-slider-runnable-track { background: rgba(216, 230, 106, 0.18); }
+.padel-slider.dark::-moz-range-track             { background: rgba(216, 230, 106, 0.18); }
+
 /* ─── Dark Mode Variables ─── */
 :root {
   --bg-shell: #1a1a18;
