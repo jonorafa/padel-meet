@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { initialsAvatar } from '../components/CourtUI'
@@ -12,6 +12,8 @@ export function useUserMatches() {
   const { user } = useAuth()
   const [matches, setMatches] = useState(null)
   const [loading, setLoading] = useState(true)
+  // ID unique par instance — évite le conflit Supabase "cannot add callbacks after subscribe()"
+  const instanceIdRef = useRef(`${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
@@ -77,7 +79,7 @@ export function useUserMatches() {
 
     // Écoute les nouveaux matches et messages en temps réel
     channel = supabase
-      .channel(`matches-${user.id}`)
+      .channel(`matches-${user.id}-${instanceIdRef.current}`)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'matches',
         filter: `player1_id=eq.${user.id}`,

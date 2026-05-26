@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -21,6 +21,9 @@ export function useMatchResults() {
   const [matchStatuses,  setMatchStatuses]  = useState({}) // matchId → { attempts, locked }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  // ID unique par instance — évite le conflit "cannot add postgres_changes after subscribe()"
+  // quand le hook est appelé dans plusieurs composants (MainApp + ActiveChat + LiveScoreTracker)
+  const instanceIdRef = useRef(`${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
 
   // Fetch les pending results impliquant l'utilisateur
   const fetchPendingResults = useCallback(async () => {
@@ -90,7 +93,7 @@ export function useMatchResults() {
     fetchPendingResults()
 
     const channel = supabase
-      .channel(`pending-results-${user.id}`)
+      .channel(`pending-results-${user.id}-${instanceIdRef.current}`)
       .on('postgres_changes', {
         event: '*', // INSERT, UPDATE, DELETE
         schema: 'public',
