@@ -13,7 +13,7 @@ import { COURT } from './CourtUI'
 export class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { hasError: false, error: null, errorInfo: null, copied: false }
   }
 
   static getDerivedStateFromError(error) {
@@ -22,10 +22,23 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error('[ErrorBoundary]', error, info)
+    this.setState({ errorInfo: info })
   }
 
   handleReload() {
     window.location.reload()
+  }
+
+  handleCopy() {
+    const { error, errorInfo } = this.state
+    const text = [
+      error?.message || String(error),
+      errorInfo?.componentStack?.split('\n').slice(0, 8).join('\n'),
+    ].filter(Boolean).join('\n\n')
+    navigator.clipboard?.writeText(text).then(() => {
+      this.setState({ copied: true })
+      setTimeout(() => this.setState({ copied: false }), 2000)
+    })
   }
 
   render() {
@@ -36,6 +49,11 @@ export class ErrorBoundary extends Component {
     const ink   = dark ? COURT.darkText : COURT.ink
     const stone = dark ? COURT.darkMuted: COURT.stone
 
+    const errorText = [
+      this.state.error?.message || String(this.state.error),
+      this.state.errorInfo?.componentStack?.split('\n').slice(0, 6).join('\n'),
+    ].filter(Boolean).join('\n\n')
+
     return (
       <div style={{
         position: 'fixed', inset: 0,
@@ -43,6 +61,7 @@ export class ErrorBoundary extends Component {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: 32, textAlign: 'center',
+        overflowY: 'auto',
       }}>
         {/* Racket icon */}
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎾</div>
@@ -56,23 +75,41 @@ export class ErrorBoundary extends Component {
 
         <p style={{
           fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
-          fontSize: 15, color: stone, margin: '0 0 28px', maxWidth: 280,
+          fontSize: 15, color: stone, margin: '0 0 16px', maxWidth: 280,
         }}>
           Rechargez la page pour réessayer.
         </p>
 
-        {/* Error detail (dev only) */}
-        {import.meta.env.DEV && this.state.error && (
-          <pre style={{
-            fontFamily: 'monospace', fontSize: 11, color: COURT.red,
-            background: `${COURT.red}10`,
-            border: `1px solid ${COURT.red}30`,
-            borderRadius: 8, padding: '8px 12px',
-            maxWidth: 320, overflowX: 'auto',
-            textAlign: 'left', marginBottom: 20, whiteSpace: 'pre-wrap',
-          }}>
-            {this.state.error.message}
-          </pre>
+        {/* Error detail — always visible for debugging */}
+        {errorText && (
+          <div style={{ width: '100%', maxWidth: 340, marginBottom: 16 }}>
+            <pre style={{
+              fontFamily: 'monospace', fontSize: 11, color: COURT.red,
+              background: `${COURT.red}10`,
+              border: `1px solid ${COURT.red}30`,
+              borderRadius: 8, padding: '8px 12px',
+              overflowX: 'auto',
+              textAlign: 'left', whiteSpace: 'pre-wrap',
+              userSelect: 'text', WebkitUserSelect: 'text',
+              marginBottom: 8,
+            }}>
+              {errorText}
+            </pre>
+            {navigator.clipboard && (
+              <button
+                onClick={() => this.handleCopy()}
+                style={{
+                  padding: '8px 16px', borderRadius: 8,
+                  background: this.state.copied ? COURT.green : 'transparent',
+                  color: this.state.copied ? COURT.cream : stone,
+                  border: `0.5px solid ${stone}`,
+                  fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                {this.state.copied ? '✓ Copié !' : '📋 Copier l\'erreur'}
+              </button>
+            )}
+          </div>
         )}
 
         <button
