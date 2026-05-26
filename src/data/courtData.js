@@ -472,9 +472,10 @@ export const I18N = {
  *   5.5 – 7.0  Expert / Pro
  *
  * Barème des réponses techniques (4 niveaux) :
- *   1 = Débutant   |   3 = Intermédiaire   |   5 = Avancé   |   7 = Expert compétition
+ *   1.0 = Débutant   |   3.0 = Intermédiaire   |   5.5 = Avancé   |   7.0 = Expert compétition
  *
- * Questions couvertes : Bandeja · Vibora · Sorties de vitre · Lecture tactique
+ * Questions tech (85%) : Q1 Bandeja · Q2 Sorties de vitre · Q3 Régularité · Q4 Vibora · Q5 Puissance · Q6 Lecture tactique
+ * Questions self (15%) : Q7 Placement (instinct) · Q8 Mental (sang-froid)
  */
 export const QUIZ_QUESTIONS = [
   // ── Q1 · Technique : Bandeja ──────────────────────────────────────────────
@@ -497,10 +498,15 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Double vitre maîtrisée', en: 'Double-glass mastered', he: 'שליטה בכפל קיר', subFr: "Je transforme double vitre en attaque — niveau compétition.", subEn: "I turn double-glass into attack — competition level.", subHe: 'הופך כפל קיר להתקפה — רמת תחרות.', value: 7 },
     ]},
 
-  // ── Q3 · Auto-éval : Régularité ───────────────────────────────────────────
-  { id: 3, type: 'self',
-    q:   { fr: "Régularité dans l'échange", en: "Consistency in rallies", he: 'יציבות בחילופים' },
-    sub: { fr: 'De 1 (variable) à 10 (métronome).', en: "From 1 (erratic) to 10 (metronome).", he: 'מ-1 (משתנה) עד 10 (מטרונום).' }},
+  // ── Q3 · Technique : Régularité ──────────────────────────────────────────
+  { id: 3, type: 'tech',
+    q: { fr: "Comment décris-tu ta régularité en match ?", en: "How would you describe your consistency in a match?", he: 'כיצד תתאר את העקביות שלך במשחק?' },
+    options: [
+      { fr: "Je fais souvent des fautes directes, surtout sous pression",  en: "I often make direct errors, especially under pressure",      he: 'אני עושה הרבה שגיאות ישירות, בעיקר תחת לחץ',        subFr: "Le point m'échappe avant de le construire.",     subEn: "The point is lost before I build it.",            subHe: 'הנקודה אובדת לפני שאני בונה אותה.',          value: 1   },
+      { fr: "Je tiens des échanges courts mais je me précipite souvent",   en: "I hold short rallies but often rush",                        he: 'אני מחזיק חילופים קצרים אבל ממהר לעיתים',          subFr: "Correct à froid, mais la pression me déséquilibre.", subEn: "Solid when fresh, pressure throws me off.",     subHe: 'בסדר כשרגוע, לחץ מפיל אותי.',               value: 3   },
+      { fr: "Je construis le point sans fautes inutiles",                  en: "I build the point without unnecessary errors",              he: 'אני בונה את הנקודה ללא שגיאות מיותרות',            subFr: "Régularité fiable, même en match serré.",        subEn: "Reliable consistency, even in close matches.",    subHe: 'עקביות אמינה, גם במשחקים קרובים.',           value: 5.5 },
+      { fr: "Je maintiens ma régularité en fin de match, sous pression",   en: "I stay consistent late in the match, under pressure",      he: 'שומר על עקביות בסוף המשחק, תחת לחץ',              subFr: "Niveau compétition — la fatigue et le score ne m'affectent pas.", subEn: "Competition level — fatigue and score don't affect me.", subHe: 'רמת תחרות — עייפות ותוצאה לא משפיעות עלי.', value: 7   },
+    ]},
 
   // ── Q4 · Technique : Vibora ───────────────────────────────────────────────
   { id: 4, type: 'tech',
@@ -512,10 +518,15 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Arme de compétition',         en: 'Competition weapon',      he: 'נשק תחרותי',          subFr: "Vibora croisée ou à la ligne — maîtrise totale.", subEn: "Cross or line vibora — total mastery.", subHe: 'ויברה אלכסונית או קווית — שליטה מלאה.', value: 7 },
     ]},
 
-  // ── Q5 · Auto-éval : Puissance ────────────────────────────────────────────
-  { id: 5, type: 'self',
-    q:   { fr: 'Puissance de frappe', en: "Striking power", he: 'עוצמת החבטה' },
-    sub: { fr: 'De 1 (mesurée) à 10 (foudroyante).', en: "From 1 (measured) to 10 (thunderous).", he: 'מ-1 (מדודה) עד 10 (חזקה מאוד).' }},
+  // ── Q5 · Technique : Puissance ───────────────────────────────────────────
+  { id: 5, type: 'tech',
+    q: { fr: "Comment utilises-tu la puissance dans ton jeu ?", en: "How do you use power in your game?", he: 'כיצד אתה משתמש בכוח במשחקך?' },
+    options: [
+      { fr: "Je joue principalement en placement, pas de coup fort",       en: "I play mainly placement, no real powerful shot",            he: 'אני משחק בעיקר מיקום, אין לי מכה חזקה',            subFr: "La puissance n'est pas encore une arme.",        subEn: "Power is not yet a weapon.",                      subHe: 'כוח עדיין אינו נשק.',                        value: 1   },
+      { fr: "J'ai quelques coups forts mais peu fiables",                  en: "I have some powerful shots but they're unreliable",         he: 'יש לי כמה מכות חזקות אבל לא אמינות',               subFr: "Ça part fort une fois sur deux, sans intention.", subEn: "Fires hard about half the time, no real intent.", subHe: 'יוצא חזק פעם בשתיים, ללא כוונה.',            value: 3   },
+      { fr: "Je peux accélérer régulièrement avec effet et direction",     en: "I can accelerate consistently with spin and direction",     he: 'אני יכול להאיץ באופן קבוע עם ספין וכיוון',         subFr: "Je choisis quand frapper fort.",                  subEn: "I choose when to hit hard.",                      subHe: 'אני בוחר מתי להכות חזק.',                    value: 5.5 },
+      { fr: "J'impose le rythme par ma puissance de manière constante",    en: "I dictate the pace through power consistently",             he: 'אני מכתיב את הקצב בכוח באופן קבוע',                subFr: "Puissance + précision + constance — niveau tournoi.", subEn: "Power + precision + consistency — tournament level.", subHe: 'כוח + דיוק + עקביות — רמת טורניר.',         value: 7   },
+    ]},
 
   // ── Q6 · Technique : Lecture tactique ────────────────────────────────────
   { id: 6, type: 'tech',
