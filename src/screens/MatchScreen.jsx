@@ -1181,6 +1181,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const [scoreSending,  setScoreSending]  = useState(false);
   const [scoreError,    setScoreError]    = useState('');
   const [rejectingId,   setRejectingId]   = useState(null);
+  const [confirmingId,  setConfirmingId]  = useState(null);
+  const [actionError,   setActionError]   = useState('');
   // Calcule le texte de score à partir des sets
   const scoreText = sets
     .filter(s => s.me !== '' && s.them !== '')
@@ -1321,9 +1323,39 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     setSheet(null);
   };
 
+  // ── Validation score padel (règles tennis/padel) ───────────────────────────
+  // Sets valides : 6-0…6-4, 7-5, 7-6 (et leurs inverses)
+  const isValidPadelSet = (me, them) => {
+    const a = parseInt(me, 10);
+    const b = parseInt(them, 10);
+    if (isNaN(a) || isNaN(b) || a < 0 || b < 0) return false;
+    const hi = Math.max(a, b);
+    const lo = Math.min(a, b);
+    if (hi > 7) return false;
+    if (hi === 7) return lo === 5 || lo === 6; // 7-5 ou 7-6
+    if (hi === 6) return lo <= 4;              // 6-0 à 6-4
+    return false;
+  };
+
   // ── Soumettre un score ──────────────────────────────────────────────────────
   const sendScore = async () => {
-    if (!scoreText.trim()) { setScoreError(lang === 'en' ? 'Enter at least one set score' : 'Entrez au moins un set'); return; }
+    // Valide chaque set rempli
+    const filledSets = sets.filter(s => s.me !== '' || s.them !== '');
+    if (filledSets.length === 0) {
+      setScoreError(lang === 'en' ? 'Enter at least one set score' : 'Entrez au moins un set');
+      return;
+    }
+    const invalidSet = filledSets.find(s => !isValidPadelSet(s.me, s.them));
+    if (invalidSet) {
+      setScoreError(
+        lang === 'en'
+          ? 'Invalid score — padel sets: 6-0 to 6-4, 7-5 or 7-6'
+          : lang === 'he'
+          ? 'תוצאה לא חוקית — סטים בפאדל: 6-0 עד 6-4, 7-5 או 7-6'
+          : 'Score invalide — un set au padel : 6-0 à 6-4, 7-5 ou 7-6'
+      );
+      return;
+    }
     setScoreError('');
     setScoreSending(true);
     const res = await submitResult({ opponentId: player.id, result: scoreResult, score: scoreText });
@@ -1344,26 +1376,34 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
   // ── Confirmer un score → ouvre le quiz d'évaluation ────────────────────────
   const handleConfirm = async (pendingId) => {
+    setConfirmingId(pendingId);
+    setActionError('');
     const res = await confirmResult(pendingId);
-    if (res.success) { setSheet(null); setEvalOpen(true); }
+    setConfirmingId(null);
+    if (res.success) {
+      setSheet(null);
+      setEvalOpen(true);
+    } else {
+      setActionError(res.error || (lang === 'en' ? 'Error — try again' : 'Erreur — réessaie'));
+    }
   };
 
   // ── Refuser un score → notifie dans le chat + recharge les pending ────────────
   const handleReject = async (pendingId) => {
     setRejectingId(pendingId);
+    setActionError('');
     const res = await rejectResult(pendingId);
-    if (res?.success !== false) {
+    if (!res || res.success !== false) {
       // Message visible dans le fil pour informer les deux joueurs
       const rejLabel = lang === 'en' ? '❌ Score rejected — please submit a new score'
                      : lang === 'he' ? '❌ התוצאה נדחתה — אנא הגש תוצאה חדשה'
                      : '❌ Score refusé — veuillez soumettre un nouveau score';
       await supabase.from('messages').insert({
-        match_id: matchId,
-        sender_id: user.id,
-        content: rejLabel,
-        msg_type: 'text',
-        metadata: {},
+        match_id: matchId, sender_id: user.id,
+        content: rejLabel, msg_type: 'text', metadata: {},
       });
+    } else {
+      setActionError(res.error || (lang === 'en' ? 'Error — try again' : 'Erreur — réessaie'));
     }
     setRejectingId(null);
   };
@@ -1419,18 +1459,36 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
         {!pending.isSubmitter && (
           <>
             <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-              <button onClick={() => handleConfirm(pending.id)} style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.green, border: 'none', color: COURT.cream, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
-                {lang === 'en' ? '✓ Confirm' : lang === 'he' ? '✓ אשר' : '✓ Confirmer'}
+              <button
+                onClick={() => handleConfirm(pending.id)}
+                disabled={confirmingId === pending.id || rejectingId === pending.id}
+                style={{
+                  flex: 1, padding: '11px', borderRadius: 8,
+                  background: confirmingId === pending.id ? `${COURT.green}80` : COURT.green,
+                  border: 'none', color: COURT.cream,
+                  fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                  opacity: (rejectingId === pending.id) ? 0.4 : 1,
+                }}>
+                {confirmingId === pending.id ? '…' : (lang === 'en' ? '✓ Confirm' : lang === 'he' ? '✓ אשר' : '✓ Confirmer')}
               </button>
               <button
                 onClick={() => handleReject(pending.id)}
-                disabled={rejectingId === pending.id}
-                style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`, color: COURT.purple, fontFamily: 'Inter', fontSize: 12, cursor: rejectingId === pending.id ? 'not-allowed' : 'pointer', opacity: rejectingId === pending.id ? 0.5 : 1 }}>
-                {rejectingId === pending.id
-                  ? (lang === 'en' ? '…' : '…')
-                  : (lang === 'en' ? '✗ Reject' : lang === 'he' ? '✗ דחה' : '✗ Refuser')}
+                disabled={rejectingId === pending.id || confirmingId === pending.id}
+                style={{
+                  flex: 1, padding: '11px', borderRadius: 8,
+                  background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`,
+                  color: COURT.purple, fontFamily: 'Inter', fontSize: 13,
+                  cursor: rejectingId === pending.id ? 'not-allowed' : 'pointer',
+                  opacity: (rejectingId === pending.id || confirmingId === pending.id) ? 0.5 : 1,
+                }}>
+                {rejectingId === pending.id ? '…' : (lang === 'en' ? '✗ Reject' : lang === 'he' ? '✗ דחה' : '✗ Refuser')}
               </button>
             </div>
+            {actionError && (
+              <div style={{ fontFamily: 'Inter', fontSize: 11, color: COURT.purple, textAlign: 'center', marginBottom: 4 }}>
+                ⚠️ {actionError}
+              </div>
+            )}
             {remaining > 1 && (
               <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, textAlign: 'center' }}>
                 {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : `${remaining - 1} tentative(s) restante(s) si refus`}
@@ -1786,18 +1844,25 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             )}
           </div>
         ))}
-        {/* Carte verrouillée si 3 rejets — toujours en bas du fil */}
-        {scoreLocked && renderLockedCard()}
-        {/* Cartes score en attente — affichées en dernier (message le plus récent) */}
-        {!scoreLocked && pendingForMatch.length > 0 && (
-          <div style={{ marginBottom: 4 }}>
-            {pendingForMatch.map(p => (
-              <div key={p.id}>{renderScoreCard(p)}</div>
-            ))}
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
+
+      {/* ── Bannière score en attente de confirmation ───────────────────────── */}
+      {/* Pincée au-dessus de l'input pour être toujours tappable sur mobile.   */}
+      {/* Carte verrouillée (3 rejets) */}
+      {scoreLocked && (
+        <div style={{ borderTop: `0.5px solid ${COURT.purple}30`, background: card, padding: '8px 14px' }}>
+          {renderLockedCard()}
+        </div>
+      )}
+      {/* Carte à confirmer / en attente */}
+      {!scoreLocked && pendingForMatch.length > 0 && (
+        <div style={{ borderTop: `1px solid ${border}`, background: card, padding: '10px 14px' }}>
+          {pendingForMatch.map(p => (
+            <div key={p.id}>{renderScoreCard(p)}</div>
+          ))}
+        </div>
+      )}
 
       {/* ── Input texte ────────────────────────────────────────────────────── */}
       <div style={{ padding: '10px 14px 32px', borderTop: `0.5px solid ${border}`, display: 'flex', gap: 10, alignItems: 'center' }}>
