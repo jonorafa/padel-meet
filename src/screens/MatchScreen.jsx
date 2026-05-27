@@ -889,7 +889,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail }) 
 }
 
 // ─── Home Screen ────────────────────────────────────────────────────────────
-function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetailPlayerId, isGuest, onGuestAction }) {
+function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetailPlayerId, isGuest, onGuestAction, onGoToProfile }) {
   const { profile } = useAuth();
   const matchHistory = useMatchHistory();
 
@@ -962,9 +962,18 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
               : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
             }
           </button>
-          <div style={{ width: 36, height: 36, borderRadius: 18, border: `0.5px solid ${COURT.green}`, padding: 2 }}>
+          <button
+            onClick={onGoToProfile}
+            aria-label="Mon profil"
+            style={{
+              width: 36, height: 36, borderRadius: 18, padding: 2,
+              border: `0.5px solid ${COURT.green}`,
+              background: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
             <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `url(${userPhoto}) center/cover` }} />
-          </div>
+          </button>
         </div>
       </div>
 
@@ -2861,7 +2870,7 @@ export default function MainApp() {
   const chatUnread = 0;
 
   const screens = {
-    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} />,
+    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} />,
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} />,
