@@ -50,9 +50,22 @@ export function usePlayers() {
   const [players, setPlayers] = useState(null) // null = chargement
 
   const fetchAll = useCallback(async () => {
-    if (!user) return
+    // Invités (user=null) : charge tous les profils sans filtre de swipes
+    if (!user) {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (!error && profiles && profiles.length > 0) {
+        setPlayers(profiles.map(p => transformDBProfile(p)))
+      } else {
+        setPlayers([])
+      }
+      return
+    }
 
-    // Charge les profils ET les swipes déjà effectués en parallèle
+    // Utilisateur connecté : charge les profils ET filtre les déjà-swipés
     const [profilesResult, swipesResult] = await Promise.all([
       supabase
         .from('profiles')
@@ -72,13 +85,11 @@ export function usePlayers() {
       const fresh = profiles.filter(p => !swipedIds.has(p.id))
       setPlayers(fresh.map(p => transformDBProfile(p)))
     } else {
-      // DB vide ou erreur → état vide honnête, jamais de faux joueurs
       setPlayers([])
     }
   }, [user?.id])
 
   useEffect(() => {
-    if (!user) return
     fetchAll()
   }, [fetchAll])
 
