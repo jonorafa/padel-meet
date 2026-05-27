@@ -588,7 +588,7 @@ function EmptyStack({ t, lang, onReset, dark }) {
 }
 
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
-function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail }) {
+function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail, isGuest, onGuestAction }) {
   // ── Données réelles ──
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
   const { recordSwipe } = useSwipes();
@@ -850,7 +850,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
 }
 
 // ─── Search flow ────────────────────────────────────────────────────────────
-function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail }) {
+function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction }) {
   const [showPrefs, setShowPrefs]   = useState(false);
   const [matchPlayer, setMatchPlayer] = useState(null);
   const [filters, setFilters] = useState({
@@ -876,6 +876,8 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail }) 
         onMatch={setMatchPlayer}
         onOpenDetail={onOpenDetail}
         userLevel={userLevel}
+        isGuest={isGuest}
+        onGuestAction={onGuestAction}
       />
       {showPrefs && (
         <PreferencesSheet
@@ -1814,7 +1816,7 @@ function ReadReceipt({ read }) {
 }
 
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
-function ChatScreen({ t, lang, dark, onOpenDetail }) {
+function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction }) {
   const { matches, loading: matchesLoading } = useUserMatches();
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const rtl   = lang === 'he';
@@ -1822,6 +1824,35 @@ function ChatScreen({ t, lang, dark, onOpenDetail }) {
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
+
+  // Invité → écran d'invitation à créer un compte
+  if (isGuest) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 32px 100px' }}>
+        <div style={{ textAlign: 'center', maxWidth: 280 }}>
+          <div style={{ fontSize: 44, marginBottom: 16 }}>💬</div>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, color: ink, fontStyle: 'italic', fontWeight: 500, marginBottom: 10 }}>
+            {lang === 'en' ? 'Your matches, your chats' : lang === 'he' ? 'ההתאמות שלך, הצ׳אטים שלך' : 'Tes matchs, tes conversations'}
+          </div>
+          <div style={{ fontFamily: 'Inter', fontSize: 13, color: stone, lineHeight: 1.6, marginBottom: 28 }}>
+            {lang === 'en'
+              ? 'Create an account to match with players and chat with them.'
+              : lang === 'he'
+              ? 'צור חשבון כדי להתאים ולשוחח עם שחקנים.'
+              : 'Crée un compte pour matcher avec des joueurs et leur envoyer des messages.'}
+          </div>
+          <button onClick={onGuestAction} style={{
+            padding: '14px 28px', borderRadius: 12,
+            background: COURT.green, color: COURT.cream,
+            border: `0.5px solid ${COURT.gold}50`, cursor: 'pointer',
+            fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 16,
+          }}>
+            {lang === 'en' ? 'Join the club' : lang === 'he' ? 'הצטרף למועדון' : 'Rejoindre le club'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (activeMatch) {
     return (
@@ -2837,9 +2868,11 @@ export default function MainApp() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
 
-  // Intercept tab changes for guests — only 'home' allowed
+  // Les invités peuvent naviguer librement — on bloque seulement les ACTIONS
+  // (like, message) au niveau de chaque composant, pas la navigation entre onglets.
   const handleTabChange = (newTab) => {
-    if (isGuest && newTab !== 'home') {
+    // L'onglet profil sans compte → ouvre la modal de connexion
+    if (isGuest && newTab === 'profile') {
       setShowGuestModal(true);
       return;
     }
@@ -2871,8 +2904,8 @@ export default function MainApp() {
 
   const screens = {
     home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} />,
-    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} />,
-    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} />,
+    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} />,
+    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} />,
   };
