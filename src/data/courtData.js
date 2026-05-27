@@ -474,8 +474,9 @@ export const I18N = {
  * Barème des réponses techniques (4 niveaux) :
  *   1.0 = Débutant   |   3.0 = Intermédiaire   |   5.5 = Avancé   |   7.0 = Expert compétition
  *
- * Questions tech (85%) : Q1 Bandeja · Q2 Sorties de vitre · Q3 Régularité · Q4 Vibora · Q5 Puissance · Q6 Lecture tactique
- * Questions self (15%) : Q7 Placement (instinct) · Q8 Mental (sang-froid)
+ * 8 questions tech | valeurs {1, 3, 5.5, 7} | moyenne pure
+ * Q1 Bandeja · Q2 Sorties de vitre · Q3 Régularité · Q4 Vibora
+ * Q5 Puissance · Q6 Lecture tactique · Q7 Placement · Q8 Mental
  */
 export const QUIZ_QUESTIONS = [
   // ── Q1 · Technique : Bandeja ──────────────────────────────────────────────
@@ -538,15 +539,25 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Lecture experte',       en: 'Expert read',            he: 'קריאה מומחית',   subFr: "Je lis mon partenaire ET les adversaires — anticipation double, niveau tournoi.", subEn: "I read partner AND opponents — double anticipation, tournament level.", subHe: 'קורא שותף ויריבים — ציפייה כפולה, רמת טורניר.', value: 7 },
     ]},
 
-  // ── Q7 · Auto-éval : Placement ────────────────────────────────────────────
-  { id: 7, type: 'self',
-    q:   { fr: 'Placement sur le court', en: "Court positioning", he: 'מיקום במגרש' },
-    sub: { fr: 'De 1 (instinctif) à 10 (chirurgical).', en: "From 1 (instinctive) to 10 (surgical).", he: 'מ-1 (אינסטינקטיבי) עד 10 (כירורגי).' }},
+  // ── Q7 · Technique : Placement ───────────────────────────────────────────
+  { id: 7, type: 'tech',
+    q: { fr: "Comment décris-tu ton placement sur le court ?", en: "How would you describe your court positioning?", he: 'כיצד תתאר את המיקום שלך במגרש?' },
+    options: [
+      { fr: 'Je me replace rarement au bon endroit',          en: 'I rarely get in the right position',          he: 'אני לעיתים רחוקות ממוקם נכון',          subFr: "Réactif, sans lecture de jeu.",                     subEn: "Reactive, no court vision.",                        subHe: 'מגיב, ללא ראיית מגרש.',                       value: 1   },
+      { fr: 'Placement correct, améliorable',                 en: 'Decent positioning, can improve',             he: 'מיקום סביר, יש מקום לשיפור',            subFr: "Je couvre ma zone mais je tarde à switcher.",       subEn: "I cover my zone but slow to switch.",               subHe: 'מכסה את האזור שלי אבל איטי להחליף.',          value: 3   },
+      { fr: 'Je me place avec intention et anticipation',     en: 'I position with intent and anticipation',     he: 'אני ממוקם עם כוונה וציפייה',            subFr: "Je contrôle ma moitié du court.",                   subEn: "I control my half of the court.",                   subHe: 'שולט בחצי המגרש שלי.',                        value: 5.5 },
+      { fr: 'Placement chirurgical — je pilote l\'espace',   en: 'Surgical placement — I control the space',    he: 'מיקום כירורגי — שולט במרחב',            subFr: "Je déplace les adversaires par mon positionnement seul.", subEn: "I move opponents by positioning alone — tournament level.", subHe: 'מזיז יריבים רק על ידי המיקום — רמת טורניר.', value: 7   },
+    ]},
 
-  // ── Q8 · Auto-éval : Mental ───────────────────────────────────────────────
-  { id: 8, type: 'self',
-    q:   { fr: 'Mental & sang-froid', en: "Mental & composure", he: 'מנטליות וקור רוח' },
-    sub: { fr: 'De 1 (réactif) à 10 (impassible).', en: "From 1 (reactive) to 10 (unflappable).", he: 'מ-1 (מגיב) עד 10 (קר רוח).' }},
+  // ── Q8 · Technique : Mental ───────────────────────────────────────────────
+  { id: 8, type: 'tech',
+    q: { fr: "Comment gères-tu la pression en match ?", en: "How do you handle pressure in a match?", he: 'איך אתה מתמודד עם לחץ במשחק?' },
+    options: [
+      { fr: 'Je perds mes moyens sous la pression',           en: 'I fall apart under pressure',                he: 'אני מתפרק תחת לחץ',                     subFr: "Erreurs directes quand le score est serré.",        subEn: "Direct errors when the score is tight.",            subHe: 'שגיאות ישירות כשהתוצאה קרובה.',               value: 1   },
+      { fr: 'Le score et la pression m\'affectent',           en: 'Score and pressure affect my game',           he: 'התוצאה והלחץ משפיעים עלי',              subFr: "Je tiens à froid, moins bien dans les moments chauds.", subEn: "Solid when calm, shakier at key moments.",      subHe: 'בסדר כשרגוע, פחות יציב ברגעים מכריעים.',     value: 3   },
+      { fr: 'Je gère bien les moments décisifs',              en: 'I handle decisive moments well',              he: 'אני מתמודד טוב עם רגעים מכריעים',       subFr: "Sang-froid en match serré, pas de panique.",        subEn: "Composed in tight matches, no panic.",              subHe: 'קור רוח במשחקים קרובים, ללא פאניקה.',         value: 5.5 },
+      { fr: 'Je joue encore mieux sous la pression',          en: 'I play better under pressure',                he: 'אני משחק טוב יותר תחת לחץ',             subFr: "Les points importants font ressortir le meilleur de moi — niveau compétition.", subEn: "Big points bring out my best — competition level.", subHe: 'נקודות גדולות מוציאות ממני את הטוב ביותר — רמת תחרות.', value: 7   },
+    ]},
 ];
 
 /**
@@ -559,56 +570,39 @@ export const QUIZ_QUESTIONS = [
  *   3.5 – 5.5  Avancé
  *   5.5 – 7.0  Expert / Compétition
  *
- * BARÈME DES OPTIONS TECHNIQUES
+ * BARÈME DES OPTIONS (8 questions tech, valeurs {1, 3, 5.5, 7})
  *   Débutant      → value: 1.0
  *   Intermédiaire → value: 3.0
  *   Avancé        → value: 5.5
  *   Expert        → value: 7.0
  *
- * FORMULE  (anti-surestimation — tech prime sur l'auto-éval)
- *   Score_Final = (Score_Technique × 0.85) + (Score_AutoEval × 0.15)
- *
- * Score_Technique : moyenne des options tech, déjà sur [1, 7]
- * Score_AutoEval  : moyenne des sliders [1,10] remappée → [0.5, 7.0]
- *                   via : 0.5 + (avg − 1) × (6.5 / 9)
+ * FORMULE : moyenne pure des 8 réponses (toutes sur la même échelle)
+ *   Score_Final = moyenne(answers) → clamp [0.5, 7.0]
  *
  * SIMULATIONS DE VÉRIFICATION
- *   MAX    tech=7.0  autoEval=7.0  → (7.0×0.85)+(7.0×0.15) = 5.95+1.05 = 7.0  ✓
- *   EXPERT tech=7.0  autoEval=5.5  → (7.0×0.85)+(5.5×0.15) = 5.95+0.825 = 6.8 ✓
- *   AVANCÉ tech=5.5  autoEval=5.5  → (5.5×0.85)+(5.5×0.15) = 4.675+0.825 = 5.5 ✓
+ *   MAX    8×7.0 → 7.0  ✓
+ *   EXPERT 8×5.5 → 5.5  ✓
+ *   AVANCÉ mix(5.5,3.0) → valeur intermédiaire cohérente ✓
  *
  * CAS SKIP : retourne null — ne jamais inventer de valeur par défaut.
  */
 export function computeLevel(answers) {
   if (!answers || Object.keys(answers).length === 0) return null;
 
-  let techSum = 0, techN = 0, selfSum = 0, selfN = 0;
+  let sum = 0, count = 0;
 
   QUIZ_QUESTIONS.forEach(q => {
     const v = answers[q.id];
     if (v == null) return;
-    if (q.type === 'tech') {
-      // Valeurs : 1.0 | 3.0 | 5.5 | 7.0 — déjà sur l'échelle [1, 7]
-      techSum += v;
-      techN++;
-    } else {
-      // Slider [1, 10]
-      selfSum += v;
-      selfN++;
-    }
+    // Toutes les questions sont type:'tech' — valeurs {1, 3, 5.5, 7}
+    sum += v;
+    count++;
   });
 
-  // Quiz incomplet (aucune réponse tech ou aucun slider) → pas de niveau attribué
-  if (techN === 0 || selfN === 0) return null;
+  // Aucune réponse → pas de niveau attribué
+  if (count === 0) return null;
 
-  const techScore = techSum / techN;
-
-  // Score auto-éval — slider [1,10] → [0.5, 7.0]
-  const selfAvg   = selfSum / selfN;
-  const selfScore = 0.5 + (selfAvg - 1) * (6.5 / 9);
-
-  // Pondération : 85% technique / 15% auto-évaluation
-  const raw = techScore * 0.85 + selfScore * 0.15;
+  const raw = sum / count;
 
   // Arrondi à 1 décimale, clamp [0.5, 7.0]
   const finalScore = Math.round(raw * 10) / 10;

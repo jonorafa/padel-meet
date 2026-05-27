@@ -10,6 +10,8 @@ import { REGIONS, computeELODelta, I18N } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
 import { usePrefs }         from '../context/PrefsContext';
+import { useOnline }        from '../context/PresenceContext';
+import { formatPresence }   from '../lib/presence';
 import { usePlayers }       from '../hooks/usePlayers';
 import { useSwipes }        from '../hooks/useSwipes';
 import { useUserMatches }   from '../hooks/useUserMatches';
@@ -315,6 +317,7 @@ function InfoChip({ icon, label, value, color, dark }) {
 function PlayerCard({ p, dragX, t, lang, dark }) {
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
+  const playerIsOnline = useOnline(p?.id);
   const rtl   = lang === 'he';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
   const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
@@ -364,7 +367,7 @@ function PlayerCard({ p, dragX, t, lang, dark }) {
           display: 'flex', gap: 6, alignItems: 'center',
           opacity: 1 - Math.max(yesOp, noOp),
         }}>
-          {p.online && (
+          {playerIsOnline && (
             <div style={{
               background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
               display: 'flex', alignItems: 'center', gap: 5,
@@ -945,13 +948,17 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={() => { setSearchMode(m => !m); setSearchQuery(''); }} style={{
             width: 36, height: 36, borderRadius: 18,
-            background: searchMode ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
-            border: `0.5px solid ${COURT.green}`, cursor: 'pointer',
+            // En mode "X" (searchMode=true) on force un vert vif en dark pour assurer le contraste de l'icône
+            background: searchMode
+              ? (dark ? COURT.greenLight : COURT.green)
+              : (dark ? COURT.darkCard : COURT.cream),
+            border: `0.5px solid ${searchMode ? (dark ? COURT.greenLight : COURT.green) : COURT.green}`,
+            cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: searchMode ? COURT.cream : COURT.green,
+            color: searchMode ? '#FFFFFF' : COURT.green,
           }}>
             {searchMode
-              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
             }
           </button>
@@ -963,17 +970,39 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
 
       {searchMode && (
         <div style={{ padding: '0 24px' }}>
-          <input
-            value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t.searchPlayer} autoFocus
-            style={{
-              width: '100%', padding: '12px 16px', boxSizing: 'border-box',
-              background: dark ? COURT.darkCard : COURT.cream,
-              border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
-              borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
-              fontSize: 15, color: ink, outline: 'none', marginBottom: 12,
-            }}
-          />
+          <div style={{ position: 'relative', marginBottom: 12 }}>
+            <input
+              value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              placeholder={t.searchPlayer} autoFocus
+              style={{
+                width: '100%', padding: '12px 40px 12px 16px', boxSizing: 'border-box',
+                background: dark ? COURT.darkCard : COURT.cream,
+                border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
+                borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                fontSize: 15, color: ink, outline: 'none',
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear"
+                style={{
+                  position: 'absolute', top: '50%', [rtl ? 'left' : 'right']: 10,
+                  transform: 'translateY(-50%)',
+                  width: 22, height: 22, borderRadius: 11,
+                  background: dark ? COURT.darkBorder : `${COURT.green}25`,
+                  border: 'none', cursor: 'pointer', padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: dark ? COURT.darkText : COURT.green,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
           {searchQuery.trim() && searchLoading && (
             <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>…</div>
           )}
@@ -1123,8 +1152,9 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
 }
 
 // ─── Chat actif (messages temps réel) ──────────────────────────────────────
-function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
+function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const { user } = useAuth();
+  const playerIsOnline = useOnline(player?.id);
   const [messages,        setMessages]        = useState([]);
   const [input,           setInput]           = useState('');
   const [sheet,           setSheet]           = useState(null); // 'proposal'|'score'|'eval'
@@ -1180,6 +1210,17 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
   // ── Chargement des messages ─────────────────────────────────────────────────
   useEffect(() => {
     if (!matchId || !user) return;
+
+    // Marque tous les messages reçus (sender != moi) comme lus dès l'ouverture.
+    // Silencieux — ne bloque pas le chargement.
+    const markAllRead = () =>
+      supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('match_id', matchId)
+        .neq('sender_id', user.id)
+        .is('read_at', null);
+
     const fetchMsgs = async () => {
       const { data } = await supabase
         .from('messages')
@@ -1189,6 +1230,8 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
       if (data) {
         setMessages(data.map(msgToState(user.id)));
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        // Marquer les messages non lus après avoir affiché la liste
+        markAllRead();
       }
     };
     fetchMsgs();
@@ -1202,8 +1245,15 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
             return [...prev, msgToState(user.id)(m)];
           });
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+          // Message entrant pendant que le chat est ouvert → marquer lu immédiatement
+          if (m.sender_id !== user.id && !m.read_at) {
+            supabase
+              .from('messages')
+              .update({ read_at: new Date().toISOString() })
+              .eq('id', m.id);
+          }
         })
-      // Écoute aussi les UPDATE (pour les réponses Accept/Decline sur proposals)
+      // Écoute aussi les UPDATE (réponses Accept/Decline ET accusés de lecture)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `match_id=eq.${matchId}` },
         (payload) => {
           const m = payload.new;
@@ -1384,13 +1434,24 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
             <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <div style={{ width: 38, height: 38, borderRadius: 19, background: `url(${player?.photo}) center/cover`, flexShrink: 0, position: 'relative' }}>
-          <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 5, background: player?.online ? '#4CAF50' : stone, border: `1.5px solid ${bg}` }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: player?.online ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
-            {player?.online ? (t.online || 'En ligne') : `${t.lastSeen || 'Vu'} ${formatLastSeen(player?.lastSeen)}`}
+        {/* Avatar + name → tap to open detailed profile */}
+        <div
+          onClick={() => { if (player?.id && onOpenDetail) onOpenDetail(player.id); }}
+          role={onOpenDetail ? 'button' : undefined}
+          tabIndex={onOpenDetail ? 0 : undefined}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0,
+            cursor: onOpenDetail && player?.id ? 'pointer' : 'default',
+          }}
+        >
+          <div style={{ width: 38, height: 38, borderRadius: 19, background: `url(${player?.photo}) center/cover`, flexShrink: 0, position: 'relative' }}>
+            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 5, background: playerIsOnline ? '#4CAF50' : stone, border: `1.5px solid ${bg}` }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
+              {formatPresence(playerIsOnline, player?.lastSeen, lang)}
+            </div>
           </div>
         </div>
       </div>
@@ -1620,7 +1681,11 @@ function ActiveChat({ matchId, player, onBack, t, lang, dark }) {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
               }}>
                 {m.text[lang] || m.text.fr}
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}70` : stone, marginTop: 4, textAlign: 'right' }}>{m.time}</div>
+                {/* Ligne heure + accusé de lecture (messages envoyés uniquement) */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3, marginTop: 4 }}>
+                  <span style={{ fontFamily: 'Inter', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
+                  {m.from === 'me' && <ReadReceipt read={!!m.readAt} />}
+                </div>
               </div>
             )}
           </div>
@@ -1716,11 +1781,31 @@ function msgToState(userId) {
     msgType:  m.msg_type || 'text',
     metadata: m.metadata || null,
     time:     new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    readAt:   m.read_at || null,   // null = non lu, string ISO = lu
   });
 }
 
+// ── Accusé de lecture style WhatsApp ─────────────────────────────────────────
+// Deux coches côte-à-côte : grises = envoyé/non lu, bleues = lu.
+// Affiché uniquement sur les bulles envoyées par moi (from === 'me').
+function ReadReceipt({ read }) {
+  // #53BDEB = bleu WhatsApp, rgba blanc semi-transparent pour "non lu"
+  const color = read ? '#53BDEB' : 'rgba(255,255,255,0.55)';
+  return (
+    <svg width="18" height="11" viewBox="0 0 18 11" fill="none"
+      style={{ display: 'inline-block', flexShrink: 0, verticalAlign: 'middle' }}>
+      {/* Première coche */}
+      <polyline points="1,6 4,9 9,2.5"
+        stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Deuxième coche (décalée à droite, légèrement chevauchante) */}
+      <polyline points="5,6 8,9 13,2.5"
+        stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
-function ChatScreen({ t, lang, dark }) {
+function ChatScreen({ t, lang, dark, onOpenDetail }) {
   const { matches, loading: matchesLoading } = useUserMatches();
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const rtl   = lang === 'he';
@@ -1736,6 +1821,7 @@ function ChatScreen({ t, lang, dark }) {
           matchId={activeMatch.matchId}
           player={activeMatch.player}
           onBack={() => setActiveMatch(null)}
+          onOpenDetail={onOpenDetail}
           t={t} lang={lang} dark={dark}
         />
       </ErrorBoundary>
@@ -1755,34 +1841,50 @@ function ChatScreen({ t, lang, dark }) {
         </div>
       ) : matches.length === 0 ? (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: stone, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noChats}</div>
-      ) : matches.map((m, i) => {
-        const { player, lastMessage } = m;
-        return (
-          <div key={m.matchId} onClick={() => setActiveMatch({
-            matchId: m.matchId, player,
-          })} style={{
-            padding: '14px 24px', borderBottom: `0.5px solid ${border}`,
-            display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer',
-            animation: `cardIn 0.4s ease ${i * 0.06}s both`,
-          }}>
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 24, background: `url(${player.photo}) center/cover`, border: `0.5px solid ${border}` }} />
-              <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, background: player.online ? '#4CAF50' : stone, border: `1.5px solid ${bg}` }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>{player.name}</div>
-                {lastMessage && <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone }}>{lastMessage.time}</div>}
-              </div>
-              {lastMessage && (
-                <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>
-                  {lastMessage.from === 'me' ? '→ ' : ''}{lastMessage.text[lang] || lastMessage.text.fr}
-                </div>
-              )}
-            </div>
+      ) : matches.map((m, i) => (
+        <ChatListRow
+          key={m.matchId}
+          match={m}
+          index={i}
+          ink={ink} stone={stone} border={border} bg={bg} lang={lang}
+          onOpen={() => setActiveMatch({ matchId: m.matchId, player: m.player })}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Une ligne de conversation — abonnée individuellement à la présence ──────
+// Hook au niveau de la ligne (pas dans le .map) pour respecter les rules of hooks
+// et permettre une mise à jour réactive du point vert sans re-render global.
+function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
+  const { player, lastMessage } = match;
+  const isOnline = useOnline(player?.id);
+  return (
+    <div onClick={onOpen} style={{
+      padding: '14px 24px', borderBottom: `0.5px solid ${border}`,
+      display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer',
+      animation: `cardIn 0.4s ease ${index * 0.06}s both`,
+    }}>
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{ width: 48, height: 48, borderRadius: 24, background: `url(${player.photo}) center/cover`, border: `0.5px solid ${border}` }} />
+        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, background: isOnline ? '#4CAF50' : stone, border: `1.5px solid ${bg}` }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>{player.name}</div>
+          {lastMessage && <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone }}>{lastMessage.time}</div>}
+        </div>
+        {lastMessage ? (
+          <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>
+            {lastMessage.from === 'me' ? '→ ' : ''}{lastMessage.text[lang] || lastMessage.text.fr}
           </div>
-        );
-      })}
+        ) : (
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.12em', marginTop: 2 }}>
+            {formatPresence(isOnline, player?.lastSeen, lang)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -2761,7 +2863,7 @@ export default function MainApp() {
   const screens = {
     home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} />,
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} />,
-    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} />,
+    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} />,
   };

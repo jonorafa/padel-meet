@@ -32,12 +32,13 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Marque hors-ligne quand le navigateur se ferme / l'onglet est quitté
+  // Met à jour last_seen quand l'onglet change d'état (changement de visibilité).
+  // Le statut online vient désormais de PresenceContext (Supabase Realtime Presence),
+  // donc on ne touche plus au champ DB `online` ici — il finira par être déprécié.
   useEffect(() => {
     if (!user) return
     const handleVisibilityChange = () => {
       supabase.from('profiles').update({
-        online: !document.hidden,
         last_seen: new Date().toISOString(),
       }).eq('id', user.id)
     }
@@ -53,10 +54,10 @@ export function AuthProvider({ children }) {
       .maybeSingle()
     setProfile(data)    // null si pas encore de profil
     setLoading(false)
-    // Marque l'utilisateur en ligne
+    // Met à jour last_seen (pas online — la présence Realtime s'en occupe)
     if (data) {
       await supabase.from('profiles')
-        .update({ online: true, last_seen: new Date().toISOString() })
+        .update({ last_seen: new Date().toISOString() })
         .eq('id', userId)
     }
     // Load profile photos
@@ -70,6 +71,31 @@ export function AuthProvider({ children }) {
       .eq('user_id', userId)
       .order('display_order', { ascending: true })
     setPhotos(data || [])
+
+    // Self-heal : si la galerie a une photo primary mais que profiles.photo_url
+    // ne pointe pas dessus, on rattrape (rare cas legacy : photos uploadées
+    // via la galerie avant la sync auto, ou photo_url effacée). Silencieux —
+    // ne bloque jamais le chargement.
+    if (data && data.length > 0) {
+      const primary = data.find(p => p.is_primary) ?? data[0]
+      const expectedUrl = primary?.url
+      if (expectedUrl) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('photo_url')
+          .eq('id', userId)
+          .maybeSingle()
+        if (prof && prof.photo_url !== expectedUrl) {
+          const { data: updated } = await supabase
+            .from('profiles')
+            .update({ photo_url: expectedUrl })
+            .eq('id', userId)
+            .select()
+            .single()
+          if (updated) setProfile(updated)
+        }
+      }
+    }
   }
 
   /** Connexion Google OAuth — redirige vers Google puis revient sur /auth */
@@ -94,11 +120,11 @@ export function AuthProvider({ children }) {
     setIsGuest(false)
   }
 
-  /** Déconnexion — marque hors-ligne avant de couper la session */
+  /** Déconnexion — met juste à jour last_seen ; la présence Realtime est coupée par la fermeture du socket. */
   const signOut = async () => {
     if (user) {
       await supabase.from('profiles')
-        .update({ online: false, last_seen: new Date().toISOString() })
+        .update({ last_seen: new Date().toISOString() })
         .eq('id', user.id)
     }
     await supabase.auth.signOut()

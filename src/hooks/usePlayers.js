@@ -1,17 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { usePresence } from './usePresence'
+import { usePresence } from '../context/PresenceContext'
 import { initialsAvatar } from '../components/CourtUI'
-
-function formatLastSeen(ts) {
-  if (!ts) return '?'
-  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000)
-  if (diff < 60)    return `${diff}s`
-  if (diff < 3600)  return `${Math.floor(diff / 60)}min`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
-  return `${Math.floor(diff / 86400)}j`
-}
 
 function transformDBProfile(p, onlineIds) {
   const matchesPlayed = p.matches_played || 0
@@ -36,8 +27,8 @@ function transformDBProfile(p, onlineIds) {
     bioFr: p.bio_fr || '',
     bioEn: p.bio_en || '',
     bioHe: p.bio_he || '',
-    // Présence réelle : priorité au Set onlineIds (Realtime), fallback DB
-    online: onlineIds ? onlineIds.has(p.id) : (p.online || false),
+    // Présence : calculée en aval via PresenceContext (Realtime Supabase)
+    online: false,
     lastSeen: p.last_seen,      // ISO string — formaté côté UI
     commonMatches: 0,
     isRealUser: true,
@@ -55,11 +46,8 @@ function transformDBProfile(p, onlineIds) {
  */
 export function usePlayers() {
   const { user } = useAuth()
-  const [players, setPlayers]     = useState(null) // null = chargement
-  const [onlineIds, setOnlineIds] = useState(new Set())
-
-  // Enregistre la présence de l'utilisateur courant + écoute les changements
-  usePresence(setOnlineIds)
+  const { onlineSet } = usePresence()
+  const [players, setPlayers] = useState(null) // null = chargement
 
   const fetchAll = useCallback(async () => {
     if (!user) return
@@ -81,16 +69,8 @@ export function usePlayers() {
     const swipedIds = new Set((swipesResult.data || []).map(s => s.target_id))
 
     if (!error && profiles && profiles.length > 0) {
-      // Initialise le Set des utilisateurs en ligne depuis la DB
-      const initialOnline = new Set(profiles.filter(p => p.online).map(p => p.id))
-      setOnlineIds(prev => {
-        // Fusionne : garde les IDs déjà connus du Realtime + ceux de la DB
-        const merged = new Set([...prev, ...initialOnline])
-        return merged
-      })
-
       const fresh = profiles.filter(p => !swipedIds.has(p.id))
-      setPlayers(fresh.map(p => transformDBProfile(p, null))) // onlineIds géré séparément
+      setPlayers(fresh.map(p => transformDBProfile(p)))
     } else {
       // DB vide ou erreur → état vide honnête, jamais de faux joueurs
       setPlayers([])
@@ -102,12 +82,12 @@ export function usePlayers() {
     fetchAll()
   }, [fetchAll])
 
-  // Applique onlineIds aux joueurs déjà chargés via useMemo pour stabiliser
-  // la référence — évite de déclencher un reset du SwipeStack à chaque
-  // heartbeat Realtime Presence (toutes les 30s).
+  // Branche la présence Realtime via useMemo — stable tant que onlineSet ne change pas.
+  // Le PresenceContext n'émet de nouveau Set qu'aux events join/leave/sync,
+  // donc la liste des joueurs ne reset pas à chaque heartbeat.
   const playersWithPresence = useMemo(
-    () => players ? players.map(p => ({ ...p, online: onlineIds.has(p.id) })) : null,
-    [players, onlineIds]
+    () => players ? players.map(p => ({ ...p, online: onlineSet.has(p.id) })) : null,
+    [players, onlineSet]
   )
 
   return { players: playersWithPresence, loading: players === null, refetch: fetchAll }

@@ -70,7 +70,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   if (loading) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 50,
+        position: 'fixed', inset: 0, zIndex: 300,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: dark ? 'rgba(0,0,0,0.7)' : 'rgba(245,241,232,0.8)',
       }}>
@@ -91,7 +91,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   if (!player) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 50,
+        position: 'fixed', inset: 0, zIndex: 300,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: dark ? 'rgba(0,0,0,0.7)' : 'rgba(245,241,232,0.8)',
       }}>
@@ -145,7 +145,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 50,
+      position: 'fixed', inset: 0, zIndex: 300,
       display: 'flex', flexDirection: 'column', background: bg,
     }}>
       {/* Header */}

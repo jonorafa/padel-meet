@@ -56,7 +56,8 @@ export function useUserMatches() {
               id:       otherId,
               name:     otherProfile?.name     || 'Joueur',
               photo:    otherProfile?.photo_url || initialsAvatar(otherProfile?.name || otherId),
-              online:   otherProfile?.online    || false,
+              // `online` n'est plus exposé ici : le statut live vient de PresenceContext
+              // (useOnline(player.id)). `lastSeen` reste utile pour l'échelle progressive.
               lastSeen: otherProfile?.last_seen,
             },
             lastMessage: lastMsg ? {

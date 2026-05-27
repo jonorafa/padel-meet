@@ -1,11 +1,20 @@
 import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 /**
  * Hook for managing user profile photos
  * Handles upload, delete, reorder, and fetch operations
+ *
+ * Lorsque `userId` est l'utilisateur courant, ce hook sync automatiquement
+ * `profiles.photo_url` (le champ legacy utilisé pour l'avatar) avec la photo
+ * primary de la galerie, et déclenche un refresh de `AuthContext.profile`
+ * pour propager le nouvel avatar à toute l'app.
  */
 export function useProfilePhotos(userId) {
+  const { user: authUser, refreshProfile } = useAuth()
+  const isCurrentUser = !!authUser && authUser.id === userId
+
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -26,18 +35,67 @@ export function useProfilePhotos(userId) {
 
       if (queryError) throw queryError
       setPhotos(data || [])
+
+      // Self-heal : si le profil de l'user courant a un photo_url désynchronisé
+      // de la photo primary (ex : photos uploadées avant le fix de sync), on
+      // rattrape silencieusement. Réservé à l'user courant (RLS bloquerait sinon).
+      if (isCurrentUser && data && data.length > 0) {
+        const primaryFromGallery = data.find(p => p.is_primary)
+        const expectedUrl = primaryFromGallery?.url ?? data[0]?.url ?? null
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('photo_url')
+          .eq('id', userId)
+          .maybeSingle()
+        if (prof && expectedUrl && prof.photo_url !== expectedUrl) {
+          await supabase
+            .from('profiles')
+            .update({ photo_url: expectedUrl })
+            .eq('id', userId)
+          refreshProfile?.()
+        }
+      }
     } catch (err) {
       console.error('Error fetching photos:', err)
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, isCurrentUser, refreshProfile])
 
   // Load photos on mount or when userId changes
   useEffect(() => {
     fetchPhotos()
   }, [userId, fetchPhotos])
+
+  /**
+   * Sync `profiles.photo_url` (legacy avatar field, used everywhere across the app)
+   * with the current primary photo from `profile_photos`.
+   * Called after every mutation that can change the primary photo (upload / delete / setPrimary).
+   * If there are no photos left, `photo_url` is set to NULL.
+   */
+  const syncPrimaryToProfile = useCallback(async () => {
+    if (!userId || !isCurrentUser) return
+    try {
+      const { data: primary } = await supabase
+        .from('profile_photos')
+        .select('url')
+        .eq('user_id', userId)
+        .eq('is_primary', true)
+        .maybeSingle()
+
+      await supabase
+        .from('profiles')
+        .update({ photo_url: primary?.url ?? null })
+        .eq('id', userId)
+
+      // Propage le nouvel avatar à toute l'app via AuthContext
+      refreshProfile?.()
+    } catch (err) {
+      // Non-blocking — the gallery itself works, only the legacy avatar may be stale
+      console.warn('[syncPrimaryToProfile] non-bloquant:', err)
+    }
+  }, [userId, isCurrentUser, refreshProfile])
 
   // Compress image to ~500KB using Canvas API
   const compressImage = useCallback(async (file) => {
@@ -155,6 +213,11 @@ export function useProfilePhotos(userId) {
 
       // Add to local state
       setPhotos(prev => [...prev, photoRecord])
+
+      // Sync legacy avatar field (used everywhere in the app)
+      // — the SQL trigger auto-marks the first photo as primary, so this catches it
+      await syncPrimaryToProfile()
+
       return photoRecord
     } catch (err) {
       console.error('Error uploading photo:', err)
@@ -163,7 +226,7 @@ export function useProfilePhotos(userId) {
     } finally {
       setLoading(false)
     }
-  }, [userId, photos.length, compressImage])
+  }, [userId, photos.length, compressImage, syncPrimaryToProfile])
 
   // Delete photo from Storage and DB
   const deletePhoto = useCallback(async (photoId) => {
@@ -203,13 +266,17 @@ export function useProfilePhotos(userId) {
         }
         return updated
       })
+
+      // Sync legacy avatar field — covers the case where we removed the primary
+      // (and another photo just got promoted) OR where we removed the last photo (→ null)
+      await syncPrimaryToProfile()
     } catch (err) {
       console.error('Error deleting photo:', err)
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [photos])
+  }, [photos, syncPrimaryToProfile])
 
   // Set a photo as primary
   const setPrimaryPhoto = useCallback(async (photoId) => {
@@ -231,13 +298,16 @@ export function useProfilePhotos(userId) {
           is_primary: p.id === photoId,
         }))
       )
+
+      // Sync legacy avatar field with the newly promoted primary
+      await syncPrimaryToProfile()
     } catch (err) {
       console.error('Error setting primary photo:', err)
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [syncPrimaryToProfile])
 
   // Reorder photos
   const reorderPhotos = useCallback(async (newOrder) => {

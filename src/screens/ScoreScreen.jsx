@@ -1,23 +1,6 @@
 import { useState } from 'react';
-import { COURT, Ornament, ThinButton, PadelSlider } from '../components/CourtUI';
+import { COURT, Ornament } from '../components/CourtUI';
 import { QUIZ_QUESTIONS, computeLevel } from '../data/courtData';
-
-function SelfRatingSlider({ t, onSubmit, dark }) {
-  const [val, setVal] = useState(5);
-  return (
-    <div style={{ marginTop: 8 }} dir="ltr">
-      <PadelSlider
-        min={1} max={10} step={1}
-        value={val} onChange={setVal}
-        dark={dark}
-        bigValue suffix="/10"
-        leftLabel="1" rightLabel="10"
-      />
-      <div style={{ height: 28 }} />
-      <ThinButton variant="green" onClick={() => onSubmit(val)} full>{t.continue}</ThinButton>
-    </div>
-  );
-}
 
 export default function QuizScreen({ t, lang, onDone, onBack, dark }) {
   const [idx, setIdx] = useState(0);
@@ -96,29 +79,25 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark }) {
         )}
         <Ornament width={50} style={{ marginBottom: 20 }} />
 
-        {q.type === 'tech' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
-            {q.options.map((opt, i) => (
-              <button key={i} onClick={() => advance(opt.value)} style={{
-                textAlign: rtl ? 'right' : 'left', padding: '14px 16px',
-                background: dark ? COURT.darkCard : COURT.cream,
-                border: `0.5px solid ${border}`, borderRadius: 10, cursor: 'pointer',
-                transition: 'all 0.25s ease', animation: `cardIn 0.4s ease ${i * 0.06}s both`,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = COURT.green; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
-                  {opt[lang] || opt.en || opt.fr}
-                </div>
-                <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 2 }}>
-                  {subTxt(opt)}
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <SelfRatingSlider key={idx} t={t} lang={lang} onSubmit={advance} dark={dark} />
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
+          {q.options.map((opt, i) => (
+            <button key={i} onClick={() => advance(opt.value)} style={{
+              textAlign: rtl ? 'right' : 'left', padding: '14px 16px',
+              background: dark ? COURT.darkCard : COURT.cream,
+              border: `0.5px solid ${border}`, borderRadius: 10, cursor: 'pointer',
+              transition: 'all 0.25s ease', animation: `cardIn 0.4s ease ${i * 0.06}s both`,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = COURT.green; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.transform = 'translateY(0)'; }}>
+              <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
+                {opt[lang] || opt.en || opt.fr}
+              </div>
+              <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 2 }}>
+                {subTxt(opt)}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
