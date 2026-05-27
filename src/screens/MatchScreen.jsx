@@ -1372,21 +1372,15 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const sendEval = async (computedLevel) => {
     setEvalSending(true);
     try {
-      const { data: mh } = await supabase
-        .from('match_history')
-        .select('id')
-        .eq('player_id', user.id)
-        .eq('opponent_id', player.id)
-        .order('played_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (mh) {
-        await supabase.rpc('submit_peer_evaluation', {
-          p_match_id:       mh.id,
-          p_evaluated_id:   player.id,
-          p_proposed_level: Math.round(computedLevel * 2) / 2,
-        });
-      }
+      // On passe matchId (matches.id — le chat entre les deux joueurs),
+      // pas match_history.id. La fonction vérifie que les deux joueurs
+      // sont bien dans ce match avant d'appliquer le boost.
+      const { error } = await supabase.rpc('submit_peer_evaluation', {
+        p_match_id:       matchId,
+        p_evaluated_id:   player.id,
+        p_proposed_level: Math.round(computedLevel * 2) / 2,
+      });
+      if (error) console.warn('[sendEval] RPC error:', error.message);
     } catch (err) {
       console.warn('[sendEval]', err);
     }
