@@ -1174,11 +1174,17 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const [propTime,        setPropTime]        = useState('');
   const [propPlace,       setPropPlace]       = useState('');
   const [propSending,     setPropSending]     = useState(false);
-  // Score
-  const [scoreResult,     setScoreResult]     = useState('win');
-  const [scoreText,       setScoreText]       = useState('');
-  const [scoreSending,    setScoreSending]    = useState(false);
-  const [scoreError,      setScoreError]      = useState('');
+  // Score — saisie par set (max 3)
+  const [scoreResult,  setScoreResult]  = useState('win');
+  // sets: [{ me: '', them: '' }, ...]
+  const [sets,         setSets]         = useState([{ me: '', them: '' }]);
+  const [scoreSending, setScoreSending] = useState(false);
+  const [scoreError,   setScoreError]   = useState('');
+  // Calcule le texte de score à partir des sets
+  const scoreText = sets
+    .filter(s => s.me !== '' && s.them !== '')
+    .map(s => `${s.me}-${s.them}`)
+    .join(' ');
   // Évaluation — overlay quiz complet (même questionnaire qu'à l'onboarding)
   const [evalOpen,        setEvalOpen]        = useState(false);
   const [evalSending,     setEvalSending]     = useState(false);
@@ -1316,19 +1322,18 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
   // ── Soumettre un score ──────────────────────────────────────────────────────
   const sendScore = async () => {
-    if (!scoreText.trim()) { setScoreError('Entrez le score (ex: 6-4 6-3)'); return; }
+    if (!scoreText.trim()) { setScoreError(lang === 'en' ? 'Enter at least one set score' : 'Entrez au moins un set'); return; }
     setScoreError('');
     setScoreSending(true);
     const res = await submitResult({ opponentId: player.id, result: scoreResult, score: scoreText });
     if (res.success) {
-      // Envoie aussi un message "score_card" dans le chat pour notifier visuellement
       await supabase.from('messages').insert({
         match_id: matchId, sender_id: user.id,
         content: `🎾 Score soumis : ${scoreText}`,
         msg_type: 'score_card',
         metadata: { pending_id: res.pendingId, score: scoreText, result: scoreResult },
       });
-      setScoreText(''); setScoreResult('win');
+      setSets([{ me: '', them: '' }]); setScoreResult('win');
       setSheet(null);
     } else {
       setScoreError(res.error || 'Erreur');
@@ -1565,10 +1570,79 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             </button>
           </div>
 
-          {/* Score texte */}
-          <input placeholder="ex: 6-4 6-3 ou 4-6 7-5 6-2"
-            value={scoreText} onChange={e => setScoreText(e.target.value)}
-            style={{ padding: '10px 14px', borderRadius: 8, border: `0.5px solid ${scoreError ? COURT.purple : border}`, background: bg, color: ink, fontFamily: 'Playfair Display, serif', fontSize: 15, outline: 'none', letterSpacing: '0.08em' }} />
+          {/* Saisie par set */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+              {lang === 'en' ? 'Sets' : 'Sets'}
+            </div>
+            {sets.map((s, i) => {
+              const myG = parseInt(s.me, 10);
+              const thG = parseInt(s.them, 10);
+              const setWon  = !isNaN(myG) && !isNaN(thG) && myG > thG;
+              const setLost = !isNaN(myG) && !isNaN(thG) && myG < thG;
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {/* Numéro set */}
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 13, color: stone, minWidth: 40 }}>
+                    Set {i + 1}
+                  </div>
+                  {/* Mon score */}
+                  <input
+                    type="number" min="0" max="7" inputMode="numeric"
+                    placeholder="Moi"
+                    value={s.me}
+                    onChange={e => setSets(prev => prev.map((x, j) => j === i ? { ...x, me: e.target.value } : x))}
+                    style={{
+                      width: 54, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
+                      border: `0.5px solid ${setWon ? COURT.green : setLost ? COURT.purple : border}`,
+                      background: setWon ? `${COURT.green}15` : setLost ? `${COURT.purple}12` : bg,
+                      color: ink, fontFamily: 'Playfair Display, serif', fontSize: 16,
+                      outline: 'none', letterSpacing: '0.04em',
+                    }}
+                  />
+                  <span style={{ color: stone, fontFamily: 'Playfair Display, serif', fontSize: 18 }}>—</span>
+                  {/* Score adverse */}
+                  <input
+                    type="number" min="0" max="7" inputMode="numeric"
+                    placeholder="Eux"
+                    value={s.them}
+                    onChange={e => setSets(prev => prev.map((x, j) => j === i ? { ...x, them: e.target.value } : x))}
+                    style={{
+                      width: 54, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
+                      border: `0.5px solid ${setLost ? COURT.purple : setWon ? COURT.green : border}`,
+                      background: setLost ? `${COURT.purple}12` : setWon ? `${COURT.green}15` : bg,
+                      color: ink, fontFamily: 'Playfair Display, serif', fontSize: 16,
+                      outline: 'none', letterSpacing: '0.04em',
+                    }}
+                  />
+                  {/* Indicateur visuel */}
+                  <div style={{ width: 22, textAlign: 'center', fontSize: 14 }}>
+                    {setWon ? '✅' : setLost ? '❌' : ''}
+                  </div>
+                  {/* Supprimer set (seulement si > 1 set) */}
+                  {sets.length > 1 && (
+                    <button onClick={() => setSets(prev => prev.filter((_, j) => j !== i))} style={{
+                      width: 24, height: 24, borderRadius: 12, border: `0.5px solid ${border}`,
+                      background: 'transparent', color: stone, cursor: 'pointer', fontSize: 14,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                    }}>×</button>
+                  )}
+                </div>
+              );
+            })}
+            {/* Bouton + ajouter un set (max 3) */}
+            {sets.length < 3 && (
+              <button onClick={() => setSets(prev => [...prev, { me: '', them: '' }])} style={{
+                alignSelf: 'flex-start', padding: '7px 14px', borderRadius: 20,
+                border: `0.5px solid ${COURT.green}`, background: 'transparent',
+                color: COURT.green, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}>
+                <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+                {lang === 'en' ? 'Add a set' : lang === 'he' ? 'הוסף סט' : 'Ajouter un set'}
+              </button>
+            )}
+          </div>
           {scoreError && <div style={{ fontFamily: 'Inter', fontSize: 11, color: COURT.purple }}>{scoreError}</div>}
           <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
             {lang === 'en' ? `${player?.name} will need to confirm the score.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
@@ -1580,6 +1654,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           }}>
             {scoreSending ? '…' : (lang === 'en' ? 'Submit score' : 'Soumettre le score')}
           </button>
+          {/* Reset des sets quand on ferme le sheet */}
         </div>
       )}
 
@@ -1761,6 +1836,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           </div>
           <QuizScreen
             t={t} lang={lang} dark={dark}
+            playerFirstName={player?.name?.split(' ')[0] || ''}
             onDone={(computedLevel) => sendEval(computedLevel)}
             onBack={() => setEvalOpen(false)}
           />
@@ -1994,7 +2070,25 @@ function MatchesScreen({ t, lang, level, dark }) {
                   <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                     {m.date instanceof Date ? m.date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB') : ''}
                   </div>
-                  {m.score && <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, color: COURT.green, marginTop: 2 }}>{m.score}</div>}
+                  {/* Sets colorés : vert = set gagné, rouge = set perdu */}
+                  {m.score && (
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
+                      {m.score.split(' ').map((setStr, si) => {
+                        const [myG, thG] = setStr.split('-').map(Number);
+                        const won  = !isNaN(myG) && !isNaN(thG) && myG > thG;
+                        const lost = !isNaN(myG) && !isNaN(thG) && myG < thG;
+                        return (
+                          <span key={si} style={{
+                            fontFamily: 'Playfair Display, serif', fontSize: 13,
+                            padding: '2px 7px', borderRadius: 5,
+                            background: won ? `${COURT.green}20` : lost ? `${COURT.purple}18` : `${COURT.stone}15`,
+                            color: won ? COURT.green : lost ? COURT.purple : stone,
+                            border: `0.5px solid ${won ? COURT.green + '50' : lost ? COURT.purple + '50' : stone + '30'}`,
+                          }}>{setStr}</span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 {m.delta != null && (
                   <div style={{ textAlign: 'right' }}>

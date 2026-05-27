@@ -481,7 +481,8 @@ export const I18N = {
 export const QUIZ_QUESTIONS = [
   // ── Q1 · Technique : Bandeja ──────────────────────────────────────────────
   { id: 1, type: 'tech',
-    q: { fr: "À quelle fréquence réussis-tu une bandeja contrôlée ?", en: "How often do you land a controlled bandeja?", he: "באיזו תדירות אתה מבצע בנדחה מבוקרת?" },
+    q:     { fr: "À quelle fréquence réussis-tu une bandeja contrôlée ?", en: "How often do you land a controlled bandeja?", he: "באיזו תדירות אתה מבצע בנדחה מבוקרת?" },
+    qEval: { fr: "À quelle fréquence {name} réussit une bandeja contrôlée ?", en: "How often does {name} land a controlled bandeja?", he: "באיזו תדירות {name} מבצע בנדחה מבוקרת?" },
     options: [
       { fr: 'Rarement',        en: 'Rarely',        he: 'לעיתים רחוקות', subFr: "Je découvre encore le geste.",           subEn: "Still learning the shot.",         subHe: 'עדיין לומד את התנועה.',       value: 1 },
       { fr: 'Occasionnellement',en:'Occasionally',  he: 'מדי פעם',       subFr: "Réussite une fois sur trois.",          subEn: "About one in three.",              subHe: 'הצלחה בכ-שליש מהמקרים.',     value: 3 },
@@ -491,7 +492,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q2 · Technique : Sorties de vitre ────────────────────────────────────
   { id: 2, type: 'tech',
-    q: { fr: "Maîtrises-tu les sorties de vitre (fond et côté) ?", en: "Do you handle back-wall and side-glass exits?", he: 'אתה שולט ביציאות מהקירות?' },
+    q:     { fr: "Maîtrises-tu les sorties de vitre (fond et côté) ?", en: "Do you handle back-wall and side-glass exits?", he: 'אתה שולט ביציאות מהקירות?' },
+    qEval: { fr: "{name} maîtrise les sorties de vitre (fond et côté) ?", en: "Does {name} handle back-wall and side-glass exits?", he: '{name} שולט ביציאות מהקירות?' },
     options: [
       { fr: 'Pas encore',         en: 'Not yet',           he: 'עוד לא',         subFr: "Le mur me surprend.",                          subEn: "The wall catches me off-guard.",       subHe: 'הקיר מפתיע אותי.',                value: 1 },
       { fr: 'Lecture correcte',   en: 'Decent read',       he: 'קריאה סבירה',    subFr: "Je récupère la balle, sans précision.",        subEn: "I recover, without precision.",        subHe: 'מציל את הכדור, בלי דיוק.',        value: 3 },
@@ -501,7 +503,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q3 · Technique : Régularité ──────────────────────────────────────────
   { id: 3, type: 'tech',
-    q: { fr: "Comment décris-tu ta régularité en match ?", en: "How would you describe your consistency in a match?", he: 'כיצד תתאר את העקביות שלך במשחק?' },
+    q:     { fr: "Comment décris-tu ta régularité en match ?", en: "How would you describe your consistency in a match?", he: 'כיצד תתאר את העקביות שלך במשחק?' },
+    qEval: { fr: "Comment {name} gère sa régularité en match ?", en: "How would you describe {name}'s consistency in a match?", he: 'כיצד תתאר את העקביות של {name} במשחק?' },
     options: [
       { fr: "Je fais souvent des fautes directes, surtout sous pression",  en: "I often make direct errors, especially under pressure",      he: 'אני עושה הרבה שגיאות ישירות, בעיקר תחת לחץ',        subFr: "Le point m'échappe avant de le construire.",     subEn: "The point is lost before I build it.",            subHe: 'הנקודה אובדת לפני שאני בונה אותה.',          value: 1   },
       { fr: "Je tiens des échanges courts mais je me précipite souvent",   en: "I hold short rallies but often rush",                        he: 'אני מחזיק חילופים קצרים אבל ממהר לעיתים',          subFr: "Correct à froid, mais la pression me déséquilibre.", subEn: "Solid when fresh, pressure throws me off.",     subHe: 'בסדר כשרגוע, לחץ מפיל אותי.',               value: 3   },
@@ -511,7 +514,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q4 · Technique : Vibora ───────────────────────────────────────────────
   { id: 4, type: 'tech',
-    q: { fr: "Maîtrises-tu la vibora ?", en: "How well do you master the vibora?", he: 'עד כמה אתה שולט בויברה?' },
+    q:     { fr: "Maîtrises-tu la vibora ?", en: "How well do you master the vibora?", he: 'עד כמה אתה שולט בויברה?' },
+    qEval: { fr: "{name} maîtrise la vibora ?", en: "How well does {name} master the vibora?", he: 'עד כמה {name} שולט בויברה?' },
     options: [
       { fr: 'Je ne la connais pas encore', en: "I don't know it yet",    he: 'עוד לא מכיר את המכה', subFr: "Coup découvert récemment.",                    subEn: "Just discovered the shot.",                  subHe: 'גיליתי את המכה לאחרונה.',             value: 1 },
       { fr: 'En apprentissage',            en: 'Still learning',          he: 'בשלב הלמידה',         subFr: "Résultat aléatoire, timing inconsistant.",    subEn: "Inconsistent timing, random results.",       subHe: 'תזמון לא עקבי, תוצאות אקראיות.',     value: 3 },
@@ -521,7 +525,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q5 · Technique : Puissance ───────────────────────────────────────────
   { id: 5, type: 'tech',
-    q: { fr: "Comment utilises-tu la puissance dans ton jeu ?", en: "How do you use power in your game?", he: 'כיצד אתה משתמש בכוח במשחקך?' },
+    q:     { fr: "Comment utilises-tu la puissance dans ton jeu ?", en: "How do you use power in your game?", he: 'כיצד אתה משתמש בכוח במשחקך?' },
+    qEval: { fr: "Comment {name} utilise la puissance dans son jeu ?", en: "How does {name} use power in their game?", he: 'כיצד {name} משתמש בכוח במשחק שלו?' },
     options: [
       { fr: "Je joue principalement en placement, pas de coup fort",       en: "I play mainly placement, no real powerful shot",            he: 'אני משחק בעיקר מיקום, אין לי מכה חזקה',            subFr: "La puissance n'est pas encore une arme.",        subEn: "Power is not yet a weapon.",                      subHe: 'כוח עדיין אינו נשק.',                        value: 1   },
       { fr: "J'ai quelques coups forts mais peu fiables",                  en: "I have some powerful shots but they're unreliable",         he: 'יש לי כמה מכות חזקות אבל לא אמינות',               subFr: "Ça part fort une fois sur deux, sans intention.", subEn: "Fires hard about half the time, no real intent.", subHe: 'יוצא חזק פעם בשתיים, ללא כוונה.',            value: 3   },
@@ -531,7 +536,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q6 · Technique : Lecture tactique ────────────────────────────────────
   { id: 6, type: 'tech',
-    q: { fr: "Comment lis-tu le jeu adverse ?", en: "How do you read your opponents?", he: 'איך אתה קורא את המשחק?' },
+    q:     { fr: "Comment lis-tu le jeu adverse ?", en: "How do you read your opponents?", he: 'איך אתה קורא את המשחק?' },
+    qEval: { fr: "Comment {name} lit le jeu adverse ?", en: "How does {name} read opponents?", he: 'איך {name} קורא את המשחק?' },
     options: [
       { fr: 'Je réagis tard',        en: 'I react late',           he: 'מאחר להגיב',     subFr: "Le coup est déjà parti quand je bouge.",       subEn: "The shot is already gone when I move.",  subHe: 'המכה כבר יצאה כשאני זז.',          value: 1 },
       { fr: 'Anticipation correcte', en: 'Decent anticipation',    he: 'ציפייה סבירה',   subFr: "Je devine la zone, pas toujours la direction.", subEn: "I guess the zone, not always direction.", subHe: 'מנחש את האזור, לא תמיד הכיוון.',    value: 3 },
@@ -541,7 +547,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q7 · Technique : Placement ───────────────────────────────────────────
   { id: 7, type: 'tech',
-    q: { fr: "Comment décris-tu ton placement sur le court ?", en: "How would you describe your court positioning?", he: 'כיצד תתאר את המיקום שלך במגרש?' },
+    q:     { fr: "Comment décris-tu ton placement sur le court ?", en: "How would you describe your court positioning?", he: 'כיצד תתאר את המיקום שלך במגרש?' },
+    qEval: { fr: "Comment {name} se place sur le court ?", en: "How would you describe {name}'s court positioning?", he: 'כיצד {name} ממוקם במגרש?' },
     options: [
       { fr: 'Je me replace rarement au bon endroit',          en: 'I rarely get in the right position',          he: 'אני לעיתים רחוקות ממוקם נכון',          subFr: "Réactif, sans lecture de jeu.",                     subEn: "Reactive, no court vision.",                        subHe: 'מגיב, ללא ראיית מגרש.',                       value: 1   },
       { fr: 'Placement correct, améliorable',                 en: 'Decent positioning, can improve',             he: 'מיקום סביר, יש מקום לשיפור',            subFr: "Je couvre ma zone mais je tarde à switcher.",       subEn: "I cover my zone but slow to switch.",               subHe: 'מכסה את האזור שלי אבל איטי להחליף.',          value: 3   },
@@ -551,7 +558,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q8 · Technique : Mental ───────────────────────────────────────────────
   { id: 8, type: 'tech',
-    q: { fr: "Comment gères-tu la pression en match ?", en: "How do you handle pressure in a match?", he: 'איך אתה מתמודד עם לחץ במשחק?' },
+    q:     { fr: "Comment gères-tu la pression en match ?", en: "How do you handle pressure in a match?", he: 'איך אתה מתמודד עם לחץ במשחק?' },
+    qEval: { fr: "Comment {name} gère la pression en match ?", en: "How does {name} handle pressure in a match?", he: 'איך {name} מתמודד עם לחץ במשחק?' },
     options: [
       { fr: 'Je perds mes moyens sous la pression',           en: 'I fall apart under pressure',                he: 'אני מתפרק תחת לחץ',                     subFr: "Erreurs directes quand le score est serré.",        subEn: "Direct errors when the score is tight.",            subHe: 'שגיאות ישירות כשהתוצאה קרובה.',               value: 1   },
       { fr: 'Le score et la pression m\'affectent',           en: 'Score and pressure affect my game',           he: 'התוצאה והלחץ משפיעים עלי',              subFr: "Je tiens à froid, moins bien dans les moments chauds.", subEn: "Solid when calm, shakier at key moments.",      subHe: 'בסדר כשרגוע, פחות יציב ברגעים מכריעים.',     value: 3   },

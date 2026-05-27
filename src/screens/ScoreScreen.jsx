@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { COURT, Ornament } from '../components/CourtUI';
 import { QUIZ_QUESTIONS, computeLevel } from '../data/courtData';
 
-export default function QuizScreen({ t, lang, onDone, onBack, dark }) {
+export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstName }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [animDir, setAnimDir] = useState('in');
@@ -10,7 +10,16 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark }) {
   const q = QUIZ_QUESTIONS[idx];
   const progress = ((idx + 1) / total) * 100;
   const rtl = lang === 'he';
-  const txt = (obj) => obj ? (obj[lang] || obj.en || obj.fr) : '';
+
+  // Résout le texte d'une question : si playerFirstName fourni et qEval existe,
+  // utilise la version 3ème personne avec le prénom. Sinon, question standard (tu).
+  const txt = (obj) => {
+    if (!obj) return '';
+    const base = playerFirstName && q?.qEval
+      ? (q.qEval[lang] || q.qEval.fr)
+      : (obj[lang] || obj.en || obj.fr);
+    return playerFirstName ? base.replace(/\{name\}/g, playerFirstName) : base;
+  };
   const subTxt = (opt) => lang === 'he' ? opt.subHe : (lang === 'en' ? (opt.subEn || opt.subFr) : opt.subFr);
 
   const bg = dark ? COURT.darkBg : COURT.cream;
