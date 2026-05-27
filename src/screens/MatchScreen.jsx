@@ -1178,8 +1178,9 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const [scoreResult,  setScoreResult]  = useState('win');
   // sets: [{ me: '', them: '' }, ...]
   const [sets,         setSets]         = useState([{ me: '', them: '' }]);
-  const [scoreSending, setScoreSending] = useState(false);
-  const [scoreError,   setScoreError]   = useState('');
+  const [scoreSending,  setScoreSending]  = useState(false);
+  const [scoreError,    setScoreError]    = useState('');
+  const [rejectingId,   setRejectingId]   = useState(null);
   // Calcule le texte de score à partir des sets
   const scoreText = sets
     .filter(s => s.me !== '' && s.them !== '')
@@ -1347,6 +1348,26 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     if (res.success) { setSheet(null); setEvalOpen(true); }
   };
 
+  // ── Refuser un score → notifie dans le chat + recharge les pending ────────────
+  const handleReject = async (pendingId) => {
+    setRejectingId(pendingId);
+    const res = await rejectResult(pendingId);
+    if (res?.success !== false) {
+      // Message visible dans le fil pour informer les deux joueurs
+      const rejLabel = lang === 'en' ? '❌ Score rejected — please submit a new score'
+                     : lang === 'he' ? '❌ התוצאה נדחתה — אנא הגש תוצאה חדשה'
+                     : '❌ Score refusé — veuillez soumettre un nouveau score';
+      await supabase.from('messages').insert({
+        match_id: matchId,
+        sender_id: user.id,
+        content: rejLabel,
+        msg_type: 'text',
+        metadata: {},
+      });
+    }
+    setRejectingId(null);
+  };
+
   // ── Évaluation niveau — appelé après le quiz avec le niveau calculé ─────────
   const sendEval = async (computedLevel) => {
     setEvalSending(true);
@@ -1407,8 +1428,13 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               <button onClick={() => handleConfirm(pending.id)} style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.green, border: 'none', color: COURT.cream, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
                 {lang === 'en' ? '✓ Confirm' : lang === 'he' ? '✓ אשר' : '✓ Confirmer'}
               </button>
-              <button onClick={() => rejectResult(pending.id)} style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`, color: COURT.purple, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer' }}>
-                {lang === 'en' ? '✗ Reject' : lang === 'he' ? '✗ דחה' : '✗ Refuser'}
+              <button
+                onClick={() => handleReject(pending.id)}
+                disabled={rejectingId === pending.id}
+                style={{ flex: 1, padding: '9px', borderRadius: 8, background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`, color: COURT.purple, fontFamily: 'Inter', fontSize: 12, cursor: rejectingId === pending.id ? 'not-allowed' : 'pointer', opacity: rejectingId === pending.id ? 0.5 : 1 }}>
+                {rejectingId === pending.id
+                  ? (lang === 'en' ? '…' : '…')
+                  : (lang === 'en' ? '✗ Reject' : lang === 'he' ? '✗ דחה' : '✗ Refuser')}
               </button>
             </div>
             {remaining > 1 && (
@@ -1663,16 +1689,6 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
       {/* ── Fil de messages ────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {/* Carte verrouillée si 3 rejets */}
-        {scoreLocked && renderLockedCard()}
-        {/* Cartes score en attente pour ce match */}
-        {!scoreLocked && pendingForMatch.length > 0 && (
-          <div style={{ marginBottom: 4 }}>
-            {pendingForMatch.map(p => (
-              <div key={p.id}>{renderScoreCard(p)}</div>
-            ))}
-          </div>
-        )}
         {messages.map((m, i) => (
           <div key={m._id || i} style={{ display: 'flex', justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start' }}>
             {m.msgType === 'match_proposal' ? (
@@ -1776,6 +1792,16 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             )}
           </div>
         ))}
+        {/* Carte verrouillée si 3 rejets — toujours en bas du fil */}
+        {scoreLocked && renderLockedCard()}
+        {/* Cartes score en attente — affichées en dernier (message le plus récent) */}
+        {!scoreLocked && pendingForMatch.length > 0 && (
+          <div style={{ marginBottom: 4 }}>
+            {pendingForMatch.map(p => (
+              <div key={p.id}>{renderScoreCard(p)}</div>
+            ))}
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
