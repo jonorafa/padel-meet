@@ -33,7 +33,7 @@ function getLevelLabel(level, t) {
 /**
  * Card pour un score à confirmer (reçu de l'adversaire)
  */
-function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy }) {
+function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy, rejectConfirmId, onCancelReject }) {
   const rtl = lang === 'he'
   const ink = dark ? COURT.darkText : COURT.ink
   const stone = dark ? COURT.darkMuted : COURT.stone
@@ -46,6 +46,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy 
   const isLoss = pending.myResult === 'loss'
   const resultColor = isWin ? COURT.green : (isLoss ? COURT.purple : COURT.gold)
   const resultLabel = isWin ? t.youWon : (isLoss ? t.youLost : t.draw)
+  const awaitingRejectConfirm = rejectConfirmId === pending.id
 
   return (
     <div style={{
@@ -92,40 +93,61 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy 
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-        <button
-          onClick={() => onReject(pending.id)}
-          disabled={busy}
-          style={{
-            flex: 1, padding: '10px 12px',
-            background: dark ? COURT.darkBg : 'transparent',
-            color: COURT.purple,
-            border: `0.5px solid ${COURT.purple}60`,
-            borderRadius: 8,
-            fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 13, cursor: busy ? 'wait' : 'pointer',
-            opacity: busy ? 0.5 : 1,
-          }}
-        >
-          ✕ {t.reject}
-        </button>
-        <button
-          onClick={() => onConfirm(pending.id)}
-          disabled={busy}
-          style={{
-            flex: 2, padding: '10px 12px',
-            background: COURT.green, color: COURT.cream,
-            border: `0.5px solid ${COURT.green}`,
-            borderRadius: 8,
-            fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 13, cursor: busy ? 'wait' : 'pointer',
-            opacity: busy ? 0.5 : 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}
-        >
-          <PadelBall size={14} shadow={false} /> {t.confirm}
-        </button>
-      </div>
+      {awaitingRejectConfirm ? (
+        /* Confirmation inline du rejet — remplace le confirm() natif */
+        <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: `${COURT.purple}10`, border: `0.5px solid ${COURT.purple}40` }}>
+          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: COURT.purple, marginBottom: 8, textAlign: 'center' }}>
+            {lang === 'en' ? 'Confirm rejection?' : lang === 'he' ? 'אשר דחייה?' : 'Confirmer le refus ?'}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={onCancelReject} disabled={busy} style={{
+              flex: 1, padding: '8px', borderRadius: 8, background: 'transparent',
+              border: `0.5px solid ${border}`, color: stone,
+              fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+            }}>
+              {lang === 'en' ? 'Cancel' : lang === 'he' ? 'ביטול' : 'Annuler'}
+            </button>
+            <button onClick={() => onReject(pending.id)} disabled={busy} style={{
+              flex: 2, padding: '8px', borderRadius: 8,
+              background: COURT.purple, border: 'none', color: COURT.cream,
+              fontFamily: 'Inter', fontSize: 12, fontWeight: 600,
+              cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
+            }}>
+              {busy ? '…' : (lang === 'en' ? '✕ Reject' : lang === 'he' ? '✕ דחה' : '✕ Refuser')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <button
+            onClick={() => onReject(pending.id)}
+            disabled={busy}
+            style={{
+              flex: 1, padding: '10px 12px',
+              background: dark ? COURT.darkBg : 'transparent',
+              color: COURT.purple, border: `0.5px solid ${COURT.purple}60`,
+              borderRadius: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 13, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
+            }}
+          >
+            ✕ {t.reject}
+          </button>
+          <button
+            onClick={() => onConfirm(pending.id)}
+            disabled={busy}
+            style={{
+              flex: 2, padding: '10px 12px',
+              background: COURT.green, color: COURT.cream,
+              border: `0.5px solid ${COURT.green}`, borderRadius: 8,
+              fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 13, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}
+          >
+            <PadelBall size={14} shadow={false} /> {busy ? '…' : t.confirm}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -187,6 +209,8 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
   } = useMatchResults()
 
   const [busy, setBusy] = useState(false)
+  const [panelError, setPanelError] = useState('')
+  const [rejectConfirmId, setRejectConfirmId] = useState(null) // id en attente de confirmation de rejet
   // Peer evaluation state: { matchId, playerId, playerName, playerPhoto, playerCurrentLevel } | null
   const [evalPending, setEvalPending] = useState(null)
   const [evalProposedLevel, setEvalProposedLevel] = useState(3.5)
@@ -200,10 +224,14 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
 
   const handleConfirm = async (pendingId) => {
     const item = pendingToConfirm.find(p => p.id === pendingId)
+    setPanelError('')
     setBusy(true)
-    const { error: err } = await confirmResult(pendingId)
+    const res = await confirmResult(pendingId)
     setBusy(false)
-    if (err) { alert(`${t.error}: ${err}`); return }
+    if (!res.success) {
+      setPanelError(res.error || (lang === 'en' ? 'Error — please try again' : 'Erreur — réessaie'))
+      return
+    }
     if (item) {
       const currentLevel = item.otherPlayer?.level ?? 3.5
       setEvalPending({
@@ -236,11 +264,20 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
   }
 
   const handleReject = async (pendingId) => {
-    if (!confirm(t.confirmReject || 'Are you sure?')) return
+    // 1er clic → demande confirmation inline (remplace confirm())
+    if (rejectConfirmId !== pendingId) {
+      setRejectConfirmId(pendingId)
+      return
+    }
+    // 2ème clic → confirme le rejet
+    setRejectConfirmId(null)
+    setPanelError('')
     setBusy(true)
-    const { error: err } = await rejectResult(pendingId)
+    const res = await rejectResult(pendingId)
     setBusy(false)
-    if (err) alert(`${t.error}: ${err}`)
+    if (!res.success) {
+      setPanelError(res.error || (lang === 'en' ? 'Error — please try again' : 'Erreur — réessaie'))
+    }
   }
 
   const hasContent = pendingToConfirm.length > 0 || pendingAwaitingConfirmation.length > 0
@@ -258,10 +295,21 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             }}>
               ⚡ {t.toConfirm} ({pendingToConfirm.length})
             </div>
+            {panelError && (
+              <div style={{
+                padding: '8px 12px', borderRadius: 8, marginBottom: 10,
+                background: `${COURT.purple}12`, border: `0.5px solid ${COURT.purple}40`,
+                fontFamily: 'Inter', fontSize: 12, color: COURT.purple,
+              }}>
+                ⚠️ {panelError}
+              </div>
+            )}
             {pendingToConfirm.map(p => (
               <ScoreToConfirmCard
                 key={p.id} pending={p} t={t} lang={lang} dark={dark}
                 onConfirm={handleConfirm} onReject={handleReject} busy={busy}
+                rejectConfirmId={rejectConfirmId}
+                onCancelReject={() => setRejectConfirmId(null)}
               />
             ))}
             <Ornament width={40} style={{ margin: '20px auto' }} />
