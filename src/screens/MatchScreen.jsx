@@ -588,7 +588,7 @@ function EmptyStack({ t, lang, onReset, dark }) {
 }
 
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
-function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail, isGuest, onGuestAction }) {
+function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   // ── Données réelles ──
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
   const { recordSwipe } = useSwipes();
@@ -740,6 +740,21 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
           <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, marginLeft: 12 }}>
+          {/* Cloche notifications */}
+          <button onClick={onShowNotifs} style={{
+            position: 'relative', flexShrink: 0, width: 30, height: 30, borderRadius: 15,
+            background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: dark ? COURT.darkText : COURT.green,
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {notifCount > 0 && (
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 12, height: 12, borderRadius: 6, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 7, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{notifCount}</div>
+            )}
+          </button>
           <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.6"
               style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
@@ -850,7 +865,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
 }
 
 // ─── Search flow ────────────────────────────────────────────────────────────
-function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction }) {
+function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   const [showPrefs, setShowPrefs]   = useState(false);
   const [matchPlayer, setMatchPlayer] = useState(null);
   const [filters, setFilters] = useState({
@@ -878,6 +893,8 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
         userLevel={userLevel}
         isGuest={isGuest}
         onGuestAction={onGuestAction}
+        onShowNotifs={onShowNotifs}
+        notifCount={notifCount}
       />
       {showPrefs && (
         <PreferencesSheet
@@ -891,7 +908,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
 }
 
 // ─── Home Screen ────────────────────────────────────────────────────────────
-function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetailPlayerId, isGuest, onGuestAction, onGoToProfile }) {
+function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetailPlayerId, isGuest, onGuestAction, onGoToProfile, onShowNotifs, notifCount = 0 }) {
   const { profile } = useAuth();
   const matchHistory = useMatchHistory();
 
@@ -948,6 +965,21 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 32, color: COURT.green, lineHeight: 1 }}>Padel Meet</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Cloche notifications */}
+          <button onClick={onShowNotifs} style={{
+            position: 'relative', width: 36, height: 36, borderRadius: 18,
+            background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: dark ? COURT.darkText : COURT.green,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {notifCount > 0 && (
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            )}
+          </button>
           <button onClick={() => { setSearchMode(m => !m); setSearchQuery(''); }} style={{
             width: 36, height: 36, borderRadius: 18,
             // En mode "X" (searchMode=true) on force un vert vif en dark pour assurer le contraste de l'icône
@@ -1977,7 +2009,7 @@ function ReadReceipt({ read }) {
 }
 
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
-function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction }) {
+function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   const { matches, loading: matchesLoading } = useUserMatches();
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const rtl   = lang === 'he';
@@ -2031,9 +2063,25 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction }) {
 
   return (
     <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ padding: '0 24px 20px' }}>
-        <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-        <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: ink, fontStyle: 'italic', fontWeight: 500 }}>{t.chat}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 20px' }}>
+        <div>
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: ink, fontStyle: 'italic', fontWeight: 500 }}>{t.chat}</div>
+        </div>
+        <button onClick={onShowNotifs} style={{
+          position: 'relative', width: 36, height: 36, borderRadius: 18,
+          background: dark ? COURT.darkCard : COURT.cream,
+          border: `0.5px solid ${border}`,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: dark ? COURT.darkText : COURT.green,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          {notifCount > 0 && (
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+          )}
+        </button>
       </div>
 
       {matchesLoading || matches === null ? (
@@ -2059,8 +2107,9 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction }) {
 // Hook au niveau de la ligne (pas dans le .map) pour respecter les rules of hooks
 // et permettre une mise à jour réactive du point vert sans re-render global.
 function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
-  const { player, lastMessage } = match;
+  const { player, lastMessage, unreadCount = 0 } = match;
   const isOnline = useOnline(player?.id);
+  const hasUnread = unreadCount > 0;
   return (
     <div onClick={onOpen} style={{
       padding: '14px 24px', borderBottom: `0.5px solid ${border}`,
@@ -2073,25 +2122,63 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>{player.name}</div>
-          {lastMessage && <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone }}>{lastMessage.time}</div>}
+          <div style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: 17,
+            color: ink,
+            fontWeight: hasUnread ? 700 : 500,
+          }}>{player.name}</div>
+          {lastMessage && (
+            <div style={{
+              fontFamily: 'Inter',
+              fontSize: 10,
+              color: hasUnread ? COURT.green : stone,
+              fontWeight: hasUnread ? 700 : 400,
+            }}>{lastMessage.time}</div>
+          )}
         </div>
-        {lastMessage ? (
-          <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>
-            {lastMessage.from === 'me' ? '→ ' : ''}{lastMessage.text[lang] || lastMessage.text.fr}
-          </div>
-        ) : (
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.12em', marginTop: 2 }}>
-            {formatPresence(isOnline, player?.lastSeen, lang)}
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+          {lastMessage ? (
+            <div style={{
+              flex: 1, minWidth: 0,
+              fontFamily: 'Crimson Text, serif',
+              fontStyle: 'italic',
+              fontSize: 13,
+              color: hasUnread ? ink : stone,
+              fontWeight: hasUnread ? 700 : 400,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {lastMessage.from === 'me' ? '→ ' : ''}{lastMessage.text[lang] || lastMessage.text.fr}
+            </div>
+          ) : (
+            <div style={{
+              flex: 1, minWidth: 0,
+              fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.12em',
+            }}>
+              {formatPresence(isOnline, player?.lastSeen, lang)}
+            </div>
+          )}
+          {hasUnread && (
+            <div style={{
+              flexShrink: 0,
+              minWidth: 20, height: 20, padding: unreadCount > 9 ? '0 6px' : 0,
+              borderRadius: 10,
+              background: COURT.green,
+              color: COURT.cream,
+              fontFamily: 'Inter, sans-serif',
+              fontSize: 11, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: `0 1px 4px ${COURT.green}55`,
+            }}>{unreadCount > 99 ? '99+' : unreadCount}</div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 // ─── Matches / Stats Screen ──────────────────────────────────────────────────
-function MatchesScreen({ t, lang, level, dark }) {
+function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
   const { profile } = useAuth();
   const history = useMatchHistory();
   const { stats } = usePlayerStats();
@@ -2116,9 +2203,25 @@ function MatchesScreen({ t, lang, level, dark }) {
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ padding: '0 24px 16px' }}>
-        <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-        <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.matches}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
+        <div>
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.matches}</div>
+        </div>
+        <button onClick={onShowNotifs} style={{
+          position: 'relative', width: 36, height: 36, borderRadius: 18,
+          background: dark ? COURT.darkCard : COURT.cream,
+          border: `0.5px solid ${border}`,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: dark ? COURT.darkText : COURT.green,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          {notifCount > 0 && (
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+          )}
+        </button>
       </div>
 
       <div style={{ display: 'flex', margin: '0 24px 20px', background: dark ? COURT.darkCard : COURT.creamDark, borderRadius: 10, padding: 4 }}>
@@ -2291,7 +2394,7 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
 }
 
 // ─── Profile Screen ──────────────────────────────────────────────────────────
-function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail }) {
+function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0 }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
   const { lang, dark, level, confidence, toggleLang, toggleDark } = usePrefs();
   const navigate = useNavigate();
@@ -2413,9 +2516,25 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail })
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ padding: '0 24px 16px' }}>
-        <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
-        <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.myProfile}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
+        <div>
+          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
+          <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.myProfile}</div>
+        </div>
+        <button onClick={onShowNotifs} style={{
+          position: 'relative', width: 36, height: 36, borderRadius: 18,
+          background: dark ? COURT.darkCard : COURT.cream,
+          border: `0.5px solid ${border}`,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: dark ? COURT.darkText : COURT.green,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          {notifCount > 0 && (
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+          )}
+        </button>
       </div>
 
       {/* Profile card */}
@@ -3081,12 +3200,14 @@ export default function MainApp() {
   // TODO: Compter les conversations non lues depuis ChatScreen sans double hook
   const chatUnread = 0;
 
+  const bellProps = { onShowNotifs: () => setShowNotifs(true), notifCount: unreadCount };
+
   const screens = {
-    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} />,
-    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} />,
-    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} />,
-    trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} />,
-    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} />,
+    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} {...bellProps} />,
+    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
+    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
+    trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} {...bellProps} />,
+    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} {...bellProps} />,
   };
 
   const bg    = darkMode ? COURT.darkBg : COURT.cream;
@@ -3111,23 +3232,6 @@ export default function MainApp() {
           <span>{pendingCount} {pendingCount > 1 ? 'scores' : 'score'}</span>
         </button>
       )}
-
-      {/* Cloche de notifications */}
-      <button onClick={() => setShowNotifs(true)} style={{
-        position: 'absolute', top: 14, right: 16, zIndex: 50,
-        width: 36, height: 36, borderRadius: 18,
-        background: darkMode ? COURT.darkCard : COURT.cream,
-        border: `0.5px solid ${border}`, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: darkMode ? COURT.darkText : COURT.green,
-      }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        {unreadCount > 0 && (
-          <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{unreadCount}</div>
-        )}
-      </button>
 
       {/* Bouton planifier un match (flottant) */}
       {tab === 'home' && (
