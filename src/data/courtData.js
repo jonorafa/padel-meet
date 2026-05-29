@@ -474,9 +474,10 @@ export const I18N = {
  * Barème des réponses techniques (4 niveaux) :
  *   1.0 = Débutant   |   3.0 = Intermédiaire   |   5.5 = Avancé   |   7.0 = Expert compétition
  *
- * 8 questions tech | valeurs {1, 3, 5.5, 7} | moyenne pure
+ * 10 questions tech | valeurs {1, 3, 5.5, 7} | moyenne pure
  * Q1 Bandeja · Q2 Sorties de vitre · Q3 Régularité · Q4 Vibora
  * Q5 Puissance · Q6 Lecture tactique · Q7 Placement · Q8 Mental
+ * Q9 Précision balle · Q10 Smash par 3 / par 4
  */
 export const QUIZ_QUESTIONS = [
   // ── Q1 · Technique : Bandeja ──────────────────────────────────────────────
@@ -484,10 +485,10 @@ export const QUIZ_QUESTIONS = [
     q:     { fr: "À quelle fréquence réussis-tu une bandeja contrôlée ?", en: "How often do you land a controlled bandeja?", he: "באיזו תדירות אתה מבצע בנדחה מבוקרת?" },
     qEval: { fr: "À quelle fréquence {name} réussit une bandeja contrôlée ?", en: "How often does {name} land a controlled bandeja?", he: "באיזו תדירות {name} מבצע בנדחה מבוקרת?" },
     options: [
-      { fr: 'Rarement',        en: 'Rarely',        he: 'לעיתים רחוקות', subFr: "Je découvre encore le geste.",           subEn: "Still learning the shot.",         subHe: 'עדיין לומד את התנועה.',       value: 1 },
-      { fr: 'Occasionnellement',en:'Occasionally',  he: 'מדי פעם',       subFr: "Réussite une fois sur trois.",          subEn: "About one in three.",              subHe: 'הצלחה בכ-שליש מהמקרים.',     value: 3 },
-      { fr: 'Souvent',         en: 'Often',         he: 'לעיתים קרובות', subFr: "Coup de routine, placement correct.",  subEn: "Routine shot, decent placement.",  subHe: 'מכה שגרתית, מיקום סביר.',    value: 5.5 },
-      { fr: 'Arme de compétition', en: 'Competition weapon', he: 'נשק תחרותי', subFr: "Placée à volonté, direction et effet maîtrisés.", subEn: "Placed at will — direction and spin mastered.", subHe: 'שליטה מלאה בכיוון ובספין.', value: 7 },
+      { fr: 'Rarement',              en: 'Rarely',                 he: 'לעיתים רחוקות', subFr: "Je découvre encore le geste.",                  subEn: "Still learning the shot.",                    subHe: 'עדיין לומד את התנועה.',             value: 1   },
+      { fr: 'Occasionnellement',     en: 'Occasionally',           he: 'מדי פעם',       subFr: "Réussite une fois sur trois.",                  subEn: "About one in three.",                         subHe: 'הצלחה בכ-שליש מהמקרים.',           value: 3   },
+      { fr: 'Souvent',               en: 'Often',                  he: 'לעיתים קרובות', subFr: "Coup de routine, placement correct.",           subEn: "Routine shot, decent placement.",             subHe: 'מכה שגרתית, מיקום סביר.',          value: 5.5 },
+      { fr: 'Je la contrôle parfaitement', en: 'Perfect control', he: 'שליטה מושלמת',  subFr: "Direction et effet maîtrisés, fiable en match.", subEn: "Direction and spin mastered — reliable in matches.", subHe: 'שליטה בכיוון ובספין — אמינה במשחק.', value: 7 },
     ]},
 
   // ── Q2 · Technique : Sorties de vitre ────────────────────────────────────
@@ -517,10 +518,10 @@ export const QUIZ_QUESTIONS = [
     q:     { fr: "Maîtrises-tu la vibora ?", en: "How well do you master the vibora?", he: 'עד כמה אתה שולט בויברה?' },
     qEval: { fr: "{name} maîtrise la vibora ?", en: "How well does {name} master the vibora?", he: 'עד כמה {name} שולט בויברה?' },
     options: [
-      { fr: 'Je ne la connais pas encore', en: "I don't know it yet",    he: 'עוד לא מכיר את המכה', subFr: "Coup découvert récemment.",                    subEn: "Just discovered the shot.",                  subHe: 'גיליתי את המכה לאחרונה.',             value: 1 },
-      { fr: 'En apprentissage',            en: 'Still learning',          he: 'בשלב הלמידה',         subFr: "Résultat aléatoire, timing inconsistant.",    subEn: "Inconsistent timing, random results.",       subHe: 'תזמון לא עקבי, תוצאות אקראיות.',     value: 3 },
+      { fr: 'Je ne la connais pas encore', en: "I don't know it yet",    he: 'עוד לא מכיר את המכה', subFr: "Coup découvert récemment.",                    subEn: "Just discovered the shot.",                  subHe: 'גיליתי את המכה לאחרונה.',             value: 1   },
+      { fr: 'En apprentissage',            en: 'Still learning',          he: 'בשלב הלמידה',         subFr: "Résultat aléatoire, timing inconsistant.",    subEn: "Inconsistent timing, random results.",       subHe: 'תזמון לא עקבי, תוצאות אקראיות.',     value: 3   },
       { fr: 'Je la place avec intention',  en: 'I place it with intent',  he: 'משתמש בה בכוונה',    subFr: "Bonne exécution, placement correct.",         subEn: "Good execution, correct placement.",         subHe: 'ביצוע טוב, מיקום נכון.',              value: 5.5 },
-      { fr: 'Arme de compétition',         en: 'Competition weapon',      he: 'נשק תחרותי',          subFr: "Vibora croisée ou à la ligne — maîtrise totale.", subEn: "Cross or line vibora — total mastery.", subHe: 'ויברה אלכסונית או קווית — שליטה מלאה.', value: 7 },
+      { fr: 'Maîtrise totale',             en: 'Total mastery',           he: 'שליטה מלאה',          subFr: "Vibora croisée ou à la ligne — au choix selon la situation.", subEn: "Cross or line vibora — chosen based on situation.", subHe: 'ויברה אלכסונית או קווית — לפי המצב.', value: 7 },
     ]},
 
   // ── Q5 · Technique : Puissance ───────────────────────────────────────────
@@ -566,6 +567,90 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Je gère bien les moments décisifs',              en: 'I handle decisive moments well',              he: 'אני מתמודד טוב עם רגעים מכריעים',       subFr: "Sang-froid en match serré, pas de panique.",        subEn: "Composed in tight matches, no panic.",              subHe: 'קור רוח במשחקים קרובים, ללא פאניקה.',         value: 5.5 },
       { fr: 'Je joue encore mieux sous la pression',          en: 'I play better under pressure',                he: 'אני משחק טוב יותר תחת לחץ',             subFr: "Les points importants font ressortir le meilleur de moi — niveau compétition.", subEn: "Big points bring out my best — competition level.", subHe: 'נקודות גדולות מוציאות ממני את הטוב ביותר — רמת תחרות.', value: 7   },
     ]},
+
+  // ── Q9 · Général : Précision de balle ────────────────────────────────────
+  { id: 9, type: 'tech',
+    q:     { fr: "Arrives-tu à placer la balle là où tu le souhaites ?", en: "Can you place the ball where you want it?", he: 'האם אתה מצליח למקם את הכדור איפה שאתה רוצה?' },
+    qEval: { fr: "{name} arrive à placer la balle là où il le souhaite ?", en: "Can {name} place the ball where they want it?", he: '{name} מצליח למקם את הכדור איפה שהוא רוצה?' },
+    options: [
+      { fr: 'Rarement — la direction est souvent aléatoire',  en: 'Rarely — direction is often random',          he: 'לעיתים רחוקות — הכיוון לרוב אקראי',     subFr: "Je frappe sans cible précise.",                    subEn: "I hit without a specific target.",                  subHe: 'אני מכה ללא מטרה ספציפית.',           value: 1   },
+      { fr: 'Parfois — je vise une zone, pas un point précis', en: 'Sometimes — I aim for a zone, not a spot',   he: 'לפעמים — אני מכוון לאזור, לא לנקודה',   subFr: "Correct en coup construit, imprécis sous pression.", subEn: "OK when rally is calm, imprecise under pressure.",  subHe: 'בסדר בחילוף רגוע, לא מדויק תחת לחץ.', value: 3   },
+      { fr: 'Régulièrement — je place avec intention',        en: 'Regularly — I place with intent',             he: 'באופן קבוע — אני ממקם בכוונה',          subFr: "Je choisis la zone et j'y arrive en coup construit.", subEn: "I choose the zone and hit it in built rallies.", subHe: 'אני בוחר אזור ומגיע אליו בחילוף בנוי.', value: 5.5 },
+      { fr: 'Précision chirurgicale — direction et profondeur maîtrisées', en: 'Surgical precision — direction and depth mastered', he: 'דיוק כירורגי — כיוון ועומק נשלטים', subFr: "Je place même sous pression et en déplacement.", subEn: "I place even under pressure and on the move.", subHe: 'ממקם גם תחת לחץ ובמהלך תנועה.', value: 7   },
+    ]},
+
+  // ── Q10 · Général : Smash par 3 / par 4 ─────────────────────────────────
+  { id: 10, type: 'tech',
+    q:     { fr: "Arrives-tu à smacher et faire sortir la balle du terrain ?", en: "Can you smash and make the ball exit the court?", he: 'האם אתה מצליח לסמש ולהוציא את הכדור מהמגרש?' },
+    qEval: { fr: "{name} arrive à smacher et faire sortir la balle du terrain ?", en: "Can {name} smash and make the ball exit the court?", he: '{name} מצליח לסמש ולהוציא את הכדור מהמגרש?' },
+    options: [
+      { fr: 'Je ne smache pas encore',                        en: "I can't smash yet",                           he: 'עדיין לא מבצע סמאש',                    subFr: "Le smash est encore difficile à exécuter.",        subEn: "The smash is still difficult to execute.",          subHe: 'הסמאש עדיין קשה לביצוע.',             value: 1   },
+      { fr: 'Parfois la balle sort du fond',                  en: 'Sometimes the ball exits at the back',        he: 'לפעמים הכדור יוצא מהאחור',              subFr: "La balle sort du terrain, mais sans intention.",   subEn: "The ball exits, but without real intention.",       subHe: 'הכדור יוצא מהמגרש, אך ללא כוונה.',    value: 3   },
+      { fr: 'Je réussis régulièrement un par 3',              en: 'I regularly pull off a par 3',                he: 'אני מבצע בהצלחה פר 3 באופן קבוע',       subFr: "Smash latéral contrôlé — la balle sort du côté.",  subEn: "Controlled side smash — the ball exits the side.",  subHe: 'סמאש צידי מבוקר — הכדור יוצא מהצד.', value: 5.5 },
+      { fr: 'Par 3 et par 4 au choix selon la situation',    en: 'Par 3 or par 4, I choose based on situation',  he: 'פר 3 או פר 4, אני בוחר לפי המצב',       subFr: "Je choisis la sortie — côté ou fond — avec intention.", subEn: "I choose the exit — side or back — with full intent.", subHe: 'אני בוחר יציאה — צד או אחור — עם כוונה מלאה.', value: 7   },
+    ]},
+];
+
+/**
+ * GLOSSARY — Définitions des termes techniques du padel
+ * Utilisé dans ScoreScreen pour afficher un tooltip au clic sur le terme.
+ * Chaque entrée : { term: {fr, en, he}, def: {fr, en, he} }
+ */
+export const GLOSSARY = [
+  {
+    key: 'bandeja',
+    term: { fr: 'bandeja', en: 'bandeja', he: 'בנדחה' },
+    def: {
+      fr: "Coup en hauteur joué depuis le côté, avec effet lifté. La balle retombe profonde dans le terrain adverse. L'un des coups signatures du padel, entre smash et lob.",
+      en: "An overhead shot played from the side with topspin. The ball lands deep in the opponent's court — one of padel's signature shots, between a smash and a lob.",
+      he: "מכה גבוהה מהצד עם ספין. הכדור נוחת עמוק בשדה היריב — אחד המהלכים האופייניים לפאדל.",
+    },
+  },
+  {
+    key: 'vibora',
+    term: { fr: 'vibora', en: 'vibora', he: 'ויברה' },
+    def: {
+      fr: "Smash latéral puissant avec un mouvement en serpentine (\"víbora\" = serpent en espagnol). Génère une balle rapide et basse très difficile à rattraper. Arme offensive avancée.",
+      en: "A powerful lateral smash with a snake-like swing (\"víbora\" = snake in Spanish). Generates a fast, low ball that's very hard to return. Advanced offensive weapon.",
+      he: "סמאש צידי עוצמתי עם תנועה מתפתלת ('ויברה' = נחש בספרדית). מייצר כדור מהיר ונמוך שקשה מאוד להחזיר.",
+    },
+  },
+  {
+    key: 'sortie de vitre',
+    term: { fr: 'sortie de vitre', en: 'glass exit', he: 'יציאת קיר' },
+    def: {
+      fr: "Coup joué après que la balle rebondit sur la vitre de fond ou de côté. Technique-clé du padel : il faut anticiper le rebond, reculer, et relancer avec intention.",
+      en: "A shot played after the ball bounces off the back or side glass. Key padel skill: you must anticipate the rebound, step back, and play with intent.",
+      he: "מכה שמשחקים אחרי שהכדור קפץ מהזכוכית האחורית או הצידית. מיומנות מפתח בפאדל.",
+    },
+  },
+  {
+    key: 'double vitre',
+    term: { fr: 'double vitre', en: 'double glass', he: 'כפל קיר' },
+    def: {
+      fr: "Balle qui rebondit sur deux vitres consécutivement (fond puis côté, ou l'inverse). Très difficile à lire car la trajectoire change deux fois.",
+      en: "A ball that bounces off two glass walls consecutively (back then side, or vice versa). Very hard to read because the trajectory changes twice.",
+      he: "כדור שקופץ משתי זכוכיות ברצף. קשה מאוד לקריאה כי המסלול משתנה פעמיים.",
+    },
+  },
+  {
+    key: 'par 3',
+    term: { fr: 'par 3', en: 'par 3', he: 'פר 3' },
+    def: {
+      fr: "Smash où la balle sort du terrain par le côté, au-dessus du grillage latéral (3 m de haut). Joué avec effet lifté pour faire \"kiquer\" la balle vers l'extérieur après rebond.",
+      en: "A smash where the ball exits through the side fence (3 m high). Played with topspin to make the ball \"kick\" sideways after bouncing.",
+      he: "סמאש שבו הכדור יוצא דרך הגדר הצידית (גובה 3 מ'). מבוצע עם ספין לפנים כדי שהכדור 'יקפוץ' הצידה אחרי הנחיתה.",
+    },
+  },
+  {
+    key: 'par 4',
+    term: { fr: 'par 4', en: 'par 4', he: 'פר 4' },
+    def: {
+      fr: "Smash plat et puissant où la balle sort par le fond du terrain, au-dessus de la vitre arrière (4 m). Le coup le plus difficile et le plus spectaculaire du padel.",
+      en: "A flat, powerful smash where the ball exits through the back glass (4 m). The hardest and most spectacular shot in padel.",
+      he: "סמאש שטוח ועוצמתי שבו הכדור יוצא דרך הזכוכית האחורית (4 מ'). המכה הקשה והמרשימה ביותר בפאדל.",
+    },
+  },
 ];
 
 /**
