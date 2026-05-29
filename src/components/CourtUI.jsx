@@ -409,10 +409,19 @@ export function BottomSheet({ children, onClose, title, dark }) {
   const border = dark ? COURT.darkBorder : `${COURT.green}30`;
   const [dragY, setDragY] = useState(0);
   const [snapping, setSnapping] = useState(false);
+  // Après l'animation d'ouverture, on n'utilise plus jamais l'animation CSS
+  // (sinon elle rejoue à chaque fois que dragY revient à 0 → crépitement)
+  const [entered, setEntered] = useState(false);
   const touchStartY = useRef(null);
   const touchStartTime = useRef(null);
   const dragEnabled = useRef(false);       // drag-to-close activé seulement si touch sur la poignée OU contenu en haut
   const sheetRef = useRef(null);
+
+  useEffect(() => {
+    // L'animation sheetUp dure 350 ms — on la désactive ensuite définitivement
+    const t = setTimeout(() => setEntered(true), 380);
+    return () => clearTimeout(t);
+  }, []);
 
   function handleTouchStart(e) {
     touchStartY.current = e.touches[0].clientY;
@@ -474,9 +483,11 @@ export function BottomSheet({ children, onClose, title, dark }) {
           border: `0.5px solid ${border}`,
           overflowY: 'auto',
           overflowX: 'hidden',
-          animation: dragY === 0 && !snapping ? 'sheetUp 0.35s cubic-bezier(.2,.9,.3,1)' : 'none',
-          transform: dragY > 0 || snapping ? `translateY(${dragY}px)` : undefined,
-          transition: snapping ? 'transform 0.3s cubic-bezier(.2,.9,.3,1)' : 'none',
+          // Après l'animation initiale (entered=true), on fixe transform à translateY(dragY)
+          // pour éviter que l'animation CSS ne rejoue à chaque retour à dragY=0 (clignotement)
+          animation: entered ? 'none' : 'sheetUp 0.35s cubic-bezier(.2,.9,.3,1)',
+          transform: entered ? `translateY(${dragY}px)` : undefined,
+          transition: (entered && snapping) ? 'transform 0.3s cubic-bezier(.2,.9,.3,1)' : 'none',
           paddingBottom: 40,
           willChange: 'transform',
         }}>
