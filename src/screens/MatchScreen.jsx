@@ -776,16 +776,19 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
               }}
             />
           </div>
-          <button onClick={onEditFilters} aria-label={t.filters} style={{
-            flexShrink: 0, width: 30, height: 30, borderRadius: 15,
+          <button onClick={onEditFilters} style={{
             background: dark ? COURT.darkCard : COURT.cream,
             border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: COURT.green,
+            borderRadius: 999, padding: '0 12px', height: 30,
+            fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+            fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: COURT.green, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+            whiteSpace: 'nowrap', boxSizing: 'border-box',
           }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" style={{ flexShrink: 0 }}>
               <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
             </svg>
+            {t.filters}
           </button>
         </div>
       </div>
