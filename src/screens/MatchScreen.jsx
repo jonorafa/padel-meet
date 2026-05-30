@@ -2909,6 +2909,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
     hand:   initial.hand   || 'any',
     side:   initial.side   || 'any',
     style:  initial.style  || 'any',
+    motivation: initial.motivation || 'any',
     region: initial.region || 'any',
     levelMin: initial.levelMin ?? 1,
     levelMax: initial.levelMax ?? 7,
@@ -2990,6 +2991,17 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
             { value: 'aggressive', label: t.aggressive || 'Offensif' },
             { value: 'defensive',  label: t.defensive  || 'Défensif' },
             { value: 'all-court',  label: t.allcourt   || 'Polyvalent' },
+          ]}
+        />
+
+        <ChipRow
+          label={t.motivation || 'Motivation'} value={prefs.motivation}
+          onChange={(v) => setPrefs(p => ({ ...p, motivation: v }))}
+          options={[
+            { value: 'any',     label: t.anyMot   || 'Indifférent' },
+            { value: 'fun',     label: t.fun      || 'Le plaisir' },
+            { value: 'improve', label: t.improve  || 'Progresser' },
+            { value: 'compete', label: t.compete  || 'Compétition' },
           ]}
         />
 

@@ -121,7 +121,20 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                    : player.preferred_side === 'backhand' ? (t.backhand || 'Revers')
                    : labelFor(player.preferred_side)
   const styleLabel = labelFor(player.play_style)
-  const motivLabel = labelFor(player.motivation)
+  const motivMap   = { fun: t.fun || 'Le plaisir', improve: t.improve || 'Progresser', compete: t.compete || 'Compétition' }
+  const motivLabel = player.motivation ? (motivMap[player.motivation] || player.motivation) : '—'
+
+  // ── Ce que ce joueur recherche (partenaire idéal) ───────────────
+  const styleMap = { aggressive: t.aggressive || 'Offensif', defensive: t.defensive || 'Défensif', 'all-court': t.allcourt || 'Polyvalent' }
+  const prefs = player.partner_prefs || {}
+  const prefHand   = prefs.hand  && prefs.hand  !== 'any' ? (prefs.hand === 'left' ? (t.leftHand || 'Gaucher') : (t.rightHand || 'Droitier')) : null
+  const prefSide   = prefs.side  && prefs.side  !== 'any' ? (prefs.side === 'forehand' ? (t.forehand || 'Drive') : (t.backhand || 'Revers')) : null
+  const prefStyle  = prefs.style && prefs.style !== 'any' ? (styleMap[prefs.style] || prefs.style) : null
+  const prefRegion = prefs.region && prefs.region !== 'any' ? prefs.region : null
+  const prefMotiv  = prefs.motivation && prefs.motivation !== 'any' ? (motivMap[prefs.motivation] || prefs.motivation) : null
+  const prefLevel  = (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
+    ? `${prefs.levelMin}–${prefs.levelMax}` : null
+  const hasPrefs   = prefHand || prefSide || prefStyle || prefRegion || prefMotiv || prefLevel
 
   const fallbackPhotos = (!playerPhotos || playerPhotos.length === 0) && player.photo_url
     ? [{ id: 'fallback', url: player.photo_url, is_primary: true }]
@@ -246,6 +259,15 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
 
           {/* Preference chips */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+            {player.level != null && (
+              <PrefChip label={t.currentLevel || 'Niveau'} value={Number(player.level).toFixed(1)} color={COURT.green} />
+            )}
+            {(player.region || player.city) && (
+              <PrefChip label={t.regionLabel || 'Région'} value={player.region || player.city} color={COURT.gold} />
+            )}
+            {player.motivation && (
+              <PrefChip label={t.motivation || 'Motivation'} value={motivLabel} color={COURT.green} />
+            )}
             {player.dominant_hand && (
               <PrefChip label={t.hand || 'Main'} value={handLabel} color={COURT.green} />
             )}
@@ -255,10 +277,27 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             {player.play_style && (
               <PrefChip label={t.style || 'Style'} value={styleLabel} color={COURT.purple} />
             )}
-            {player.motivation && (
-              <PrefChip label={t.motivation || 'Motivation'} value={motivLabel} color={COURT.green} />
-            )}
           </div>
+
+          {/* ── Ce qu'il/elle recherche (partenaire idéal) ────────────── */}
+          {hasPrefs && (
+            <div>
+              <p style={{
+                fontFamily: 'Inter', fontSize: 11, fontWeight: 600, color: muted,
+                textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px',
+              }}>
+                {t.lookingFor || 'Recherche'} · {t.partnerPrefsTitle || 'Le partenaire idéal'}
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                {prefRegion && <PrefChip label={t.regionLabel || 'Région'} value={prefRegion} color={COURT.gold} />}
+                {prefLevel  && <PrefChip label={t.levelRange || 'Plage de niveau'} value={prefLevel} color={COURT.green} />}
+                {prefMotiv  && <PrefChip label={t.motivation || 'Motivation'} value={prefMotiv} color={COURT.green} />}
+                {prefStyle  && <PrefChip label={t.style || 'Style'} value={prefStyle} color={COURT.purple} />}
+                {prefHand   && <PrefChip label={t.hand || 'Main'} value={prefHand} color={COURT.green} />}
+                {prefSide   && <PrefChip label={t.side || 'Côté'} value={prefSide} color={COURT.gold} />}
+              </div>
+            </div>
+          )}
 
           {/* Match history */}
           {!historyLoading && matchHistory && matchHistory.length > 0 && (

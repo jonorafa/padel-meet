@@ -25,6 +25,12 @@ const L = {
     aggressive:  'Offensif',
     defensive:   'Défensif',
     allcourt:    'Polyvalent',
+    motivation:  'Ta motivation',
+    fun:         'Le plaisir',
+    improve:     'Progresser',
+    compete:     'Compétition',
+    frequency:   'Fréquence de jeu',
+    perWeek:     '× / sem.',
     region:      'Région',
     subRegion:   'Où habites-tu ?',
     submit:      'Entrer au club',
@@ -52,6 +58,12 @@ const L = {
     aggressive:  'Aggressive',
     defensive:   'Defensive',
     allcourt:    'All-court',
+    motivation:  'Your motivation',
+    fun:         'For fun',
+    improve:     'Improve',
+    compete:     'Compete',
+    frequency:   'Play frequency',
+    perWeek:     '× / week',
     region:      'Region',
     subRegion:   'Where do you live?',
     submit:      'Enter the club',
@@ -79,6 +91,12 @@ const L = {
     aggressive:  'תוקפני',
     defensive:   'הגנתי',
     allcourt:    'רב-גוני',
+    motivation:  'המוטיבציה שלך',
+    fun:         'הנאה',
+    improve:     'שיפור',
+    compete:     'תחרות',
+    frequency:   'תדירות משחק',
+    perWeek:     '× / שבוע',
     region:      'אזור',
     subRegion:   'איפה אתה גר?',
     submit:      'כניסה למועדון',
@@ -190,6 +208,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [hand,            setHand]            = useState('right')
   const [side,            setSide]            = useState('forehand')
   const [style,           setStyle]           = useState('all-court')
+  const [motivation,      setMotivation]      = useState('fun')
+  const [frequency,       setFrequency]       = useState(2)
   const [region,          setRegion]          = useState('Israël')
   const [city,            setCity]            = useState(SUB_REGIONS['Israël'][0])
   const [usernameError,   setUsernameError]   = useState('')
@@ -272,6 +292,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       dominant_hand:  hand,
       preferred_side: side,
       play_style:     style,
+      motivation,
+      frequency,
       region,
       city,
       level,
@@ -441,6 +463,36 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                 { v: 'defensive',  label: t.defensive  },
                 { v: 'all-court',  label: t.allcourt   },
               ]}
+              dark={dark}
+            />
+          </div>
+
+          {/* Motivation */}
+          <div>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              {t.motivation}
+            </div>
+            <ChipGroup
+              value={motivation}
+              onChange={setMotivation}
+              options={[
+                { v: 'fun',     label: t.fun     },
+                { v: 'improve', label: t.improve },
+                { v: 'compete', label: t.compete },
+              ]}
+              dark={dark}
+            />
+          </div>
+
+          {/* Frequency */}
+          <div>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              {t.frequency}
+            </div>
+            <ChipGroup
+              value={frequency}
+              onChange={setFrequency}
+              options={[1, 2, 3, 4, 5].map(n => ({ v: n, label: `${n} ${t.perWeek}` }))}
               dark={dark}
             />
           </div>
