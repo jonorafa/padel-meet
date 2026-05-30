@@ -12,7 +12,7 @@ export const EMPTY_SCORE = {
 export const I18N = {
   fr: {
     dir: 'ltr',
-    tagline: "L'art du padel, redéfini.",
+    tagline: "Trouve ton partenaire idéal de padel.",
     cta_level: 'Établir mon niveau',
     members: 'Membres · depuis 2026',
     chooseLang: 'Choisissez votre langue',
@@ -162,7 +162,7 @@ export const I18N = {
   },
   en: {
     dir: 'ltr',
-    tagline: 'The art of padel, redefined.',
+    tagline: 'Find your ideal padel partner.',
     cta_level: 'Establish my level',
     members: 'Members · since 2026',
     chooseLang: 'Language',
@@ -312,7 +312,7 @@ export const I18N = {
   },
   he: {
     dir: 'rtl',
-    tagline: 'אמנות הפאדל, מעוצבת מחדש.',
+    tagline: 'מצא את שותף הפאדל האידיאלי שלך.',
     cta_level: 'הגדר את הרמה שלי',
     members: 'חברים · מאז 2026',
     chooseLang: 'בחר את השפה שלך',

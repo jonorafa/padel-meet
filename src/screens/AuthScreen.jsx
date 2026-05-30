@@ -6,19 +6,19 @@ import { usePrefs } from '../context/PrefsContext'
 
 const LABELS = {
   fr: {
-    tagline:  "L'art du padel, redéfini.",
+    tagline:  "Trouve ton partenaire idéal de padel.",
     members:  'Rejoignez la communauté padel',
     cta:      'Continuer avec Google',
     secure:   'Sécurisé via Google',
   },
   en: {
-    tagline:  'The art of padel, redefined.',
+    tagline:  'Find your ideal padel partner.',
     members:  'Join the padel community',
     cta:      'Continue with Google',
     secure:   'Secured via Google',
   },
   he: {
-    tagline:  'אמנות הפאדל, מעוצבת מחדש.',
+    tagline:  'מצא את שותף הפאדל האידיאלי שלך.',
     members:  'הצטרף לקהילת הפאדל',
     cta:      'המשך עם Google',
     secure:   'מאובטח דרך Google',

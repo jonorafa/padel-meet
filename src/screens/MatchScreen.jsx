@@ -1246,7 +1246,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '32px 0 16px' }}>
           <Ornament width={80} />
-          <div style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 18, color: COURT.green, opacity: 0.5 }}>est. mmxxvi</div>
+          <div style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 18, color: COURT.green, opacity: 0.5 }}>est. 2026</div>
         </div>
       </>}
     </div>
@@ -2563,7 +2563,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500, cursor: 'pointer',
       }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{icon} {label}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: icon ? 10 : 0 }}>{icon ? <span>{icon}</span> : null}{label}</span>
         <span style={{ color: COURT.green }}>{right || (rtl ? '←' : '→')}</span>
       </button>
     );
@@ -2704,24 +2704,22 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
 
       <div style={{ padding: '24px 24px 0' }}>
         <SectionHeading>{t.settings}</SectionHeading>
-        <SettingRow icon="✏️" label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'} onClick={() => setShowEditProfile(true)} />
+        <SettingRow label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'} onClick={() => setShowEditProfile(true)} />
         <SettingRow
-          icon={profile?.region === 'France' ? '🇫🇷' : '🇮🇱'}
           label={lang === 'fr' ? `Région — ${profile?.region || '—'}` : lang === 'en' ? `Country — ${profile?.region || '—'}` : `מדינה — ${profile?.region || '—'}`}
           onClick={() => setShowCountry(true)}
         />
-        <SettingRow icon="💚" label={t.likesReceived || 'Likes reçus'} onClick={() => setShowLikes(true)} />
-        <SettingRow icon="🎯" label={t.partnerPrefsTitle || 'Le partenaire idéal'} onClick={() => setShowPartnerPrefs(true)} />
-        <SettingRow icon="🌍" label={lang === 'fr' ? '🇫🇷 Français' : lang === 'en' ? '🇬🇧 English' : '🇮🇱 עברית'} onClick={toggleLang} />
+        <SettingRow label={t.likesReceived || 'Likes reçus'} onClick={() => setShowLikes(true)} />
+        <SettingRow label={t.partnerPrefsTitle || 'Le partenaire idéal'} onClick={() => setShowPartnerPrefs(true)} />
+        <SettingRow label={lang === 'fr' ? 'Français' : lang === 'en' ? 'English' : 'עברית'} onClick={toggleLang} />
         <SettingRow
-          icon={dark ? '☀️' : '🌙'}
           label={t.darkMode}
           right={<div style={{ width: 44, height: 24, borderRadius: 12, background: dark ? COURT.green : `${COURT.stone}50`, position: 'relative', transition: 'background 0.3s' }}>
             <div style={{ position: 'absolute', top: 2, left: dark ? 22 : 2, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.3s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
           </div>}
           onClick={toggleDark}
         />
-        <SettingRow icon="📊" label={lang === 'fr' ? 'Réévaluer mon niveau' : lang === 'en' ? 'Re-evaluate my level' : 'הערך מחדש את הרמה שלי'} onClick={() => setShowReEval(true)} />
+        <SettingRow label={lang === 'fr' ? 'Réévaluer mon niveau' : lang === 'en' ? 'Re-evaluate my level' : 'הערך מחדש את הרמה שלי'} onClick={() => setShowReEval(true)} />
         {/* Déconnexion */}
         <button onClick={handleSignOut} style={{
           width: '100%', marginTop: 10, padding: '14px 16px',
