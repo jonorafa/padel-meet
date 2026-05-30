@@ -2563,7 +2563,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500, cursor: 'pointer',
       }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: icon ? 10 : 0 }}>{icon ? <span>{icon}</span> : null}{label}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: icon ? 12 : 0 }}>
+          {icon ? <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span> : null}
+          {label}
+        </span>
         <span style={{ color: COURT.green }}>{right || (rtl ? '←' : '→')}</span>
       </button>
     );
@@ -2704,22 +2707,47 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
 
       <div style={{ padding: '24px 24px 0' }}>
         <SectionHeading>{t.settings}</SectionHeading>
-        <SettingRow label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'} onClick={() => setShowEditProfile(true)} />
         <SettingRow
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>}
+          label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'}
+          onClick={() => setShowEditProfile(true)}
+        />
+        <SettingRow
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
           label={lang === 'fr' ? `Région — ${profile?.region || '—'}` : lang === 'en' ? `Country — ${profile?.region || '—'}` : `מדינה — ${profile?.region || '—'}`}
           onClick={() => setShowCountry(true)}
         />
-        <SettingRow label={t.likesReceived || 'Likes reçus'} onClick={() => setShowLikes(true)} />
-        <SettingRow label={t.partnerPrefsTitle || 'Le partenaire idéal'} onClick={() => setShowPartnerPrefs(true)} />
-        <SettingRow label={lang === 'fr' ? 'Français' : lang === 'en' ? 'English' : 'עברית'} onClick={toggleLang} />
         <SettingRow
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>}
+          label={t.likesReceived || 'Likes reçus'}
+          onClick={() => setShowLikes(true)}
+        />
+        <SettingRow
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>}
+          label={t.partnerPrefsTitle || 'Le partenaire idéal'}
+          onClick={() => setShowPartnerPrefs(true)}
+        />
+        <SettingRow
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
+          label={lang === 'fr' ? 'Français' : lang === 'en' ? 'English' : 'עברית'}
+          onClick={toggleLang}
+        />
+        <SettingRow
+          icon={dark
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          }
           label={t.darkMode}
           right={<div style={{ width: 44, height: 24, borderRadius: 12, background: dark ? COURT.green : `${COURT.stone}50`, position: 'relative', transition: 'background 0.3s' }}>
             <div style={{ position: 'absolute', top: 2, left: dark ? 22 : 2, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.3s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
           </div>}
           onClick={toggleDark}
         />
-        <SettingRow label={lang === 'fr' ? 'Réévaluer mon niveau' : lang === 'en' ? 'Re-evaluate my level' : 'הערך מחדש את הרמה שלי'} onClick={() => setShowReEval(true)} />
+        <SettingRow
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+          label={lang === 'fr' ? 'Réévaluer mon niveau' : lang === 'en' ? 'Re-evaluate my level' : 'הערך מחדש את הרמה שלי'}
+          onClick={() => setShowReEval(true)}
+        />
         {/* Déconnexion */}
         <button onClick={handleSignOut} style={{
           width: '100%', marginTop: 10, padding: '14px 16px',
