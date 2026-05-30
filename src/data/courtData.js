@@ -6,6 +6,24 @@ export const SUB_REGIONS = {
   'Israël': ['Centre', 'Sud', 'Nord'],
 };
 
+// Régions appartenant à la France (pays + villes/sous-régions historiques)
+const FRANCE_REGIONS = [
+  'France', 'Paris', 'Marseille', 'Lyon', 'Nice', 'Bordeaux', 'Toulouse', 'Lille',
+];
+
+/**
+ * regionToCountry — déduit le pays ('France' | 'Israël') d'un profil,
+ * en tolérant les anciennes valeurs de region/city (Centre, Nord, Tel Aviv…).
+ * Tout ce qui n'est pas français est considéré comme Israël (défaut de l'app).
+ * Garantit l'isolation stricte France / Israël même sur données héritées.
+ */
+export function regionToCountry(p) {
+  if (!p) return 'Israël';
+  const r = String(p.region || p.city || '').trim();
+  if (FRANCE_REGIONS.includes(r)) return 'France';
+  return 'Israël';
+}
+
 // ─── LIVE SCORE ───
 export const EMPTY_SCORE = {
   running: false,
@@ -61,6 +79,10 @@ export const I18N = {
     back: 'Retour', language: 'Langue',
     itsAMatch: "C'est un match !",
     matchSub: 'Vous vous êtes mutuellement choisis.',
+    partnerFound: 'Partenaire trouvé',
+    partnerFoundSub: 'Vous cherchez tous les deux à jouer. Organisez votre partie.',
+    proposeSlot: 'Proposer un créneau',
+    continueSearching: 'Continuer à chercher',
     sendMsg: 'Envoyer un message',
     keepSwiping: 'Continuer',
     notifications: 'Notifications',
@@ -211,6 +233,10 @@ export const I18N = {
     back: 'Back', language: 'Language',
     itsAMatch: "It's a match!",
     matchSub: 'You both chose each other.',
+    partnerFound: 'Partner found',
+    partnerFoundSub: 'You both want to play. Set up your match.',
+    proposeSlot: 'Propose a time',
+    continueSearching: 'Keep searching',
     sendMsg: 'Send a message',
     keepSwiping: 'Keep swiping',
     notifications: 'Notifications',
@@ -361,6 +387,10 @@ export const I18N = {
     back: 'חזרה', language: 'שפה',
     itsAMatch: '!זה מאץ׳',
     matchSub: '.שניכם בחרתם זה בזה',
+    partnerFound: 'נמצא שותף',
+    partnerFoundSub: 'שניכם רוצים לשחק. תאמו את המשחק שלכם.',
+    proposeSlot: 'הצע מועד',
+    continueSearching: 'המשך לחפש',
     sendMsg: 'שלח הודעה',
     keepSwiping: 'המשך',
     notifications: 'התראות',

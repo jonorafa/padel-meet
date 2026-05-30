@@ -6,7 +6,7 @@ import {
   SkeletonCard, MatchFlash, NotifBadge, OnlineDot, BottomSheet,
   setDarkMode, isDark, initialsAvatar,
 } from '../components/CourtUI';
-import { REGIONS, computeELODelta, I18N } from '../data/courtData';
+import { REGIONS, computeELODelta, I18N, regionToCountry } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
 import { usePrefs }         from '../context/PrefsContext';
@@ -923,8 +923,9 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
 // ─── Search flow ────────────────────────────────────────────────────────────
 function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   const { profile } = useAuth();
-  // Par défaut, on filtre automatiquement sur le pays de l'utilisateur
-  const userRegion = profile?.region || 'any';
+  // Par défaut, on filtre automatiquement sur le pays de l'utilisateur.
+  // L'isolation stricte est de toute façon garantie en amont (usePlayers).
+  const userRegion = profile ? regionToCountry(profile) : 'any';
   const [showPrefs, setShowPrefs]   = useState(false);
   const [matchPlayer, setMatchPlayer] = useState(null);
   const [filters, setFilters] = useState({
@@ -936,6 +937,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
     return (
       <MatchFlash
         player={matchPlayer} t={t} lang={lang} dark={dark}
+        onProposeSlot={() => { setMatchPlayer(null); onNavigateChat?.(); }}
         onMessage={() => { setMatchPlayer(null); onNavigateChat?.(); }}
         onContinue={() => setMatchPlayer(null)}
       />

@@ -292,84 +292,121 @@ export function SkeletonCard() {
 }
 
 // ─── Match Flash (It's a match!) ───
-export function MatchFlash({ player, t, lang, onMessage, onContinue, dark }) {
+export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSlot, dark }) {
   const rtl = lang === 'he';
-  const confetti = Array.from({ length: 18 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    color: [COURT.gold, COURT.green, COURT.cream, COURT.greenLight][i % 4],
-    delay: Math.random() * 0.6,
-    size: 6 + Math.random() * 8,
-  }));
+
+  // Infos de jeu (ton sportif, pas dating)
+  const sideLabel = player.side === 'forehand'
+    ? (t.forehand || 'Drive')
+    : (t.backhand || 'Revers');
+  const availMap = { morning: t.morning || 'Matin', evening: t.evening || 'Soir', weekend: t.weekend || 'Weekend' };
+  const dispo = Array.isArray(player.availability) && player.availability.length
+    ? player.availability.map(a => availMap[a] || a).join(', ')
+    : null;
+
+  const meta = [
+    player.level != null ? `${t.currentLevel || 'Niveau'} ${player.level.toFixed(1)}` : null,
+    sideLabel,
+    player.city || player.country || null,
+    dispo,
+  ].filter(Boolean);
+
+  const handlePropose = onProposeSlot || onMessage;
 
   return (
-    <div style={{
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{
       position: 'fixed', inset: 0, zIndex: 200,
-      background: `radial-gradient(circle at 50% 40%, ${COURT.greenDeep}, #060E0A)`,
+      background: `radial-gradient(circle at 50% 35%, ${COURT.greenDeep}, #060E0A)`,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', padding: 32,
     }}>
-      {/* Confetti */}
-      {confetti.map(c => (
-        <div key={c.id} style={{
-          position: 'absolute', left: `${c.left}%`, top: '-10px',
-          width: c.size, height: c.size,
-          background: c.color, borderRadius: 2,
-          animation: `confettiFall ${1.2 + Math.random()}s ease-in ${c.delay}s both`,
-        }} />
-      ))}
-
-      <div style={{ animation: 'matchPulse 0.8s cubic-bezier(.2,.9,.3,1.4)', textAlign: 'center' }}>
+      {/* En-tête sobre */}
+      <div style={{ textAlign: 'center', animation: 'fadeUp 0.5s ease both' }}>
         <div style={{
           fontFamily: 'Inter', fontSize: 10, color: COURT.gold,
-          letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 8,
-        }}>✦ PADEL MEET ✦</div>
+          letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 14,
+        }}>PADEL MEET</div>
         <div style={{
-          fontFamily: 'Pinyon Script, cursive', fontSize: 72,
-          color: COURT.cream, lineHeight: 1,
-        }}>{t.itsAMatch}</div>
+          fontFamily: 'Cormorant Garamond, serif', fontSize: 40, fontWeight: 600,
+          color: COURT.cream, lineHeight: 1.05,
+        }}>{t.partnerFound || 'Partenaire trouvé'}</div>
         <div style={{
-          fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
-          fontSize: 15, color: `${COURT.cream}80`, marginTop: 8,
-        }}>{t.matchSub}</div>
+          fontFamily: 'Inter', fontSize: 14, color: `${COURT.cream}99`,
+          marginTop: 10, maxWidth: 300, lineHeight: 1.5,
+        }}>{t.partnerFoundSub || 'Vous cherchez tous les deux à jouer. Organisez votre partie.'}</div>
       </div>
 
-      {/* Player photo */}
+      {/* Carte partenaire — infos de jeu */}
       <div style={{
-        width: 110, height: 110, borderRadius: 55, margin: '32px auto 0',
-        background: `url(${player.photo}) center/cover`,
-        border: `3px solid ${COURT.gold}`,
-        boxShadow: `0 0 0 6px ${COURT.gold}30, 0 12px 40px rgba(0,0,0,0.5)`,
-        animation: 'matchPulse 1s cubic-bezier(.2,.9,.3,1.4) 0.2s both',
-      }} />
-      <div style={{
-        fontFamily: 'Cormorant Garamond, serif', fontSize: 22, color: COURT.cream,
-        fontWeight: 500, marginTop: 14, textAlign: 'center',
-        animation: 'fadeUp 0.6s ease 0.4s both',
-      }}>{player.name}</div>
-      <div style={{
-        fontFamily: 'Inter', fontSize: 11, color: COURT.gold,
-        letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4,
-        animation: 'fadeUp 0.6s ease 0.5s both',
-      }}>Niv. {player.level != null ? player.level.toFixed(1) : '—'} · {player.city || '—'}</div>
-
-      <div style={{
-        display: 'flex', flexDirection: 'column', gap: 10, width: '100%',
-        marginTop: 36, animation: 'fadeUp 0.6s ease 0.7s both',
+        marginTop: 32, width: '100%', maxWidth: 340,
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '16px 18px', borderRadius: 16,
+        background: 'rgba(255,255,255,0.06)',
+        border: `0.5px solid ${COURT.cream}22`,
+        animation: 'fadeUp 0.6s ease 0.15s both',
       }}>
-        <button onClick={onMessage} style={{
-          padding: '14px', background: COURT.green,
+        <div style={{
+          width: 60, height: 60, borderRadius: 30, flexShrink: 0,
+          background: `url(${player.photo}) center/cover`,
+          border: `2px solid ${COURT.gold}`,
+        }} />
+        <div style={{ minWidth: 0, flex: 1, textAlign: rtl ? 'right' : 'left' }}>
+          <div style={{
+            fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 600,
+            color: COURT.cream, lineHeight: 1.15,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{player.name}</div>
+          <div style={{
+            fontFamily: 'Inter', fontSize: 12, color: `${COURT.cream}aa`,
+            marginTop: 4, lineHeight: 1.4,
+          }}>{meta.join(' · ')}</div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 340,
+        marginTop: 28, animation: 'fadeUp 0.6s ease 0.3s both',
+      }}>
+        {/* CTA principal — Proposer un créneau (Lucide CalendarPlus) */}
+        <button onClick={handlePropose} style={{
+          padding: '15px', background: COURT.green,
           color: COURT.cream, border: `0.5px solid ${COURT.gold}50`,
-          borderRadius: 12, fontFamily: 'Crimson Text, serif',
-          fontSize: 16, fontStyle: 'italic', cursor: 'pointer',
-          letterSpacing: '0.04em',
-        }}>💬 {t.sendMsg}</button>
-        <button onClick={onContinue} style={{
+          borderRadius: 12, fontFamily: 'Inter', fontWeight: 600,
+          fontSize: 15, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
+            <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <line x1="19" y1="16" x2="19" y2="22" /><line x1="16" y1="19" x2="22" y2="19" />
+          </svg>
+          {t.proposeSlot || 'Proposer un créneau'}
+        </button>
+
+        {/* CTA secondaire — Envoyer un message (Lucide MessageSquare) */}
+        <button onClick={onMessage} style={{
           padding: '14px', background: 'transparent',
-          color: `${COURT.cream}70`, border: `0.5px solid ${COURT.cream}25`,
-          borderRadius: 12, fontFamily: 'Crimson Text, serif',
-          fontSize: 14, fontStyle: 'italic', cursor: 'pointer',
-        }}>{t.keepSwiping}</button>
+          color: COURT.cream, border: `0.5px solid ${COURT.cream}40`,
+          borderRadius: 12, fontFamily: 'Inter', fontWeight: 500,
+          fontSize: 14, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          {t.sendMsg || 'Envoyer un message'}
+        </button>
+
+        {/* Lien discret — Continuer à chercher */}
+        <button onClick={onContinue} style={{
+          marginTop: 4, padding: '8px', background: 'none', border: 'none',
+          color: `${COURT.cream}66`, fontFamily: 'Inter', fontSize: 13,
+          cursor: 'pointer', letterSpacing: '0.02em',
+        }}>{t.continueSearching || 'Continuer à chercher'}</button>
       </div>
     </div>
   );

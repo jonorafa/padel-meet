@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { usePresence } from '../context/PresenceContext'
 import { initialsAvatar } from '../components/CourtUI'
+import { regionToCountry } from '../data/courtData'
 
 function transformDBProfile(p, onlineIds) {
   const matchesPlayed = p.matches_played || 0
@@ -11,7 +12,7 @@ function transformDBProfile(p, onlineIds) {
     name: p.name || 'Joueur',
     age: p.age || 28,
     city: p.city || p.region || 'Israel',
-    country: p.region || p.city || 'Israël',  // 'France' ou 'Israël'
+    country: regionToCountry(p),  // 'France' ou 'Israël' (tolère données héritées)
     level: p.level ?? null,     // null = quiz non effectué
     confidenceRate: p.confidence_rate ?? 50,
     hand: p.dominant_hand || 'right',
@@ -52,7 +53,8 @@ export function usePlayers() {
 
   // Pays de l'utilisateur — isolation stricte France / Israël.
   // Un joueur ne voit JAMAIS les profils de l'autre pays.
-  const myCountry = profile?.region || null
+  // null tant que le profil n'est pas chargé → aucun filtre prématuré.
+  const myCountry = profile ? regionToCountry(profile) : null
 
   const fetchAll = useCallback(async () => {
     // Invités (user=null) : charge tous les profils sans filtre de swipes
@@ -71,20 +73,12 @@ export function usePlayers() {
     }
 
     // Utilisateur connecté : charge les profils ET filtre les déjà-swipés
-    let profilesQuery = supabase
-      .from('profiles')
-      .select('*')
-      .neq('id', user.id)
-      .order('created_at', { ascending: false })
-
-    // Isolation par pays au niveau de la requête : un membre France ne charge
-    // que les profils France, un membre Israël que les profils Israël.
-    if (myCountry) {
-      profilesQuery = profilesQuery.eq('region', myCountry)
-    }
-
     const [profilesResult, swipesResult] = await Promise.all([
-      profilesQuery,
+      supabase
+        .from('profiles')
+        .select('*')
+        .neq('id', user.id)
+        .order('created_at', { ascending: false }),
       supabase
         .from('swipes')
         .select('target_id')
@@ -95,7 +89,12 @@ export function usePlayers() {
     const swipedIds = new Set((swipesResult.data || []).map(s => s.target_id))
 
     if (!error && profiles && profiles.length > 0) {
-      const fresh = profiles.filter(p => !swipedIds.has(p.id))
+      // Isolation par pays (tolère les valeurs de region héritées) +
+      // exclusion des profils déjà swipés.
+      const fresh = profiles.filter(p =>
+        !swipedIds.has(p.id) &&
+        (!myCountry || regionToCountry(p) === myCountry)
+      )
       setPlayers(fresh.map(p => transformDBProfile(p)))
     } else {
       setPlayers([])
