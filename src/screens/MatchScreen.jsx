@@ -3197,8 +3197,11 @@ export default function MainApp() {
   const { notifications, markRead, markAllRead } = useNotifications();
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // TODO: Compter les conversations non lues depuis ChatScreen sans double hook
-  const chatUnread = 0;
+  // Total des messages non lus toutes conversations confondues → badge rouge onglet Chat
+  const { matches: chatMatches } = useUserMatches();
+  const chatUnread = chatMatches
+    ? chatMatches.reduce((sum, m) => sum + (m.unreadCount || 0), 0)
+    : 0;
 
   const bellProps = { onShowNotifs: () => setShowNotifs(true), notifCount: unreadCount };
 
