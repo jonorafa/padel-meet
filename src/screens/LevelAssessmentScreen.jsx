@@ -60,12 +60,6 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
           <ThinButton variant="green" onClick={onStart} full>
             {t.cta_level}
           </ThinButton>
-          <div style={{
-            marginTop: 10, fontFamily: 'Inter', fontSize: 11,
-            color: dark ? stone : COURT.stone, letterSpacing: '0.18em', textTransform: 'uppercase',
-          }}>
-            {t.members}
-          </div>
           {onSkip && (
             <div
               onClick={onSkip}
