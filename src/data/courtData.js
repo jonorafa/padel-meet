@@ -1,4 +1,4 @@
-export const REGIONS = ['Centre', 'Nord', 'Sud', 'Eilat'];
+export const REGIONS = ['France', 'Israël'];
 
 // ─── LIVE SCORE ───
 export const EMPTY_SCORE = {

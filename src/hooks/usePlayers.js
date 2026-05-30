@@ -11,6 +11,7 @@ function transformDBProfile(p, onlineIds) {
     name: p.name || 'Joueur',
     age: p.age || 28,
     city: p.city || p.region || 'Israel',
+    country: p.region || p.city || 'Israël',  // 'France' ou 'Israël'
     level: p.level ?? null,     // null = quiz non effectué
     confidenceRate: p.confidence_rate ?? 50,
     hand: p.dominant_hand || 'right',

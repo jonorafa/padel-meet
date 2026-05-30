@@ -271,16 +271,11 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
         ]} />
       </PrefGroup>
       <PrefGroup label={t.region} dark={dark}>
-        <select value={region} onChange={e => setRegion(e.target.value)} style={{
-          width: '100%', padding: '12px 14px', background: selectBg,
-          border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
-          borderRadius: 8, fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 16, color: ink, fontStyle: 'italic',
-          appearance: 'none', outline: 'none', cursor: 'pointer',
-        }}>
-          <option value="any">— {t.anySide} —</option>
-          {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
+        <Chips dark={dark} value={region} onChange={setRegion} options={[
+          { v: 'any',     label: t.anySide },
+          { v: 'France',  label: '🇫🇷 France', icon: '' },
+          { v: 'Israël',  label: '🇮🇱 Israël', icon: '' },
+        ]} />
       </PrefGroup>
       <PrefGroup label={t.levelRange} dark={dark}>
         <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: COURT.green, marginBottom: 8 }}>
@@ -626,7 +621,7 @@ function applyFilters(players, f) {
     if (f.hand !== 'any' && p.hand !== f.hand) return false;
     if (f.style !== 'any' && p.style !== f.style) return false;
     if (f.motivation !== 'any' && p.motivation !== f.motivation) return false;
-    if (f.region !== 'any' && CITY_REGION[p.city] !== f.region) return false;
+    if (f.region !== 'any' && p.country !== f.region) return false;
     if (p.level !== null && p.level !== undefined && (p.level < f.levelMin || p.level > f.levelMax)) return false;
     if (f.frequency > 0 && p.frequency < f.frequency) return false;
     if (f.availability?.length && !f.availability.some(a => p.availability?.includes(a))) return false;
@@ -927,11 +922,14 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
 
 // ─── Search flow ────────────────────────────────────────────────────────────
 function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
+  const { profile } = useAuth();
+  // Par défaut, on filtre automatiquement sur le pays de l'utilisateur
+  const userRegion = profile?.region || 'any';
   const [showPrefs, setShowPrefs]   = useState(false);
   const [matchPlayer, setMatchPlayer] = useState(null);
   const [filters, setFilters] = useState({
     side: 'any', style: 'any', motivation: 'any', hand: 'any',
-    region: 'any', levelMin: 1, levelMax: 7, frequency: 0, availability: [],
+    region: userRegion, levelMin: 1, levelMax: 7, frequency: 0, availability: [],
   });
 
   if (matchPlayer) {
@@ -2465,6 +2463,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [showPartnerPrefs, setShowPartnerPrefs] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
   const [showReEval, setShowReEval] = useState(false);
+  const [showCountry, setShowCountry] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
   const rtl   = lang === 'he';
@@ -2706,6 +2705,11 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
       <div style={{ padding: '24px 24px 0' }}>
         <SectionHeading>{t.settings}</SectionHeading>
         <SettingRow icon="✏️" label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'} onClick={() => setShowEditProfile(true)} />
+        <SettingRow
+          icon={profile?.region === 'France' ? '🇫🇷' : '🇮🇱'}
+          label={lang === 'fr' ? `Région — ${profile?.region || '—'}` : lang === 'en' ? `Country — ${profile?.region || '—'}` : `מדינה — ${profile?.region || '—'}`}
+          onClick={() => setShowCountry(true)}
+        />
         <SettingRow icon="💚" label={t.likesReceived || 'Likes reçus'} onClick={() => setShowLikes(true)} />
         <SettingRow icon="🎯" label={t.partnerPrefsTitle || 'Le partenaire idéal'} onClick={() => setShowPartnerPrefs(true)} />
         <SettingRow icon="🌍" label={lang === 'fr' ? '🇫🇷 Français' : lang === 'en' ? '🇬🇧 English' : '🇮🇱 עברית'} onClick={toggleLang} />
@@ -2739,6 +2743,49 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           onClose={() => setShowLikes(false)}
           onOpenDetail={onOpenDetail}
         />
+      )}
+
+      {/* BottomSheet : Choisir son pays (France / Israël) */}
+      {showCountry && (
+        <BottomSheet
+          onClose={() => setShowCountry(false)}
+          title={lang === 'fr' ? 'Mon pays' : lang === 'en' ? 'My country' : 'המדינה שלי'}
+          dark={dark}
+        >
+          <div style={{ padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>
+              {lang === 'fr' ? 'Les joueurs de l\'autre pays ne seront pas visibles' : lang === 'en' ? 'Players from the other country won\'t be visible' : 'שחקנים ממדינה אחרת לא יוצגו'}
+            </div>
+            {[{ v: 'France', flag: '🇫🇷' }, { v: 'Israël', flag: '🇮🇱' }].map(({ v, flag }) => {
+              const active = (profile?.region || '') === v;
+              return (
+                <button
+                  key={v}
+                  onClick={async () => { await saveProfile({ region: v }); setShowCountry(false); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
+                    background: active ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
+                    border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <span style={{ fontSize: 28 }}>{flag}</span>
+                  <span style={{
+                    fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+                    fontSize: 20, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic',
+                    color: active ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
+                  }}>{v}</span>
+                  {active && (
+                    <svg style={{ marginLeft: 'auto' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="2.5" strokeLinecap="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
       )}
 
       {/* BottomSheet : Le partenaire idéal (partner_prefs) */}

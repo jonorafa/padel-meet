@@ -2,7 +2,6 @@ import { useState, useRef } from 'react'
 import { COURT, PadelBall, Ornament } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
-import { REGIONS }   from '../data/courtData'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -187,7 +186,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [hand,            setHand]            = useState('right')
   const [side,            setSide]            = useState('forehand')
   const [style,           setStyle]           = useState('all-court')
-  const [region,          setRegion]          = useState('Centre')
+  const [region,          setRegion]          = useState('Israël')
   const [usernameError,   setUsernameError]   = useState('')
   const [checkingUser,    setCheckingUser]    = useState(false)
   const [uploading,       setUploading]       = useState(false)
@@ -440,18 +439,37 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             />
           </div>
 
-          {/* Region */}
+          {/* Country */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.region}
             </div>
-            <select
-              value={region}
-              onChange={e => setRegion(e.target.value)}
-              style={{ ...inputStyle, cursor: 'pointer' }}
-            >
-              {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {[{ v: 'France', flag: '🇫🇷' }, { v: 'Israël', flag: '🇮🇱' }].map(({ v, flag }) => {
+                const active = region === v
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setRegion(v)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
+                      background: active ? COURT.green : (dark ? '#1a2820' : COURT.cream),
+                      border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <span style={{ fontSize: 22 }}>{flag}</span>
+                    <span style={{
+                      fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 16,
+                      color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
+                      fontWeight: active ? 600 : 400,
+                    }}>{v}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Form error */}
