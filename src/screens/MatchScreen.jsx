@@ -114,33 +114,94 @@ function Chips({ value, onChange, options, dark }) {
 }
 
 // ─── Range Bar ─────────────────────────────────────────────────────────────
+// Utilise des thumbs draggables indépendants (onPointerDown sur chaque balle)
+// plutôt que deux <input type="range"> superposés — évite les conflits de zIndex
+// qui rendaient le pouce droit non-tactile sur mobile.
 function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
-  // Le pouce gauche doit être cliquable même quand il est à la position minimale :
-  // on lui donne un z-index plus élevé quand il est dans la moitié gauche de la plage.
-  const minPct = (valueMin - min) / (max - min)
-  const zMin = minPct <= 0.5 ? 4 : 2
-  const zMax = minPct <= 0.5 ? 2 : 4
+  const trackRef   = useRef(null);
+  const dragRef    = useRef(null);          // 'min' | 'max' | null
+  const vMinRef    = useRef(valueMin);
+  const vMaxRef    = useRef(valueMax);
+  vMinRef.current  = valueMin;
+  vMaxRef.current  = valueMax;
+
+  const snapToStep = useCallback((v) =>
+    Math.round((v - min) / step) * step + min,
+  [min, step]);
+
+  const valueFromClient = useCallback((clientX) => {
+    if (!trackRef.current) return null;
+    const rect = trackRef.current.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return snapToStep(min + pct * (max - min));
+  }, [min, max, snapToStep]);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragRef.current) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const val = valueFromClient(clientX);
+      if (val === null) return;
+      if (dragRef.current === 'min') {
+        onChange(Math.min(val, vMaxRef.current - step), vMaxRef.current);
+      } else {
+        onChange(vMinRef.current, Math.max(val, vMinRef.current + step));
+      }
+    };
+    const onEnd = () => { dragRef.current = null; };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup',   onEnd);
+    window.addEventListener('touchmove',   onMove, { passive: false });
+    window.addEventListener('touchend',    onEnd);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup',   onEnd);
+      window.removeEventListener('touchmove',   onMove);
+      window.removeEventListener('touchend',    onEnd);
+    };
+  }, [onChange, step, valueFromClient]);
+
+  const startDrag = (thumb) => (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragRef.current = thumb;
+  };
+
+  const minPct = ((valueMin - min) / (max - min)) * 100;
+  const maxPct = ((valueMax - min) / (max - min)) * 100;
 
   return (
-    <div style={{ position: 'relative', padding: '12px 0' }}>
-      <div style={{ height: 2, background: `${COURT.green}25`, position: 'relative', borderRadius: 1 }}>
+    <div style={{ position: 'relative', padding: '12px 0', touchAction: 'none' }}>
+      {/* Track */}
+      <div ref={trackRef} style={{ height: 2, background: `${COURT.green}25`, position: 'relative', borderRadius: 1 }}>
         <div style={{
           position: 'absolute', height: '100%',
-          left: `${((valueMin - min) / (max - min)) * 100}%`,
-          width: `${((valueMax - valueMin) / (max - min)) * 100}%`,
+          left: `${minPct}%`, width: `${maxPct - minPct}%`,
           background: COURT.green,
         }} />
       </div>
-      <input type="range" min={min} max={max} step={step} value={valueMin}
-        onChange={e => onChange(Math.min(+e.target.value, valueMax - step), valueMax)}
-        style={{ position: 'absolute', inset: 0, width: '100%', opacity: 0, cursor: 'pointer', zIndex: zMin }} />
-      <input type="range" min={min} max={max} step={step} value={valueMax}
-        onChange={e => onChange(valueMin, Math.max(+e.target.value, valueMin + step))}
-        style={{ position: 'absolute', inset: 0, width: '100%', opacity: 0, cursor: 'pointer', zIndex: zMax }} />
-      <div style={{ position: 'absolute', top: '50%', transform: 'translate(-50%, -50%)', left: `${((valueMin - min) / (max - min)) * 100}%`, pointerEvents: 'none' }}>
+      {/* Pouce gauche (min) */}
+      <div
+        onPointerDown={startDrag('min')}
+        style={{
+          position: 'absolute', top: '50%',
+          transform: 'translate(-50%, -50%)',
+          left: `${minPct}%`,
+          cursor: 'grab', touchAction: 'none', zIndex: 3,
+        }}
+      >
         <PadelBall size={20} />
       </div>
-      <div style={{ position: 'absolute', top: '50%', transform: 'translate(-50%, -50%)', left: `${((valueMax - min) / (max - min)) * 100}%`, pointerEvents: 'none' }}>
+      {/* Pouce droit (max) */}
+      <div
+        onPointerDown={startDrag('max')}
+        style={{
+          position: 'absolute', top: '50%',
+          transform: 'translate(-50%, -50%)',
+          left: `${maxPct}%`,
+          cursor: 'grab', touchAction: 'none', zIndex: 3,
+        }}
+      >
         <PadelBall size={20} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Inter', fontSize: 9, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
