@@ -1,5 +1,11 @@
 export const REGIONS = ['France', 'Israël'];
 
+// Sous-régions par pays — utilisé à l'inscription et dans le filtrage
+export const SUB_REGIONS = {
+  'France': ['Paris', 'Marseille'],
+  'Israël': ['Centre', 'Sud', 'Nord'],
+};
+
 // ─── LIVE SCORE ───
 export const EMPTY_SCORE = {
   running: false,

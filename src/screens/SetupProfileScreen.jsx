@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { COURT, PadelBall, Ornament } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
+import { SUB_REGIONS } from '../data/courtData'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -25,6 +26,7 @@ const L = {
     defensive:   'Défensif',
     allcourt:    'Polyvalent',
     region:      'Région',
+    subRegion:   'Où habites-tu ?',
     submit:      'Entrer au club',
     taken:       'Ce pseudo est déjà pris.',
     tooShort:    'Minimum 3 caractères.',
@@ -51,6 +53,7 @@ const L = {
     defensive:   'Defensive',
     allcourt:    'All-court',
     region:      'Region',
+    subRegion:   'Where do you live?',
     submit:      'Enter the club',
     taken:       'This username is already taken.',
     tooShort:    'Minimum 3 characters.',
@@ -77,6 +80,7 @@ const L = {
     defensive:   'הגנתי',
     allcourt:    'רב-גוני',
     region:      'אזור',
+    subRegion:   'איפה אתה גר?',
     submit:      'כניסה למועדון',
     taken:       'שם המשתמש הזה תפוס.',
     tooShort:    'מינימום 3 תווים.',
@@ -187,6 +191,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [side,            setSide]            = useState('forehand')
   const [style,           setStyle]           = useState('all-court')
   const [region,          setRegion]          = useState('Israël')
+  const [city,            setCity]            = useState(SUB_REGIONS['Israël'][0])
   const [usernameError,   setUsernameError]   = useState('')
   const [checkingUser,    setCheckingUser]    = useState(false)
   const [uploading,       setUploading]       = useState(false)
@@ -268,6 +273,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       preferred_side: side,
       play_style:     style,
       region,
+      city,
       level,
     })
     setSubmitting(false)
@@ -451,7 +457,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                   <button
                     key={v}
                     type="button"
-                    onClick={() => setRegion(v)}
+                    onClick={() => { setRegion(v); setCity(SUB_REGIONS[v][0]) }}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
@@ -470,6 +476,19 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                 )
               })}
             </div>
+          </div>
+
+          {/* Sub-region (city) */}
+          <div>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              {t.subRegion}
+            </div>
+            <ChipGroup
+              value={city}
+              onChange={setCity}
+              options={(SUB_REGIONS[region] || []).map(c => ({ v: c, label: c }))}
+              dark={dark}
+            />
           </div>
 
           {/* Form error */}

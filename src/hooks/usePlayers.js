@@ -46,9 +46,13 @@ function transformDBProfile(p, onlineIds) {
  * - Gère la présence en ligne via Supabase Realtime
  */
 export function usePlayers() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { onlineSet } = usePresence()
   const [players, setPlayers] = useState(null) // null = chargement
+
+  // Pays de l'utilisateur — isolation stricte France / Israël.
+  // Un joueur ne voit JAMAIS les profils de l'autre pays.
+  const myCountry = profile?.region || null
 
   const fetchAll = useCallback(async () => {
     // Invités (user=null) : charge tous les profils sans filtre de swipes
@@ -67,12 +71,20 @@ export function usePlayers() {
     }
 
     // Utilisateur connecté : charge les profils ET filtre les déjà-swipés
+    let profilesQuery = supabase
+      .from('profiles')
+      .select('*')
+      .neq('id', user.id)
+      .order('created_at', { ascending: false })
+
+    // Isolation par pays au niveau de la requête : un membre France ne charge
+    // que les profils France, un membre Israël que les profils Israël.
+    if (myCountry) {
+      profilesQuery = profilesQuery.eq('region', myCountry)
+    }
+
     const [profilesResult, swipesResult] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', user.id)
-        .order('created_at', { ascending: false }),
+      profilesQuery,
       supabase
         .from('swipes')
         .select('target_id')
@@ -88,7 +100,7 @@ export function usePlayers() {
     } else {
       setPlayers([])
     }
-  }, [user?.id])
+  }, [user?.id, myCountry])
 
   useEffect(() => {
     fetchAll()
