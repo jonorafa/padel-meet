@@ -1020,6 +1020,47 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
   // Activité récente : depuis la DB uniquement (jamais de données statiques)
   const recentItems = matchHistory.slice(0, 4).map(matchToActivity);
 
+  // ─── Prochain palier ──────────────────────────────────────────────
+  // Palier supérieur le plus proche par pas de 0.5 (ex: 4.3 → 4.5)
+  const hasLevel  = level != null;
+  const nextTier  = hasLevel ? Math.min(7.0, Math.floor(level / 0.5) * 0.5 + 0.5) : null;
+  const bandFloor = nextTier != null ? nextTier - 0.5 : null;
+  const atMax     = hasLevel && level >= 7.0;
+  const tierProgress = hasLevel && !atMax
+    ? Math.max(0, Math.min(1, (level - bandFloor) / 0.5))
+    : 1;
+  // Estimation : ~0.1 de niveau par victoire significative
+  const winsNeeded = hasLevel && !atMax
+    ? Math.max(1, Math.ceil((nextTier - level) / 0.1))
+    : 0;
+  const tierHintText = (t.tierHint || '')
+    .replace('{n}', winsNeeded)
+    .replace('{wins}', winsNeeded > 1 ? t.winsWord : t.winWord)
+    .replace('{floor}', bandFloor != null ? bandFloor.toFixed(1) : '')
+    .replace('{next}', nextTier != null ? nextTier.toFixed(1) : '');
+
+  // ─── Trophées ─────────────────────────────────────────────────────
+  // Plus longue série de victoires consécutives (historique = récent→ancien)
+  let longestStreak = 0, runStreak = 0;
+  for (const m of matchHistory) {
+    if (m.result === 'win') { runStreak += 1; longestStreak = Math.max(longestStreak, runStreak); }
+    else runStreak = 0;
+  }
+  const trophies = [
+    { key: 'first',  label: t.trophyFirstMatch,  unlocked: userMatches >= 1 },
+    { key: 'streak', label: t.trophyStreak5,      unlocked: longestStreak >= 5 },
+    { key: 'ten',    label: t.trophyTenMatches,   unlocked: userMatches >= 10 },
+    { key: 'level5', label: t.trophyLevel5,       unlocked: hasLevel && level >= 5 },
+  ];
+
+  // ─── Évolution du niveau (reconstruit depuis les deltas ELO) ───────
+  let evoPoints = [];
+  if (hasLevel && matchHistory.length >= 1) {
+    let running = level;
+    evoPoints = [running];
+    for (const m of matchHistory) { running -= (m.delta || 0); evoPoints.push(running); }
+    evoPoints.reverse(); // ancien → récent
+  }
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
@@ -1199,6 +1240,118 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                 <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.cream }}>{confidence}%</div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Prochain palier */}
+        {hasLevel && (
+          <div style={{
+            margin: '16px 20px 0', background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '30'}`,
+            borderRadius: 14, padding: '18px 20px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: atMax ? 0 : 14 }}>
+              <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.gold, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.nextTier}</div>
+              {!atMax && (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontFamily: 'Playfair Display, serif' }}>
+                  <span style={{ fontSize: 22, color: ink }}>{level.toFixed(1)}</span>
+                  <span style={{ fontSize: 13, color: stone }}>→</span>
+                  <span style={{ fontSize: 22, color: COURT.green }}>{nextTier.toFixed(1)}</span>
+                </div>
+              )}
+            </div>
+            {atMax ? (
+              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone, marginTop: 8 }}>{t.maxTier}</div>
+            ) : (
+              <>
+                <div style={{ height: 8, borderRadius: 4, background: dark ? COURT.darkBorder : COURT.green + '20', overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.round(tierProgress * 100)}%`, height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${COURT.green}, ${COURT.greenLight})`, transition: 'width 0.6s ease' }} />
+                </div>
+                <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 10, lineHeight: 1.4 }}>{tierHintText}</div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Trophées */}
+        <div style={{ padding: '28px 24px 0' }}>
+          <SectionHeading>{t.trophiesTitle}</SectionHeading>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 16 }}>
+            {trophies.map((tr, i) => {
+              const c = tr.unlocked ? COURT.green : (dark ? COURT.darkMuted : COURT.stone);
+              const icon = tr.key === 'streak'
+                ? <path d="M12 2c1 3 4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-5 0-7z" />
+                : tr.key === 'ten'
+                ? <><circle cx="12" cy="14" r="6" /><path d="M9 2l3 6 3-6" /></>
+                : tr.key === 'level5'
+                ? <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" />
+                : <><path d="M6 4h12v3a6 6 0 0 1-12 0V4z" /><path d="M6 5H3v2a3 3 0 0 0 3 3" /><path d="M18 5h3v2a3 3 0 0 1-3 3" /><path d="M9 17h6" /><path d="M12 13v4" /></>;
+              return (
+                <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: `cardIn 0.4s ease ${i * 0.06}s both` }}>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 26,
+                    background: tr.unlocked ? (dark ? COURT.green + '25' : COURT.green + '15') : (dark ? COURT.darkCard : COURT.cream),
+                    border: `0.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: c, opacity: tr.unlocked ? 1 : 0.5, position: 'relative',
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+                    {!tr.unlocked && (
+                      <div style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: 8, background: dark ? COURT.darkCard : COURT.cream, border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stone }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, letterSpacing: '0.06em', textAlign: 'center', lineHeight: 1.3 }}>{tr.label}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Évolution */}
+        <div style={{ padding: '28px 24px 0' }}>
+          <SectionHeading>{t.evolutionTitle}</SectionHeading>
+          <div style={{
+            marginTop: 16, background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '30'}`,
+            borderRadius: 14, padding: '18px 16px 14px',
+          }}>
+            {evoPoints.length >= 2 ? (() => {
+              const W = 300, H = 90, pad = 14;
+              const min = Math.min(...evoPoints), max = Math.max(...evoPoints);
+              const range = (max - min) || 1;
+              const n = evoPoints.length;
+              const xy = evoPoints.map((v, i) => {
+                const x = n > 1 ? pad + (i / (n - 1)) * (W - pad * 2) : W / 2;
+                const y = H - pad - ((v - min) / range) * (H - pad * 2);
+                return [x, y];
+              });
+              const linePath = xy.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+              const areaPath = `${linePath} L ${xy[n - 1][0].toFixed(1)} ${H - pad} L ${xy[0][0].toFixed(1)} ${H - pad} Z`;
+              const last = xy[n - 1];
+              return (
+                <>
+                  <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block' }}>
+                    <defs>
+                      <linearGradient id="evoFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COURT.green} stopOpacity="0.22" />
+                        <stop offset="100%" stopColor={COURT.green} stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={areaPath} fill="url(#evoFill)" />
+                    <path d={linePath} fill="none" stroke={COURT.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx={last[0]} cy={last[1]} r="3.5" fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontFamily: 'Playfair Display, serif', fontSize: 12, color: stone }}>
+                    <span>{evoPoints[0].toFixed(1)}</span>
+                    <span style={{ color: COURT.green }}>{evoPoints[n - 1].toFixed(1)}</span>
+                  </div>
+                </>
+              );
+            })() : (
+              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '8px 0' }}>{t.noEvolutionYet}</div>
+            )}
           </div>
         </div>
 
