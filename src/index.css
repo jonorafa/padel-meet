@@ -243,3 +243,23 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
   70%  { transform: scale(1.05); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* ─── Écran d'accueil : Rally ─── */
+@keyframes ballRally {
+  0%   { left: -8%;  top: 40%; transform: scale(0.9); }
+  25%  { top: 12%; }
+  50%  { left: 50%; top: 46%; transform: scale(1); }
+  75%  { top: 12%; }
+  100% { left: 108%; top: 40%; transform: scale(0.9); }
+}
+@keyframes ballSpin { to { transform: rotate(360deg); } }
+@keyframes racketSwing {
+  0%   { transform: rotate(-22deg); }
+  50%  { transform: rotate(14deg); }
+  100% { transform: rotate(-22deg); }
+}
+@keyframes inkReveal {
+  0%   { opacity: 0; filter: blur(10px); letter-spacing: 0.3em; transform: translateY(10px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; filter: blur(0); letter-spacing: normal; transform: translateY(0); }
+}

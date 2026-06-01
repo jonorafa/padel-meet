@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { COURT, PadelRacket, FloatingBalls, Ornament } from '../components/CourtUI';
+import { COURT, PadelRacket, PadelBall, Ornament } from '../components/CourtUI';
 import { usePrefs } from '../context/PrefsContext';
 
 const langs = [
@@ -20,17 +20,31 @@ export default function LanguageScreen() {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', padding: '0 32px', overflow: 'hidden',
     }}>
-      <FloatingBalls count={4} />
+      {/* Raquette fantôme qui swingue */}
       <div style={{
-        position: 'absolute', right: -30, top: 90, opacity: 0.12,
-        animation: 'racketTilt 6s ease-in-out infinite', transformOrigin: '50% 95%',
+        position: 'absolute', right: -30, top: 130, opacity: dark ? 0.16 : 0.10,
+        transformOrigin: '50% 90%', animation: 'racketSwing 5s ease-in-out infinite',
       }}>
-        <PadelRacket size={140} />
+        <PadelRacket size={170} frame={COURT.green} grip={COURT.green} />
       </div>
 
-      <div style={{ position: 'relative', textAlign: 'center', zIndex: 2, animation: 'fadeUp 1s ease-out' }}>
-        <Ornament width={120} style={{ margin: '0 auto 20px', display: 'block' }} />
-        <div style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 78, lineHeight: 0.9, color: COURT.green }}>
+      {/* Balle qui traverse l'écran en rallye */}
+      <div style={{
+        position: 'absolute', width: 26, height: 26, zIndex: 1,
+        animation: 'ballRally 4s cubic-bezier(.45,0,.55,1) infinite',
+        filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.15))',
+      }}>
+        <div style={{ animation: 'ballSpin 1.2s linear infinite' }}>
+          <PadelBall size={26} shadow={false} />
+        </div>
+      </div>
+
+      <div style={{ position: 'relative', textAlign: 'center', zIndex: 2 }}>
+        <Ornament width={120} style={{ margin: '0 auto 18px', display: 'block' }} />
+        <div style={{
+          fontFamily: 'Pinyon Script, cursive', fontSize: 78, lineHeight: 0.9,
+          color: COURT.green, animation: 'inkReveal 1.4s ease-out',
+        }}>
           Padel Meet
         </div>
         <Ornament width={120} style={{ margin: '16px auto 0', display: 'block' }} />
