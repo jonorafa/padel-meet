@@ -16,7 +16,6 @@ import { usePlayers }       from '../hooks/usePlayers';
 import { useSwipes }        from '../hooks/useSwipes';
 import { useUserMatches }   from '../hooks/useUserMatches';
 import { useMatchHistory }  from '../hooks/useMatchHistory';
-import { useTierSignals }  from '../hooks/useTierSignals';
 import { useNotifications } from '../hooks/useNotifications';
 import { DetailedProfileModal } from '../components/DetailedProfileModal';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
@@ -1026,14 +1025,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
   // Activité récente : depuis la DB uniquement (jamais de données statiques)
   const recentItems = matchHistory.slice(0, 4).map(matchToActivity);
 
-  // ─── Prochain palier ──────────────────────────────────────────────
-  // Palier supérieur le plus proche par pas de 0.5 (ex: 4.3 → 4.5)
-  const hasLevel  = level != null;
-  const nextTier  = hasLevel ? Math.min(7.0, Math.floor(level / 0.5) * 0.5 + 0.5) : null;
-  const bandFloor = nextTier != null ? nextTier - 0.5 : null;
-  const atMax     = hasLevel && level >= 7.0;
-  // 3 signaux Supabase (peer ratings / coverage / win rate)
-  const tierSignals = useTierSignals(level);
+  const hasLevel = level != null;
 
   // ─── Évolution du niveau (reconstruit depuis les deltas ELO) ──────
   let allEvoPoints = [], allEvoDates = [];
@@ -1248,150 +1240,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
           </div>
         </div>
 
-        {/* Prochain palier — 3 signaux */}
-        {hasLevel && (
-          <div style={{
-            margin: '16px 20px 0', background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '30'}`,
-            borderRadius: 14, padding: '18px 20px',
-          }}>
-            {/* En-tête : label + niveau actuel → cible */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.gold, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.nextTier}</div>
-              {!atMax && (
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontFamily: 'Playfair Display, serif' }}>
-                  <span style={{ fontSize: 22, color: ink }}>{level.toFixed(1)}</span>
-                  <span style={{ fontSize: 13, color: stone }}>→</span>
-                  <span style={{ fontSize: 22, color: COURT.green }}>{nextTier.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
 
-            {atMax ? (
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>{t.maxTier}</div>
-            ) : tierSignals == null ? (
-              /* Skeleton chargement */
-              [0, 1, 2].map(i => (
-                <div key={i} style={{ marginBottom: i < 2 ? 14 : 0 }}>
-                  <div style={{ height: 10, width: '60%', borderRadius: 4, background: dark ? COURT.darkBorder : COURT.green + '15', marginBottom: 7, animation: 'shimmer 1.4s ease infinite' }} />
-                  <div style={{ height: 6, borderRadius: 3, background: dark ? COURT.darkBorder : COURT.green + '15', animation: 'shimmer 1.4s ease infinite' }} />
-                </div>
-              ))
-            ) : !tierSignals.hasData ? (
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, lineHeight: 1.5 }}>{t.noTierData}</div>
-            ) : (
-              <>
-                {/* Séparateur léger */}
-                <div style={{ height: 0.5, background: dark ? COURT.darkBorder : COURT.green + '20', marginBottom: 14 }} />
-
-                {/* Lignes de signaux */}
-                {[
-                  {
-                    label:     t.peerRatingsLabel,
-                    value:     `${tierSignals.peer.above}/${tierSignals.peer.total || 5}`,
-                    barPct:    tierSignals.peer.total > 0 ? (tierSignals.peer.above / (tierSignals.peer.total || 5)) * 100 : 0,
-                    threshold: 60,   // = 3/5
-                    met:       tierSignals.peer.met,
-                    isGate:    false,
-                    weight:    '60%',
-                  },
-                  {
-                    label:     t.coverageLabel,
-                    value:     `${tierSignals.coverage.pct}%`,
-                    barPct:    tierSignals.coverage.pct,
-                    threshold: 70,
-                    met:       tierSignals.coverage.met,
-                    isGate:    true,
-                    weight:    null,
-                  },
-                  {
-                    label:     (t.winRateVsLabel || '').replace('{floor}', tierSignals.winRate.floor.toFixed(1)),
-                    value:     tierSignals.winRate.total > 0 ? `${tierSignals.winRate.pct}%` : '—',
-                    barPct:    tierSignals.winRate.pct,
-                    threshold: 55,
-                    met:       tierSignals.winRate.met,
-                    isGate:    false,
-                    weight:    '40%',
-                  },
-                ].map((sig, i, arr) => (
-                  <div key={i} style={{ marginBottom: i < arr.length - 1 ? 14 : 0 }}>
-                    {/* Label + valeur + icône */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontFamily: 'Inter', fontSize: 11, color: sig.met ? ink : stone, fontWeight: sig.met ? 500 : 400 }}>{sig.label}</span>
-                        {sig.isGate && (
-                          <span style={{ fontFamily: 'Inter', fontSize: 8, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '1px 5px', borderRadius: 3, background: COURT.gold + '22', color: COURT.gold }}>{t.gateLabel}</span>
-                        )}
-                        {sig.weight && (
-                          <span style={{ fontFamily: 'Inter', fontSize: 9, color: stone, opacity: 0.7 }}>{sig.weight}</span>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 13, color: sig.met ? COURT.green : stone }}>{sig.value}</span>
-                        <div style={{
-                          width: 16, height: 16, borderRadius: 8, flexShrink: 0,
-                          background: sig.met ? COURT.green + '20' : (dark ? COURT.darkBorder : COURT.stone + '20'),
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: sig.met ? COURT.green : stone,
-                        }}>
-                          {sig.met
-                            ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                            : <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                    {/* Barre + marqueur de seuil */}
-                    <div style={{ position: 'relative', height: 6, borderRadius: 3, background: dark ? COURT.darkBorder : COURT.green + '15' }}>
-                      <div style={{
-                        width: `${Math.min(100, Math.round(sig.barPct))}%`, height: '100%', borderRadius: 3,
-                        background: sig.met
-                          ? `linear-gradient(90deg, ${COURT.green}, ${COURT.greenLight})`
-                          : sig.isGate ? COURT.gold + '80' : (dark ? COURT.stone + '60' : COURT.stone + '50'),
-                        transition: 'width 0.7s ease',
-                      }} />
-                      {/* Trait vertical au seuil */}
-                      <div style={{
-                        position: 'absolute', top: -3, left: `${sig.threshold}%`,
-                        width: 1.5, height: 12, borderRadius: 1,
-                        background: dark ? COURT.darkText : COURT.ink, opacity: 0.3,
-                        transform: 'translateX(-50%)',
-                      }} />
-                    </div>
-                  </div>
-                ))}
-
-                {/* Pied de carte : statut global */}
-                <div style={{ height: 0.5, background: dark ? COURT.darkBorder : COURT.green + '20', margin: '14px 0 12px' }} />
-                {tierSignals.promotionReady ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: COURT.green }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" fill={COURT.green + '30'} />
-                    </svg>
-                    {(t.promotionReadyMsg || '').replace('{next}', nextTier.toFixed(1))}
-                  </div>
-                ) : (
-                  <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, lineHeight: 1.5 }}>
-                    {!tierSignals.coverage.met
-                      ? t.provisionalLevel
-                      : (() => {
-                          const missing = [tierSignals.peer.met, tierSignals.winRate.met].filter(Boolean).length;
-                          const total = 2;
-                          return `${missing}/${total} ${lang === 'he' ? 'אותות' : lang === 'en' ? 'signals' : 'signaux'} ✓`;
-                        })()
-                    }
-                  </div>
-                )}
-                {tierSignals.demotionRisk && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontFamily: 'Inter', fontSize: 11, color: COURT.red }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={COURT.red} strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                    {t.demotionRiskMsg}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
 
         {/* Évolution */}
         <div style={{ padding: '28px 24px 0' }}>
@@ -2589,9 +2438,8 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
   ];
 
   const tabs = [
-    { id: 'history',  label: t.history },
-    { id: 'trophies', label: t.trophiesTitle },
-    { id: 'stats',    label: t.statsTitle },
+    { id: 'history', label: t.history },
+    { id: 'stats',   label: t.statsTitle },
   ];
 
   return (
@@ -2683,77 +2531,58 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
             );
           })}
 
-        </div>
-      )}
-
-      {tab === 'trophies' && (
-        <div style={{ padding: '0 24px' }}>
-          {/* Compteur débloqués */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 24 }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 36, color: COURT.green, lineHeight: 1 }}>
-              {trophies.filter(tr => tr.unlocked).length}
-            </div>
-            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 15, color: stone }}>
-              {lang === 'he' ? `/ ${trophies.length} גביעים` : lang === 'en' ? `/ ${trophies.length} trophies` : `/ ${trophies.length} trophées`}
-            </div>
-          </div>
-
-          {/* Grille de badges */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-            {trophies.map((tr, i) => {
-              const c = tr.unlocked ? COURT.green : (dark ? COURT.darkMuted : COURT.stone);
-              const icon = tr.key === 'streak'
-                ? <path d="M12 2c1 3 4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-5 0-7z" />
-                : tr.key === 'ten'
-                ? <><circle cx="12" cy="14" r="6" /><path d="M9 2l3 6 3-6" /></>
-                : tr.key === 'level5'
-                ? <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" />
-                : <><path d="M6 4h12v3a6 6 0 0 1-12 0V4z" /><path d="M6 5H3v2a3 3 0 0 0 3 3" /><path d="M18 5h3v2a3 3 0 0 1-3 3" /><path d="M9 17h6" /><path d="M12 13v4" /></>;
-              return (
-                <div key={tr.key} style={{
-                  display: 'flex', alignItems: 'center', gap: 14,
-                  background: tr.unlocked ? (dark ? COURT.green + '15' : COURT.green + '08') : card,
-                  border: `0.5px solid ${tr.unlocked ? COURT.gold + '80' : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
-                  borderRadius: 14, padding: '16px 14px',
-                  animation: `cardIn 0.4s ease ${i * 0.07}s both`,
-                  opacity: tr.unlocked ? 1 : 0.55,
-                }}>
-                  <div style={{
-                    width: 48, height: 48, borderRadius: 24, flexShrink: 0,
-                    background: tr.unlocked ? (dark ? COURT.green + '30' : COURT.green + '18') : (dark ? COURT.darkBorder : COURT.stone + '15'),
-                    border: `0.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: c, position: 'relative',
+          {/* Trophées — en dessous de l'historique */}
+          <div style={{ borderTop: `0.5px solid ${border}`, paddingTop: 24, marginTop: 8 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 14 }}>{t.trophiesTitle}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              {trophies.map((tr, i) => {
+                const c = tr.unlocked ? COURT.green : (dark ? COURT.darkMuted : COURT.stone);
+                const icon = tr.key === 'streak'
+                  ? <path d="M12 2c1 3 4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-5 0-7z" />
+                  : tr.key === 'ten'
+                  ? <><circle cx="12" cy="14" r="6" /><path d="M9 2l3 6 3-6" /></>
+                  : tr.key === 'level5'
+                  ? <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" />
+                  : <><path d="M6 4h12v3a6 6 0 0 1-12 0V4z" /><path d="M6 5H3v2a3 3 0 0 0 3 3" /><path d="M18 5h3v2a3 3 0 0 1-3 3" /><path d="M9 17h6" /><path d="M12 13v4" /></>;
+                return (
+                  <div key={tr.key} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    background: tr.unlocked ? (dark ? COURT.green + '15' : COURT.green + '08') : card,
+                    border: `0.5px solid ${tr.unlocked ? COURT.gold + '80' : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
+                    borderRadius: 12, padding: '12px',
+                    animation: `cardIn 0.4s ease ${i * 0.07}s both`,
+                    opacity: tr.unlocked ? 1 : 0.5,
                   }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
-                    {!tr.unlocked && (
-                      <div style={{ position: 'absolute', bottom: -3, right: -3, width: 16, height: 16, borderRadius: 8, background: dark ? COURT.darkCard : COURT.cream, border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stone }}>
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 20, flexShrink: 0,
+                      background: tr.unlocked ? (dark ? COURT.green + '30' : COURT.green + '18') : (dark ? COURT.darkBorder : COURT.stone + '15'),
+                      border: `0.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: c, position: 'relative',
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+                      {!tr.unlocked && (
+                        <div style={{ position: 'absolute', bottom: -3, right: -3, width: 14, height: 14, borderRadius: 7, background: dark ? COURT.darkCard : COURT.cream, border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '30'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stone }}>
+                          <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: ff_serif, fontSize: 14, color: tr.unlocked ? ink : stone, fontWeight: 500, lineHeight: 1.2 }}>{tr.label}</div>
+                      <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? COURT.gold : stone, letterSpacing: '0.05em', marginTop: 3 }}>
+                        {tr.unlocked
+                          ? (lang === 'he' ? '✓ הושג' : lang === 'en' ? '✓ Unlocked' : '✓ Débloqué')
+                          : tr.key === 'first'  ? (lang === 'he' ? 'שחק משחק 1' : lang === 'en' ? 'Play 1 match' : 'Joue 1 match')
+                          : tr.key === 'streak' ? (lang === 'he' ? 'ניצח 5 ברצף' : lang === 'en' ? 'Win 5 in a row' : 'Gagne 5 de suite')
+                          : tr.key === 'ten'    ? (lang === 'he' ? 'שחק 10 משחקים' : lang === 'en' ? '10 matches' : '10 matchs joués')
+                          : (lang === 'he' ? 'הגע לרמה 5' : lang === 'en' ? 'Reach level 5' : 'Atteins niveau 5')
+                        }
                       </div>
-                    )}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: ff_serif, fontSize: 16, color: tr.unlocked ? ink : stone, fontWeight: 500 }}>{tr.label}</div>
-                    <div style={{ fontFamily: 'Inter', fontSize: 10, color: tr.unlocked ? COURT.gold : stone, letterSpacing: '0.06em', marginTop: 2 }}>
-                      {tr.unlocked
-                        ? (lang === 'he' ? '✓ הושג' : lang === 'en' ? '✓ Unlocked' : '✓ Débloqué')
-                        : tr.key === 'first'  ? (lang === 'he' ? 'שחק משחק אחד' : lang === 'en' ? 'Play 1 match' : 'Joue 1 match')
-                        : tr.key === 'streak' ? (lang === 'he' ? 'ניצח 5 ברצף' : lang === 'en' ? 'Win 5 in a row' : 'Gagne 5 à la suite')
-                        : tr.key === 'ten'    ? (lang === 'he' ? 'שחק 10 משחקים' : lang === 'en' ? 'Play 10 matches' : 'Joue 10 matchs')
-                        : (lang === 'he' ? 'הגע לרמה 5.0' : lang === 'en' ? 'Reach level 5.0' : 'Atteins le niveau 5.0')
-                      }
                     </div>
                   </div>
-                  {tr.unlocked && (
-                    <div style={{ flexShrink: 0 }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" fill={COURT.gold + '30'} />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
