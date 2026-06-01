@@ -2531,59 +2531,20 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
             );
           })}
 
-          {/* Trophées — en dessous de l'historique */}
-          <div style={{ borderTop: `0.5px solid ${border}`, paddingTop: 24, marginTop: 8 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 14 }}>{t.trophiesTitle}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-              {trophies.map((tr, i) => {
-                const c = tr.unlocked ? COURT.green : (dark ? COURT.darkMuted : COURT.stone);
-                const icon = tr.key === 'streak'
-                  ? <path d="M12 2c1 3 4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-5 0-7z" />
-                  : tr.key === 'ten'
-                  ? <><circle cx="12" cy="14" r="6" /><path d="M9 2l3 6 3-6" /></>
-                  : tr.key === 'level5'
-                  ? <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" />
-                  : <><path d="M6 4h12v3a6 6 0 0 1-12 0V4z" /><path d="M6 5H3v2a3 3 0 0 0 3 3" /><path d="M18 5h3v2a3 3 0 0 1-3 3" /><path d="M9 17h6" /><path d="M12 13v4" /></>;
-                return (
-                  <div key={tr.key} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    background: tr.unlocked ? (dark ? COURT.green + '15' : COURT.green + '08') : card,
-                    border: `0.5px solid ${tr.unlocked ? COURT.gold + '80' : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
-                    borderRadius: 12, padding: '12px',
-                    animation: `cardIn 0.4s ease ${i * 0.07}s both`,
-                    opacity: tr.unlocked ? 1 : 0.5,
-                  }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: 20, flexShrink: 0,
-                      background: tr.unlocked ? (dark ? COURT.green + '30' : COURT.green + '18') : (dark ? COURT.darkBorder : COURT.stone + '15'),
-                      border: `0.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: c, position: 'relative',
-                    }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
-                      {!tr.unlocked && (
-                        <div style={{ position: 'absolute', bottom: -3, right: -3, width: 14, height: 14, borderRadius: 7, background: dark ? COURT.darkCard : COURT.cream, border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '30'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stone }}>
-                          <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: ff_serif, fontSize: 14, color: tr.unlocked ? ink : stone, fontWeight: 500, lineHeight: 1.2 }}>{tr.label}</div>
-                      <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? COURT.gold : stone, letterSpacing: '0.05em', marginTop: 3 }}>
-                        {tr.unlocked
-                          ? (lang === 'he' ? '✓ הושג' : lang === 'en' ? '✓ Unlocked' : '✓ Débloqué')
-                          : tr.key === 'first'  ? (lang === 'he' ? 'שחק משחק 1' : lang === 'en' ? 'Play 1 match' : 'Joue 1 match')
-                          : tr.key === 'streak' ? (lang === 'he' ? 'ניצח 5 ברצף' : lang === 'en' ? 'Win 5 in a row' : 'Gagne 5 de suite')
-                          : tr.key === 'ten'    ? (lang === 'he' ? 'שחק 10 משחקים' : lang === 'en' ? '10 matches' : '10 matchs joués')
-                          : (lang === 'he' ? 'הגע לרמה 5' : lang === 'en' ? 'Reach level 5' : 'Atteins niveau 5')
-                        }
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Barre résumé victoires/défaites */}
+          {history.length > 0 && (
+            <div style={{ borderTop: `0.5px solid ${border}`, paddingTop: 20, marginTop: 8 }}>
+              <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 1 }}>
+                {history.map((m, i) => (
+                  <div key={i} style={{ flex: 1, background: m.result === 'win' ? COURT.green : COURT.purple, borderRadius: 2 }} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+                <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
+                <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.purple }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -2602,25 +2563,41 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
               </div>
             ))}
           </div>
-          <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px', marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>{t.history}</div>
-            {history.length > 0 ? (
-              <>
-                <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 1 }}>
-                  {history.map((m, i) => (
-                    <div key={i} style={{ flex: 1, background: m.result === 'win' ? COURT.green : COURT.purple, borderRadius: 2 }} />
-                  ))}
+          <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px', marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {[
+                { key: 'first',  icon: '🎾', label: trophies[0].label, unlocked: trophies[0].unlocked },
+                { key: 'streak', icon: '🔥', label: trophies[1].label, unlocked: trophies[1].unlocked },
+                { key: 'ten',    icon: '⭐', label: trophies[2].label, unlocked: trophies[2].unlocked },
+                { key: 'level5', icon: '👑', label: trophies[3].label, unlocked: trophies[3].unlocked },
+              ].map((tr, i) => (
+                <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: `cardIn 0.4s ease ${0.1 + i * 0.07}s both` }}>
+                  <div style={{ position: 'relative', width: 54, height: 54 }}>
+                    <div style={{
+                      width: 54, height: 54, borderRadius: 27,
+                      background: tr.unlocked
+                        ? `radial-gradient(circle at 35% 30%, ${COURT.greenLight}40, ${COURT.green}90)`
+                        : (dark ? `${COURT.darkBorder}` : `${COURT.stone}18`),
+                      border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 24,
+                      filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
+                      boxShadow: tr.unlocked ? `0 4px 12px ${COURT.green}30` : 'none',
+                      transition: 'all 0.3s ease',
+                    }}>{tr.icon}</div>
+                    {!tr.unlocked && (
+                      <div style={{
+                        position: 'absolute', inset: 0, borderRadius: 27,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 14,
+                      }}>🔒</div>
+                    )}
+                  </div>
+                  <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, maxWidth: 60 }}>{tr.label}</div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                  <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.purple }}>{history.length - wins} défaites</div>
-                </div>
-              </>
-            ) : (
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>
-                {lang === 'fr' ? 'Jouez votre premier match pour voir vos stats !' : lang === 'he' ? 'שחק את המשחק הראשון שלך!' : 'Play your first match to see stats!'}
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       )}
