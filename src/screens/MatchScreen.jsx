@@ -983,6 +983,11 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
   const [searchLoading, setSearchLoading] = useState(false);
   const searchTimer = useRef();
 
+  // ─── Évolution interactive ─────────────────────────────────────────
+  const [evoPeriod, setEvoPeriod] = useState('all');
+  const [touchIdx,  setTouchIdx]  = useState(null);
+  const evoRef = useRef(null);
+
   useEffect(() => { const tt = setTimeout(() => setShowRing(true), 200); return () => clearTimeout(tt); }, []);
 
   // Recherche Supabase en temps réel — name OU username (ILIKE, toutes les personnes)
@@ -1030,27 +1035,36 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
   // 3 signaux Supabase (peer ratings / coverage / win rate)
   const tierSignals = useTierSignals(level);
 
-  // ─── Trophées ─────────────────────────────────────────────────────
-  // Plus longue série de victoires consécutives (historique = récent→ancien)
-  let longestStreak = 0, runStreak = 0;
-  for (const m of matchHistory) {
-    if (m.result === 'win') { runStreak += 1; longestStreak = Math.max(longestStreak, runStreak); }
-    else runStreak = 0;
-  }
-  const trophies = [
-    { key: 'first',  label: t.trophyFirstMatch,  unlocked: userMatches >= 1 },
-    { key: 'streak', label: t.trophyStreak5,      unlocked: longestStreak >= 5 },
-    { key: 'ten',    label: t.trophyTenMatches,   unlocked: userMatches >= 10 },
-    { key: 'level5', label: t.trophyLevel5,       unlocked: hasLevel && level >= 5 },
-  ];
-
-  // ─── Évolution du niveau (reconstruit depuis les deltas ELO) ───────
-  let evoPoints = [];
+  // ─── Évolution du niveau (reconstruit depuis les deltas ELO) ──────
+  let allEvoPoints = [], allEvoDates = [];
   if (hasLevel && matchHistory.length >= 1) {
+    // matchHistory est trié récent → ancien
     let running = level;
-    evoPoints = [running];
-    for (const m of matchHistory) { running -= (m.delta || 0); evoPoints.push(running); }
-    evoPoints.reverse(); // ancien → récent
+    const _pts = [running];
+    const _dts = [new Date()]; // point actuel = aujourd'hui
+    for (const m of matchHistory) {
+      running = running - (m.delta || 0);
+      running = Math.max(0, Math.min(7, running));
+      _pts.push(running);
+      _dts.push(m.date instanceof Date ? m.date : new Date(m.date));
+    }
+    _pts.reverse(); // ancien → récent
+    _dts.reverse();
+    allEvoPoints = _pts;
+    allEvoDates  = _dts;
+  }
+  // Filtre par période sélectionnée
+  const _evoNow = new Date();
+  let evoPoints = allEvoPoints;
+  let evoDates  = allEvoDates;
+  if (evoPeriod !== 'all' && allEvoDates.length > 0) {
+    const cutoff = new Date(_evoNow);
+    if      (evoPeriod === '1M') cutoff.setMonth(cutoff.getMonth() - 1);
+    else if (evoPeriod === '3M') cutoff.setMonth(cutoff.getMonth() - 3);
+    else if (evoPeriod === '6M') cutoff.setMonth(cutoff.getMonth() - 6);
+    else if (evoPeriod === '1Y') cutoff.setFullYear(cutoff.getFullYear() - 1);
+    const si = allEvoDates.findIndex(d => d >= cutoff);
+    if (si !== -1) { evoPoints = allEvoPoints.slice(si); evoDates = allEvoDates.slice(si); }
   }
 
   return (
@@ -1379,81 +1393,122 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
           </div>
         )}
 
-        {/* Trophées */}
-        <div style={{ padding: '28px 24px 0' }}>
-          <SectionHeading>{t.trophiesTitle}</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 16 }}>
-            {trophies.map((tr, i) => {
-              const c = tr.unlocked ? COURT.green : (dark ? COURT.darkMuted : COURT.stone);
-              const icon = tr.key === 'streak'
-                ? <path d="M12 2c1 3 4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-5 0-7z" />
-                : tr.key === 'ten'
-                ? <><circle cx="12" cy="14" r="6" /><path d="M9 2l3 6 3-6" /></>
-                : tr.key === 'level5'
-                ? <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" />
-                : <><path d="M6 4h12v3a6 6 0 0 1-12 0V4z" /><path d="M6 5H3v2a3 3 0 0 0 3 3" /><path d="M18 5h3v2a3 3 0 0 1-3 3" /><path d="M9 17h6" /><path d="M12 13v4" /></>;
-              return (
-                <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: `cardIn 0.4s ease ${i * 0.06}s both` }}>
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 26,
-                    background: tr.unlocked ? (dark ? COURT.green + '25' : COURT.green + '15') : (dark ? COURT.darkCard : COURT.cream),
-                    border: `0.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: c, opacity: tr.unlocked ? 1 : 0.5, position: 'relative',
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
-                    {!tr.unlocked && (
-                      <div style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: 8, background: dark ? COURT.darkCard : COURT.cream, border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stone }}>
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, letterSpacing: '0.06em', textAlign: 'center', lineHeight: 1.3 }}>{tr.label}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Évolution */}
         <div style={{ padding: '28px 24px 0' }}>
-          <SectionHeading>{t.evolutionTitle}</SectionHeading>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <SectionHeading style={{ marginBottom: 0 }}>{t.evolutionTitle}</SectionHeading>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[['1M', '1M'], ['3M', '3M'], ['6M', '6M'], ['1Y', '1Y'], ['all', t.periodAll || 'Tout']].map(([key, lbl]) => (
+                <button key={key} onClick={() => { setEvoPeriod(key); setTouchIdx(null); }} style={{
+                  padding: '4px 7px', borderRadius: 6,
+                  border: `0.5px solid ${evoPeriod === key ? COURT.green : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
+                  background: evoPeriod === key ? COURT.green : 'transparent',
+                  color: evoPeriod === key ? '#fff' : stone,
+                  fontFamily: 'Inter', fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                }}>{lbl}</button>
+              ))}
+            </div>
+          </div>
           <div style={{
-            marginTop: 16, background: dark ? COURT.darkCard : COURT.cream,
+            background: dark ? COURT.darkCard : COURT.cream,
             border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '30'}`,
-            borderRadius: 14, padding: '18px 16px 14px',
+            borderRadius: 14, padding: '14px 12px 12px',
           }}>
             {evoPoints.length >= 2 ? (() => {
-              const W = 300, H = 90, pad = 14;
-              const min = Math.min(...evoPoints), max = Math.max(...evoPoints);
-              const range = (max - min) || 1;
+              const W = 300, H = 130;
+              const padL = 26, padR = 8, padT = 10, padB = 22;
+              const chartW = W - padL - padR;
+              const chartH = H - padT - padB;
+              const minY = 0, maxY = 7;
               const n = evoPoints.length;
               const xy = evoPoints.map((v, i) => {
-                const x = n > 1 ? pad + (i / (n - 1)) * (W - pad * 2) : W / 2;
-                const y = H - pad - ((v - min) / range) * (H - pad * 2);
+                const x = padL + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
+                const y = padT + chartH - ((v - minY) / (maxY - minY)) * chartH;
                 return [x, y];
               });
               const linePath = xy.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-              const areaPath = `${linePath} L ${xy[n - 1][0].toFixed(1)} ${H - pad} L ${xy[0][0].toFixed(1)} ${H - pad} Z`;
-              const last = xy[n - 1];
+              const areaPath = `${linePath} L ${xy[n-1][0].toFixed(1)} ${padT + chartH} L ${xy[0][0].toFixed(1)} ${padT + chartH} Z`;
+              const yTicks = [0, 2, 4, 6, 7];
+              const fmtDate = (d) => {
+                if (!d) return '';
+                const dd = d instanceof Date ? d : new Date(d);
+                return dd.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB', { day: 'numeric', month: 'short' });
+              };
+              const xIdxs = n <= 2 ? [0, n - 1] : [0, Math.floor((n - 1) / 2), n - 1];
+              const handlePointer = (e) => {
+                e.preventDefault();
+                const svg = evoRef.current;
+                if (!svg) return;
+                const rect = svg.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const svgX = ((clientX - rect.left) / rect.width) * W;
+                let ci = 0, cd = Infinity;
+                for (let i = 0; i < xy.length; i++) {
+                  const d = Math.abs(xy[i][0] - svgX);
+                  if (d < cd) { cd = d; ci = i; }
+                }
+                setTouchIdx(ci);
+              };
+              const cursor = touchIdx !== null ? xy[touchIdx] : null;
+              const ttW = 90, ttH = 18;
+              const ttX = cursor ? Math.min(Math.max(cursor[0] - ttW / 2, padL), W - padR - ttW) : 0;
+              const ttY = cursor ? Math.max(cursor[1] - ttH - 8, padT) : 0;
               return (
-                <>
-                  <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-                    <defs>
-                      <linearGradient id="evoFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={COURT.green} stopOpacity="0.22" />
-                        <stop offset="100%" stopColor={COURT.green} stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <path d={areaPath} fill="url(#evoFill)" />
-                    <path d={linePath} fill="none" stroke={COURT.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx={last[0]} cy={last[1]} r="3.5" fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
-                  </svg>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontFamily: 'Playfair Display, serif', fontSize: 12, color: stone }}>
-                    <span>{evoPoints[0].toFixed(1)}</span>
-                    <span style={{ color: COURT.green }}>{evoPoints[n - 1].toFixed(1)}</span>
-                  </div>
-                </>
+                <svg ref={evoRef} width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+                  style={{ display: 'block', touchAction: 'none' }}
+                  onTouchStart={handlePointer} onTouchMove={handlePointer} onTouchEnd={() => setTouchIdx(null)}
+                  onMouseMove={handlePointer} onMouseLeave={() => setTouchIdx(null)}
+                >
+                  <defs>
+                    <linearGradient id="evoFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={COURT.green} stopOpacity="0.22" />
+                      <stop offset="100%" stopColor={COURT.green} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Y axis grid + labels */}
+                  {yTicks.map(v => {
+                    const yy = padT + chartH - ((v - minY) / (maxY - minY)) * chartH;
+                    return (
+                      <g key={v}>
+                        <line x1={padL} y1={yy} x2={W - padR} y2={yy}
+                          stroke={dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'} strokeWidth="0.5" />
+                        <text x={padL - 4} y={yy + 3.5} textAnchor="end"
+                          fontSize="7" fontFamily="Inter" fill={stone}>{v}</text>
+                      </g>
+                    );
+                  })}
+                  {/* Area + line */}
+                  <path d={areaPath} fill="url(#evoFill)" />
+                  <path d={linePath} fill="none" stroke={COURT.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* X axis date labels */}
+                  {xIdxs.map((idx, li) => (
+                    <text key={idx} x={xy[idx][0]} y={H - 4}
+                      textAnchor={li === 0 ? 'start' : li === xIdxs.length - 1 ? 'end' : 'middle'}
+                      fontSize="7" fontFamily="Inter" fill={stone}>
+                      {fmtDate(evoDates?.[idx])}
+                    </text>
+                  ))}
+                  {/* Endpoint dot (no cursor) */}
+                  {!cursor && (
+                    <circle cx={xy[n-1][0]} cy={xy[n-1][1]} r="3.5"
+                      fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
+                  )}
+                  {/* Interactive cursor */}
+                  {cursor && (
+                    <g>
+                      <line x1={cursor[0]} y1={padT} x2={cursor[0]} y2={padT + chartH}
+                        stroke={COURT.green} strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+                      <circle cx={cursor[0]} cy={cursor[1]} r="4"
+                        fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
+                      <rect x={ttX} y={ttY} width={ttW} height={ttH} rx="3"
+                        fill={dark ? COURT.darkCard : '#fff'} stroke={COURT.green + '60'} strokeWidth="0.5" />
+                      <text x={ttX + ttW / 2} y={ttY + 11.5} textAnchor="middle"
+                        fontSize="8.5" fontFamily="Inter" fontWeight="600" fill={COURT.green}>
+                        {`${evoPoints[touchIdx]?.toFixed(1)}  ·  ${fmtDate(evoDates?.[touchIdx])}`}
+                      </text>
+                    </g>
+                  )}
+                </svg>
               );
             })() : (
               <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '8px 0' }}>{t.noEvolutionYet}</div>
@@ -2519,7 +2574,25 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
   const userWinrate = userMatches > 0 ? Math.round((userWins / userMatches) * 100) : null;
   const streak      = stats?.streak ?? 0;
 
-  const tabs = [{ id: 'history', label: t.history }, { id: 'stats', label: t.statsTitle }];
+  // ─── Trophées ─────────────────────────────────────────────────────
+  let longestStreak = 0, _runStreak = 0;
+  for (const m of history) {
+    if (m.result === 'win') { _runStreak += 1; longestStreak = Math.max(longestStreak, _runStreak); }
+    else _runStreak = 0;
+  }
+  const hasLevel = level != null;
+  const trophies = [
+    { key: 'first',  label: t.trophyFirstMatch, unlocked: userMatches >= 1 },
+    { key: 'streak', label: t.trophyStreak5,     unlocked: longestStreak >= 5 },
+    { key: 'ten',    label: t.trophyTenMatches,  unlocked: userMatches >= 10 },
+    { key: 'level5', label: t.trophyLevel5,      unlocked: hasLevel && level >= 5 },
+  ];
+
+  const tabs = [
+    { id: 'history',  label: t.history },
+    { id: 'trophies', label: t.trophiesTitle },
+    { id: 'stats',    label: t.statsTitle },
+  ];
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
@@ -2609,6 +2682,79 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
               </div>
             );
           })}
+
+        </div>
+      )}
+
+      {tab === 'trophies' && (
+        <div style={{ padding: '0 24px' }}>
+          {/* Compteur débloqués */}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 24 }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 36, color: COURT.green, lineHeight: 1 }}>
+              {trophies.filter(tr => tr.unlocked).length}
+            </div>
+            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 15, color: stone }}>
+              {lang === 'he' ? `/ ${trophies.length} גביעים` : lang === 'en' ? `/ ${trophies.length} trophies` : `/ ${trophies.length} trophées`}
+            </div>
+          </div>
+
+          {/* Grille de badges */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+            {trophies.map((tr, i) => {
+              const c = tr.unlocked ? COURT.green : (dark ? COURT.darkMuted : COURT.stone);
+              const icon = tr.key === 'streak'
+                ? <path d="M12 2c1 3 4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 0-5 0-7z" />
+                : tr.key === 'ten'
+                ? <><circle cx="12" cy="14" r="6" /><path d="M9 2l3 6 3-6" /></>
+                : tr.key === 'level5'
+                ? <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" />
+                : <><path d="M6 4h12v3a6 6 0 0 1-12 0V4z" /><path d="M6 5H3v2a3 3 0 0 0 3 3" /><path d="M18 5h3v2a3 3 0 0 1-3 3" /><path d="M9 17h6" /><path d="M12 13v4" /></>;
+              return (
+                <div key={tr.key} style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  background: tr.unlocked ? (dark ? COURT.green + '15' : COURT.green + '08') : card,
+                  border: `0.5px solid ${tr.unlocked ? COURT.gold + '80' : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
+                  borderRadius: 14, padding: '16px 14px',
+                  animation: `cardIn 0.4s ease ${i * 0.07}s both`,
+                  opacity: tr.unlocked ? 1 : 0.55,
+                }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 24, flexShrink: 0,
+                    background: tr.unlocked ? (dark ? COURT.green + '30' : COURT.green + '18') : (dark ? COURT.darkBorder : COURT.stone + '15'),
+                    border: `0.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '30')}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: c, position: 'relative',
+                  }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+                    {!tr.unlocked && (
+                      <div style={{ position: 'absolute', bottom: -3, right: -3, width: 16, height: 16, borderRadius: 8, background: dark ? COURT.darkCard : COURT.cream, border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '40'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stone }}>
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: ff_serif, fontSize: 16, color: tr.unlocked ? ink : stone, fontWeight: 500 }}>{tr.label}</div>
+                    <div style={{ fontFamily: 'Inter', fontSize: 10, color: tr.unlocked ? COURT.gold : stone, letterSpacing: '0.06em', marginTop: 2 }}>
+                      {tr.unlocked
+                        ? (lang === 'he' ? '✓ הושג' : lang === 'en' ? '✓ Unlocked' : '✓ Débloqué')
+                        : tr.key === 'first'  ? (lang === 'he' ? 'שחק משחק אחד' : lang === 'en' ? 'Play 1 match' : 'Joue 1 match')
+                        : tr.key === 'streak' ? (lang === 'he' ? 'ניצח 5 ברצף' : lang === 'en' ? 'Win 5 in a row' : 'Gagne 5 à la suite')
+                        : tr.key === 'ten'    ? (lang === 'he' ? 'שחק 10 משחקים' : lang === 'en' ? 'Play 10 matches' : 'Joue 10 matchs')
+                        : (lang === 'he' ? 'הגע לרמה 5.0' : lang === 'en' ? 'Reach level 5.0' : 'Atteins le niveau 5.0')
+                      }
+                    </div>
+                  </div>
+                  {tr.unlocked && (
+                    <div style={{ flexShrink: 0 }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9" fill={COURT.gold + '30'} />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
