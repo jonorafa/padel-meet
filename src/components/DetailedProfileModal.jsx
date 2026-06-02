@@ -257,6 +257,49 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             </div>
           )}
 
+          {/* Trophées */}
+          {stats && (() => {
+            const mp = stats.matches_played || 0
+            const sk = stats.streak || 0
+            const lv = player.level != null ? Number(player.level) : null
+            const playerTrophies = [
+              { key: 'first',  icon: '🎾', label: t.trophyFirstMatch || 'Premier match', unlocked: mp >= 1 },
+              { key: 'streak', icon: '🔥', label: t.trophyStreak5    || 'Série de 5',    unlocked: sk >= 5 },
+              { key: 'ten',    icon: '⭐', label: t.trophyTenMatches || '10 matchs',     unlocked: mp >= 10 },
+              { key: 'level5', icon: '👑', label: t.trophyLevel5     || 'Niveau 5',      unlocked: lv != null && lv >= 5 },
+            ]
+            return (
+              <div style={{ padding: '16px', borderRadius: 12, background: card, border: `0.5px solid ${border}` }}>
+                <p style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>
+                  {t.trophiesTitle || 'Trophées'}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  {playerTrophies.map((tr, i) => (
+                    <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <div style={{ position: 'relative', width: 54, height: 54 }}>
+                        <div style={{
+                          width: 54, height: 54, borderRadius: 27,
+                          background: tr.unlocked
+                            ? 'radial-gradient(circle at 35% 30%, rgba(42,122,82,0.4), #0F3D29)'
+                            : (dark ? '#1A2820' : 'rgba(107,107,107,0.12)'),
+                          border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? '#2A4A3A' : 'rgba(107,107,107,0.25)')}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 24,
+                          filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
+                          boxShadow: tr.unlocked ? '0 4px 12px rgba(15,61,41,0.3)' : 'none',
+                        }}>{tr.icon}</div>
+                        {!tr.unlocked && (
+                          <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
+                        )}
+                      </div>
+                      <p style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? (dark ? '#E8E0CC' : '#1A1A1A') : muted, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, margin: 0, maxWidth: 60 }}>{tr.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Preference chips */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {player.level != null && (

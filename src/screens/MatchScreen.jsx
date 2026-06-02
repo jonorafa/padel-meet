@@ -2790,6 +2790,22 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     navigate('/', { replace: true });
   };
 
+  // ─── Trophées (profil propre) ────────────────────────────────────────────
+  const { stats: myStats } = usePlayerStats();
+  const myHistory = useMatchHistory();
+  const myMatches = myStats?.matchesPlayed ?? profile?.matches_played ?? 0;
+  let myLongestStreak = 0, _s = 0;
+  for (const m of myHistory) {
+    if (m.result === 'win') { _s += 1; myLongestStreak = Math.max(myLongestStreak, _s); }
+    else _s = 0;
+  }
+  const profileTrophies = [
+    { key: 'first',  icon: '🎾', label: t.trophyFirstMatch || 'Premier match', unlocked: myMatches >= 1 },
+    { key: 'streak', icon: '🔥', label: t.trophyStreak5    || 'Série de 5',    unlocked: myLongestStreak >= 5 },
+    { key: 'ten',    icon: '⭐', label: t.trophyTenMatches || '10 matchs',     unlocked: myMatches >= 10 },
+    { key: 'level5', icon: '👑', label: t.trophyLevel5     || 'Niveau 5',      unlocked: level != null && level >= 5 },
+  ];
+
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
@@ -2915,6 +2931,34 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Trophées ──────────────────────────────────────────────────────── */}
+      <div style={{ margin: '16px 20px 0', background: card, border: `0.5px solid ${border}`, borderRadius: 14, padding: '16px 16px 20px' }}>
+        <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {profileTrophies.map((tr, i) => (
+            <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: `cardIn 0.4s ease ${0.1 + i * 0.07}s both` }}>
+              <div style={{ position: 'relative', width: 54, height: 54 }}>
+                <div style={{
+                  width: 54, height: 54, borderRadius: 27,
+                  background: tr.unlocked
+                    ? `radial-gradient(circle at 35% 30%, ${COURT.greenLight}40, ${COURT.green}90)`
+                    : (dark ? `${COURT.darkBorder}` : `${COURT.stone}18`),
+                  border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 24,
+                  filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
+                  boxShadow: tr.unlocked ? `0 4px 12px ${COURT.green}30` : 'none',
+                }}>{tr.icon}</div>
+                {!tr.unlocked && (
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
+                )}
+              </div>
+              <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, maxWidth: 60 }}>{tr.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
