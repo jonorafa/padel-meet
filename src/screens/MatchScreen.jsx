@@ -2964,7 +2964,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           {notifCount > 0 && (
             <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Profile card */}
