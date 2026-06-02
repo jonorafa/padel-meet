@@ -43,7 +43,7 @@ export default function LanguageScreen() {
         <Ornament width={120} style={{ margin: '0 auto 18px', display: 'block' }} />
         <div style={{
           fontFamily: 'Pinyon Script, cursive', fontSize: 78, lineHeight: 0.9,
-          color: COURT.green, animation: 'inkReveal 1.4s ease-out',
+          color: COURT.green, animation: 'inkReveal 1.4s ease-out', whiteSpace: 'nowrap',
         }}>
           Padel Meet
         </div>
