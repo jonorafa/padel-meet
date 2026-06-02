@@ -2407,6 +2407,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
   const history = useMatchHistory();
   const { stats } = usePlayerStats();
   const [tab, setTab] = useState('history');
+  const [trophyTip, setTrophyTip] = useState(null);
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
@@ -2571,32 +2572,75 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
                 { key: 'streak', icon: '🔥', label: trophies[1].label, unlocked: trophies[1].unlocked },
                 { key: 'ten',    icon: '⭐', label: trophies[2].label, unlocked: trophies[2].unlocked },
                 { key: 'level5', icon: '👑', label: trophies[3].label, unlocked: trophies[3].unlocked },
-              ].map((tr, i) => (
-                <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: `cardIn 0.4s ease ${0.1 + i * 0.07}s both` }}>
-                  <div style={{ position: 'relative', width: 54, height: 54 }}>
-                    <div style={{
-                      width: 54, height: 54, borderRadius: 27,
-                      background: tr.unlocked
-                        ? `radial-gradient(circle at 35% 30%, ${COURT.greenLight}40, ${COURT.green}90)`
-                        : (dark ? `${COURT.darkBorder}` : `${COURT.stone}18`),
-                      border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 24,
-                      filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
-                      boxShadow: tr.unlocked ? `0 4px 12px ${COURT.green}30` : 'none',
-                      transition: 'all 0.3s ease',
-                    }}>{tr.icon}</div>
-                    {!tr.unlocked && (
+              ].map((tr, i) => {
+                const unlockHints = {
+                  first:  lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée'      : lang === 'en' ? 'Play your first match to unlock this trophy'    : 'שחק את המשחק הראשון שלך כדי לפתוח את הגביע',
+                  streak: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer ce trophée' : lang === 'en' ? 'Win 5 matches in a row to unlock this trophy'  : 'זכה ב-5 משחקים ברצף כדי לפתוח את הגביע',
+                  ten:    lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer ce trophée'  : lang === 'en' ? 'Play at least 10 matches to unlock this trophy' : 'שחק לפחות 10 משחקים כדי לפתוח את הגביע',
+                  level5: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer ce trophée'      : lang === 'en' ? 'Reach level 5 to unlock this trophy'            : 'הגע לרמה 5 כדי לפתוח את הגביע',
+                };
+                const alreadyUnlocked = {
+                  first:  lang === 'fr' ? 'Premier match joué ✓'    : lang === 'en' ? 'First match played ✓'  : 'משחק ראשון שוחק ✓',
+                  streak: lang === 'fr' ? 'Série de 5 atteinte ✓'   : lang === 'en' ? '5-win streak reached ✓' : 'סדרה של 5 הושגה ✓',
+                  ten:    lang === 'fr' ? '10 matchs joués ✓'        : lang === 'en' ? '10 matches played ✓'   : '10 משחקים שוחקו ✓',
+                  level5: lang === 'fr' ? 'Niveau 5 atteint ✓'       : lang === 'en' ? 'Level 5 reached ✓'     : 'רמה 5 הושגה ✓',
+                };
+                return (
+                  <div key={tr.key} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: `cardIn 0.4s ease ${0.1 + i * 0.07}s both` }}>
+                    <button
+                      onClick={() => {
+                        setTrophyTip(tr.key);
+                        setTimeout(() => setTrophyTip(null), 3000);
+                      }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                    >
+                      <div style={{ position: 'relative', width: 54, height: 54 }}>
+                        <div style={{
+                          width: 54, height: 54, borderRadius: 27,
+                          background: tr.unlocked
+                            ? `radial-gradient(circle at 35% 30%, ${COURT.greenLight}40, ${COURT.green}90)`
+                            : (dark ? `${COURT.darkBorder}` : `${COURT.stone}18`),
+                          border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 24,
+                          filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
+                          boxShadow: tr.unlocked ? `0 4px 12px ${COURT.green}30` : 'none',
+                          transition: 'all 0.2s',
+                        }}>{tr.icon}</div>
+                        {!tr.unlocked && (
+                          <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
+                        )}
+                      </div>
+                    </button>
+                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, maxWidth: 60 }}>{tr.label}</div>
+                    {trophyTip === tr.key && (
                       <div style={{
-                        position: 'absolute', inset: 0, borderRadius: 27,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 14,
-                      }}>🔒</div>
+                        position: 'absolute', bottom: '100%', left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginBottom: 8, zIndex: 20, width: 120,
+                        background: dark ? COURT.darkCard : COURT.ink,
+                        color: dark ? COURT.darkText : COURT.cream,
+                        borderRadius: 8, padding: '7px 10px',
+                        fontFamily: 'Inter', fontSize: 10, lineHeight: 1.4,
+                        textAlign: 'center', whiteSpace: 'normal',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                        animation: 'fadeUp 0.2s ease',
+                        pointerEvents: 'none',
+                      }}>
+                        {tr.unlocked ? alreadyUnlocked[tr.key] : unlockHints[tr.key]}
+                        <div style={{
+                          position: 'absolute', top: '100%', left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 0, height: 0,
+                          borderLeft: '5px solid transparent',
+                          borderRight: '5px solid transparent',
+                          borderTop: `5px solid ${dark ? COURT.darkCard : COURT.ink}`,
+                        }} />
+                      </div>
                     )}
                   </div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, maxWidth: 60 }}>{tr.label}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -2778,7 +2822,7 @@ function ContactSheet({ dark, lang, onClose }) {
 // ─── Profile Screen ──────────────────────────────────────────────────────────
 function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0 }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
-  const { lang, dark, level, confidence, toggleLang, toggleDark } = usePrefs();
+  const { lang, dark, level, confidence, setLang, toggleDark } = usePrefs();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
@@ -2789,6 +2833,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [showCountry, setShowCountry] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
   const rtl   = lang === 'he';
@@ -2880,7 +2925,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     }
   };
 
-  function SettingRow({ icon, label, right, onClick }) {
+  function SettingRow({ icon, label, sub, right, onClick }) {
     return (
       <button onClick={onClick} style={{
         width: '100%', marginTop: 10, padding: '14px 16px',
@@ -2890,7 +2935,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
       }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: icon ? 12 : 0 }}>
           {icon ? <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span> : null}
-          {label}
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+            <span>{label}</span>
+            {sub && <span style={{ fontFamily: 'Inter', fontSize: 10, color: stone, fontStyle: 'normal', fontWeight: 400, letterSpacing: '0.05em' }}>{sub}</span>}
+          </span>
         </span>
         <span style={{ color: COURT.green }}>{right || (rtl ? '←' : '→')}</span>
       </button>
@@ -3125,8 +3173,9 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         />
         <SettingRow
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
-          label={lang === 'fr' ? 'Français' : lang === 'en' ? 'English' : 'עברית'}
-          onClick={toggleLang}
+          label={lang === 'fr' ? 'Langue' : lang === 'en' ? 'Language' : 'שפה'}
+          sub={'Français · English · עברית'}
+          onClick={() => setShowLangPicker(true)}
         />
         <SettingRow
           icon={dark
@@ -3188,8 +3237,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
                 label: lang === 'fr' ? 'Langue' : lang === 'en' ? 'Language' : 'שפה',
-                sub: lang === 'fr' ? 'Français · English · עברית' : lang === 'en' ? 'Français · English · עברית' : 'Français · English · עברית',
-                action: () => { setShowMenu(false); toggleLang(); },
+                sub: 'Français · English · עברית',
+                action: () => { setShowMenu(false); setShowLangPicker(true); },
               },
               {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
@@ -3232,6 +3281,50 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           dark={dark} lang={lang}
           onClose={() => setShowContact(false)}
         />
+      )}
+
+      {/* BottomSheet : Choix de la langue */}
+      {showLangPicker && (
+        <BottomSheet
+          onClose={() => setShowLangPicker(false)}
+          title={lang === 'fr' ? 'Langue' : lang === 'en' ? 'Language' : 'שפה'}
+          dark={dark}
+        >
+          <div style={{ padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[
+              { code: 'fr', flag: '🇫🇷', label: 'Français' },
+              { code: 'en', flag: '🇬🇧', label: 'English' },
+              { code: 'he', flag: '🇮🇱', label: 'עברית' },
+            ].map(({ code, flag, label }) => {
+              const active = lang === code;
+              return (
+                <button
+                  key={code}
+                  onClick={() => { setLang(code); setShowLangPicker(false); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
+                    background: active ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
+                    border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <span style={{ fontSize: 28 }}>{flag}</span>
+                  <span style={{
+                    fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+                    fontSize: 20, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic',
+                    color: active ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
+                  }}>{label}</span>
+                  {active && (
+                    <svg style={{ marginLeft: 'auto' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="2.5" strokeLinecap="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
       )}
 
       {/* BottomSheet : Likes reçus */}
