@@ -2780,6 +2780,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [showMenu, setShowMenu] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
   const rtl   = lang === 'he';
@@ -2894,6 +2896,21 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const handleSignOut = async () => {
     await signOut();
     navigate('/', { replace: true });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    setDeleting(true);
+    try {
+      // Single RPC call : supprime toutes les données + auth.users en cascade (RGPD)
+      const { error } = await supabase.rpc('delete_user_account');
+      if (error) throw error;
+      navigate('/', { replace: true });
+    } catch (err) {
+      console.error('Delete account error:', err);
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   // ─── Trophées (profil propre) ────────────────────────────────────────────
@@ -3150,6 +3167,86 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           </svg>
           {lang === 'fr' ? 'Se déconnecter' : lang === 'he' ? 'התנתק' : 'Sign out'}
         </button>
+
+        {/* Supprimer le compte — RGPD */}
+        {!showDeleteConfirm ? (
+          <button onClick={() => setShowDeleteConfirm(true)} style={{
+            width: '100%', marginTop: 8, padding: '12px 16px',
+            background: 'transparent', border: 'none', borderRadius: 10,
+            fontFamily: 'Inter', fontSize: 12, color: `${COURT.stone}`, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            opacity: 0.6,
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+            {lang === 'fr' ? 'Supprimer mon compte' : lang === 'he' ? 'מחק את החשבון שלי' : 'Delete my account'}
+          </button>
+        ) : (
+          <div style={{
+            marginTop: 8, borderRadius: 12,
+            border: `0.5px solid ${COURT.red}40`,
+            background: dark ? `${COURT.red}12` : `${COURT.red}08`,
+            padding: '16px',
+            animation: 'fadeUp 0.2s ease',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.red} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <div>
+                <div style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: 600, color: COURT.red, marginBottom: 4 }}>
+                  {lang === 'fr' ? 'Action irréversible' : lang === 'he' ? 'פעולה בלתי הפיכה' : 'Irreversible action'}
+                </div>
+                <div style={{ fontFamily: 'Inter', fontSize: 12, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.5, opacity: 0.8 }}>
+                  {lang === 'fr'
+                    ? 'Toutes vos données seront supprimées définitivement : profil, matchs, messages et photos.'
+                    : lang === 'he'
+                    ? 'כל הנתונים שלך יימחקו לצמיתות: פרופיל, משחקים, הודעות ותמונות.'
+                    : 'All your data will be permanently deleted: profile, matches, messages and photos.'}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{
+                  flex: 1, padding: '10px 0',
+                  background: 'transparent',
+                  border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '50'}`,
+                  borderRadius: 8, fontFamily: 'Inter', fontSize: 13,
+                  color: dark ? COURT.darkMuted : COURT.stone, cursor: 'pointer',
+                }}
+              >
+                {lang === 'fr' ? 'Annuler' : lang === 'he' ? 'ביטול' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                style={{
+                  flex: 2, padding: '10px 0',
+                  background: COURT.red,
+                  border: 'none', borderRadius: 8,
+                  fontFamily: 'Inter', fontSize: 13, fontWeight: 600,
+                  color: '#fff', cursor: deleting ? 'not-allowed' : 'pointer',
+                  opacity: deleting ? 0.6 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
+              >
+                {deleting ? (
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" style={{ animation: 'spin 0.8s linear infinite' }}>
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    {lang === 'fr' ? 'Suppression…' : lang === 'he' ? 'מוחק…' : 'Deleting…'}
+                  </>
+                ) : (
+                  lang === 'fr' ? 'Confirmer la suppression' : lang === 'he' ? 'אשר מחיקה' : 'Confirm deletion'
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* BottomSheet : Menu hamburger */}

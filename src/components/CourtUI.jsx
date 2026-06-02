@@ -706,7 +706,7 @@ export function Achievements({ badges, dark }) {
                   {b.on ? '100%' : `${b.progress.cur} / ${b.progress.max}`}
                 </div>
                 <div style={{
-                  position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                  position: 'absolute', top: '100%', left: 'calc(50% - 7px)',
                   width: 0, height: 0,
                   borderLeft: '7px solid transparent', borderRight: '7px solid transparent',
                   borderTop: `7px solid ${COURT.greenDeep}`,
