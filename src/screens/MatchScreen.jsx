@@ -4,7 +4,7 @@ import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
   SectionHeading, ThinButton, HeritageTag, BottomNav,
   SkeletonCard, MatchFlash, NotifBadge, OnlineDot, BottomSheet,
-  setDarkMode, isDark, initialsAvatar,
+  setDarkMode, isDark, initialsAvatar, Achievements,
 } from '../components/CourtUI';
 import { REGIONS, computeELODelta, I18N, regionToCountry } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
@@ -2566,82 +2566,28 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
           </div>
           <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px', marginBottom: 12 }}>
             <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-              {[
-                { key: 'first',  icon: '🎾', label: trophies[0].label, unlocked: trophies[0].unlocked },
-                { key: 'streak', icon: '🔥', label: trophies[1].label, unlocked: trophies[1].unlocked },
-                { key: 'ten',    icon: '⭐', label: trophies[2].label, unlocked: trophies[2].unlocked },
-                { key: 'level5', icon: '👑', label: trophies[3].label, unlocked: trophies[3].unlocked },
-              ].map((tr, i) => {
-                const unlockHints = {
-                  first:  lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée'      : lang === 'en' ? 'Play your first match to unlock this trophy'    : 'שחק את המשחק הראשון שלך כדי לפתוח את הגביע',
-                  streak: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer ce trophée' : lang === 'en' ? 'Win 5 matches in a row to unlock this trophy'  : 'זכה ב-5 משחקים ברצף כדי לפתוח את הגביע',
-                  ten:    lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer ce trophée'  : lang === 'en' ? 'Play at least 10 matches to unlock this trophy' : 'שחק לפחות 10 משחקים כדי לפתוח את הגביע',
-                  level5: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer ce trophée'      : lang === 'en' ? 'Reach level 5 to unlock this trophy'            : 'הגע לרמה 5 כדי לפתוח את הגביע',
-                };
-                const alreadyUnlocked = {
-                  first:  lang === 'fr' ? 'Premier match joué ✓'    : lang === 'en' ? 'First match played ✓'  : 'משחק ראשון שוחק ✓',
-                  streak: lang === 'fr' ? 'Série de 5 atteinte ✓'   : lang === 'en' ? '5-win streak reached ✓' : 'סדרה של 5 הושגה ✓',
-                  ten:    lang === 'fr' ? '10 matchs joués ✓'        : lang === 'en' ? '10 matches played ✓'   : '10 משחקים שוחקו ✓',
-                  level5: lang === 'fr' ? 'Niveau 5 atteint ✓'       : lang === 'en' ? 'Level 5 reached ✓'     : 'רמה 5 הושגה ✓',
-                };
-                return (
-                  <div key={tr.key} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: `cardIn 0.4s ease ${0.1 + i * 0.07}s both` }}>
-                    <button
-                      onClick={() => {
-                        setTrophyTip(tr.key);
-                        setTimeout(() => setTrophyTip(null), 3000);
-                      }}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                    >
-                      <div style={{ position: 'relative', width: 54, height: 54 }}>
-                        <div style={{
-                          width: 54, height: 54, borderRadius: 27,
-                          background: tr.unlocked
-                            ? `radial-gradient(circle at 35% 30%, ${COURT.greenLight}40, ${COURT.green}90)`
-                            : (dark ? `${COURT.darkBorder}` : `${COURT.stone}18`),
-                          border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24,
-                          filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
-                          boxShadow: tr.unlocked ? `0 4px 12px ${COURT.green}30` : 'none',
-                          transition: 'all 0.2s',
-                        }}>{tr.icon}</div>
-                        {!tr.unlocked && (
-                          <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
-                        )}
-                      </div>
-                    </button>
-                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, maxWidth: 60 }}>{tr.label}</div>
-                    {trophyTip === tr.key && (
-                      <div style={{
-                        position: 'absolute', bottom: '100%', left: '50%',
-                        transform: 'translateX(-50%)',
-                        marginBottom: 8, zIndex: 20, width: 120,
-                        background: dark ? COURT.darkCard : COURT.ink,
-                        color: dark ? COURT.darkText : COURT.cream,
-                        borderRadius: 8, padding: '7px 10px',
-                        fontFamily: 'Inter', fontSize: 10, lineHeight: 1.4,
-                        textAlign: 'center', whiteSpace: 'normal',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-                        animation: 'fadeUp 0.2s ease',
-                        pointerEvents: 'none',
-                      }}>
-                        {tr.unlocked ? alreadyUnlocked[tr.key] : unlockHints[tr.key]}
-                        <div style={{
-                          position: 'absolute', top: '100%', left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: 0, height: 0,
-                          borderLeft: '5px solid transparent',
-                          borderRight: '5px solid transparent',
-                          borderTop: `5px solid ${dark ? COURT.darkCard : COURT.ink}`,
-                        }} />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <Achievements dark={dark} badges={[
+              {
+                icon: '🎾', label: trophies[0].label, on: trophies[0].unlocked,
+                desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
+                progress: { cur: Math.min(userMatches, 1), max: 1 },
+              },
+              {
+                icon: '🔥', label: trophies[1].label, on: trophies[1].unlocked,
+                desc: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer' : lang === 'en' ? 'Win 5 matches in a row to unlock' : 'זכה ב-5 משחקים ברצף',
+                progress: { cur: Math.min(longestStreak, 5), max: 5 },
+              },
+              {
+                icon: '⭐', label: trophies[2].label, on: trophies[2].unlocked,
+                desc: lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer' : lang === 'en' ? 'Play at least 10 matches to unlock' : 'שחק לפחות 10 משחקים',
+                progress: { cur: Math.min(userMatches, 10), max: 10 },
+              },
+              {
+                icon: '👑', label: trophies[3].label, on: trophies[3].unlocked,
+                desc: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer' : lang === 'en' ? 'Reach level 5 to unlock' : 'הגע לרמה 5 לפתיחה',
+                progress: { cur: Math.min(Math.round((level ?? 0) * 10) / 10, 5), max: 5 },
+              },
+            ]} />
           </div>
         </div>
       )}
@@ -3124,29 +3070,28 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
       {/* ── Trophées ──────────────────────────────────────────────────────── */}
       <div style={{ margin: '16px 20px 0', background: card, border: `0.5px solid ${border}`, borderRadius: 14, padding: '16px 16px 20px' }}>
         <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          {profileTrophies.map((tr, i) => (
-            <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: `cardIn 0.4s ease ${0.1 + i * 0.07}s both` }}>
-              <div style={{ position: 'relative', width: 54, height: 54 }}>
-                <div style={{
-                  width: 54, height: 54, borderRadius: 27,
-                  background: tr.unlocked
-                    ? `radial-gradient(circle at 35% 30%, ${COURT.greenLight}40, ${COURT.green}90)`
-                    : (dark ? `${COURT.darkBorder}` : `${COURT.stone}18`),
-                  border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 24,
-                  filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
-                  boxShadow: tr.unlocked ? `0 4px 12px ${COURT.green}30` : 'none',
-                }}>{tr.icon}</div>
-                {!tr.unlocked && (
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
-                )}
-              </div>
-              <div style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? ink : stone, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, maxWidth: 60 }}>{tr.label}</div>
-            </div>
-          ))}
-        </div>
+        <Achievements dark={dark} badges={[
+          {
+            icon: '🎾', label: profileTrophies[0].label, on: profileTrophies[0].unlocked,
+            desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
+            progress: { cur: Math.min(myMatches, 1), max: 1 },
+          },
+          {
+            icon: '🔥', label: profileTrophies[1].label, on: profileTrophies[1].unlocked,
+            desc: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer' : lang === 'en' ? 'Win 5 matches in a row to unlock' : 'זכה ב-5 משחקים ברצף',
+            progress: { cur: Math.min(myLongestStreak, 5), max: 5 },
+          },
+          {
+            icon: '⭐', label: profileTrophies[2].label, on: profileTrophies[2].unlocked,
+            desc: lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer' : lang === 'en' ? 'Play at least 10 matches to unlock' : 'שחק לפחות 10 משחקים',
+            progress: { cur: Math.min(myMatches, 10), max: 10 },
+          },
+          {
+            icon: '👑', label: profileTrophies[3].label, on: profileTrophies[3].unlocked,
+            desc: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer' : lang === 'en' ? 'Reach level 5 to unlock' : 'הגע לרמה 5 לפתיחה',
+            progress: { cur: Math.min(Math.round((level ?? 0) * 10) / 10, 5), max: 5 },
+          },
+        ]} />
       </div>
 
       <div style={{ padding: '24px 24px 0' }}>

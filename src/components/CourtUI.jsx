@@ -653,3 +653,89 @@ export function BottomNav({ active, onChange, t, notifCount, chatCount, dark }) 
     </div>
   );
 }
+
+// ─── Trophées cliquables avec bulle de progression (auto-fermeture 3,5s) ───
+export function Achievements({ badges, dark }) {
+  const [open, setOpen] = useState(null);
+  const timer = useRef();
+
+  const toggle = (i) => {
+    clearTimeout(timer.current);
+    setOpen((prev) => {
+      if (prev === i) return null;
+      timer.current = setTimeout(() => setOpen(null), 3500);
+      return i;
+    });
+  };
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const stone  = dark ? COURT.darkMuted : COURT.stone;
+  const cardBg = dark ? COURT.darkCard  : COURT.creamDark;
+
+  return (
+    <div style={{ display: 'flex', gap: 10 }}>
+      {badges.map((b, i) => {
+        const pct = b.on ? 100 : Math.min(100, (b.progress.cur / b.progress.max) * 100);
+        return (
+          <div key={i} style={{ flex: 1, textAlign: 'center', position: 'relative' }}>
+            {open === i && (
+              <div style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 12px)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 172,
+                background: COURT.greenDeep,
+                color: COURT.cream,
+                borderRadius: 12,
+                padding: '12px 14px',
+                zIndex: 10,
+                boxShadow: '0 8px 24px rgba(15,61,41,0.3)',
+                animation: 'bubbleIn 0.25s ease',
+              }}>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontWeight: 600, fontSize: 14, color: COURT.gold }}>
+                  {b.label}
+                </div>
+                <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, lineHeight: 1.4, marginTop: 3 }}>
+                  {b.desc}
+                </div>
+                <div style={{ height: 5, background: `${COURT.cream}25`, borderRadius: 3, marginTop: 10, overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: COURT.gold, borderRadius: 3 }} />
+                </div>
+                <div style={{ fontFamily: 'Inter', fontSize: 9, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
+                  {b.on ? '100%' : `${b.progress.cur} / ${b.progress.max}`}
+                </div>
+                <div style={{
+                  position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                  width: 0, height: 0,
+                  borderLeft: '7px solid transparent', borderRight: '7px solid transparent',
+                  borderTop: `7px solid ${COURT.greenDeep}`,
+                }} />
+              </div>
+            )}
+            <button
+              onClick={() => toggle(i)}
+              style={{
+                width: 52, height: 52, borderRadius: 26, padding: 0,
+                background: b.on ? COURT.green : cardBg,
+                border: `0.5px solid ${b.on ? COURT.gold : COURT.green + '20'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, cursor: 'pointer',
+                filter: b.on ? 'none' : 'grayscale(1)',
+                opacity: b.on ? 1 : 0.5,
+                boxShadow: open === i ? `0 0 0 3px ${COURT.gold}40` : 'none',
+                transform: open === i ? 'translateY(-2px)' : 'none',
+                transition: 'box-shadow 0.2s, transform 0.2s',
+              }}
+            >
+              {b.on ? b.icon : '🔒'}
+            </button>
+            <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.04em', marginTop: 8, lineHeight: 1.2 }}>
+              {b.label}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
