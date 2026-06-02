@@ -2665,6 +2665,116 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
   );
 }
 
+// ─── Contact Sheet ───────────────────────────────────────────────────────────
+function ContactSheet({ dark, lang, onClose }) {
+  const rtl = lang === 'he';
+  const bg    = dark ? COURT.darkBg   : COURT.cream;
+  const card  = dark ? COURT.darkCard : COURT.creamDark;
+  const border= dark ? COURT.darkBorder : `${COURT.green}30`;
+  const ink   = dark ? COURT.darkText : COURT.ink;
+  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+
+  const types = ['Feedback', 'Bug report', 'Help'];
+  const [type, setType]       = useState('Feedback');
+  const [name, setName]       = useState('');
+  const [email, setEmail]     = useState('');
+  const [message, setMessage] = useState('');
+  const [sent, setSent]       = useState(false);
+
+  const canSend = name.trim() && email.trim() && message.trim();
+
+  const handleSend = () => {
+    if (!canSend) return;
+    const subj = encodeURIComponent(`[Padel Meet] ${type} — ${name}`);
+    const body = encodeURIComponent(
+      `Type : ${type}\nNom : ${name}\nEmail : ${email}\n\n${message}`
+    );
+    window.open(`mailto:jonathanbens10@gmail.com?subject=${subj}&body=${body}`);
+    setSent(true);
+  };
+
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', borderRadius: 10,
+    background: bg, border: `0.5px solid ${border}`,
+    fontFamily: 'Inter', fontSize: 14, color: ink, outline: 'none',
+    boxSizing: 'border-box', WebkitAppearance: 'none',
+  };
+
+  const title = lang === 'fr' ? 'Nous contacter' : lang === 'en' ? 'Contact us' : 'צור קשר';
+
+  return (
+    <BottomSheet onClose={onClose} title={title} dark={dark}>
+      <div style={{ padding: '8px 20px 36px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {sent ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div style={{ fontSize: 52, marginBottom: 16 }}>✉️</div>
+            <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 22, color: ink, marginBottom: 8 }}>
+              {lang === 'fr' ? 'Merci !' : lang === 'en' ? 'Thank you!' : '!תודה'}
+            </div>
+            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>
+              {lang === 'fr' ? 'Votre message a bien été préparé dans votre messagerie.'
+                : lang === 'en' ? 'Your message has been prepared in your mail app.'
+                : 'ההודעה שלך הוכנה באפליקציית הדואר.'}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Sélecteur de type */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {types.map(tp => (
+                <button key={tp} onClick={() => setType(tp)} style={{
+                  flex: 1, padding: '9px 4px', borderRadius: 9, cursor: 'pointer',
+                  background: type === tp ? COURT.green : card,
+                  border: `0.5px solid ${type === tp ? COURT.gold : border}`,
+                  color: type === tp ? COURT.cream : stone,
+                  fontFamily: 'Inter', fontSize: 11, fontWeight: 600,
+                  transition: 'all 0.2s',
+                }}>{tp}</button>
+              ))}
+            </div>
+
+            {/* Nom complet */}
+            <input
+              value={name} onChange={e => setName(e.target.value)}
+              placeholder={lang === 'fr' ? 'Nom complet' : lang === 'en' ? 'Full name' : 'שם מלא'}
+              style={inputStyle}
+            />
+
+            {/* Adresse email */}
+            <input
+              type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder={lang === 'fr' ? 'Adresse email' : lang === 'en' ? 'Email address' : 'כתובת אימייל'}
+              style={inputStyle}
+            />
+
+            {/* Message */}
+            <textarea
+              value={message} onChange={e => setMessage(e.target.value)}
+              placeholder={lang === 'fr' ? 'Décrivez votre demande...' : lang === 'en' ? 'Describe your request...' : 'תאר את בקשתך...'}
+              rows={5}
+              style={{ ...inputStyle, resize: 'none', lineHeight: 1.5 }}
+            />
+
+            {/* Bouton envoyer */}
+            <button onClick={handleSend} disabled={!canSend} style={{
+              width: '100%', padding: '14px', borderRadius: 12,
+              background: canSend ? COURT.green : `${COURT.green}45`,
+              border: `0.5px solid ${canSend ? COURT.gold + '80' : 'transparent'}`,
+              color: COURT.cream, fontFamily: 'Inter', fontSize: 15, fontWeight: 600,
+              cursor: canSend ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s',
+            }}>
+              {lang === 'fr' ? 'Envoyer' : lang === 'en' ? 'Send' : 'שלח'}
+            </button>
+          </>
+        )}
+      </div>
+    </BottomSheet>
+  );
+}
+
 // ─── Profile Screen ──────────────────────────────────────────────────────────
 function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0 }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
@@ -2677,6 +2787,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [showLikes, setShowLikes] = useState(false);
   const [showReEval, setShowReEval] = useState(false);
   const [showCountry, setShowCountry] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showContact, setShowContact] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
   const rtl   = lang === 'he';
@@ -2813,15 +2925,41 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.myProfile}</div>
         </div>
-        <button onClick={onShowNotifs} style={{
-          position: 'relative', width: 36, height: 36, borderRadius: 18,
-          background: dark ? COURT.darkCard : COURT.cream,
-          border: `0.5px solid ${border}`,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: dark ? COURT.darkText : COURT.green,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <button onClick={() => setShowEditProfile(true)} style={{
+            position: 'relative', width: 36, height: 36, borderRadius: 18,
+            background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${border}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: dark ? COURT.darkText : COURT.green,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </button>
+          <button onClick={() => setShowMenu(true)} style={{
+            position: 'relative', width: 36, height: 36, borderRadius: 18,
+            background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${border}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: dark ? COURT.darkText : COURT.green,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <line x1="3" y1="6"  x2="21" y2="6"  />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <button onClick={onShowNotifs} style={{
+            position: 'relative', width: 36, height: 36, borderRadius: 18,
+            background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${border}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: dark ? COURT.darkText : COURT.green,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
             <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
@@ -3018,6 +3156,82 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           {lang === 'fr' ? 'Se déconnecter' : lang === 'he' ? 'התנתק' : 'Sign out'}
         </button>
       </div>
+
+      {/* BottomSheet : Menu hamburger */}
+      {showMenu && (
+        <BottomSheet
+          onClose={() => setShowMenu(false)}
+          title={lang === 'fr' ? 'Menu' : lang === 'en' ? 'Menu' : 'תפריט'}
+          dark={dark}
+        >
+          <div style={{ padding: '4px 20px 32px' }}>
+            {[
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+                label: lang === 'fr' ? 'Mon profil' : lang === 'en' ? 'My profile' : 'הפרופיל שלי',
+                sub: lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit my profile' : 'עריכת פרופיל',
+                action: () => { setShowMenu(false); setShowEditProfile(true); },
+              },
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+                label: lang === 'fr' ? 'Préférence partenaire' : lang === 'en' ? 'Partner preference' : 'העדפת שותף',
+                sub: lang === 'fr' ? 'Afficher le partenaire idéal' : lang === 'en' ? 'Set your ideal partner' : 'הגדר שותף אידיאלי',
+                action: () => { setShowMenu(false); setShowPartnerPrefs(true); },
+              },
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+                label: lang === 'fr' ? 'Région' : lang === 'en' ? 'Region' : 'אזור',
+                sub: profile?.region || (lang === 'fr' ? 'Non défini' : lang === 'en' ? 'Not set' : 'לא מוגדר'),
+                action: () => { setShowMenu(false); setShowCountry(true); },
+              },
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+                label: lang === 'fr' ? 'Langue' : lang === 'en' ? 'Language' : 'שפה',
+                sub: lang === 'fr' ? 'Français · English · עברית' : lang === 'en' ? 'Français · English · עברית' : 'Français · English · עברית',
+                action: () => { setShowMenu(false); toggleLang(); },
+              },
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+                label: lang === 'fr' ? 'Nous contacter' : lang === 'en' ? 'Contact us' : 'צור קשר',
+                sub: 'Feedback · Bug report · Help',
+                action: () => { setShowMenu(false); setShowContact(true); },
+              },
+            ].map((item, i) => (
+              <button
+                key={i}
+                onClick={item.action}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '14px 0',
+                  borderBottom: i < 4 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  background: 'transparent', border: 'none', borderBottom: i < 4 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
+                  animation: `cardIn 0.3s ease ${i * 0.05}s both`,
+                }}
+              >
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: dark ? COURT.darkCard : `${COURT.green}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {item.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{item.label}</div>
+                  <div style={{ fontFamily: 'Inter', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>{item.sub}</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                  {rtl ? <polyline points="15 18 9 12 15 6"/> : <polyline points="9 18 15 12 9 6"/>}
+                </svg>
+              </button>
+            ))}
+          </div>
+        </BottomSheet>
+      )}
+
+      {/* BottomSheet : Formulaire de contact */}
+      {showContact && (
+        <ContactSheet
+          dark={dark} lang={lang}
+          onClose={() => setShowContact(false)}
+        />
+      )}
 
       {/* BottomSheet : Likes reçus */}
       {showLikes && (
