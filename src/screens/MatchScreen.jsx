@@ -702,8 +702,14 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
   };
 
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(56px, calc(env(safe-area-inset-top, 0px) + 16px))', paddingBottom: 100, overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 12px' }}>
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{
+      position: 'absolute', inset: 0, background: bg,
+      paddingTop: 'max(56px, calc(env(safe-area-inset-top, 0px) + 16px))',
+      paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))',
+      overflow: 'hidden',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 10px' }}>
         <div>
           <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
@@ -762,7 +768,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
         </div>
       </div>
 
-      <div style={{ position: 'relative', height: 'calc(100% - 180px)', margin: '0 20px 70px' }}>
+      <div style={{ flex: 1, position: 'relative', margin: '0 16px 8px', minHeight: 0 }}>
         {stack === null ? (
           <div style={{ position: 'absolute', inset: 0 }}><SkeletonCard /></div>
         ) : displayStack.length === 0 ? (
@@ -800,49 +806,31 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
         }).reverse()}
       </div>
 
-      {/* Label "mon partenaire idéale" */}
-      {top && stack !== null && (
-        <div style={{
-          position: 'absolute', bottom: 185, left: 0, right: 0,
-          textAlign: 'center',
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
-          fontSize: 14, color: stone, fontStyle: rtl ? 'normal' : 'italic',
-          letterSpacing: '0.08em', textTransform: 'uppercase',
-          pointerEvents: 'none',
-        }}>
-          {lang === 'he' ? 'השותף האידיאלי שלי' : lang === 'en' ? 'My ideal partner' : 'mon partenaire idéale'}
-        </div>
-      )}
-
-      {top && stack !== null && (
-        <div style={{
-          position: 'absolute', bottom: 116, left: 0, right: 0,
-          display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center',
-          pointerEvents: 'none', // les boutons gèrent leurs clics individuellement
-        }}>
-          {lastCard && lastDir === 'left' && (
-            <div style={{ pointerEvents: 'auto' }}>
-              <CircBtn onClick={undo} color={COURT.gold} dark={dark}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M3 10h10a5 5 0 1 1 0 10H3" /><path d="M3 10l4-4M3 10l4 4" />
-                </svg>
-              </CircBtn>
-            </div>
-          )}
-          <div style={{ pointerEvents: 'auto' }}>
+      {/* Boutons swipe */}
+      <div style={{
+        flexShrink: 0, height: 68,
+        display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center',
+      }}>
+        {top && stack !== null && lastCard && lastDir === 'left' && (
+          <CircBtn onClick={undo} color={COURT.gold} dark={dark}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M3 10h10a5 5 0 1 1 0 10H3" /><path d="M3 10l4-4M3 10l4 4" />
+            </svg>
+          </CircBtn>
+        )}
+        {top && stack !== null && (
+          <>
             <CircBtn onClick={() => decide('left')} color={COURT.purple} dark={dark}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </CircBtn>
-          </div>
-          <div style={{ pointerEvents: 'auto' }}>
             <CircBtn onClick={() => decide('right')} color={COURT.green} large dark={dark}>
               <PadelBall size={22} shadow={false} />
             </CircBtn>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
