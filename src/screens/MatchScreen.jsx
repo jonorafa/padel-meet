@@ -399,9 +399,9 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       boxShadow: dark ? '0 12px 32px rgba(0,0,0,0.4)' : '0 12px 32px rgba(15,61,41,0.14)',
       display: 'flex', flexDirection: 'column',
     }}>
-      {/* ─── Portrait (52%) ──────────────────────────────────────────── */}
+      {/* ─── Portrait (62%) ──────────────────────────────────────────── */}
       <div style={{
-        height: '52%', flexShrink: 0,
+        height: '62%', flexShrink: 0,
         background: `url(${p.photo}) center 20%/cover`,
         position: 'relative',
       }}>
@@ -799,6 +799,20 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
           );
         }).reverse()}
       </div>
+
+      {/* Label "mon partenaire idéale" */}
+      {top && stack !== null && (
+        <div style={{
+          position: 'absolute', bottom: 185, left: 0, right: 0,
+          textAlign: 'center',
+          fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+          fontSize: 14, color: stone, fontStyle: rtl ? 'normal' : 'italic',
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          pointerEvents: 'none',
+        }}>
+          {lang === 'he' ? 'השותף האידיאלי שלי' : lang === 'en' ? 'My ideal partner' : 'mon partenaire idéale'}
+        </div>
+      )}
 
       {top && stack !== null && (
         <div style={{
