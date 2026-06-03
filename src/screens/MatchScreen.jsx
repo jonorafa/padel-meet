@@ -4,8 +4,9 @@ import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
   SectionHeading, ThinButton, HeritageTag, BottomNav,
   SkeletonCard, MatchFlash, NotifBadge, OnlineDot, BottomSheet,
-  setDarkMode, isDark, initialsAvatar, Achievements,
+  setDarkMode, isDark, initialsAvatar, Achievements, CompatRing,
 } from '../components/CourtUI';
+import { compatScore } from '../lib/compatibility';
 import { REGIONS, computeELODelta, I18N, regionToCountry } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
@@ -370,219 +371,131 @@ function InfoChip({ icon, label, value, color, dark }) {
   );
 }
 
-function PlayerCard({ p, dragX, t, lang, dark }) {
+function PlayerCard({ p, dragX = 0, t, lang, dark }) {
+  const { profile: me } = useAuth();
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
-  const rtl   = lang === 'he';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_serif  = lang === 'he' ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_italic = lang === 'he' ? 'Inter, sans-serif' : 'Crimson Text, serif';
   const bg    = dark ? COURT.darkCard : COURT.cream;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
-  const border= dark ? COURT.darkBorder : `${COURT.green}50`;
+  const border= dark ? COURT.darkBorder : `${COURT.green}40`;
 
   const styleLabel = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[p.style] || t.allcourt;
+  const motivLabel = { fun: t.fun, improve: t.improve, compete: t.compete }[p.motivation] || t.fun;
   const sideLabel  = p.side === 'forehand' ? t.forehand : t.backhand;
   const handLabel  = p.hand === 'left' ? t.leftHand : t.rightHand;
-  const region     = CITY_REGION[p.city] || p.city || '—';
-
   const bio = lang === 'he' ? p.bioHe : (lang === 'en' ? (p.bioEn || p.bioFr) : p.bioFr);
+  const compat = me ? compatScore(me, p) : (p.confidenceRate ?? 90);
 
-  // Préférences partenaire (Chantier 4)
-  const prefs = p.partnerPrefs || {};
-  const prefStyleLabel = prefs.style && prefs.style !== 'any' ? ({ aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[prefs.style]) : null;
-  const prefHandLabel  = prefs.hand  && prefs.hand  !== 'any' ? (prefs.hand === 'left' ? t.leftHand : t.rightHand) : null;
-  const prefSideLabel  = prefs.side  && prefs.side  !== 'any' ? (prefs.side === 'forehand' ? t.forehand : t.backhand) : null;
-  const prefRegion     = prefs.region && prefs.region !== 'any' ? prefs.region : null;
-  const prefLevel      = (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
-    ? `${prefs.levelMin}–${prefs.levelMax}` : null;
-  const hasAnyPrefs = prefStyleLabel || prefHandLabel || prefSideLabel || prefRegion || prefLevel;
+  const DISPO_ICON = { Matin: '🌅', Soir: '🌙', Weekend: '☀️' };
 
   return (
     <div style={{
       position: 'absolute', inset: 0, background: bg,
-      border: `0.5px solid ${border}`, borderRadius: 14, overflow: 'hidden',
-      boxShadow: dark
-        ? '0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04)'
-        : '0 8px 32px rgba(15,61,41,0.12), 0 1px 0 rgba(0,0,0,0.04)',
+      border: `0.5px solid ${border}`, borderRadius: 20, overflow: 'hidden',
+      boxShadow: dark ? '0 12px 32px rgba(0,0,0,0.4)' : '0 12px 32px rgba(15,61,41,0.14)',
       display: 'flex', flexDirection: 'column',
     }}>
-      {/* ─── Photo (45% de la carte, plus compact) ──────────────────────── */}
+      {/* ─── Portrait (52%) ──────────────────────────────────────────── */}
       <div style={{
-        width: '100%', height: '45%', flexShrink: 0,
-        background: `url(${p.photo}) center 25%/cover`,
-        position: 'relative', overflow: 'hidden',
+        height: '52%', flexShrink: 0,
+        background: `url(${p.photo}) center 20%/cover`,
+        position: 'relative',
       }}>
-        {/* Dégradé bas pour lisibilité du nom */}
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.55) 100%)` }} />
+        {/* Dégradé bas */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.52) 100%)' }} />
 
-        {/* Badges haut */}
+        {/* Badge en ligne (haut gauche) */}
+        {playerIsOnline && (
+          <div style={{
+            position: 'absolute', top: 12, left: 12,
+            background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
+            display: 'flex', alignItems: 'center', gap: 5,
+            fontFamily: 'Inter', fontSize: 9, color: '#7ED957',
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            opacity: 1 - Math.max(yesOp, noOp),
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: 3, background: '#7ED957' }} />
+            {t.online}
+          </div>
+        )}
+
+        {/* Badge niveau (haut droite) */}
         <div style={{
-          position: 'absolute', top: 12, left: 12,
-          display: 'flex', gap: 6, alignItems: 'center',
+          position: 'absolute', top: 14, right: 14,
+          background: `${COURT.green}E8`, border: `0.5px solid ${COURT.gold}`,
+          borderRadius: 10, padding: '7px 12px 5px', textAlign: 'center',
           opacity: 1 - Math.max(yesOp, noOp),
         }}>
-          {playerIsOnline && (
-            <div style={{
-              background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
-              display: 'flex', alignItems: 'center', gap: 5,
-              fontFamily: 'Inter', fontSize: 9, color: '#7ED957',
-              letterSpacing: '0.14em', textTransform: 'uppercase',
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: 3, background: '#7ED957' }} />
-              {t.online}
-            </div>
-          )}
-        </div>
-
-        {/* Niveau (haut droite) */}
-        <div style={{
-          position: 'absolute', top: 12, right: 12,
-          background: `${COURT.green}EE`, color: COURT.cream,
-          padding: '6px 10px 5px', borderRadius: 8,
-          border: `0.5px solid ${COURT.gold}`,
-          opacity: 1 - Math.max(yesOp, noOp),
-        }}>
-          <div style={{ fontFamily: 'Inter', fontSize: 7, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, lineHeight: 1, fontWeight: 400 }}>
+          <div style={{ fontFamily: 'Inter', fontSize: 7.5, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: COURT.cream, lineHeight: 1 }}>
             {p.level != null ? p.level.toFixed(1) : '—'}
           </div>
         </div>
-
-        {/* Nom + âge en overlay bas de photo */}
-        <div style={{
-          position: 'absolute', left: 16, right: 16, bottom: 10,
-          opacity: 1 - Math.max(yesOp, noOp),
-        }}>
-          <div style={{
-            display: 'flex', alignItems: 'baseline', gap: 8,
-            fontFamily: ff_serif, fontSize: 22, color: '#fff', fontWeight: 500,
-            textShadow: '0 2px 8px rgba(0,0,0,0.6)',
-          }}>
-            <span style={{
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              minWidth: 0, maxWidth: '70%',
-            }}>
-              {p.name.split(' ')[0]}{' '}
-              <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.gold }}>
-                {p.name.split(' ').slice(1).join(' ')}
-              </span>
-            </span>
-            <span style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>
-              {p.age}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-            </svg>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>
-              {p.city}{region && region !== p.city ? ` · ${region}` : ''}
-            </div>
-            <div style={{ width: 2, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.6)' }} />
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: 'rgba(255,255,255,0.85)' }}>
-              {p.matches} {t.matches?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}%` : ''}
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* ─── Contenu scrollable ────────────────────────────────────────── */}
-      {/*
-        Pas de stopPropagation : les pointer events doivent remonter au SwipeStack
-        pour permettre le swipe horizontal et le tap-to-open-profile depuis tout
-        l'écran de la carte. Le scroll vertical reste géré nativement via touchAction:'pan-y'
-        et la détection verticale dans SwipeStack.onMove.
-      */}
-      <div
-        className="card-scroll"
-        style={{
-          flex: 1, overflowY: 'auto', overflowX: 'hidden',
-          padding: '12px 16px 16px',
-          touchAction: 'pan-y',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        {/* Grille 2x2 des 4 infos clés */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          <InfoChip
-            icon="⚡" label={t.styleLabel || 'Style'}
-            value={styleLabel} color={COURT.purple} dark={dark}
-          />
-          <InfoChip
-            icon="📍" label={t.regionLabel || 'Région'}
-            value={region} color={COURT.green} dark={dark}
-          />
-          <InfoChip
-            icon={p.hand === 'left' ? '🫲' : '🫱'} label={t.handLabel || 'Main'}
-            value={handLabel} color={COURT.green} dark={dark}
-          />
-          <InfoChip
-            icon="🎾" label={t.sideLabel || 'Côté'}
-            value={sideLabel} color={COURT.gold} dark={dark}
-          />
+      {/* ─── Infos ───────────────────────────────────────────────────── */}
+      <div style={{ padding: '14px 20px 16px', flex: 1, position: 'relative', overflow: 'hidden' }}>
+        {/* Anneau compat flottant — chevauche le portrait */}
+        <div style={{
+          position: 'absolute', right: 18, top: -30,
+          width: 64, height: 64, borderRadius: 32, background: bg,
+          border: `0.5px solid ${border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
+        }}>
+          <CompatRing size={54} value={compat} txt={dark ? COURT.cream : COURT.green} />
         </div>
 
-        {/* Bio (si renseignée) */}
-        {bio && (
-          <>
-            <Ornament width={32} style={{ margin: '14px auto 10px' }} />
-            <p style={{
-              fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 13, color: ink, lineHeight: 1.45, margin: 0,
-              textAlign: 'center',
-            }}>
-              «{' '}{bio}{' '}»
-            </p>
-          </>
-        )}
-
-        {/* ─── Section "Recherche" (partner_prefs) ─────────────────────── */}
-        {hasAnyPrefs && (
-          <>
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ flex: 1, height: 1, background: `${COURT.green}25` }} />
-              <div style={{
-                fontFamily: 'Inter', fontSize: 9, color: COURT.green,
-                letterSpacing: '0.28em', textTransform: 'uppercase', fontWeight: 600,
-              }}>
-                {t.lookingFor || 'Recherche'}
-              </div>
-              <div style={{ flex: 1, height: 1, background: `${COURT.green}25` }} />
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 10, justifyContent: 'center' }}>
-              {prefStyleLabel && <HeritageTag color={COURT.purple}>{prefStyleLabel}</HeritageTag>}
-              {prefHandLabel  && <HeritageTag color={COURT.green}>{prefHandLabel}</HeritageTag>}
-              {prefSideLabel  && <HeritageTag color={COURT.green}>{prefSideLabel}</HeritageTag>}
-              {prefRegion     && <HeritageTag color={COURT.gold}>📍 {prefRegion}</HeritageTag>}
-              {prefLevel      && <HeritageTag color={COURT.gold}>Niv. {prefLevel}</HeritageTag>}
-            </div>
-          </>
-        )}
-
-        {/* Confidence bar */}
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-          <span>{t.confidence}</span>
-          <div style={{ flex: 1, height: 1, background: `${COURT.green}25`, position: 'relative' }}>
-            <div style={{ width: `${p.confidenceRate ?? 50}%`, height: '100%', background: COURT.green }} />
-          </div>
-          <span style={{ color: COURT.green, fontFamily: 'Playfair Display, serif', fontSize: 11, letterSpacing: 0 }}>
-            {p.confidenceRate != null ? `${Math.round(p.confidenceRate)}%` : '—'}
+        {/* Nom · âge */}
+        <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, lineHeight: 1, paddingRight: 56 }}>
+          {p.name.split(' ')[0]}{' '}
+          <span style={{ fontStyle: lang === 'he' ? 'normal' : 'italic', color: COURT.green }}>
+            {p.name.split(' ').slice(1).join(' ')}
           </span>
+          <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 14, color: stone }}> · {p.age}</span>
         </div>
 
-        {/* Hint scroll/tap */}
-        <div style={{
-          marginTop: 14, paddingTop: 10, borderTop: `0.5px dashed ${COURT.green}25`,
-          fontFamily: 'Inter', fontSize: 9, color: stone,
-          letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center',
-        }}>
-          {t.tapToSeeMore || 'Toucher pour voir le profil détaillé'}
+        {/* Ville · matchs · winrate */}
+        <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5 }}>
+          📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}%` : ''}
         </div>
+
+        {/* Tags */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 12 }}>
+          <HeritageTag color={COURT.green}>{handLabel}</HeritageTag>
+          <HeritageTag color={COURT.green}>{sideLabel}</HeritageTag>
+          <HeritageTag color={COURT.purple}>{styleLabel}</HeritageTag>
+          <HeritageTag color={COURT.gold}>{motivLabel}</HeritageTag>
+        </div>
+
+        {/* Disponibilités */}
+        {p.availability?.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+            {p.availability.map(a => (
+              <span key={a} style={{
+                fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12, color: COURT.green,
+                background: `${COURT.green}10`, padding: '5px 11px', borderRadius: 999,
+                display: 'inline-flex', gap: 5, alignItems: 'center',
+              }}>{DISPO_ICON[a] || ''} {a}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Bio */}
+        {bio && (
+          <p style={{
+            fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13,
+            color: ink, lineHeight: 1.45, marginTop: 12, marginBottom: 0,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>« {bio} »</p>
+        )}
       </div>
 
-      {/* Swipe overlays */}
+      {/* ─── Overlays swipe ──────────────────────────────────────────── */}
       <div style={{ position: 'absolute', inset: 0, opacity: yesOp, pointerEvents: 'none', background: `${COURT.green}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ transform: `scale(${0.5 + yesOp * 0.5})` }}><PadelBall size={90} /></div>
       </div>

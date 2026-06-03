@@ -739,3 +739,20 @@ export function Achievements({ badges, dark }) {
     </div>
   );
 }
+
+// ─── Anneau de compatibilité ───
+export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = COURT.green, track = `${COURT.green}20` }) {
+  const r = size / 2 - 5, c = 2 * Math.PI * r;
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={track} strokeWidth="4" />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={stroke} strokeWidth="4" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - value/100)} transform={`rotate(-90 ${size/2} ${size/2})`} />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: size * 0.28, color: txt, lineHeight: 1 }}>{value}%</span>
+      </div>
+    </div>
+  );
+}
