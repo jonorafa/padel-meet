@@ -758,11 +758,14 @@ export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = C
         {label && (
           <>
             <path id={pathId} d={arc} fill="none" />
+            {/* RTL : on inverse les caractères de la chaîne so qu'ils se lisent
+                droite→gauche le long de l'arc gauche→droite (effet visuel correct) */}
             <text fill={txt} textAnchor="middle" style={{
               fontFamily: 'Inter', fontSize: labelSize, letterSpacing: '0.01em',
-              direction: rtl ? 'rtl' : 'ltr',
             }}>
-              <textPath href={`#${pathId}`} startOffset="50%">{label}</textPath>
+              <textPath href={`#${pathId}`} startOffset="50%">
+                {rtl ? [...label].reverse().join('') : label}
+              </textPath>
             </text>
           </>
         )}

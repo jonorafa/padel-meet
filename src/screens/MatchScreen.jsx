@@ -479,7 +479,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* Ville · matchs · winrate */}
-        <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5 }}>
+        <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5, paddingRight: 72 }}>
           📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
         </div>
 
