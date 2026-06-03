@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 
 // ─── Design tokens ───
 export const COURT = {
@@ -741,17 +741,37 @@ export function Achievements({ badges, dark }) {
 }
 
 // ─── Anneau de compatibilité ───
-export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = COURT.green, track = `${COURT.green}20` }) {
+export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = COURT.green, track = `${COURT.green}20`, label, rtl = false }) {
   const r = size / 2 - 5, c = 2 * Math.PI * r;
+  const cx = size / 2, cy = size / 2;
+  const pathId = useId();
+  // Demi-arc bas, parcouru gauche→droite → le texte suit la courbe et reste à l'endroit
+  const lr = r - 4;
+  const arc = `M ${cx - lr},${cy} A ${lr},${lr} 0 0 0 ${cx + lr},${cy}`;
+  const labelSize = Math.max(5.5, size * 0.092);
   return (
     <div style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={track} strokeWidth="4" />
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={stroke} strokeWidth="4" strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c * (1 - value/100)} transform={`rotate(-90 ${size/2} ${size/2})`} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={track} strokeWidth="4" />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={stroke} strokeWidth="4" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - value/100)} transform={`rotate(-90 ${cx} ${cy})`} />
+        {label && (
+          <>
+            <path id={pathId} d={arc} fill="none" />
+            <text fill={txt} textAnchor="middle" style={{
+              fontFamily: 'Inter', fontSize: labelSize, letterSpacing: '0.01em',
+              direction: rtl ? 'rtl' : 'ltr',
+            }}>
+              <textPath href={`#${pathId}`} startOffset="50%">{label}</textPath>
+            </text>
+          </>
+        )}
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontFamily: 'Playfair Display, serif', fontSize: size * 0.28, color: txt, lineHeight: 1 }}>{value}%</span>
+        <span style={{
+          fontFamily: 'Playfair Display, serif', fontSize: size * 0.28, color: txt, lineHeight: 1,
+          transform: label ? 'translateY(-3px)' : 'none',
+        }}>{value}%</span>
       </div>
     </div>
   );

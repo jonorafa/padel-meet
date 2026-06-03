@@ -136,25 +136,56 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
     ? `${prefs.levelMin}–${prefs.levelMax}` : null
   const hasPrefs   = prefHand || prefSide || prefStyle || prefRegion || prefMotiv || prefLevel
 
+  // ── Tableau hairline Mon jeu / Je recherche ────────────────────
+  const myGameLabel   = lang === 'en' ? 'My game'      : lang === 'he' ? 'המשחק שלי' : 'Mon jeu'
+  const seekingLabel  = lang === 'en' ? 'Looking for'  : lang === 'he' ? 'אני מחפש'  : 'Je recherche'
+
+  const profileRows = [
+    {
+      icon: '✦',
+      label: t.currentLevel || 'Niveau',
+      mine:  player.level != null ? Number(player.level).toFixed(1) : '—',
+      seeks: (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
+        ? `${prefs.levelMin}–${prefs.levelMax}` : null,
+    },
+    {
+      icon: '📍',
+      label: t.regionLabel || 'Région',
+      mine:  player.region || player.city || '—',
+      seeks: prefs.region && prefs.region !== 'any' ? prefs.region : null,
+    },
+    {
+      icon: '👊',
+      label: t.hand || 'Main',
+      mine:  player.dominant_hand ? handLabel : '—',
+      seeks: prefs.hand && prefs.hand !== 'any'
+        ? (prefs.hand === 'left' ? (t.leftHand || 'Gaucher') : (t.rightHand || 'Droitier')) : null,
+    },
+    {
+      icon: '🎾',
+      label: t.side || 'Côté',
+      mine:  player.preferred_side ? sideLabel : '—',
+      seeks: prefs.side && prefs.side !== 'any'
+        ? (prefs.side === 'forehand' ? (t.forehand || 'Drive') : (t.backhand || 'Revers')) : null,
+    },
+    {
+      icon: '⚡',
+      label: t.playerStyle || 'Style',
+      mine:  player.play_style ? (styleMap[player.play_style] || player.play_style) : '—',
+      seeks: prefs.style && prefs.style !== 'any' ? (styleMap[prefs.style] || prefs.style) : null,
+    },
+    {
+      icon: '🎯',
+      label: t.motivation || 'Motivation',
+      mine:  player.motivation ? (motivMap[player.motivation] || player.motivation) : '—',
+      seeks: prefs.motivation && prefs.motivation !== 'any' ? (motivMap[prefs.motivation] || prefs.motivation) : null,
+    },
+  ]
+
   const fallbackPhotos = (!playerPhotos || playerPhotos.length === 0) && player.photo_url
     ? [{ id: 'fallback', url: player.photo_url, is_primary: true }]
     : null
   const photosToShow = playerPhotos && playerPhotos.length > 0 ? playerPhotos : fallbackPhotos
-
-  // Chip for preference tags
-  const PrefChip = ({ label, value, color = COURT.green }) => (
-    <div style={{
-      padding: '10px 12px', borderRadius: 10,
-      background: card, border: `0.5px solid ${border}`,
-    }}>
-      <p style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: 600, color: muted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-        {label}
-      </p>
-      <p style={{ fontFamily: 'Inter', fontSize: 14, fontWeight: 700, color, margin: 0 }}>
-        {value}
-      </p>
-    </div>
-  )
 
   return (
     <div style={{
@@ -300,45 +331,72 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             )
           })()}
 
-          {/* Preference chips */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-            {player.level != null && (
-              <PrefChip label={t.currentLevel || 'Niveau'} value={Number(player.level).toFixed(1)} color={COURT.green} />
-            )}
-            {(player.region || player.city) && (
-              <PrefChip label={t.regionLabel || 'Région'} value={player.region || player.city} color={COURT.gold} />
-            )}
-            {player.motivation && (
-              <PrefChip label={t.motivation || 'Motivation'} value={motivLabel} color={COURT.green} />
-            )}
-            {player.dominant_hand && (
-              <PrefChip label={t.hand || 'Main'} value={handLabel} color={COURT.green} />
-            )}
-            {player.preferred_side && (
-              <PrefChip label={t.side || 'Côté'} value={sideLabel} color={COURT.gold} />
-            )}
-            {player.play_style && (
-              <PrefChip label={t.style || 'Style'} value={styleLabel} color={COURT.purple} />
-            )}
-          </div>
-
-          {/* ── Ce qu'il/elle recherche (partenaire idéal) ────────────── */}
-          {hasPrefs && (
+          {/* ─── Mon jeu + Je recherche (tableau hairline aligné) ─── */}
+          {(player.dominant_hand || player.preferred_side || player.play_style || player.motivation || player.level != null) && (
             <div>
-              <p style={{
-                fontFamily: 'Inter', fontSize: 11, fontWeight: 600, color: muted,
-                textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px',
+              {/* En-têtes des colonnes */}
+              <div style={{
+                display: 'grid', gridTemplateColumns: '24px 1fr 1fr',
+                gap: '0 12px', marginBottom: 8, paddingBottom: 8,
+                borderBottom: `0.5px solid ${border}`,
               }}>
-                {t.lookingFor || 'Recherche'} · {t.partnerPrefsTitle || 'Le partenaire idéal'}
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-                {prefRegion && <PrefChip label={t.regionLabel || 'Région'} value={prefRegion} color={COURT.gold} />}
-                {prefLevel  && <PrefChip label={t.levelRange || 'Plage de niveau'} value={prefLevel} color={COURT.green} />}
-                {prefMotiv  && <PrefChip label={t.motivation || 'Motivation'} value={prefMotiv} color={COURT.green} />}
-                {prefStyle  && <PrefChip label={t.style || 'Style'} value={prefStyle} color={COURT.purple} />}
-                {prefHand   && <PrefChip label={t.hand || 'Main'} value={prefHand} color={COURT.green} />}
-                {prefSide   && <PrefChip label={t.side || 'Côté'} value={prefSide} color={COURT.gold} />}
+                <div />
+                <div style={{
+                  fontFamily: 'Inter', fontSize: 9, fontWeight: 600,
+                  color: COURT.green, letterSpacing: '0.22em', textTransform: 'uppercase',
+                }}>
+                  {myGameLabel}
+                </div>
+                <div style={{
+                  fontFamily: 'Inter', fontSize: 9, fontWeight: 600,
+                  color: COURT.purple, letterSpacing: '0.22em', textTransform: 'uppercase',
+                }}>
+                  {seekingLabel}
+                </div>
               </div>
+
+              {/* Lignes alignées */}
+              {profileRows.map(({ icon, label, mine, seeks }, i) => (
+                <div key={label} style={{
+                  display: 'grid', gridTemplateColumns: '24px 1fr 1fr',
+                  gap: '0 12px', alignItems: 'center',
+                  padding: '11px 0',
+                  borderBottom: i < profileRows.length - 1 ? `0.5px solid ${border}` : 'none',
+                }}>
+                  {/* Icône */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 13, opacity: 0.7 }}>{icon}</span>
+                  </div>
+
+                  {/* Mon jeu */}
+                  <div>
+                    <div style={{
+                      fontFamily: 'Inter', fontSize: 8,
+                      color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
+                    }}>{label}</div>
+                    <div style={{
+                      fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                      fontSize: 16, fontWeight: mine === '—' ? 400 : 600,
+                      color: mine === '—' ? muted : COURT.green,
+                    }}>{mine}</div>
+                  </div>
+
+                  {/* Je recherche */}
+                  <div>
+                    <div style={{
+                      fontFamily: 'Inter', fontSize: 8,
+                      color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
+                    }}>{label}</div>
+                    <div style={{
+                      fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                      fontSize: 16, fontWeight: seeks == null ? 400 : 600,
+                      color: seeks == null ? muted : COURT.purple,
+                    }}>
+                      {seeks ?? '—'}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

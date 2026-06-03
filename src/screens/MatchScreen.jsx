@@ -459,17 +459,18 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       <div style={{ padding: '14px 20px 16px', flexShrink: 0, position: 'relative' }}>
         {/* Anneau compat flottant — chevauche le portrait */}
         <div style={{
-          position: 'absolute', right: 18, top: -30,
-          width: 64, height: 64, borderRadius: 32, background: bg,
+          position: 'absolute', right: 16, top: -36,
+          width: 80, height: 80, borderRadius: 40, background: bg,
           border: `0.5px solid ${border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
         }}>
-          <CompatRing size={54} value={compat} txt={dark ? COURT.cream : COURT.green} />
+          <CompatRing size={70} value={compat} txt={dark ? COURT.cream : COURT.green}
+            label={t.confidence} rtl={lang === 'he'} />
         </div>
 
         {/* Nom · âge */}
-        <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, lineHeight: 1, paddingRight: 56 }}>
+        <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, lineHeight: 1, paddingRight: 72 }}>
           {p.name.split(' ')[0]}{' '}
           <span style={{ fontStyle: lang === 'he' ? 'normal' : 'italic', color: COURT.green }}>
             {p.name.split(' ').slice(1).join(' ')}
@@ -479,7 +480,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
 
         {/* Ville · matchs · winrate */}
         <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5 }}>
-          📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}%` : ''}
+          📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
         </div>
 
         {/* Tags */}
