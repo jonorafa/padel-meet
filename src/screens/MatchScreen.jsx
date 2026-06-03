@@ -1558,7 +1558,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     // Valide chaque set rempli
     const filledSets = sets.filter(s => s.me !== '' || s.them !== '');
     if (filledSets.length === 0) {
-      setScoreError(lang === 'en' ? 'Enter at least one set score' : 'Entrez au moins un set');
+      setScoreError(lang === 'en' ? 'Enter at least one set score' : lang === 'he' ? 'הזן לפחות סט אחד' : 'Entrez au moins un set');
       return;
     }
     const invalidSet = filledSets.find(s => !isValidPadelSet(s.me, s.them));
@@ -1585,7 +1585,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       setSets([{ me: '', them: '' }]); setScoreResult('win');
       setSheet(null);
     } else {
-      setScoreError(res.error || 'Erreur');
+      setScoreError(res.error || (lang === 'he' ? 'שגיאה' : 'Erreur'));
     }
     setScoreSending(false);
   };
@@ -1600,7 +1600,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       setSheet(null);
       setEvalOpen(true);
     } else {
-      setActionError(res.error || (lang === 'en' ? 'Error — try again' : 'Erreur — réessaie'));
+      setActionError(res.error || (lang === 'en' ? 'Error — try again' : lang === 'he' ? 'שגיאה — נסה שוב' : 'Erreur — réessaie'));
     }
   };
 
@@ -1619,7 +1619,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
         content: rejLabel, msg_type: 'text', metadata: {},
       });
     } else {
-      setActionError(res.error || (lang === 'en' ? 'Error — try again' : 'Erreur — réessaie'));
+      setActionError(res.error || (lang === 'en' ? 'Error — try again' : lang === 'he' ? 'שגיאה — נסה שוב' : 'Erreur — réessaie'));
     }
     setRejectingId(null);
   };
@@ -1660,7 +1660,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
         {/* Header avec numéro de tentative */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={{ fontFamily: 'Inter', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-            🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : 'Score à confirmer')}
+            🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : lang === 'he' ? 'תוצאה הוגשה' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : lang === 'he' ? 'תוצאה לאישור' : 'Score à confirmer')}
           </div>
           <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
             {attemptNum}/3
@@ -1669,8 +1669,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
         <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
         <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
           {label} · {pending.isSubmitter
-            ? (lang === 'en' ? 'Awaiting confirmation…' : 'En attente de confirmation…')
-            : (lang === 'en' ? `${player?.name} asks you to confirm` : `${player?.name} demande votre confirmation`)}
+            ? (lang === 'en' ? 'Awaiting confirmation…' : lang === 'he' ? 'ממתין לאישור…' : 'En attente de confirmation…')
+            : (lang === 'en' ? `${player?.name} asks you to confirm` : lang === 'he' ? `${player?.name} מבקש את אישורך` : `${player?.name} demande votre confirmation`)}
         </div>
         {!pending.isSubmitter && (
           <>
@@ -1707,12 +1707,12 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             )}
             {remaining > 1 && (
               <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, textAlign: 'center' }}>
-                {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : `${remaining - 1} tentative(s) restante(s) si refus`}
+                {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : lang === 'he' ? `${remaining - 1} ניסיון נוסף אחרי דחייה` : `${remaining - 1} tentative(s) restante(s) si refus`}
               </div>
             )}
             {remaining === 1 && (
               <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
-                ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : 'Dernière tentative — refus = match inenregistrable'}
+                ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : lang === 'he' ? 'ניסיון אחרון — דחייה = המשחק לא יירשם' : 'Dernière tentative — refus = match inenregistrable'}
               </div>
             )}
           </>
@@ -1726,10 +1726,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.purple}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
       <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
       <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: COURT.purple, fontStyle: 'italic', marginBottom: 4 }}>
-        {lang === 'en' ? 'Match unrecordable' : 'Match inenregistrable'}
+        {lang === 'en' ? 'Match unrecordable' : lang === 'he' ? 'לא ניתן לרשום את המשחק' : 'Match inenregistrable'}
       </div>
       <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
-        {lang === 'en' ? '3 consecutive rejections — no score can be submitted for this match.' : '3 désaccords consécutifs — aucun score ne peut être enregistré pour ce match.'}
+        {lang === 'en' ? '3 consecutive rejections — no score can be submitted for this match.' : lang === 'he' ? '3 דחיות רצופות — לא ניתן להגיש תוצאה למשחק זה.' : '3 désaccords consécutifs — aucun score ne peut être enregistré pour ce match.'}
       </div>
     </div>
   );
@@ -1806,14 +1806,14 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             <input type="time" value={propTime} onChange={e => setPropTime(e.target.value)}
               style={{ width: 100, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 13, outline: 'none' }} />
           </div>
-          <input placeholder={lang === 'en' ? 'Court / location (optional)' : 'Club / terrain (optionnel)'}
+          <input placeholder={lang === 'en' ? 'Court / location (optional)' : lang === 'he' ? 'מגרש / מיקום (אופציונלי)' : 'Club / terrain (optionnel)'}
             value={propPlace} onChange={e => setPropPlace(e.target.value)}
             style={{ padding: '8px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, outline: 'none' }} />
           <button onClick={sendProposal} disabled={propSending || !propDate || !propTime} style={{
             padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
             color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', opacity: (!propDate || !propTime) ? 0.4 : 1,
           }}>
-            {propSending ? '…' : (lang === 'en' ? 'Send proposal' : 'Envoyer la proposition')}
+            {propSending ? '…' : (lang === 'en' ? 'Send proposal' : lang === 'he' ? 'שלח הצעה' : 'Envoyer la proposition')}
           </button>
         </div>
       )}
@@ -1822,7 +1822,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       {sheet === 'score' && (
         <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
-            {lang === 'en' ? 'Submit a score' : 'Soumettre un score'}
+            {lang === 'en' ? 'Submit a score' : lang === 'he' ? 'הגש תוצאה' : 'Soumettre un score'}
           </div>
 
           {/* Avertissement date : match pas encore joué */}
@@ -1832,6 +1832,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: ink }}>
                 {lang === 'en'
                   ? `Match scheduled for ${latestAcceptedProposal?.metadata?.date} — submit the score after the match.`
+                  : lang === 'he'
+                  ? `משחק מתוכנן ל-${latestAcceptedProposal?.metadata?.date} — הגש את התוצאה לאחר המשחק.`
                   : `Match prévu le ${latestAcceptedProposal?.metadata?.date} — soumettez le score après le match.`}
               </div>
             </div>
@@ -1848,7 +1850,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                   color: scoreResult === r ? COURT.cream : (r === 'win' ? COURT.green : COURT.purple),
                   fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
                 }}>
-                  {r === 'win' ? (lang === 'en' ? 'Victory 🏆' : 'Victoire 🏆') : (lang === 'en' ? 'Defeat' : 'Défaite')}
+                  {r === 'win' ? (lang === 'en' ? 'Victory 🏆' : lang === 'he' ? 'ניצחון 🏆' : 'Victoire 🏆') : (lang === 'en' ? 'Defeat' : lang === 'he' ? 'הפסד' : 'Défaite')}
                 </button>
               ))}
             </div>
@@ -1883,7 +1885,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                   {/* Mon score */}
                   <input
                     type="number" min="0" max="7" inputMode="numeric"
-                    placeholder="Moi"
+                    placeholder={lang === 'he' ? 'אני' : lang === 'en' ? 'Me' : 'Moi'}
                     value={s.me}
                     onChange={e => setSets(prev => prev.map((x, j) => j === i ? { ...x, me: e.target.value } : x))}
                     style={{
@@ -1898,7 +1900,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                   {/* Score adverse */}
                   <input
                     type="number" min="0" max="7" inputMode="numeric"
-                    placeholder="Eux"
+                    placeholder={lang === 'he' ? 'הם' : lang === 'en' ? 'Them' : 'Eux'}
                     value={s.them}
                     onChange={e => setSets(prev => prev.map((x, j) => j === i ? { ...x, them: e.target.value } : x))}
                     style={{
@@ -1939,14 +1941,14 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           </div>
           {scoreError && <div style={{ fontFamily: 'Inter', fontSize: 11, color: COURT.purple }}>{scoreError}</div>}
           <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
-            {lang === 'en' ? `${player?.name} will need to confirm the score.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
+            {lang === 'en' ? `${player?.name} will need to confirm the score.` : lang === 'he' ? `${player?.name} יצטרך לאשר את התוצאה.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
           </div>
           <button onClick={sendScore} disabled={scoreSending || !scoreText.trim() || scoreDateBlocked} style={{
             padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
             color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
             opacity: (!scoreText.trim() || scoreDateBlocked) ? 0.4 : 1,
           }}>
-            {scoreSending ? '…' : (lang === 'en' ? 'Submit score' : 'Soumettre le score')}
+            {scoreSending ? '…' : (lang === 'en' ? 'Submit score' : lang === 'he' ? 'הגש תוצאה' : 'Soumettre le score')}
           </button>
           {/* Reset des sets quand on ferme le sheet */}
         </div>
@@ -1976,10 +1978,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                     boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
                   }}>
                     <div style={{ fontFamily: 'Inter', fontSize: 9, color: accentColor, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
-                      📅 {lang === 'en' ? 'Match proposal' : 'Proposition de match'}
+                      📅 {lang === 'en' ? 'Match proposal' : lang === 'he' ? 'הצעת משחק' : 'Proposition de match'}
                     </div>
                     <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
-                      {m.metadata?.date} {lang === 'en' ? 'at' : 'à'} {m.metadata?.time}
+                      {m.metadata?.date} {lang === 'en' ? 'at' : lang === 'he' ? 'ב' : 'à'} {m.metadata?.time}
                     </div>
                     {m.metadata?.place && (
                       <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
@@ -2131,7 +2133,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 {lang === 'en' ? `Evaluate ${player?.name}` : lang === 'he' ? `העריך את ${player?.name}` : `Évaluer ${player?.name}`}
               </div>
               <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: dark ? COURT.darkMuted : COURT.stone }}>
-                {lang === 'en' ? 'Answer as if rating their level' : 'Répondez en pensant à son niveau'}
+                {lang === 'en' ? 'Answer as if rating their level' : lang === 'he' ? 'ענה לפי הרמה שלו/ה' : 'Répondez en pensant à son niveau'}
               </div>
             </div>
           </div>
