@@ -1405,8 +1405,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     .map(s => `${s.me}-${s.them}`)
     .join(' ');
   // Évaluation — overlay quiz complet (même questionnaire qu'à l'onboarding)
-  const [evalOpen,        setEvalOpen]        = useState(false);
-  const [evalSending,     setEvalSending]     = useState(false);
+  const [evalOpen,          setEvalOpen]          = useState(false);
+  const [evalSending,       setEvalSending]       = useState(false);
+  // Cooldown 30 jours — Date de prochaine éval disponible, ou null
+  const [evalCooldownUntil, setEvalCooldownUntil] = useState(null);
   const bottomRef = useRef(null);
   const rtl    = lang === 'he';
   const bg     = dark ? COURT.darkBg    : COURT.cream;
@@ -1442,6 +1444,27 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
   // Charge le statut au mount
   useEffect(() => { if (matchId) matchScoreStatus(matchId); }, [matchId]);
+
+  // ── Cooldown éval 30 jours ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.id || !player?.id) return;
+    (async () => {
+      const { data } = await supabase
+        .from('peer_evaluations')
+        .select('created_at')
+        .eq('evaluator_id', user.id)
+        .eq('evaluated_id', player.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.created_at) {
+        const until = new Date(new Date(data.created_at).getTime() + 30 * 24 * 60 * 60 * 1000);
+        setEvalCooldownUntil(until > new Date() ? until : null);
+      } else {
+        setEvalCooldownUntil(null);
+      }
+    })();
+  }, [user?.id, player?.id]);
 
   // ── Chargement des messages ─────────────────────────────────────────────────
   useEffect(() => {
@@ -1636,7 +1659,12 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
         p_evaluated_id:   player.id,
         p_proposed_level: Math.round(computedLevel * 2) / 2,
       });
-      if (error) console.warn('[sendEval] RPC error:', error.message);
+      if (error) {
+        console.warn('[sendEval] RPC error:', error.message);
+      } else {
+        // Arme le cooldown côté client immédiatement (30 jours)
+        setEvalCooldownUntil(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      }
     } catch (err) {
       console.warn('[sendEval]', err);
     }
@@ -1771,7 +1799,17 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
         {[
           { key: 'proposal', icon: '📅', label: lang === 'en' ? 'Plan match' : lang === 'he' ? 'הצע משחק' : 'Proposer' },
           { key: 'score',    icon: '🎾', label: lang === 'en' ? 'Enter score' : lang === 'he' ? 'הזן תוצאה' : 'Score', disabled: scoreLocked || pendingForMatch.length > 0 },
-          { key: 'eval',     icon: '⭐', label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' },
+          (() => {
+            if (evalCooldownUntil) {
+              const fmtD = evalCooldownUntil.toLocaleDateString(
+                lang === 'he' ? 'he-IL' : lang === 'en' ? 'en-US' : 'fr-FR',
+                { day: 'numeric', month: 'short' }
+              );
+              const cooldownLabel = lang === 'en' ? `From ${fmtD}` : lang === 'he' ? `זמין ב-${fmtD}` : `Dispo le ${fmtD}`;
+              return { key: 'eval', icon: '⭐', label: cooldownLabel, disabled: true };
+            }
+            return { key: 'eval', icon: '⭐', label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' };
+          })(),
         ].map(({ key, icon, label, disabled }) => (
           <button key={key}
             onClick={() => {
