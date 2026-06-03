@@ -392,6 +392,24 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
 
   const DISPO_ICON = { Matin: '🌅', Soir: '🌙', Weekend: '☀️' };
 
+  // Partenaire idéal — réutilise le JSON partner_prefs existant
+  const prefs = p.partnerPrefs || {};
+  const seekStyleMap = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt };
+  const seekMotivMap = { fun: t.fun, improve: t.improve, compete: t.compete };
+  const seekChips = [];
+  if (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
+    seekChips.push({ icon: '✦', label: `${prefs.levelMin}–${prefs.levelMax}`, color: COURT.purple });
+  if (prefs.hand && prefs.hand !== 'any')
+    seekChips.push({ icon: '🤚', label: prefs.hand === 'left' ? t.leftHand : t.rightHand, color: COURT.green });
+  if (prefs.side && prefs.side !== 'any')
+    seekChips.push({ icon: '🎾', label: prefs.side === 'forehand' ? t.forehand : t.backhand, color: COURT.green });
+  if (prefs.style && prefs.style !== 'any')
+    seekChips.push({ icon: '⚡', label: seekStyleMap[prefs.style] || prefs.style, color: COURT.purple });
+  if (prefs.motivation && prefs.motivation !== 'any')
+    seekChips.push({ icon: '◎', label: seekMotivMap[prefs.motivation] || prefs.motivation, color: COURT.gold });
+  if (prefs.region && prefs.region !== 'any')
+    seekChips.push({ icon: '📍', label: prefs.region, color: stone });
+
   return (
     <div style={{
       position: 'absolute', inset: 0, background: bg,
@@ -399,9 +417,9 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       boxShadow: dark ? '0 12px 32px rgba(0,0,0,0.4)' : '0 12px 32px rgba(15,61,41,0.14)',
       display: 'flex', flexDirection: 'column',
     }}>
-      {/* ─── Portrait (62%) ──────────────────────────────────────────── */}
+      {/* ─── Portrait (flexible, remplit l'espace restant) ───────────── */}
       <div style={{
-        height: '62%', flexShrink: 0,
+        flex: 1, minHeight: 130,
         background: `url(${p.photo}) center 20%/cover`,
         position: 'relative',
       }}>
@@ -438,7 +456,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       </div>
 
       {/* ─── Infos ───────────────────────────────────────────────────── */}
-      <div style={{ padding: '14px 20px 16px', flex: 1, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ padding: '14px 20px 16px', flexShrink: 0, position: 'relative' }}>
         {/* Anneau compat flottant — chevauche le portrait */}
         <div style={{
           position: 'absolute', right: 18, top: -30,
@@ -492,6 +510,32 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             color: ink, lineHeight: 1.45, marginTop: 12, marginBottom: 0,
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           }}>« {bio} »</p>
+        )}
+
+        {/* Partenaire idéal */}
+        {seekChips.length > 0 && (
+          <div style={{
+            marginTop: 12, paddingTop: 12,
+            borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
+          }}>
+            <div style={{
+              fontFamily: 'Inter', fontSize: 8.5, color: COURT.gold,
+              letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8,
+            }}>
+              {t.partnerPrefsTitle || 'Le partenaire idéal'}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {seekChips.map((c, i) => (
+                <span key={i} style={{
+                  padding: '5px 11px', borderRadius: 999,
+                  background: `${c.color}12`, color: c.color,
+                  border: `0.5px solid ${c.color}30`,
+                  fontFamily: ff_italic, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 12,
+                  display: 'inline-flex', gap: 5, alignItems: 'center',
+                }}>{c.icon} {c.label}</span>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
