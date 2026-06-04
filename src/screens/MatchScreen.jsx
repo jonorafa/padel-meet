@@ -3229,7 +3229,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           </div>
 
           {/* Confidentialité */}
-          <div style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', cursor:'pointer' }}>
+          <div onClick={() => window.open('https://www.iubenda.com/privacy-policy/72981168', '_blank')} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', cursor:'pointer' }}>
             <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
               display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
@@ -3345,6 +3345,19 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
             </div>
           </div>
         )}
+
+        {/* Politique de confidentialité — lien discret */}
+        <div style={{ textAlign:'center', marginTop:24, paddingBottom:8 }}>
+          <a
+            href="https://www.iubenda.com/privacy-policy/72981168"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontFamily:'Inter', fontSize:11, color:stone, opacity:0.5,
+              textDecoration:'underline', textDecorationColor:`${stone}40` }}
+          >
+            {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
+          </a>
+        </div>
       </div>
 
       {/* BottomSheet : Menu hamburger */}
