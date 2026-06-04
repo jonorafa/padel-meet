@@ -3056,104 +3056,230 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
       </div>
 
-      {/* ── Trophées ──────────────────────────────────────────────────────── */}
-      <div style={{ margin: '16px 20px 0', background: card, border: `0.5px solid ${border}`, borderRadius: 14, padding: '16px 16px 20px' }}>
-        <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
-        <Achievements dark={dark} badges={[
-          {
-            icon: '🎾', label: profileTrophies[0].label, on: profileTrophies[0].unlocked,
-            desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
-            progress: { cur: Math.min(myMatches, 1), max: 1 },
-          },
-          {
-            icon: '🔥', label: profileTrophies[1].label, on: profileTrophies[1].unlocked,
-            desc: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer' : lang === 'en' ? 'Win 5 matches in a row to unlock' : 'זכה ב-5 משחקים ברצף',
-            progress: { cur: Math.min(myLongestStreak, 5), max: 5 },
-          },
-          {
-            icon: '⭐', label: profileTrophies[2].label, on: profileTrophies[2].unlocked,
-            desc: lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer' : lang === 'en' ? 'Play at least 10 matches to unlock' : 'שחק לפחות 10 משחקים',
-            progress: { cur: Math.min(myMatches, 10), max: 10 },
-          },
-          {
-            icon: '👑', label: profileTrophies[3].label, on: profileTrophies[3].unlocked,
-            desc: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer' : lang === 'en' ? 'Reach level 5 to unlock' : 'הגע לרמה 5 לפתיחה',
-            progress: { cur: Math.min(Math.round((level ?? 0) * 10) / 10, 5), max: 5 },
-          },
-        ]} />
-      </div>
+      <div style={{ padding: '24px 24px 100px' }}>
 
-      <div style={{ padding: '24px 24px 0' }}>
-        <SectionHeading>{t.settings}</SectionHeading>
-        <SettingRow
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>}
-          label={lang === 'fr' ? 'Modifier mon profil' : lang === 'en' ? 'Edit profile' : 'עריכת פרופיל'}
-          onClick={() => setShowEditProfile(true)}
-        />
-        <SettingRow
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
-          label={lang === 'fr' ? `Région — ${profile?.region || '—'}` : lang === 'en' ? `Country — ${profile?.region || '—'}` : `מדינה — ${profile?.region || '—'}`}
-          onClick={() => setShowCountry(true)}
-        />
-        <SettingRow
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>}
-          label={t.likesReceived || 'Likes reçus'}
-          onClick={() => setShowLikes(true)}
-        />
-        <SettingRow
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>}
-          label={t.partnerPrefsTitle || 'Le partenaire idéal'}
-          onClick={() => setShowPartnerPrefs(true)}
-        />
-        <SettingRow
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
-          label={lang === 'fr' ? 'Langue' : lang === 'en' ? 'Language' : 'שפה'}
-          sub={'Français · English · עברית'}
-          onClick={() => setShowLangPicker(true)}
-        />
-        <SettingRow
-          icon={dark
-            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          }
-          label={t.darkMode}
-          right={<div style={{ width: 44, height: 24, borderRadius: 12, background: dark ? COURT.green : `${COURT.stone}50`, position: 'relative', transition: 'background 0.3s' }}>
-            <div style={{ position: 'absolute', top: 2, left: dark ? 22 : 2, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.3s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
-          </div>}
-          onClick={toggleDark}
-        />
-        <SettingRow
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
-          label={lang === 'fr' ? 'Réévaluer mon niveau' : lang === 'en' ? 'Re-evaluate my level' : 'הערך מחדש את הרמה שלי'}
-          onClick={() => setShowReEval(true)}
-        />
-        {/* Déconnexion */}
-        <button onClick={handleSignOut} style={{
-          width: '100%', marginTop: 10, padding: '14px 16px',
-          background: 'transparent', border: `0.5px solid ${COURT.purple}60`, borderRadius: 10,
-          fontFamily: ff_serif, fontSize: 16, color: COURT.purple, fontWeight: 500, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          {lang === 'fr' ? 'Se déconnecter' : lang === 'he' ? 'התנתק' : 'Sign out'}
-        </button>
+        {/* ════ MON PROFIL ════ */}
+        <div style={{ fontFamily: 'Inter', fontSize: 9.5, color: stone, letterSpacing: '0.26em',
+          textTransform: 'uppercase', marginBottom: 8 }}>
+          {lang === 'fr' ? 'Mon profil' : lang === 'en' ? 'My profile' : 'הפרופיל שלי'}
+        </div>
+        <div style={{ background: card, border: `0.5px solid ${border}`,
+          borderRadius: 16, overflow: 'hidden' }}>
+
+          {/* Modifier mon profil */}
+          <div onClick={() => setShowEditProfile(true)} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', borderBottom:`0.5px solid ${border}20`, cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              {lang==='fr' ? 'Modifier mon profil' : lang==='en' ? 'Edit profile' : 'עריכת פרופיל'}
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          {/* Région */}
+          <div onClick={() => setShowCountry(true)} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', borderBottom:`0.5px solid ${border}20`, cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              {lang==='fr' ? 'Région' : lang==='en' ? 'Region' : 'אזור'}
+            </span>
+            <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:14, color:stone }}>
+              {profile?.region || profile?.city || '—'}
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          {/* Likes reçus */}
+          <div onClick={() => setShowLikes(true)} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              {t.likesReceived || 'Likes reçus'}
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        {/* ════ MON JEU ════ */}
+        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+          textTransform:'uppercase', margin:'22px 0 8px' }}>
+          {lang==='fr' ? 'Mon jeu' : lang==='en' ? 'My game' : 'המשחק שלי'}
+        </div>
+        <div style={{ background:card, border:`0.5px solid ${border}`, borderRadius:16, overflow:'hidden' }}>
+
+          {/* Le partenaire idéal */}
+          <div onClick={() => setShowPartnerPrefs(true)} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', borderBottom:`0.5px solid ${border}20`, cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              {t.partnerPrefsTitle || 'Le partenaire idéal'}
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          {/* Réévaluer mon niveau */}
+          <div onClick={() => setShowReEval(true)} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              {lang==='fr' ? 'Réévaluer mon niveau' : lang==='en' ? 'Re-evaluate my level' : 'הערך מחדש'}
+            </span>
+            <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:14, color:stone }}>
+              {level?.toFixed?.(1) ?? '—'}
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        {/* ════ APPLICATION ════ */}
+        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+          textTransform:'uppercase', margin:'22px 0 8px' }}>
+          {lang==='fr' ? 'Application' : lang==='en' ? 'App' : 'אפליקציה'}
+        </div>
+        <div style={{ background:card, border:`0.5px solid ${border}`, borderRadius:16, overflow:'hidden' }}>
+
+          {/* Langue */}
+          <div onClick={() => setShowLangPicker(true)} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', borderBottom:`0.5px solid ${border}20`, cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>
+              </svg>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+                {lang==='fr' ? 'Langue' : lang==='en' ? 'Language' : 'שפה'}
+              </div>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
+                Français · English · עברית
+              </div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          {/* Mode sombre */}
+          <div onClick={toggleDark} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.darkMode}</span>
+            <div style={{ width:44, height:24, borderRadius:12, background: dark ? COURT.green : `${stone}50`,
+              position:'relative', transition:'background 0.3s', flexShrink:0 }}>
+              <div style={{ position:'absolute', top:2, left: dark ? 22 : 2, width:20, height:20,
+                borderRadius:10, background:'#fff', transition:'left 0.3s', boxShadow:'0 1px 4px rgba(0,0,0,0.2)' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* ════ AIDE & LÉGAL ════ */}
+        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+          textTransform:'uppercase', margin:'22px 0 8px' }}>
+          {lang==='fr' ? 'Aide & légal' : lang==='en' ? 'Help & legal' : 'עזרה'}
+        </div>
+        <div style={{ background:card, border:`0.5px solid ${border}`, borderRadius:16, overflow:'hidden' }}>
+
+          {/* Aide & support */}
+          <div onClick={() => setShowContact(true)} style={{ display:'flex', alignItems:'center', gap:14,
+            padding:'14px 16px', borderBottom:`0.5px solid ${border}20`, cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>
+              </svg>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+                {lang==='fr' ? 'Aide & support' : lang==='en' ? 'Help & support' : 'עזרה ותמיכה'}
+              </div>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
+                {lang==='fr' ? 'FAQ, nous contacter' : lang==='en' ? 'FAQ, contact us' : 'שאלות נפוצות'}
+              </div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          {/* Confidentialité */}
+          <div style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5Z"/>
+              </svg>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+                {lang==='fr' ? 'Confidentialité' : lang==='en' ? 'Privacy' : 'פרטיות'}
+              </div>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
+                {lang==='fr' ? 'Données, RGPD' : lang==='en' ? 'Data, GDPR' : 'נתונים'}
+              </div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+
+        {/* ════ COMPTE ════ */}
+        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+          textTransform:'uppercase', margin:'22px 0 8px' }}>
+          {lang==='fr' ? 'Compte' : lang==='en' ? 'Account' : 'חשבון'}
+        </div>
+        <div style={{ background:card, border:`0.5px solid ${COURT.red}25`, borderRadius:16, overflow:'hidden' }}>
+          <div onClick={handleSignOut} style={{ display:'flex', alignItems:'center',
+            gap:14, padding:'14px 16px', cursor:'pointer' }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.red}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.red} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <path d="M16 17l5-5-5-5M21 12H9"/>
+              </svg>
+            </div>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:COURT.red, fontStyle: rtl ? 'normal' : 'italic' }}>
+              {lang==='fr' ? 'Se déconnecter' : lang==='he' ? 'התנתק' : 'Sign out'}
+            </span>
+          </div>
+        </div>
 
         {/* Supprimer le compte — RGPD */}
         {!showDeleteConfirm ? (
-          <button onClick={() => setShowDeleteConfirm(true)} style={{
-            width: '100%', marginTop: 8, padding: '12px 16px',
-            background: 'transparent', border: 'none', borderRadius: 10,
-            fontFamily: 'Inter', fontSize: 12, color: `${COURT.stone}`, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            opacity: 0.6,
-          }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+          <div onClick={() => setShowDeleteConfirm(true)} style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+            marginTop:14, color:`${COURT.red}80`, fontFamily:ff_italic, fontStyle:'italic',
+            fontSize:13, cursor:'pointer', paddingBottom:20 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
             </svg>
-            {lang === 'fr' ? 'Supprimer mon compte' : lang === 'he' ? 'מחק את החשבון שלי' : 'Delete my account'}
-          </button>
+            {lang==='fr' ? 'Supprimer mon compte' : lang==='en' ? 'Delete account' : 'מחק חשבון'}
+          </div>
         ) : (
           <div style={{
             marginTop: 8, borderRadius: 12,
