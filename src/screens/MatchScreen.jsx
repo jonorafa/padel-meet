@@ -2374,10 +2374,11 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
 }
 
 // ─── Matches / Stats Screen ──────────────────────────────────────────────────
-function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
+function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onSchedule }) {
   const { profile } = useAuth();
   const history = useMatchHistory();
   const { stats } = usePlayerStats();
+  const { matches: myMatches } = useUserMatches();
   const [tab, setTab] = useState('history');
   const [trophyTip, setTrophyTip] = useState(null);
   const rtl   = lang === 'he';
@@ -2518,6 +2519,76 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0 }) {
               </div>
             </div>
           )}
+
+          {/* ════ JOUE CONTRE EUX ════ */}
+          {myMatches && myMatches.length > 0 && (
+            <div style={{ marginTop: 32 }}>
+              <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 6 }}>
+                {lang === 'fr' ? 'Joue contre eux' : lang === 'he' ? 'שחק נגדם' : 'Play against them'}
+              </div>
+              {myMatches.slice(0, 4).map((m, i, arr) => (
+                <div key={m.matchId} style={{
+                  display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0',
+                  borderBottom: i < arr.length - 1 ? `0.5px solid ${border}` : 'none',
+                  animation: `cardIn 0.4s ease ${i * 0.06}s both`,
+                }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 26, background: `url(${m.player.photo}) center/cover`, flexShrink: 0, border: `0.5px solid ${border}` }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: ff_serif, fontSize: 21, color: ink, fontWeight: 500 }}>{m.player.name}</div>
+                    {(m.player.level != null || m.player.winrate != null) && (
+                      <div style={{ fontFamily: 'Inter', fontSize: 13, color: stone, marginTop: 2 }}>
+                        {m.player.level != null && `${lang === 'fr' ? 'Niveau' : lang === 'he' ? 'רמה' : 'Level'} ${m.player.level.toFixed(1)}`}
+                        {m.player.level != null && m.player.winrate != null && ' · '}
+                        {m.player.winrate != null && `${m.player.winrate}% ${lang === 'fr' ? 'victoires' : lang === 'he' ? 'נצחונות' : 'wins'}`}
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => onSchedule?.(m.player.id)} style={{
+                    padding: '10px 22px', borderRadius: 12, flexShrink: 0,
+                    background: 'transparent', border: `0.5px solid ${COURT.green}50`,
+                    fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: COURT.green,
+                    cursor: 'pointer',
+                  }}>
+                    {lang === 'fr' ? 'Défier' : lang === 'he' ? 'אתגר' : 'Challenge'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ════ PROCHAIN MATCH ════ */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 12 }}>
+              {lang === 'fr' ? 'Prochain match' : lang === 'he' ? 'המשחק הבא' : 'Next match'}
+            </div>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 14, padding: 16,
+              background: card, border: `0.5px solid ${border}`, borderRadius: 16,
+            }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 26, flexShrink: 0,
+                background: dark ? COURT.darkBg : COURT.creamDark,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: ff_serif, fontSize: 24, color: stone,
+              }}>?</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 19, color: ink }}>
+                  {lang === 'fr' ? 'Aucun match prévu' : lang === 'he' ? 'אין משחק מתוכנן' : 'No match scheduled'}
+                </div>
+                <div style={{ fontFamily: 'Inter', fontSize: 13, color: stone, marginTop: 2 }}>
+                  {lang === 'fr' ? 'Planifie ton prochain défi' : lang === 'he' ? 'תכנן את האתגר הבא שלך' : 'Plan your next challenge'}
+                </div>
+              </div>
+              <button onClick={() => onSchedule?.()} style={{
+                padding: '12px 22px', borderRadius: 12, flexShrink: 0,
+                background: COURT.green, border: `0.5px solid ${COURT.gold}`,
+                fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: COURT.cream,
+                cursor: 'pointer',
+              }}>
+                {lang === 'fr' ? 'Planifier' : lang === 'he' ? 'תזמן' : 'Schedule'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -3831,7 +3902,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
 
 // ─── Schedule Match Sheet ────────────────────────────────────────────────────
 // Remplace le Live Score Tracker : choisir partenaire + date → proposition envoyée
-function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent }) {
+function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPartnerId }) {
   const { user } = useAuth();
   const { matches: userMatches } = useUserMatches();
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -3839,6 +3910,14 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent }) {
   const [propTime,  setPropTime]  = useState('');
   const [propPlace, setPropPlace] = useState('');
   const [sending,   setSending]   = useState(false);
+
+  // Pré-sélectionne le partenaire quand on arrive via « Défier » depuis l'historique
+  useEffect(() => {
+    if (initialPartnerId && userMatches?.length) {
+      const found = userMatches.find(m => m.player.id === initialPartnerId);
+      if (found) setSelectedMatch(found);
+    }
+  }, [initialPartnerId, userMatches]);
 
   const rtl      = lang === 'he';
   const bg       = dark ? COURT.darkBg    : COURT.cream;
@@ -4031,6 +4110,7 @@ export default function MainApp() {
   const [tab, setTab] = useState('home');
   const [showNotifs,   setShowNotifs]   = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [scheduleTargetId, setScheduleTargetId] = useState(null);
   const [showPending,  setShowPending]  = useState(false);
   const [detailPlayerId, setDetailPlayerId] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -4079,7 +4159,7 @@ export default function MainApp() {
     home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} {...bellProps} />,
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
-    trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} {...bellProps} />,
+    trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} {...bellProps} />,
   };
 
@@ -4136,8 +4216,9 @@ export default function MainApp() {
         <ErrorBoundary key="schedule-match-sheet">
           <ScheduleMatchSheet
             t={t} lang={lang} dark={darkMode}
-            onClose={() => setShowSchedule(false)}
-            onProposalSent={() => { setShowSchedule(false); setTab('chat'); }}
+            initialPartnerId={scheduleTargetId}
+            onClose={() => { setShowSchedule(false); setScheduleTargetId(null); }}
+            onProposalSent={() => { setShowSchedule(false); setScheduleTargetId(null); setTab('chat'); }}
           />
         </ErrorBoundary>
       )}

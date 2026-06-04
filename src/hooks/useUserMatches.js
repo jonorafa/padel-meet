@@ -48,7 +48,7 @@ export function useUserMatches() {
           ] = await Promise.all([
             supabase
               .from('profiles')
-              .select('id, name, photo_url, online, last_seen')
+              .select('id, name, photo_url, online, last_seen, level, matches_played, wins')
               .eq('id', otherId)
               .maybeSingle(),
             supabase
@@ -84,6 +84,11 @@ export function useUserMatches() {
               // `online` n'est plus exposé ici : le statut live vient de PresenceContext
               // (useOnline(player.id)). `lastSeen` reste utile pour l'échelle progressive.
               lastSeen: otherProfile?.last_seen,
+              // Niveau + taux de victoire — alimentent les cartes "Joue contre eux"
+              level:    otherProfile?.level ?? null,
+              winrate:  (otherProfile?.matches_played > 0)
+                          ? Math.round((otherProfile.wins / otherProfile.matches_played) * 100)
+                          : null,
             },
             lastMessage: lastMsg ? {
               from: lastMsg.sender_id === user.id ? 'me' : 'them',
