@@ -231,10 +231,8 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
   const [levelMin, setLevelMin]     = useState(initial.levelMin ?? 1);
   const [levelMax, setLevelMax]     = useState(initial.levelMax ?? 7);
   const [frequency, setFrequency]   = useState(initial.frequency ?? 0);
-  const [availability, setAvailability] = useState(initial.availability || []);
 
-  const toggleAvail = (a) => setAvailability(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
-  const reset = () => { setSide('any'); setStyle('any'); setMotivation('any'); setHand('any'); setRegion('any'); setLevelMin(1); setLevelMax(7); setFrequency(0); setAvailability([]); };
+  const reset = () => { setSide('any'); setStyle('any'); setMotivation('any'); setHand('any'); setRegion('any'); setLevelMin(1); setLevelMax(7); setFrequency(0); };
   const rtl = lang === 'he';
   const ink = dark ? COURT.darkText : COURT.ink;
   const selectBg = dark ? COURT.darkCard : COURT.cream;
@@ -299,24 +297,6 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
           ))}
         </div>
       </PrefGroup>
-      <PrefGroup label={t.availability} dark={dark}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {[{ v: 'Matin', label: t.morning }, { v: 'Soir', label: t.evening }, { v: 'Weekend', label: t.weekend }].map(a => {
-            const active = availability.includes(a.v);
-            return (
-              <button key={a.v} onClick={() => toggleAvail(a.v)} style={{
-                flex: 1, padding: '12px 0',
-                background: active ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
-                color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
-                border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '60'}`,
-                borderRadius: 8, cursor: 'pointer',
-                fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
-                fontSize: 14, transition: 'all 0.2s',
-              }}>{a.label}</button>
-            );
-          })}
-        </div>
-      </PrefGroup>
       <div style={{ display: 'flex', gap: 10, padding: '20px 24px 0' }}>
         <button onClick={reset} style={{
           flex: 1, padding: '14px',
@@ -325,7 +305,7 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
           border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '50'}`,
           borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, cursor: 'pointer',
         }}>{t.reset}</button>
-        <button onClick={() => { onApply({ side, style, motivation, hand, region, levelMin, levelMax, frequency, availability }); onClose(); }} style={{
+        <button onClick={() => { onApply({ side, style, motivation, hand, region, levelMin, levelMax, frequency }); onClose(); }} style={{
           flex: 2, padding: '14px', background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.green}`, borderRadius: 10,
           fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
@@ -389,8 +369,6 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const handLabel  = p.hand === 'left' ? t.leftHand : t.rightHand;
   const bio = lang === 'he' ? p.bioHe : (lang === 'en' ? (p.bioEn || p.bioFr) : p.bioFr);
   const compat = me ? compatScore(me, p) : (p.confidenceRate ?? 90);
-
-  const DISPO_ICON = { Matin: '🌅', Soir: '🌙', Weekend: '☀️' };
 
   // Partenaire idéal — réutilise le JSON partner_prefs existant
   const prefs = p.partnerPrefs || {};
@@ -466,7 +444,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
         }}>
           <CompatRing size={70} value={compat} txt={dark ? COURT.cream : COURT.green}
-            label={t.confidence} rtl={lang === 'he'} />
+            label={t.compatibility || t.confidence} rtl={lang === 'he'} />
         </div>
 
         {/* Nom · âge */}
@@ -490,19 +468,6 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           <HeritageTag color={COURT.purple}>{styleLabel}</HeritageTag>
           <HeritageTag color={COURT.gold}>{motivLabel}</HeritageTag>
         </div>
-
-        {/* Disponibilités */}
-        {p.availability?.length > 0 && (
-          <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-            {p.availability.map(a => (
-              <span key={a} style={{
-                fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12, color: COURT.green,
-                background: `${COURT.green}10`, padding: '5px 11px', borderRadius: 999,
-                display: 'inline-flex', gap: 5, alignItems: 'center',
-              }}>{DISPO_ICON[a] || ''} {a}</span>
-            ))}
-          </div>
-        )}
 
         {/* Bio */}
         {bio && (
@@ -582,7 +547,6 @@ function applyFilters(players, f) {
     if (f.region !== 'any' && p.country !== f.region) return false;
     if (p.level !== null && p.level !== undefined && (p.level < f.levelMin || p.level > f.levelMax)) return false;
     if (f.frequency > 0 && p.frequency < f.frequency) return false;
-    if (f.availability?.length && !f.availability.some(a => p.availability?.includes(a))) return false;
     return true;
   });
 }
@@ -604,13 +568,21 @@ function EmptyStack({ t, lang, onReset, dark }) {
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
 function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   // ── Données réelles ──
+  const { profile: me } = useAuth();
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
   const { recordSwipe } = useSwipes();
 
   const matched = useMemo(() => {
     if (!allPlayers) return [];
-    return applyFilters(allPlayers, filters);
-  }, [allPlayers, filters]);
+    const filtered = applyFilters(allPlayers, filters);
+    if (!me) return filtered;
+    // Scoring souple : les partenaires les plus compatibles (niveau + main +
+    // « partenaire idéal ») remontent en haut de la pile. Personne n'est exclu.
+    return filtered
+      .map(p => ({ p, sc: compatScore(me, p) }))
+      .sort((a, b) => b.sc - a.sc)
+      .map(x => x.p);
+  }, [allPlayers, filters, me]);
 
   const [stack,       setStack]     = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -890,7 +862,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
   const [matchPlayer, setMatchPlayer] = useState(null);
   const [filters, setFilters] = useState({
     side: 'any', style: 'any', motivation: 'any', hand: 'any',
-    region: userRegion, levelMin: 1, levelMax: 7, frequency: 0, availability: [],
+    region: userRegion, levelMin: 1, levelMax: 7, frequency: 0,
   });
 
   if (matchPlayer) {

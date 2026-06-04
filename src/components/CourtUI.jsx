@@ -299,16 +299,11 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
   const sideLabel = player.side === 'forehand'
     ? (t.forehand || 'Drive')
     : (t.backhand || 'Revers');
-  const availMap = { morning: t.morning || 'Matin', evening: t.evening || 'Soir', weekend: t.weekend || 'Weekend' };
-  const dispo = Array.isArray(player.availability) && player.availability.length
-    ? player.availability.map(a => availMap[a] || a).join(', ')
-    : null;
 
   const meta = [
     player.level != null ? `${t.currentLevel || 'Niveau'} ${player.level.toFixed(1)}` : null,
     sideLabel,
     player.city || player.country || null,
-    dispo,
   ].filter(Boolean);
 
   const handlePropose = onProposeSlot || onMessage;

@@ -20,8 +20,6 @@ function transformDBProfile(p, onlineIds) {
     style: p.play_style || 'all-court',
     motivation: p.motivation || 'fun',
     frequency: p.frequency || 2,
-    availability: p.availability || [],
-    height: p.height || 175,
     matches: matchesPlayed,
     // null si aucun match — jamais 0% affiché sans données réelles
     winrate: matchesPlayed > 0 ? Math.round((p.wins / matchesPlayed) * 100) : null,
@@ -32,7 +30,6 @@ function transformDBProfile(p, onlineIds) {
     // Présence : calculée en aval via PresenceContext (Realtime Supabase)
     online: false,
     lastSeen: p.last_seen,      // ISO string — formaté côté UI
-    commonMatches: 0,
     isRealUser: true,
     // Chantier 4 : préférences partenaire (ce qu'il/elle cherche)
     partnerPrefs: p.partner_prefs || {},

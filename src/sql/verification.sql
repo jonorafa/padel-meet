@@ -39,7 +39,7 @@ SELECT
       'dominant_hand','preferred_side','play_style','motivation','frequency',
       'bio_fr','bio_en','bio_he','photo_url','online','last_seen',
       'matches_played','wins','partner_prefs','is_demo',
-      'created_at','updated_at','height','availability'
+      'created_at','updated_at'
     ) THEN '✅'
     ELSE '➕ extra'
   END                                               AS "Statut"
