@@ -137,8 +137,8 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   const hasPrefs   = prefHand || prefSide || prefStyle || prefRegion || prefMotiv || prefLevel
 
   // ── Tableau hairline Mon jeu / Je recherche ────────────────────
-  const myGameLabel   = lang === 'en' ? 'My game'      : lang === 'he' ? 'המשחק שלי' : 'Mon jeu'
-  const seekingLabel  = lang === 'en' ? 'Looking for'  : lang === 'he' ? 'אני מחפש'  : 'Je recherche'
+  const myGameLabel   = lang === 'en' ? 'His game'   : lang === 'he' ? 'המשחק שלו' : 'Son jeu'
+  const seekingLabel  = lang === 'en' ? 'He seeks'   : lang === 'he' ? 'הוא מחפש'  : 'Il recherche'
 
   const profileRows = [
     {
