@@ -9,6 +9,9 @@ export function AuthProvider({ children }) {
   const [photos,  setPhotos]  = useState([])
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(() => sessionStorage.getItem('padel-guest') === 'true')
+  // true quand l'utilisateur arrive via un lien « mot de passe oublié »
+  // → l'écran Auth affiche le formulaire « nouveau mot de passe » au lieu de rediriger
+  const [recovery, setRecovery] = useState(false)
 
   useEffect(() => {
     // Session initiale (gère aussi le retour OAuth depuis Google)
@@ -19,7 +22,9 @@ export function AuthProvider({ children }) {
     })
 
     // Écoute tous les changements d'état auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Lien « mot de passe oublié » cliqué → on entre en mode récupération
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true)
       setUser(session?.user ?? null)
       if (session?.user) {
         // User signed in — exit guest mode automatically
@@ -169,10 +174,13 @@ export function AuthProvider({ children }) {
   /** true si l'user est connecté mais n'a pas encore de profil complet (pseudo obligatoire) */
   const isOnboarding = !!user && !loading && (!profile || !profile.username)
 
+  /** Sort du mode récupération (après mise à jour du mot de passe) */
+  const endRecovery = () => setRecovery(false)
+
   return (
     <AuthContext.Provider value={{
-      user, profile, photos, loading, isOnboarding, isGuest,
-      signInWithGoogle, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest,
+      user, profile, photos, loading, isOnboarding, isGuest, recovery,
+      signInWithGoogle, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest, endRecovery,
     }}>
       {children}
     </AuthContext.Provider>

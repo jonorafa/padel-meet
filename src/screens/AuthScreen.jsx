@@ -7,102 +7,114 @@ import { supabase } from '../lib/supabase'
 
 const LABELS = {
   fr: {
-    tagline:   ‘Trouve ton partenaire idéal’,
-    create:    ‘Créer un compte’,
-    login:     ‘Se connecter’,
-    email:     ‘Email’,
-    password:  ‘Mot de passe’,
-    emailPh:   ‘ton@email.com’,
-    pwPh:      ‘Ex: Padel2024’,
-    loginPwPh: ‘••••••••’,
-    cta_create:’Créer mon compte’,
-    cta_login: ‘Se connecter’,
-    forgot:    ‘Mot de passe oublié ?’,
-    or:        ‘ou’,
-    google:    ‘Continuer avec Google’,
-    guest:     "Continuer en tant qu’invité",
-    errEmail:  ‘Adresse email invalide’,
-    errPw:     ‘Le mot de passe doit contenir 8 caractères min., dont des lettres et des chiffres.’,
-    errPwLen:  ‘8 caractères minimum’,
-    errPwLet:  ‘Au moins une lettre’,
-    errPwNum:  ‘Au moins un chiffre’,
-    errGen:    ‘Une erreur est survenue’,
-    errInvalid:’Email ou mot de passe incorrect.’,
-    errNotConf:’Confirme ton email avant de te connecter (vérifie ta boîte mail).’,
-    errTaken:  ‘Cet email est déjà utilisé. Connecte-toi.’,
-    checkEmail:’Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.’,
-    resetSent: "Si un compte existe, un lien de réinitialisation vient d’être envoyé.",
-    resetAsk:  ‘Entre ton email puis reclique sur « Mot de passe oublié ».’,
-    ruleLen:   ‘8 caractères min.’,
-    ruleLet:   ‘Au moins une lettre’,
-    ruleNum:   ‘Au moins un chiffre’,
+    tagline:   'Trouve ton partenaire idéal',
+    create:    'Créer un compte',
+    login:     'Se connecter',
+    email:     'Email',
+    password:  'Mot de passe',
+    emailPh:   'ton@email.com',
+    pwPh:      'Ex: Padel2024',
+    loginPwPh: '••••••••',
+    cta_create:'Créer mon compte',
+    cta_login: 'Se connecter',
+    forgot:    'Mot de passe oublié ?',
+    or:        'ou',
+    google:    'Continuer avec Google',
+    guest:     "Continuer en tant qu'invité",
+    errEmail:  'Adresse email invalide',
+    errPw:     'Le mot de passe doit contenir 8 caractères min., dont des lettres et des chiffres.',
+    errPwLen:  '8 caractères minimum',
+    errPwLet:  'Au moins une lettre',
+    errPwNum:  'Au moins un chiffre',
+    errGen:    'Une erreur est survenue',
+    errInvalid:'Email ou mot de passe incorrect.',
+    errNotConf:'Confirme ton email avant de te connecter (vérifie ta boîte mail).',
+    errTaken:  'Cet email est déjà utilisé. Connecte-toi.',
+    checkEmail:'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.',
+    resetSent: "Si un compte existe, un lien de réinitialisation vient d'être envoyé.",
+    resetAsk:  'Entre ton email puis reclique sur « Mot de passe oublié ».',
+    ruleLen:   '8 caractères min.',
+    ruleLet:   'Au moins une lettre',
+    ruleNum:   'Au moins un chiffre',
+    recTitle:  'Nouveau mot de passe',
+    recSub:    'Choisis un nouveau mot de passe pour ton compte.',
+    recCta:    'Mettre à jour',
+    recDone:   'Mot de passe mis à jour ! Connexion en cours…',
   },
   en: {
-    tagline:   ‘Find your ideal padel partner’,
-    create:    ‘Create account’,
-    login:     ‘Sign in’,
-    email:     ‘Email’,
-    password:  ‘Password’,
-    emailPh:   ‘you@email.com’,
-    pwPh:      ‘e.g. Padel2024’,
-    loginPwPh: ‘••••••••’,
-    cta_create:’Create my account’,
-    cta_login: ‘Sign in’,
-    forgot:    ‘Forgot password?’,
-    or:        ‘or’,
-    google:    ‘Continue with Google’,
-    guest:     ‘Continue as guest’,
-    errEmail:  ‘Invalid email address’,
-    errPw:     ‘Password must be at least 8 characters and include letters and numbers.’,
-    errPwLen:  ‘At least 8 characters’,
-    errPwLet:  ‘At least one letter’,
-    errPwNum:  ‘At least one number’,
-    errGen:    ‘An error occurred’,
-    errInvalid:’Incorrect email or password.’,
-    errNotConf:’Confirm your email before signing in (check your inbox).’,
-    errTaken:  ‘This email is already registered. Sign in instead.’,
-    checkEmail:’Account created! Check your inbox to confirm your address, then sign in.’,
-    resetSent: ‘If an account exists, a reset link has just been sent.’,
-    resetAsk:  ‘Enter your email then click "Forgot password" again.’,
-    ruleLen:   ‘8 characters min.’,
-    ruleLet:   ‘At least one letter’,
-    ruleNum:   ‘At least one number’,
+    tagline:   'Find your ideal padel partner',
+    create:    'Create account',
+    login:     'Sign in',
+    email:     'Email',
+    password:  'Password',
+    emailPh:   'you@email.com',
+    pwPh:      'e.g. Padel2024',
+    loginPwPh: '••••••••',
+    cta_create:'Create my account',
+    cta_login: 'Sign in',
+    forgot:    'Forgot password?',
+    or:        'or',
+    google:    'Continue with Google',
+    guest:     'Continue as guest',
+    errEmail:  'Invalid email address',
+    errPw:     'Password must be at least 8 characters and include letters and numbers.',
+    errPwLen:  'At least 8 characters',
+    errPwLet:  'At least one letter',
+    errPwNum:  'At least one number',
+    errGen:    'An error occurred',
+    errInvalid:'Incorrect email or password.',
+    errNotConf:'Confirm your email before signing in (check your inbox).',
+    errTaken:  'This email is already registered. Sign in instead.',
+    checkEmail:'Account created! Check your inbox to confirm your address, then sign in.',
+    resetSent: 'If an account exists, a reset link has just been sent.',
+    resetAsk:  'Enter your email then click "Forgot password" again.',
+    ruleLen:   '8 characters min.',
+    ruleLet:   'At least one letter',
+    ruleNum:   'At least one number',
+    recTitle:  'New password',
+    recSub:    'Choose a new password for your account.',
+    recCta:    'Update',
+    recDone:   'Password updated! Signing you in…',
   },
   he: {
-    tagline:   ‘מצא את שותף הפאדל האידיאלי’,
-    create:    ‘צור חשבון’,
-    login:     ‘התחבר’,
-    email:     ‘אימייל’,
-    password:  ‘סיסמה’,
-    emailPh:   ‘you@email.com’,
-    pwPh:      ‘לדוג׳ Padel2024’,
-    loginPwPh: ‘••••••••’,
-    cta_create:’צור חשבון’,
-    cta_login: ‘התחבר’,
-    forgot:    ‘שכחת סיסמה?’,
-    or:        ‘או’,
-    google:    ‘המשך עם Google’,
-    guest:     ‘המשך כאורח’,
-    errEmail:  ‘כתובת אימייל לא תקינה’,
-    errPw:     ‘הסיסמה חייבת להכיל לפחות 8 תווים, אותיות וספרות.’,
-    errPwLen:  ‘לפחות 8 תווים’,
-    errPwLet:  ‘לפחות אות אחת’,
-    errPwNum:  ‘לפחות ספרה אחת’,
-    errGen:    ‘שגיאה’,
-    errInvalid:’אימייל או סיסמה שגויים.’,
-    errNotConf:’אשר את האימייל שלך לפני ההתחברות (בדוק את תיבת הדואר).’,
-    errTaken:  ‘האימייל הזה כבר רשום. התחבר במקום.’,
-    checkEmail:’החשבון נוצר! בדוק את תיבת הדואר כדי לאשר את הכתובת, ואז התחבר.’,
-    resetSent: ‘אם קיים חשבון, נשלח כעת קישור לאיפוס.’,
-    resetAsk:  ‘הזן את האימייל שלך ולחץ שוב על "שכחת סיסמה".’,
-    ruleLen:   ‘לפחות 8 תווים’,
-    ruleLet:   ‘לפחות אות אחת’,
-    ruleNum:   ‘לפחות ספרה אחת’,
+    tagline:   'מצא את שותף הפאדל האידיאלי',
+    create:    'צור חשבון',
+    login:     'התחבר',
+    email:     'אימייל',
+    password:  'סיסמה',
+    emailPh:   'you@email.com',
+    pwPh:      'לדוג׳ Padel2024',
+    loginPwPh: '••••••••',
+    cta_create:'צור חשבון',
+    cta_login: 'התחבר',
+    forgot:    'שכחת סיסמה?',
+    or:        'או',
+    google:    'המשך עם Google',
+    guest:     'המשך כאורח',
+    errEmail:  'כתובת אימייל לא תקינה',
+    errPw:     'הסיסמה חייבת להכיל לפחות 8 תווים, אותיות וספרות.',
+    errPwLen:  'לפחות 8 תווים',
+    errPwLet:  'לפחות אות אחת',
+    errPwNum:  'לפחות ספרה אחת',
+    errGen:    'שגיאה',
+    errInvalid:'אימייל או סיסמה שגויים.',
+    errNotConf:'אשר את האימייל שלך לפני ההתחברות (בדוק את תיבת הדואר).',
+    errTaken:  'האימייל הזה כבר רשום. התחבר במקום.',
+    checkEmail:'החשבון נוצר! בדוק את תיבת הדואר כדי לאשר את הכתובת, ואז התחבר.',
+    resetSent: 'אם קיים חשבון, נשלח כעת קישור לאיפוס.',
+    resetAsk:  'הזן את האימייל שלך ולחץ שוב על "שכחת סיסמה".',
+    ruleLen:   'לפחות 8 תווים',
+    ruleLet:   'לפחות אות אחת',
+    ruleNum:   'לפחות ספרה אחת',
+    recTitle:  'סיסמה חדשה',
+    recSub:    'בחר סיסמה חדשה לחשבון שלך.',
+    recCta:    'עדכן',
+    recDone:   'הסיסמה עודכנה! מתחבר…',
   },
 }
 
 export default function AuthScreen() {
-  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest } = useAuth()
+  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest, recovery, endRecovery } = useAuth()
   const { lang, dark } = usePrefs()
   const navigate = useNavigate()
   const L = LABELS[lang] || LABELS.fr
@@ -124,8 +136,9 @@ export default function AuthScreen() {
 
   useEffect(() => {
     if (authLoading) return
+    if (recovery) return // pendant la récupération, on reste sur l'écran « nouveau mot de passe »
     if (user) navigate(isOnboarding ? '/onboarding' : '/app', { replace: true })
-  }, [user, authLoading, isOnboarding, navigate])
+  }, [user, authLoading, isOnboarding, navigate, recovery])
 
   // Règles de validation du mot de passe (live)
   const pwRules = {
@@ -197,6 +210,25 @@ export default function AuthScreen() {
     }
   }
 
+  // Définit le nouveau mot de passe après clic sur le lien de récupération
+  const handleResetPassword = async () => {
+    setError(''); setNotice('')
+    if (!pwValid) return setError(L.errPw)
+    setLoading(true)
+    try {
+      const { error: e } = await supabase.auth.updateUser({ password })
+      if (e) { setError(mapError(e.message)); return }
+      setNotice(L.recDone)
+      setPassword('')
+      // Sort du mode récupération → l'effet de redirection envoie vers /app ou /onboarding
+      endRecovery()
+    } catch (e) {
+      setError(mapError(e?.message))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleGoogle = async () => {
     try { await signInWithGoogle() } catch (e) { console.error(e) }
   }
@@ -233,9 +265,101 @@ export default function AuthScreen() {
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 15, color: stone, marginTop: 7, letterSpacing: '0.02em',
           }}>
-            {L.tagline}
+            {recovery ? L.recSub : L.tagline}
           </div>
         </div>
+
+        {recovery ? (
+        <>
+          {/* ── Récupération : nouveau mot de passe ── */}
+          <div style={{
+            fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif',
+            fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 22, color: ink, textAlign: 'center', marginBottom: 18,
+          }}>{L.recTitle}</div>
+
+          <div style={{ marginBottom: 4 }}>
+            <div style={{
+              fontFamily: 'Inter', fontSize: 9.5, color: stone,
+              letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
+            }}>{L.password}</div>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPw ? 'text' : 'password'} value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !loading) handleResetPassword() }}
+                placeholder={L.pwPh}
+                autoComplete="new-password"
+                style={{
+                  width: '100%', padding: '14px 44px 14px 16px', borderRadius: 12,
+                  background: card, border: `0.5px solid ${border}`,
+                  fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+                  fontStyle: rtl ? 'normal' : 'italic',
+                  fontSize: 16, color: ink, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+              <button type="button" onClick={() => setShowPw(v => !v)} style={{
+                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke={stone} strokeWidth="1.5" strokeLinecap="round">
+                  {showPw
+                    ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></>
+                    : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>
+                  }
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {password.length > 0 && (
+            <div style={{ display: 'flex', gap: 14, marginTop: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+              {[[pwRules.len, L.ruleLen], [pwRules.let, L.ruleLet], [pwRules.num, L.ruleNum]].map(([ok, label]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 14, height: 14, borderRadius: 7, flexShrink: 0,
+                    background: ok ? COURT.green : 'transparent',
+                    border: `1.5px solid ${ok ? COURT.green : stone}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
+                  }}>
+                    {ok && <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+                      <polyline points="2,5 4,7.5 8,2.5" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>}
+                  </div>
+                  <span style={{ fontFamily: 'Inter', fontSize: 11, color: ok ? COURT.green : stone, transition: 'color 0.2s' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {error ? (
+            <div style={{
+              margin: '10px 0', padding: '10px 14px', borderRadius: 10,
+              background: `${COURT.red || '#e74c3c'}10`, border: `0.5px solid ${COURT.red || '#e74c3c'}30`,
+              fontFamily: 'Inter', fontSize: 12, color: COURT.red || '#e74c3c',
+            }}>{error}</div>
+          ) : notice ? (
+            <div style={{
+              margin: '10px 0', padding: '10px 14px', borderRadius: 10,
+              background: `${COURT.green}12`, border: `0.5px solid ${COURT.green}33`,
+              fontFamily: 'Inter', fontSize: 12, color: COURT.green,
+            }}>{notice}</div>
+          ) : <div style={{ height: 16 }} />}
+
+          <button onClick={handleResetPassword} disabled={loading} style={{
+            width: '100%', padding: '16px', borderRadius: 14,
+            background: loading ? `${COURT.green}80` : COURT.green,
+            color: COURT.cream, border: `0.5px solid ${COURT.gold}`,
+            fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif',
+            fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 18, cursor: loading ? 'default' : 'pointer', transition: 'all 0.2s',
+          }}>
+            {loading ? '…' : L.recCta}
+          </button>
+        </>
+        ) : (
+        <>
 
         {/* ── Onglets ── */}
         <div style={{
@@ -440,6 +564,8 @@ export default function AuthScreen() {
             {L.guest}
           </span>
         </button>
+        </>
+        )}
 
       </div>
     </div>
