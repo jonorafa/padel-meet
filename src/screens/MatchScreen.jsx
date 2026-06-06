@@ -2714,32 +2714,53 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
 
 // ─── Contact Sheet ───────────────────────────────────────────────────────────
 function ContactSheet({ dark, lang, onClose }) {
+  const { user, profile } = useAuth();
   const rtl = lang === 'he';
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const card  = dark ? COURT.darkCard : COURT.creamDark;
   const border= dark ? COURT.darkBorder : `${COURT.green}30`;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
-  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
 
-  const types = ['Feedback', 'Bug report', 'Help'];
+  const types = ['Feedback', 'Bug', 'Aide'];
   const [type, setType]       = useState('Feedback');
-  const [name, setName]       = useState('');
-  const [email, setEmail]     = useState('');
+  // Pré-rempli depuis le profil si disponible
+  const [name, setName]       = useState(profile?.name || profile?.username || '');
+  const [email, setEmail]     = useState(user?.email || '');
   const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
   const [sent, setSent]       = useState(false);
+  const [error, setError]     = useState(null);
 
-  const canSend = name.trim() && email.trim() && message.trim();
+  const canSend = name.trim() && email.trim() && message.trim() && !sending;
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!canSend) return;
-    const subj = encodeURIComponent(`[Padel Meet] ${type} — ${name}`);
-    const body = encodeURIComponent(
-      `Type : ${type}\nNom : ${name}\nEmail : ${email}\n\n${message}`
-    );
-    window.open(`mailto:jonathanbens10@gmail.com?subject=${subj}&body=${body}`);
-    setSent(true);
+    setSending(true);
+    setError(null);
+    try {
+      const { error: dbErr } = await supabase
+        .from('support_messages')
+        .insert({
+          user_id: user?.id ?? null,
+          name:    name.trim(),
+          email:   email.trim(),
+          type,
+          message: message.trim(),
+        });
+      if (dbErr) throw dbErr;
+      setSent(true);
+    } catch (err) {
+      setError(
+        lang === 'fr' ? 'Erreur lors de l\'envoi. Réessaie.'
+          : lang === 'en' ? 'Failed to send. Please try again.'
+          : 'שגיאה בשליחה. נסה שוב.'
+      );
+    } finally {
+      setSending(false);
+    }
   };
 
   const inputStyle = {
@@ -2756,14 +2777,14 @@ function ContactSheet({ dark, lang, onClose }) {
       <div style={{ padding: '8px 20px 36px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {sent ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <div style={{ fontSize: 52, marginBottom: 16 }}>✉️</div>
+            <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
             <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 22, color: ink, marginBottom: 8 }}>
-              {lang === 'fr' ? 'Merci !' : lang === 'en' ? 'Thank you!' : '!תודה'}
+              {lang === 'fr' ? 'Message envoyé !' : lang === 'en' ? 'Message sent!' : '!ההודעה נשלחה'}
             </div>
             <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>
-              {lang === 'fr' ? 'Votre message a bien été préparé dans votre messagerie.'
-                : lang === 'en' ? 'Your message has been prepared in your mail app.'
-                : 'ההודעה שלך הוכנה באפליקציית הדואר.'}
+              {lang === 'fr' ? 'Nous reviendrons vers toi rapidement.'
+                : lang === 'en' ? 'We\'ll get back to you shortly.'
+                : 'נחזור אליך בקרוב.'}
             </div>
           </div>
         ) : (
@@ -2804,6 +2825,16 @@ function ContactSheet({ dark, lang, onClose }) {
               style={{ ...inputStyle, resize: 'none', lineHeight: 1.5 }}
             />
 
+            {/* Erreur */}
+            {error && (
+              <div style={{
+                padding: '10px 14px', borderRadius: 10,
+                background: `${COURT.red}15`, border: `1px solid ${COURT.red}40`,
+              }}>
+                <p style={{ fontFamily: 'Inter', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
+              </div>
+            )}
+
             {/* Bouton envoyer */}
             <button onClick={handleSend} disabled={!canSend} style={{
               width: '100%', padding: '14px', borderRadius: 12,
@@ -2813,7 +2844,10 @@ function ContactSheet({ dark, lang, onClose }) {
               cursor: canSend ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s',
             }}>
-              {lang === 'fr' ? 'Envoyer' : lang === 'en' ? 'Send' : 'שלח'}
+              {sending
+                ? (lang === 'fr' ? 'Envoi...' : lang === 'en' ? 'Sending...' : 'שולח...')
+                : (lang === 'fr' ? 'Envoyer' : lang === 'en' ? 'Send' : 'שלח')
+              }
             </button>
           </>
         )}
