@@ -1331,11 +1331,6 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 2 }}>{a.sub[lang]}</div>
                   {a.scoreL && <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 13, color: COURT.green, marginTop: 4, letterSpacing: '0.1em' }}>{a.scoreL} · {a.scoreR}</div>}
                 </div>
-                {a.delta != null && a.delta !== 0 && (
-                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 14, color: a.delta > 0 ? COURT.green : COURT.purple, fontWeight: 500, paddingTop: 16 }}>
-                    {a.delta > 0 ? '+' : ''}{(+a.delta).toFixed(1)}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -2741,6 +2736,7 @@ function ContactSheet({ dark, lang, onClose }) {
     setSending(true);
     setError(null);
     try {
+      // 1. Sauvegarde en DB
       const { error: dbErr } = await supabase
         .from('support_messages')
         .insert({
@@ -2751,6 +2747,12 @@ function ContactSheet({ dark, lang, onClose }) {
           message: message.trim(),
         });
       if (dbErr) throw dbErr;
+
+      // 2. Notification email via Edge Function (best-effort, n'échoue pas si l'email rate)
+      supabase.functions.invoke('notify-support', {
+        body: { name: name.trim(), email: email.trim(), type, message: message.trim() },
+      }).catch(() => {});
+
       setSent(true);
     } catch (err) {
       setError(
@@ -3341,7 +3343,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 {lang==='fr' ? 'Aide & support' : lang==='en' ? 'Help & support' : 'עזרה ותמיכה'}
               </div>
               <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
-                {lang==='fr' ? 'FAQ, nous contacter' : lang==='en' ? 'FAQ, contact us' : 'שאלות נפוצות'}
+                {lang==='fr' ? 'Nous contacter' : lang==='en' ? 'Contact us' : 'צור קשר'}
               </div>
             </div>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -3360,7 +3362,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 {lang==='fr' ? 'Confidentialité' : lang==='en' ? 'Privacy' : 'פרטיות'}
               </div>
               <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
-                {lang==='fr' ? 'Données, RGPD' : lang==='en' ? 'Data, GDPR' : 'נתונים'}
+                {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
               </div>
             </div>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
