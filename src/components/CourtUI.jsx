@@ -724,7 +724,7 @@ export function Achievements({ badges, dark }) {
 
       <div style={{ display: 'flex', gap: 10 }}>
         {badges.map((badge, i) => (
-          <div key={i} style={{ flex: 1, textAlign: 'center' }}>
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <button
               ref={el => { btnRefs.current[i] = el; }}
               onClick={() => toggle(i)}
@@ -743,7 +743,7 @@ export function Achievements({ badges, dark }) {
             >
               {badge.on ? badge.icon : '🔒'}
             </button>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3 }}>
+            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
               {badge.label}
             </div>
           </div>

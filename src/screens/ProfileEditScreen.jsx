@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { COURT, PadelSlider } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { useProfilePhotos } from '../hooks/useProfilePhotos'
 import { I18N } from '../data/courtData'
 import { PhotoGalleryEditor } from '../components/PhotoGalleryEditor'
-import { PhotoUploadField } from '../components/PhotoUploadField'
 
 const ChevronLeftIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -42,10 +41,43 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     frequency:      profile?.frequency      || 3,
   })
 
-  const [currentBioLang, setCurrentBioLang] = useState('fr')
+  const bioKey = lang === 'he' ? 'bio_he' : lang === 'en' ? 'bio_en' : 'bio_fr'
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState(null)
   const [success, setSuccess] = useState(false)
+
+  const fileInputRef = useRef(null)
+
+  // ── Profile completion score (live, from real data) ─────────────
+  const longestBio = [formData.bio_fr, formData.bio_en, formData.bio_he]
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)[0] || ''
+
+  const completionItems = [
+    { pts: 15, done: !!formData.name?.trim() },
+    { pts: 20, done: photos.length >= 1 },
+    { pts: 10, done: photos.length >= 3 },
+    { pts: 20, done: longestBio.length >= 1 },
+    { pts: 20, done: longestBio.length >= 80 },
+    { pts: 15, done: !!(formData.dominant_hand && formData.preferred_side && formData.play_style && formData.motivation) },
+  ]
+  const completionScore = completionItems.reduce((s, c) => s + (c.done ? c.pts : 0), 0)
+
+  const completionTitle =
+    completionScore >= 100 ? (lang === 'he' ? 'פרופיל מושלם !' : lang === 'en' ? 'Profile complete!' : 'Profil complet !')
+    : completionScore >= 80  ? (lang === 'he' ? 'הפרופיל כמעט שלם' : lang === 'en' ? 'Almost complete' : 'Profil presque complet')
+    : completionScore >= 60  ? (lang === 'he' ? 'פרופיל טוב' : lang === 'en' ? 'Good progress' : 'Profil bien avancé')
+    : completionScore >= 40  ? (lang === 'he' ? 'בתהליך' : lang === 'en' ? 'In progress' : 'Profil en cours')
+    :                          (lang === 'he' ? 'התחל פרופיל' : lang === 'en' ? 'Start your profile' : 'Commence ton profil')
+
+  const completionHint = (() => {
+    if (photos.length === 0)        return lang === 'he' ? 'הוסף תמונה לפרופיל שלך' : lang === 'en' ? 'Add a profile photo' : 'Ajoute ta première photo'
+    if (!formData.name?.trim())     return lang === 'he' ? 'הוסף את שמך המלא' : lang === 'en' ? 'Add your full name' : 'Ajoute ton nom complet'
+    if (!longestBio)                return lang === 'he' ? 'כתוב ביוגרפיה' : lang === 'en' ? 'Write a bio to introduce yourself' : 'Écris ta bio pour te présenter'
+    if (longestBio.length < 80)     return lang === 'he' ? 'הארך את הביוגרפיה' : lang === 'en' ? 'Make your bio longer to reach 100%' : 'Allonge ta bio pour atteindre 100%'
+    if (photos.length < 3)          return lang === 'he' ? 'הוסף עוד תמונות' : lang === 'en' ? 'Add more photos to stand out' : 'Ajoute plus de photos pour te démarquer'
+    return lang === 'he' ? 'הפרופיל שלך מושלם !' : lang === 'en' ? 'Your profile is perfect!' : 'Ton profil est parfait !'
+  })()
 
   // ── Colors ──────────────────────────────────────────────────────
   const bg     = dark ? COURT.darkBg   : COURT.cream
@@ -55,18 +87,26 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const border = dark ? COURT.darkBorder : `${COURT.green}28`
 
   // ── Handlers ────────────────────────────────────────────────────
-  const handlePhotoUpload = async (file) => {
+  const handleFileInputChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''   // reset so same file can be re-picked
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Format non supporté. Utilisez JPEG, PNG ou WebP.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Fichier trop lourd (max 5 Mo).')
+      return
+    }
     const result = await uploadPhoto(file)
-    if (!result) setError('Échec de l\'envoi de la photo')
+    if (!result) setError("Échec de l'envoi de la photo")
   }
 
   const handleInputChange = (field, value) =>
     setFormData(prev => ({ ...prev, [field]: value }))
 
-  const handleBioChange = (text) => {
-    const key = currentBioLang === 'fr' ? 'bio_fr' : currentBioLang === 'en' ? 'bio_en' : 'bio_he'
-    setFormData(prev => ({ ...prev, [key]: text }))
-  }
+  const handleBioChange = (text) => setFormData(prev => ({ ...prev, [bioKey]: text }))
 
   const handleSave = async () => {
     try {
@@ -90,7 +130,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     }
   }
 
-  const currentBio = formData[currentBioLang === 'fr' ? 'bio_fr' : currentBioLang === 'en' ? 'bio_en' : 'bio_he'] || ''
+  const currentBio = formData[bioKey] || ''
 
   // ── Chip button helper ──────────────────────────────────────────
   const Chip = ({ active, onClick, children }) => (
@@ -164,6 +204,54 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       <div style={{ flex: 1, overflowY: 'auto', background: bg }}>
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
+          {/* ── Profile completion banner ──────────────────────── */}
+          {(() => {
+            const r = 22, cx = 30, cy = 30
+            const circum = 2 * Math.PI * r
+            const fill   = (completionScore / 100) * circum
+            return (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: COURT.green,
+                borderRadius: 16, padding: '14px 18px',
+                boxShadow: `0 2px 12px ${COURT.green}40`,
+              }}>
+                {/* Circular progress */}
+                <svg width="60" height="60" viewBox="0 0 60 60" style={{ flexShrink: 0 }}>
+                  {/* Track */}
+                  <circle cx={cx} cy={cy} r={r} fill="none"
+                    stroke="rgba(255,255,255,0.22)" strokeWidth="4.5" />
+                  {/* Fill */}
+                  <circle cx={cx} cy={cy} r={r} fill="none"
+                    stroke={COURT.gold} strokeWidth="4.5"
+                    strokeDasharray={`${fill} ${circum - fill}`}
+                    strokeLinecap="round"
+                    transform={`rotate(-90 ${cx} ${cy})`} />
+                  {/* Percentage text */}
+                  <text x={cx} y={cy + 5}
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize="13" fontWeight="700" fontFamily="Inter">
+                    {completionScore}%
+                  </text>
+                </svg>
+
+                {/* Text */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    fontFamily: 'Cormorant Garamond, Playfair Display, serif',
+                    fontSize: 17, fontWeight: 700, fontStyle: 'italic',
+                    color: '#fff', margin: '0 0 3px', lineHeight: 1.2,
+                  }}>{completionTitle}</p>
+                  <p style={{
+                    fontFamily: 'Inter', fontSize: 13,
+                    color: 'rgba(255,255,255,0.78)', margin: 0, lineHeight: 1.4,
+                  }}>{completionHint}</p>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* ── Nom complet ───────────────────────────────────── */}
           <section>
             <SectionTitle>{lang === 'he' ? 'שם מלא' : lang === 'en' ? 'Full name' : 'Nom complet'}</SectionTitle>
@@ -183,55 +271,36 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
           {/* ── Photos ────────────────────────────────────────── */}
           <section>
-            <SectionTitle>{t.photos}</SectionTitle>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+              <h2 style={{
+                fontFamily: 'Playfair Display, serif', fontSize: 17, fontWeight: 700,
+                color: ink, margin: 0,
+              }}>{t.photos}</h2>
+              <span style={{ fontFamily: 'Inter', fontSize: 12, color: muted }}>{photos.length}/10</span>
+            </div>
 
-            {photos.length > 0 && (
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ fontFamily: 'Inter', fontSize: 13, color: muted, margin: '0 0 10px' }}>
-                  {t.managePhotos}
-                </p>
-                <PhotoGalleryEditor
-                  photos={photos}
-                  onDelete={deletePhoto}
-                  onSetPrimary={setPrimaryPhoto}
-                  onReorder={reorderPhotos}
-                  dark={dark}
-                />
-              </div>
-            )}
-
-            <p style={{ fontFamily: 'Inter', fontSize: 13, color: muted, margin: '0 0 10px' }}>
-              {photos.length === 0 ? t.addYourFirstPhoto : t.addMorePhotos} ({photos.length}/10)
-            </p>
-            <PhotoUploadField
-              onUpload={handlePhotoUpload}
-              disabled={photosLoading || saving}
+            <PhotoGalleryEditor
+              photos={photos}
+              onDelete={deletePhoto}
+              onSetPrimary={setPrimaryPhoto}
+              onReorder={reorderPhotos}
+              onAdd={(!photosLoading && !saving && photos.length < 10) ? () => fileInputRef.current?.click() : null}
               dark={dark}
+            />
+
+            {/* Hidden file input triggered by the gallery's add slot */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileInputChange}
+              style={{ display: 'none' }}
             />
           </section>
 
           {/* ── Bio ───────────────────────────────────────────── */}
           <section>
             <SectionTitle>{t.bio}</SectionTitle>
-
-            {/* Language tabs */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              {['fr', 'en', 'he'].map(lc => (
-                <button
-                  key={lc}
-                  onClick={() => setCurrentBioLang(lc)}
-                  style={{
-                    padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
-                    fontFamily: 'Inter', fontSize: 13, fontWeight: 700,
-                    background: currentBioLang === lc ? COURT.green : card,
-                    color:      currentBioLang === lc ? COURT.cream  : ink,
-                    border: `0.5px solid ${currentBioLang === lc ? COURT.green : border}`,
-                    letterSpacing: '0.06em',
-                    transition: 'background 0.15s, color 0.15s',
-                  }}
-                >{lc.toUpperCase()}</button>
-              ))}
-            </div>
 
             {/* Textarea */}
             <div style={{ position: 'relative' }}>

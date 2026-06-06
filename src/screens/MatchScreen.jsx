@@ -2381,6 +2381,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
   const { matches: myMatches } = useUserMatches();
   const [tab, setTab] = useState('history');
   const [trophyTip, setTrophyTip] = useState(null);
+  const [showAllOpponents, setShowAllOpponents] = useState(false);
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
   const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
@@ -2493,14 +2494,6 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                     </div>
                   )}
                 </div>
-                {m.delta != null && (
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, color: m.delta > 0 ? COURT.green : COURT.purple }}>
-                      {m.delta > 0 ? '+' : ''}{(+m.delta).toFixed(2)}
-                    </div>
-                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, textTransform: 'uppercase', letterSpacing: '0.12em' }}>ELO</div>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -2526,7 +2519,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
               <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 6 }}>
                 {lang === 'fr' ? 'Joue contre eux' : lang === 'he' ? 'שחק נגדם' : 'Play against them'}
               </div>
-              {myMatches.slice(0, 4).map((m, i, arr) => (
+              {(showAllOpponents ? myMatches : myMatches.slice(0, 4)).map((m, i, arr) => (
                 <div key={m.matchId} style={{
                   display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0',
                   borderBottom: i < arr.length - 1 ? `0.5px solid ${border}` : 'none',
@@ -2553,6 +2546,27 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                   </button>
                 </div>
               ))}
+
+              {/* Voir plus / Voir moins */}
+              {myMatches.length > 4 && (
+                <button
+                  onClick={() => setShowAllOpponents(v => !v)}
+                  style={{
+                    display: 'block', width: '100%', marginTop: 10,
+                    padding: '11px 0', borderRadius: 12,
+                    background: 'transparent',
+                    border: `0.5px solid ${COURT.green}40`,
+                    fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
+                    fontSize: 15, color: COURT.green, cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  {showAllOpponents
+                    ? (lang === 'fr' ? 'Voir moins' : lang === 'he' ? 'פחות' : 'Show less')
+                    : (lang === 'fr' ? `Voir plus (${myMatches.length - 4})` : lang === 'he' ? `עוד (${myMatches.length - 4})` : `Show more (${myMatches.length - 4})`)
+                  }
+                </button>
+              )}
             </div>
           )}
 
