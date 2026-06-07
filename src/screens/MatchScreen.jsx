@@ -3847,6 +3847,9 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               // Pénalité indice de confiance : −10%, minimum 50%
               const newConf = Math.max(50, confidence - 10);
               setConfidence(newConf);
+              // Enregistre le niveau + un point d'historique IMMÉDIATEMENT (robuste
+              // même si la sauvegarde DB échoue : réseau coupé, etc.)
+              setLevel(computedLevel);
               // Sauvegarde level + pénalité confidence_rate + cooldown en une seule écriture DB
               await saveProfile({
                 level: computedLevel,

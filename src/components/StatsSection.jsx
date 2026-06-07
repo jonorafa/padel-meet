@@ -11,56 +11,39 @@ const MONTHS = {
   he: ['ינ','פב','מר','אפ','מי','יו','יל','אג','ספ','אק','נו','דצ'],
 }
 
-/** Retourne les abréviations des 6 derniers mois (plus récent en dernier). */
-function lastSixMonthLabels(lang) {
+/** Libellé court d'une date — "8 jui" / "8 Jun". */
+function shortDate(iso, lang) {
+  const d = new Date(iso)
+  if (isNaN(d)) return ''
   const arr = MONTHS[lang] ?? MONTHS.fr
-  const now = new Date()
-  return Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-    return arr[d.getMonth()]
-  })
+  return `${d.getDate()} ${arr[d.getMonth()]}`
 }
 
 /**
- * Construit un tableau de 6 points représentant l'évolution du niveau
- * sur les 6 derniers mois, déduit de l'historique de matchs.
- *   win  → +0.10 pts de niveau
- *   loss → −0.05 pts de niveau
- * Le dernier point = currentLevel (ancrage sur la vraie valeur).
- * Si aucun match : ligne plate au niveau actuel.
+ * Construit la VRAIE série d'évolution du niveau à partir de l'historique
+ * enregistré (chaque (ré)évaluation = un point { level, date }).
+ *   → points : les niveaux réels dans l'ordre chronologique
+ *   → labels : la date de chaque point
+ * Si aucun historique : on retombe sur le niveau actuel comme point unique.
+ * Si un seul point : on le duplique pour qu'une ligne soit visible.
  */
-function buildProgression(history, currentLevel) {
-  const now = new Date()
-  // Créer 6 buckets mensuels (du plus ancien au plus récent)
-  const slots = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-    return { year: d.getFullYear(), month: d.getMonth(), w: 0, l: 0 }
-  })
+function buildLevelSeries(levelHistory, currentLevel, lang) {
+  let series = Array.isArray(levelHistory) ? levelHistory.filter(p => p && p.level != null) : []
 
-  for (const m of history) {
-    const y = m.date.getFullYear()
-    const mo = m.date.getMonth()
-    const slot = slots.find(s => s.year === y && s.month === mo)
-    if (slot) { m.result === 'win' ? slot.w++ : slot.l++ }
+  if (series.length === 0 && currentLevel != null) {
+    series = [{ level: currentLevel, date: new Date().toISOString() }]
   }
 
-  // Estimer le niveau de départ en remontant tous les matchs
-  const totalDelta = history.reduce(
-    (sum, m) => sum + (m.result === 'win' ? 0.1 : -0.05),
-    0
-  )
-  let running = Math.max(1.0, parseFloat((currentLevel - totalDelta).toFixed(1)))
+  const points = series.map(s => parseFloat(s.level))
+  const labels = series.map(s => shortDate(s.date, lang))
 
-  const pts = slots.map(({ w, l }) => {
-    running = parseFloat(
-      Math.max(1.0, Math.min(7.5, running + w * 0.1 - l * 0.05)).toFixed(1)
-    )
-    return running
-  })
+  // Un seul point → on duplique pour dessiner une courte ligne plate.
+  if (points.length === 1) {
+    points.unshift(points[0])
+    labels.unshift('')
+  }
 
-  // Ancrer le dernier point exactement sur le vrai niveau actuel
-  pts[pts.length - 1] = parseFloat(currentLevel.toFixed(1))
-  return pts
+  return { points, labels }
 }
 
 // ─── Sparkline SVG ────────────────────────────────────────────────────────────
@@ -96,7 +79,7 @@ function SparkLine({ data, width = 300, height = 52, color = '#C9A961' }) {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function StatsSection() {
-  const { lang, dark, level, confidence } = usePrefs()
+  const { lang, dark, level, confidence, levelHistory } = usePrefs()
   const { profile }  = useAuth()
   const history      = useMatchHistory()
   const { stats }    = usePlayerStats()
@@ -111,10 +94,10 @@ export default function StatsSection() {
   const confScore     = Math.round(confidence ?? 0)           // 0–100
   const confLeft      = Math.max(0, 10 - matchCount)          // matchs pour vérifier le niveau
 
-  const progressionData = buildProgression(history, currentLevel)
+  const { points: progressionData, labels: progressionLabels } = buildLevelSeries(levelHistory, currentLevel, lang)
   const levelStart      = progressionData[0]
-  const levelDelta      = parseFloat((currentLevel - levelStart).toFixed(1))
-  const months          = lastSixMonthLabels(lang)
+  const levelEnd        = progressionData[progressionData.length - 1]
+  const levelDelta      = parseFloat((levelEnd - levelStart).toFixed(1))
 
   // ── Design tokens ───────────────────────────────────────────────────────────
   const bg     = dark ? COURT.darkBg     : COURT.cream
@@ -215,17 +198,20 @@ export default function StatsSection() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
           <div style={lbl}>{L.progression}</div>
           <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 17, color: ink, whiteSpace: 'nowrap' }}>
-            {levelStart.toFixed(1)} → {currentLevel.toFixed(1)}
-            {levelDelta > 0 && (
-              <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12, color: COURT.gold, marginLeft: 8 }}>
-                +{levelDelta.toFixed(1)} {L.delta}
+            {levelStart.toFixed(1)} → {levelEnd.toFixed(1)}
+            {levelDelta !== 0 && (
+              <span style={{
+                fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12,
+                color: levelDelta > 0 ? COURT.gold : COURT.purple, marginLeft: 8,
+              }}>
+                {levelDelta > 0 ? '+' : ''}{levelDelta.toFixed(1)}
               </span>
             )}
           </div>
         </div>
         <SparkLine data={progressionData} color={COURT.gold} />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-          {months.map((m, i) => (
+          {progressionLabels.map((m, i) => (
             <span key={i} style={{ fontFamily: 'Mulish', fontSize: 11, color: stone }}>{m}</span>
           ))}
         </div>
