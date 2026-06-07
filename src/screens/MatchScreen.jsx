@@ -3211,9 +3211,9 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   { label: t.matchesPlayed, value: userMatches },
                   { label: t.confidence,    value: `${confidence}%` },
                 ].map((s, i) => (
-                  <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
-                    <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4, whiteSpace: 'nowrap' }}>{s.label}</div>
+                  <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.15em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.label}</div>
+                    <div style={{ fontFamily: 'Spectral, serif', fontSize: 18, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
                   </div>
                 ))}
               </div>
@@ -3226,9 +3226,9 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 { label: t.matchesPlayed, value: userMatches },
                 { label: t.confidence,    value: `${confidence}%` },
               ].map((s, i) => (
-                <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
-                  <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4, whiteSpace: 'nowrap' }}>{s.label}</div>
+                <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.15em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Spectral, serif', fontSize: 18, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
                 </div>
               ))}
             </div>
