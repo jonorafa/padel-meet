@@ -26,6 +26,7 @@ import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
 import StreakScreen          from './StreakScreen';
 import { tickStreak }        from '../hooks/useStreak';
+import StatsSection          from '../components/StatsSection';
 import QuizScreen           from './ScoreScreen';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -2604,46 +2605,37 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
       )}
 
       {tab === 'stats' && (
-        <div style={{ padding: '0 20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-            {[
-              { label: t.matchesPlayed,  value: userMatches },
-              { label: t.winRateLabel,   value: userWinrate != null ? `${userWinrate}%` : '—' },
-              { label: t.bestStreakLabel, value: streak > 0 ? `${streak}🔥` : '—' },
-              { label: t.currentLevel,   value: level != null ? level.toFixed(1) : '—' },
-            ].map((s, i) => (
-              <div key={i} style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '18px 16px', animation: `cardIn 0.4s ease ${i * 0.06}s both` }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
-                <div style={{ fontFamily: 'Spectral, serif', fontSize: 28, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-              </div>
-            ))}
+        <>
+          <StatsSection />
+          {/* ── Trophées en bas de page ── */}
+          <div style={{ padding: '0 20px 20px' }}>
+            <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px' }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
+              <Achievements dark={dark} badges={[
+                {
+                  icon: '🎾', label: trophies[0].label, on: trophies[0].unlocked,
+                  desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
+                  progress: { cur: Math.min(userMatches, 1), max: 1 },
+                },
+                {
+                  icon: '🔥', label: trophies[1].label, on: trophies[1].unlocked,
+                  desc: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer' : lang === 'en' ? 'Win 5 matches in a row to unlock' : 'זכה ב-5 משחקים ברצף',
+                  progress: { cur: Math.min(longestStreak, 5), max: 5 },
+                },
+                {
+                  icon: '⭐', label: trophies[2].label, on: trophies[2].unlocked,
+                  desc: lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer' : lang === 'en' ? 'Play at least 10 matches to unlock' : 'שחק לפחות 10 משחקים',
+                  progress: { cur: Math.min(userMatches, 10), max: 10 },
+                },
+                {
+                  icon: '👑', label: trophies[3].label, on: trophies[3].unlocked,
+                  desc: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer' : lang === 'en' ? 'Reach level 5 to unlock' : 'הגע לרמה 5 לפתיחה',
+                  progress: { cur: Math.min(Math.round((level ?? 0) * 10) / 10, 5), max: 5 },
+                },
+              ]} />
+            </div>
           </div>
-          <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px', marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
-            <Achievements dark={dark} badges={[
-              {
-                icon: '🎾', label: trophies[0].label, on: trophies[0].unlocked,
-                desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
-                progress: { cur: Math.min(userMatches, 1), max: 1 },
-              },
-              {
-                icon: '🔥', label: trophies[1].label, on: trophies[1].unlocked,
-                desc: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer' : lang === 'en' ? 'Win 5 matches in a row to unlock' : 'זכה ב-5 משחקים ברצף',
-                progress: { cur: Math.min(longestStreak, 5), max: 5 },
-              },
-              {
-                icon: '⭐', label: trophies[2].label, on: trophies[2].unlocked,
-                desc: lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer' : lang === 'en' ? 'Play at least 10 matches to unlock' : 'שחק לפחות 10 משחקים',
-                progress: { cur: Math.min(userMatches, 10), max: 10 },
-              },
-              {
-                icon: '👑', label: trophies[3].label, on: trophies[3].unlocked,
-                desc: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer' : lang === 'en' ? 'Reach level 5 to unlock' : 'הגע לרמה 5 לפתיחה',
-                progress: { cur: Math.min(Math.round((level ?? 0) * 10) / 10, 5), max: 5 },
-              },
-            ]} />
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

@@ -1,0 +1,305 @@
+import { COURT } from '../components/CourtUI'
+import { usePrefs }        from '../context/PrefsContext'
+import { useAuth }         from '../context/AuthContext'
+import { useMatchHistory } from '../hooks/useMatchHistory'
+import { usePlayerStats }  from '../hooks/usePlayerStats'
+
+// ─── Mois par langue ──────────────────────────────────────────────────────────
+const MONTHS = {
+  fr: ['Jan','Fév','Mar','Avr','Mai','Jui','Jul','Aoû','Sep','Oct','Nov','Déc'],
+  en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  he: ['ינ','פב','מר','אפ','מי','יו','יל','אג','ספ','אק','נו','דצ'],
+}
+
+/** Retourne les abréviations des 6 derniers mois (plus récent en dernier). */
+function lastSixMonthLabels(lang) {
+  const arr = MONTHS[lang] ?? MONTHS.fr
+  const now = new Date()
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    return arr[d.getMonth()]
+  })
+}
+
+/**
+ * Construit un tableau de 6 points représentant l'évolution du niveau
+ * sur les 6 derniers mois, déduit de l'historique de matchs.
+ *   win  → +0.10 pts de niveau
+ *   loss → −0.05 pts de niveau
+ * Le dernier point = currentLevel (ancrage sur la vraie valeur).
+ * Si aucun match : ligne plate au niveau actuel.
+ */
+function buildProgression(history, currentLevel) {
+  const now = new Date()
+  // Créer 6 buckets mensuels (du plus ancien au plus récent)
+  const slots = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    return { year: d.getFullYear(), month: d.getMonth(), w: 0, l: 0 }
+  })
+
+  for (const m of history) {
+    const y = m.date.getFullYear()
+    const mo = m.date.getMonth()
+    const slot = slots.find(s => s.year === y && s.month === mo)
+    if (slot) { m.result === 'win' ? slot.w++ : slot.l++ }
+  }
+
+  // Estimer le niveau de départ en remontant tous les matchs
+  const totalDelta = history.reduce(
+    (sum, m) => sum + (m.result === 'win' ? 0.1 : -0.05),
+    0
+  )
+  let running = Math.max(1.0, parseFloat((currentLevel - totalDelta).toFixed(1)))
+
+  const pts = slots.map(({ w, l }) => {
+    running = parseFloat(
+      Math.max(1.0, Math.min(7.5, running + w * 0.1 - l * 0.05)).toFixed(1)
+    )
+    return running
+  })
+
+  // Ancrer le dernier point exactement sur le vrai niveau actuel
+  pts[pts.length - 1] = parseFloat(currentLevel.toFixed(1))
+  return pts
+}
+
+// ─── Sparkline SVG ────────────────────────────────────────────────────────────
+function SparkLine({ data, width = 300, height = 52, color = '#C9A961' }) {
+  const max   = Math.max(...data)
+  const min   = Math.min(...data)
+  const range = max - min || 0.1
+  const pts   = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width
+    const y = height - ((v - min) / range) * (height - 14) - 7
+    return `${x},${y}`
+  }).join(' ')
+  const [lx, ly] = pts.split(' ').pop().split(',')
+
+  return (
+    <svg
+      width="100%" height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+    >
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx={lx} cy={ly} r="4.5" fill={color} />
+    </svg>
+  )
+}
+
+// ─── Composant principal ──────────────────────────────────────────────────────
+export default function StatsSection() {
+  const { lang, dark, level, confidence } = usePrefs()
+  const { profile }  = useAuth()
+  const history      = useMatchHistory()
+  const { stats }    = usePlayerStats()
+  const rtl          = lang === 'he'
+
+  // ── Vraies données ──────────────────────────────────────────────────────────
+  const matchCount    = stats?.matchesPlayed ?? 0
+  const wins          = stats?.wins          ?? 0
+  const winRate       = matchCount > 0 ? Math.round((wins / matchCount) * 100) : 0
+  const streak        = profile?.streak_current ?? 0          // jours consécutifs
+  const currentLevel  = level  ?? 4.0
+  const confScore     = Math.round(confidence ?? 0)           // 0–100
+  const confLeft      = Math.max(0, 10 - matchCount)          // matchs pour vérifier le niveau
+
+  const progressionData = buildProgression(history, currentLevel)
+  const levelStart      = progressionData[0]
+  const levelDelta      = parseFloat((currentLevel - levelStart).toFixed(1))
+  const months          = lastSixMonthLabels(lang)
+
+  // ── Design tokens ───────────────────────────────────────────────────────────
+  const bg     = dark ? COURT.darkBg     : COURT.cream
+  const card   = dark ? COURT.darkCard   : '#F7F3EA'
+  const ink    = dark ? COURT.darkText   : COURT.ink
+  const stone  = dark ? COURT.darkMuted  : COURT.stone
+  const border = dark ? COURT.darkBorder : 'rgba(20,66,46,0.12)'
+
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+
+  // ── Traductions ─────────────────────────────────────────────────────────────
+  const L = {
+    fr: {
+      eyebrow:       'Au club',
+      title:         'Mes statistiques',
+      progression:   'Progression du niveau',
+      delta:         'ce semestre',
+      matchs:        'Matchs',
+      victoires:     'Victoires',
+      serie:         'Série',
+      niveau:        'Niveau actuel',
+      jours:         'jours',
+      confiance:     'Indice de confiance',
+      confianceSub:  confLeft > 0
+        ? `Encore ${confLeft} match${confLeft > 1 ? 's' : ''} pour fiabiliser ton niveau ${currentLevel.toFixed(1)}`
+        : `Niveau ${currentLevel.toFixed(1)} bien fiabilisé ✓`,
+    },
+    en: {
+      eyebrow:       'At the club',
+      title:         'My statistics',
+      progression:   'Level progression',
+      delta:         'this semester',
+      matchs:        'Matches',
+      victoires:     'Win rate',
+      serie:         'Streak',
+      niveau:        'Current level',
+      jours:         'days',
+      confiance:     'Confidence index',
+      confianceSub:  confLeft > 0
+        ? `${confLeft} more match${confLeft > 1 ? 'es' : ''} to verify level ${currentLevel.toFixed(1)}`
+        : `Level ${currentLevel.toFixed(1)} verified ✓`,
+    },
+    he: {
+      eyebrow:       'במגרש',
+      title:         'הסטטיסטיקות שלי',
+      progression:   'התקדמות רמה',
+      delta:         'השנה',
+      matchs:        'משחקים',
+      victoires:     'ניצחונות',
+      serie:         'רצף',
+      niveau:        'רמה נוכחית',
+      jours:         'ימים',
+      confiance:     'מדד ביטחון',
+      confianceSub:  confLeft > 0
+        ? `עוד ${confLeft} משחקים לאימות רמה ${currentLevel.toFixed(1)}`
+        : `רמה ${currentLevel.toFixed(1)} מאומתת ✓`,
+    },
+  }[lang] ?? {}
+
+  // ── Styles communs ──────────────────────────────────────────────────────────
+  const cardStyle = {
+    background: card,
+    border:     `0.5px solid ${border}`,
+    borderRadius: 16,
+    padding:    18,
+  }
+  const lbl = {
+    fontFamily:    'Mulish',
+    fontSize:      10.5,
+    fontWeight:    600,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color:         stone,
+    marginBottom:  10,
+  }
+  const valStyle = {
+    fontFamily: ff_serif,
+    fontSize:   34,
+    color:      COURT.green,
+    lineHeight: 1,
+    fontStyle:  rtl ? 'normal' : 'italic',
+  }
+
+  return (
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ background: bg, padding: '24px 20px 20px' }}>
+
+      {/* ── En-tête ── */}
+      <div style={{ fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, letterSpacing: '0.26em', textTransform: 'uppercase', color: stone }}>
+        {L.eyebrow}
+      </div>
+      <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 28, color: dark ? COURT.cream : COURT.greenDeep, fontWeight: 500, margin: '6px 0 18px' }}>
+        {L.title}
+      </div>
+
+      {/* ── Carte Progression (graphe pleine largeur) ── */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+          <div style={lbl}>{L.progression}</div>
+          <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 17, color: ink, whiteSpace: 'nowrap' }}>
+            {levelStart.toFixed(1)} → {currentLevel.toFixed(1)}
+            {levelDelta > 0 && (
+              <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12, color: COURT.gold, marginLeft: 8 }}>
+                +{levelDelta.toFixed(1)} {L.delta}
+              </span>
+            )}
+          </div>
+        </div>
+        <SparkLine data={progressionData} color={COURT.gold} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+          {months.map((m, i) => (
+            <span key={i} style={{ fontFamily: 'Mulish', fontSize: 9, color: stone }}>{m}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Grille 2×2 ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, margin: '14px 0' }}>
+
+        {/* Matchs */}
+        <div style={cardStyle}>
+          <div style={lbl}>{L.matchs}</div>
+          <div style={valStyle}>{matchCount}</div>
+        </div>
+
+        {/* Victoires */}
+        <div style={cardStyle}>
+          <div style={lbl}>{L.victoires}</div>
+          <div style={valStyle}>
+            {matchCount > 0 ? winRate : '—'}
+            {matchCount > 0 && <span style={{ fontSize: 18 }}>%</span>}
+          </div>
+        </div>
+
+        {/* Série (jours consécutifs) */}
+        <div style={cardStyle}>
+          <div style={lbl}>{L.serie}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="20" height="24" viewBox="0 0 100 120">
+              <defs>
+                <radialGradient id="sfstat" cx="50%" cy="70%" r="60%">
+                  <stop offset="0%"   stopColor="#F5D77A" />
+                  <stop offset="45%"  stopColor="#E8943A" />
+                  <stop offset="100%" stopColor="#E0632A" />
+                </radialGradient>
+              </defs>
+              <path d="M50 8 C62 30 82 40 82 72 a32 32 0 0 1-64 0 C18 52 30 44 38 30 C40 44 50 46 50 38 C48 28 50 18 50 8 Z" fill="url(#sfstat)" />
+            </svg>
+            <div style={valStyle}>{streak > 0 ? streak : '—'}</div>
+          </div>
+          {streak > 0 && (
+            <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 11, color: stone, marginTop: 6 }}>
+              {streak} {L.jours}
+            </div>
+          )}
+        </div>
+
+        {/* Niveau actuel */}
+        <div style={cardStyle}>
+          <div style={lbl}>{L.niveau}</div>
+          <div style={valStyle}>{currentLevel != null ? currentLevel.toFixed(1) : '—'}</div>
+        </div>
+      </div>
+
+      {/* ── Indice de confiance ── */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div style={lbl}>{L.confiance}</div>
+          <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 20, color: COURT.green }}>
+            {confScore}%
+          </div>
+        </div>
+        <div style={{ height: 8, background: dark ? 'rgba(255,255,255,0.1)' : 'rgba(20,66,46,0.1)', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{
+            width: `${confScore}%`, height: '100%',
+            background: `linear-gradient(90deg, ${COURT.green}, ${COURT.gold})`,
+            borderRadius: 4,
+            transition: 'width 0.8s ease',
+          }} />
+        </div>
+        <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12.5, color: stone, marginTop: 8 }}>
+          {L.confianceSub}
+        </div>
+      </div>
+
+    </div>
+  )
+}
