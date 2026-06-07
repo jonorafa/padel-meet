@@ -3213,7 +3213,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 ].map((s, i) => (
                   <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
                     <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4, whiteSpace: 'nowrap' }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -3228,7 +3228,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               ].map((s, i) => (
                 <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
                   <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4, whiteSpace: 'nowrap' }}>{s.label}</div>
                 </div>
               ))}
             </div>
