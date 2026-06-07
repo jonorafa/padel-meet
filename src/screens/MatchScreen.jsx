@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
@@ -26,7 +26,7 @@ import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
 import StreakScreen          from './StreakScreen';
 import { tickStreak }        from '../hooks/useStreak';
-import StatsSection          from '../components/StatsSection';
+const StatsSection = lazy(() => import('../components/StatsSection'));
 import QuizScreen           from './ScoreScreen';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -2371,6 +2371,39 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
   );
 }
 
+// ─── Stats Skeleton (fallback Suspense) ──────────────────────────────────────
+function StatsSkeleton({ dark }) {
+  const cls = dark ? 'skeleton-dark' : 'skeleton'
+  const card = dark ? COURT.darkCard : COURT.cream
+  const border = dark ? COURT.darkBorder : `${COURT.green}25`
+  return (
+    <div style={{ padding: '0 20px' }}>
+      {/* Carte progression */}
+      <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 16, padding: '18px 16px', marginBottom: 12 }}>
+        <div className={cls} style={{ width: 110, height: 10, borderRadius: 5, marginBottom: 14 }} />
+        <div className={cls} style={{ width: '100%', height: 52, borderRadius: 8 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
+          {[...Array(6)].map((_, i) => <div key={i} className={cls} style={{ width: 28, height: 8, borderRadius: 4 }} />)}
+        </div>
+      </div>
+      {/* Grille 2×2 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 14, padding: '14px 16px' }}>
+            <div className={cls} style={{ width: 40, height: 28, borderRadius: 6, marginBottom: 8 }} />
+            <div className={cls} style={{ width: 70, height: 8, borderRadius: 4 }} />
+          </div>
+        ))}
+      </div>
+      {/* Indice de confiance */}
+      <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 16, padding: '18px 16px' }}>
+        <div className={cls} style={{ width: 130, height: 10, borderRadius: 5, marginBottom: 14 }} />
+        <div className={cls} style={{ width: '100%', height: 8, borderRadius: 4 }} />
+      </div>
+    </div>
+  )
+}
+
 // ─── Matches / Stats Screen ──────────────────────────────────────────────────
 function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onSchedule }) {
   const { profile } = useAuth();
@@ -2606,7 +2639,9 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
 
       {tab === 'stats' && (
         <>
-          <StatsSection />
+          <Suspense fallback={<StatsSkeleton dark={dark} />}>
+            <StatsSection />
+          </Suspense>
           {/* ── Trophées en bas de page ── */}
           <div style={{ padding: '0 20px 20px' }}>
             <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px' }}>
