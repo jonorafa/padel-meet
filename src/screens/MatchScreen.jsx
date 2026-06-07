@@ -3844,9 +3844,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               // Pénalité indice de confiance : −10%, minimum 50%
               const newConf = Math.max(50, confidence - 10);
               setConfidence(newConf);
-              // IMPORTANT : on ne touche QUE level + last_self_eval_date
+              // Sauvegarde level + pénalité confidence_rate + cooldown en une seule écriture DB
               await saveProfile({
                 level: computedLevel,
+                confidence_rate: newConf,
                 last_self_eval_date: new Date().toISOString().slice(0, 10),
               });
               setReEvalSaving(false);
@@ -4323,7 +4324,7 @@ function GuestLoginModal({ lang, dark, onSignIn, onClose }) {
 // ─── Main App ────────────────────────────────────────────────────────────────
 export default function MainApp() {
   const { profile, isGuest, signInWithGoogle }             = useAuth();
-  const { lang, dark: darkMode, level, confidence, setLevel } = usePrefs();
+  const { lang, dark: darkMode, level, confidence, setLevel, setConfidence } = usePrefs();
   const t = I18N[lang] || I18N.fr;
 
   const [tab, setTab] = useState('home');
@@ -4362,7 +4363,7 @@ export default function MainApp() {
     tickStreak(profile.id).catch(() => {});
   }, [profile?.id]);
 
-  // Sync le niveau depuis la DB vers localStorage (ex: connexion depuis un nouvel appareil)
+  // Sync le niveau depuis la DB vers le state React (ex: connexion depuis un nouvel appareil)
   useEffect(() => {
     if (profile === undefined || profile === null) return;
     const dbLevel = profile.level ?? null;
@@ -4370,6 +4371,15 @@ export default function MainApp() {
     const differ = dbLevel !== localLevel && (dbLevel == null || localLevel == null || Math.abs(dbLevel - localLevel) > 0.01);
     if (differ) setLevel(dbLevel);
   }, [profile?.level]);
+
+  // Sync confidence_rate depuis la DB vers le state React — même logique que le niveau.
+  // Les évaluations de partenaires (submit_peer_evaluation) modifient confidence_rate en DB ;
+  // ce useEffect s'assure que ce qui est affiché reflète la vraie valeur du serveur.
+  useEffect(() => {
+    if (profile === undefined || profile === null) return;
+    const dbConf = profile.confidence_rate != null ? Math.round(Number(profile.confidence_rate)) : null;
+    if (dbConf !== null && dbConf !== confidence) setConfidence(dbConf);
+  }, [profile?.confidence_rate]);
 
   // Notifications temps réel depuis Supabase
   const { notifications, markRead, markAllRead } = useNotifications();

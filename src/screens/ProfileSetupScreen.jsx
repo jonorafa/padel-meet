@@ -54,15 +54,6 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
           </div>
         </div>
 
-        <div style={{
-          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-          fontStyle: rtl ? 'normal' : 'italic', fontSize: 15, color: `${COURT.cream}c0`,
-          marginTop: 32, maxWidth: 280, lineHeight: 1.5,
-          opacity: s >= 3 ? 1 : 0, transition: 'opacity 0.8s ease',
-        }}>
-          {t.levelExplain}
-        </div>
-
         <div style={{ marginTop: 36, opacity: s >= 3 ? 1 : 0, transition: 'opacity 0.8s ease 0.2s' }}>
           <button onClick={onContinue} style={{
             background: 'transparent', color: COURT.cream,
