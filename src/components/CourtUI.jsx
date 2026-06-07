@@ -5,7 +5,7 @@ export const COURT = {
   green: '#1F5C3F',
   greenDeep: '#0F3D29',
   greenLight: '#2A7A52',
-  purple: '#3F2670',
+  purple: '#C05050',
   cream: '#F5F1E8',
   creamDark: '#EBE4D2',
   gold: '#C9A961',
@@ -318,7 +318,7 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
       {/* En-tête sobre */}
       <div style={{ textAlign: 'center', animation: 'fadeUp 0.5s ease both' }}>
         <div style={{
-          fontFamily: 'Mulish', fontSize: 10, color: COURT.gold,
+          fontFamily: 'Mulish', fontSize: 11, color: COURT.gold,
           letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 14,
         }}>PADEL MEET</div>
         <div style={{
@@ -415,7 +415,7 @@ export function NotifBadge({ count }) {
       position: 'absolute', top: -4, right: -4,
       width: 16, height: 16, borderRadius: 8,
       background: COURT.red, color: '#fff',
-      fontSize: 9, fontFamily: 'Mulish', fontWeight: 600,
+      fontSize: 11, fontFamily: 'Mulish', fontWeight: 600,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       animation: 'notifPop 0.4s cubic-bezier(.2,.9,.3,1.4)',
       border: `1.5px solid ${_darkMode ? COURT.darkBg : COURT.cream}`,
@@ -710,7 +710,7 @@ export function Achievements({ badges, dark }) {
           <div style={{ height: 5, background: `${COURT.cream}25`, borderRadius: 3, marginTop: 10, overflow: 'hidden' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: COURT.gold, borderRadius: 3 }} />
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 9, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
             {b.on ? '100%' : `${b.progress.cur} / ${b.progress.max}`}
           </div>
           <div style={{
@@ -743,7 +743,7 @@ export function Achievements({ badges, dark }) {
             >
               {badge.on ? badge.icon : '🔒'}
             </button>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
               {badge.label}
             </div>
           </div>

@@ -247,6 +247,17 @@ export default function AuthScreen() {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', padding: '24px 28px', overflow: 'hidden',
     }}>
+      {/* Bouton retour vers l'écran langue */}
+      <button
+        onClick={() => navigate('/')}
+        style={{
+          position: 'absolute', top: 18, left: 18,
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: dark ? COURT.darkMuted : COURT.stone,
+          fontSize: 24, lineHeight: 1, padding: 4,
+        }}
+      >‹</button>
+
       <FloatingBalls count={3} />
 
       <div style={{ position: 'relative', width: '100%', maxWidth: 380, zIndex: 2 }}>

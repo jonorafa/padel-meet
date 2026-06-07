@@ -323,7 +323,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                           <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
                         )}
                       </div>
-                      <p style={{ fontFamily: 'Mulish', fontSize: 9, color: tr.unlocked ? (dark ? '#E8E0CC' : '#1A1A1A') : muted, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, margin: 0, maxWidth: 60 }}>{tr.label}</p>
+                      <p style={{ fontFamily: 'Mulish', fontSize: 11, color: tr.unlocked ? (dark ? '#E8E0CC' : '#1A1A1A') : muted, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, margin: 0, maxWidth: 60 }}>{tr.label}</p>
                     </div>
                   ))}
                 </div>
@@ -342,13 +342,13 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               }}>
                 <div />
                 <div style={{
-                  fontFamily: 'Mulish', fontSize: 9, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
                   color: COURT.green, letterSpacing: '0.22em', textTransform: 'uppercase',
                 }}>
                   {myGameLabel}
                 </div>
                 <div style={{
-                  fontFamily: 'Mulish', fontSize: 9, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
                   color: COURT.purple, letterSpacing: '0.22em', textTransform: 'uppercase',
                 }}>
                   {seekingLabel}
@@ -371,7 +371,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   {/* Mon jeu */}
                   <div>
                     <div style={{
-                      fontFamily: 'Mulish', fontSize: 8,
+                      fontFamily: 'Mulish', fontSize: 11,
                       color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
                     }}>{label}</div>
                     <div style={{
@@ -384,7 +384,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   {/* Je recherche */}
                   <div>
                     <div style={{
-                      fontFamily: 'Mulish', fontSize: 8,
+                      fontFamily: 'Mulish', fontSize: 11,
                       color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
                     }}>{label}</div>
                     <div style={{

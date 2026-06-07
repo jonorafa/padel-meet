@@ -1,93 +1,107 @@
-import { useNavigate } from 'react-router-dom';
-import { COURT, PadelRacket, PadelBall, Ornament } from '../components/CourtUI';
-import { usePrefs } from '../context/PrefsContext';
+import { useNavigate } from 'react-router-dom'
+import { COURT, PadelRacket, PadelBall, Ornament } from '../components/CourtUI'
+import { usePrefs } from '../context/PrefsContext'
 
 const langs = [
-  { code: 'he', flag: '🇮🇱' },
-  { code: 'en', flag: '🇬🇧' },
-  { code: 'fr', flag: '🇫🇷' },
-];
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'en', flag: '🇬🇧', label: 'English'  },
+  { code: 'he', flag: '🇮🇱', label: 'עברית'    },
+]
 
 export default function LanguageScreen() {
-  const { lang: current, dark, setLang } = usePrefs();
-  const navigate = useNavigate();
-  const bg = dark ? COURT.darkBg : COURT.cream;
-  const ink = dark ? COURT.darkText : COURT.ink;
+  const { lang: current, dark, setLang } = usePrefs()
+  const navigate = useNavigate()
+  const bg   = dark ? COURT.darkBg   : COURT.cream
+  const ink  = dark ? COURT.darkText : COURT.ink
+  const card = dark ? COURT.darkCard : '#F7F3EA'
+  const border = dark ? COURT.darkBorder : `${COURT.green}20`
 
   return (
     <div style={{
       position: 'absolute', inset: 0, background: bg,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', padding: '0 32px', overflow: 'hidden',
+      justifyContent: 'center', padding: '0 28px', overflow: 'hidden',
     }}>
-      {/* Raquette fantôme qui swingue */}
+
+      {/* Raquette fantôme */}
       <div style={{
-        position: 'absolute', right: -30, top: 130, opacity: dark ? 0.16 : 0.10,
+        position: 'absolute', right: -30, top: 100, opacity: 0.08,
         transformOrigin: '50% 90%', animation: 'racketSwing 5s ease-in-out infinite',
       }}>
-        <PadelRacket size={170} frame={COURT.green} grip={COURT.green} />
+        <PadelRacket size={160} frame={COURT.green} grip={COURT.green} />
       </div>
 
-      {/* Balle qui traverse l'écran en rallye */}
+      {/* Balle rally */}
       <div style={{
-        position: 'absolute', width: 26, height: 26, zIndex: 1,
+        position: 'absolute', width: 24, height: 24, zIndex: 1,
         animation: 'ballRally 4s cubic-bezier(.45,0,.55,1) infinite',
-        filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.15))',
+        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))',
       }}>
         <div style={{ animation: 'ballSpin 1.2s linear infinite' }}>
-          <PadelBall size={26} shadow={false} />
+          <PadelBall size={24} shadow={false} />
         </div>
       </div>
 
-      <div style={{ position: 'relative', textAlign: 'center', zIndex: 2 }}>
-        <Ornament width={120} style={{ margin: '0 auto 18px', display: 'block' }} />
+      {/* Logo */}
+      <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
+        <Ornament width={110} style={{ margin: '0 auto 14px', display: 'block' }} />
         <div style={{
-          fontFamily: 'Pinyon Script, cursive', fontSize: 78, lineHeight: 0.9,
-          color: COURT.green, animation: 'inkReveal 1.4s ease-out', whiteSpace: 'nowrap',
+          fontFamily: 'Pinyon Script, cursive', fontSize: 72, lineHeight: 0.9,
+          color: COURT.green, textAlign: 'center',
+          animation: 'inkReveal 1.4s ease-out',
         }}>
           Padel Meet
         </div>
-        <Ornament width={120} style={{ margin: '16px auto 0', display: 'block' }} />
+        <Ornament width={110} style={{ margin: '14px auto 32px', display: 'block' }} />
 
+        {/* Label */}
         <div style={{
-          marginTop: 44, fontFamily: 'Spectral, serif',
-          fontSize: 24, color: ink, fontStyle: 'italic', fontWeight: 500,
-          letterSpacing: '0.04em',
+          textAlign: 'center',
+          fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
+          letterSpacing: '0.26em', textTransform: 'uppercase',
+          color: dark ? COURT.darkMuted : COURT.stone,
+          marginBottom: 16,
         }}>Language</div>
 
-        <div style={{ marginTop: 28, display: 'flex', justifyContent: 'center', gap: 16 }}>
+        {/* Liste langues — cliquable direct, sans rond */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {langs.map((l, i) => {
-            const isActive = current === l.code;
+            const isActive = current === l.code
             return (
-              <button key={l.code} onClick={() => { setLang(l.code); navigate('/auth'); }}
+              <button
+                key={l.code}
+                onClick={() => { setLang(l.code); navigate('/auth') }}
                 style={{
-                  width: 72, height: 72, borderRadius: 36,
-                  background: isActive ? COURT.greenDeep : (dark ? COURT.darkCard : COURT.cream),
-                  border: `0.5px solid ${isActive ? COURT.gold : COURT.green}`,
-                  cursor: 'pointer', fontSize: 38, lineHeight: 1,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 4px 14px rgba(15,61,41,0.10)',
-                  transition: 'all 0.3s cubic-bezier(.2,.9,.3,1.4)',
-                  animation: `cardIn 0.5s ease ${0.1 + i * 0.08}s both`,
+                  background: isActive ? COURT.greenDeep : card,
+                  border: `0.5px solid ${isActive ? COURT.gold : border}`,
+                  borderRadius: 14, padding: '14px 20px',
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  cursor: 'pointer', width: '100%', textAlign: 'left',
+                  boxShadow: isActive ? '0 6px 20px rgba(15,61,41,0.22)' : '0 2px 8px rgba(15,61,41,0.06)',
+                  transition: 'all 0.22s ease',
+                  animation: `cardIn 0.4s ease ${0.08 * i}s both`,
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-4px) scale(1.08)';
-                  e.currentTarget.style.background = COURT.greenDeep;
-                  e.currentTarget.style.borderColor = COURT.gold;
-                  e.currentTarget.style.boxShadow = '0 10px 24px rgba(15,61,41,0.28), 0 0 0 4px rgba(196,158,87,0.18)';
+                  e.currentTarget.style.background = COURT.greenDeep
+                  e.currentTarget.style.borderColor = COURT.gold
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(15,61,41,0.24)'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.background = isActive ? COURT.greenDeep : (dark ? COURT.darkCard : COURT.cream);
-                  e.currentTarget.style.borderColor = isActive ? COURT.gold : COURT.green;
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(15,61,41,0.10)';
-                }}>
-                <span style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }}>{l.flag}</span>
+                  e.currentTarget.style.background = isActive ? COURT.greenDeep : card
+                  e.currentTarget.style.borderColor = isActive ? COURT.gold : border
+                  e.currentTarget.style.boxShadow = isActive ? '0 6px 20px rgba(15,61,41,0.22)' : '0 2px 8px rgba(15,61,41,0.06)'
+                }}
+              >
+                <span style={{ fontSize: 26 }}>{l.flag}</span>
+                <span style={{
+                  fontFamily: 'Mulish', fontSize: 15, fontWeight: 600,
+                  color: isActive ? COURT.cream : ink,
+                }}>{l.label}</span>
               </button>
-            );
+            )
           })}
         </div>
       </div>
     </div>
-  );
+  )
 }

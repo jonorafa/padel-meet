@@ -184,7 +184,7 @@ export default function StatsSection() {
   }
   const lbl = {
     fontFamily:    'Mulish',
-    fontSize:      10.5,
+    fontSize: 11,
     fontWeight:    600,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
@@ -193,7 +193,7 @@ export default function StatsSection() {
   }
   const valStyle = {
     fontFamily: ff_serif,
-    fontSize:   34,
+    fontSize: 34,
     color:      COURT.green,
     lineHeight: 1,
     fontStyle:  rtl ? 'normal' : 'italic',
@@ -203,7 +203,7 @@ export default function StatsSection() {
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ background: bg, padding: '24px 20px 20px' }}>
 
       {/* ── En-tête ── */}
-      <div style={{ fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, letterSpacing: '0.26em', textTransform: 'uppercase', color: stone }}>
+      <div style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, letterSpacing: '0.26em', textTransform: 'uppercase', color: stone }}>
         {L.eyebrow}
       </div>
       <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 28, color: dark ? COURT.cream : COURT.greenDeep, fontWeight: 500, margin: '6px 0 18px' }}>
@@ -226,7 +226,7 @@ export default function StatsSection() {
         <SparkLine data={progressionData} color={COURT.gold} />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
           {months.map((m, i) => (
-            <span key={i} style={{ fontFamily: 'Mulish', fontSize: 9, color: stone }}>{m}</span>
+            <span key={i} style={{ fontFamily: 'Mulish', fontSize: 11, color: stone }}>{m}</span>
           ))}
         </div>
       </div>

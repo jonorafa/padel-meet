@@ -208,7 +208,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
       >
         <PadelBall size={20} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: 9, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
         <span>{min.toFixed(1)}</span><span>{max.toFixed(1)}</span>
       </div>
     </div>
@@ -218,7 +218,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
 function PrefGroup({ label, children, dark }) {
   return (
     <div style={{ padding: '16px 24px 4px' }}>
-      <div style={{ fontFamily: 'Mulish', fontSize: 10, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</div>
+      <div style={{ fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</div>
       {children}
     </div>
   );
@@ -343,7 +343,7 @@ function InfoChip({ icon, label, value, color, dark }) {
         flexShrink: 0, fontSize: 12,
       }}>{icon}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
           {label}
         </div>
         <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -413,7 +413,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             position: 'absolute', top: 12, left: 12,
             background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
             display: 'flex', alignItems: 'center', gap: 5,
-            fontFamily: 'Mulish', fontSize: 9, color: '#7ED957',
+            fontFamily: 'Mulish', fontSize: 11, color: '#7ED957',
             letterSpacing: '0.14em', textTransform: 'uppercase',
             opacity: 1 - Math.max(yesOp, noOp),
           }}>
@@ -429,7 +429,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           borderRadius: 10, padding: '7px 12px 5px', textAlign: 'center',
           opacity: 1 - Math.max(yesOp, noOp),
         }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 7.5, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
           <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.cream, lineHeight: 1 }}>
             {p.level != null ? p.level.toFixed(1) : '—'}
           </div>
@@ -460,7 +460,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* Ville · matchs · winrate */}
-        <div style={{ fontFamily: 'Mulish', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5, paddingRight: 72 }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.05em', marginTop: 5, paddingRight: 72 }}>
           📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
         </div>
 
@@ -488,7 +488,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
           }}>
             <div style={{
-              fontFamily: 'Mulish', fontSize: 8.5, color: COURT.gold,
+              fontFamily: 'Mulish', fontSize: 11, color: COURT.gold,
               letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8,
             }}>
               {t.partnerPrefsTitle || 'Le partenaire idéal'}
@@ -512,10 +512,13 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       <div style={{ position: 'absolute', inset: 0, opacity: yesOp, pointerEvents: 'none', background: `${COURT.green}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ transform: `scale(${0.5 + yesOp * 0.5})` }}><PadelBall size={90} /></div>
       </div>
-      <div style={{ position: 'absolute', inset: 0, opacity: noOp, pointerEvents: 'none', background: `${COURT.purple}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round">
+      <div style={{ position: 'absolute', inset: 0, opacity: noOp, pointerEvents: 'none', background: `${COURT.purple}55`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+        <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
+        <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 22, color: COURT.cream, letterSpacing: '0.06em', fontWeight: 500 }}>
+          Passer
+        </div>
       </div>
     </div>
   );
@@ -731,7 +734,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
     }}>
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 10px' }}>
         <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, marginLeft: 12 }}>
@@ -747,7 +750,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             {notifCount > 0 && (
-              <div style={{ position: 'absolute', top: -2, right: -2, width: 12, height: 12, borderRadius: 6, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 7, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{notifCount}</div>
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 12, height: 12, borderRadius: 6, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{notifCount}</div>
             )}
           </button>
           <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
@@ -1011,7 +1014,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             {notifCount > 0 && (
-              <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
             )}
           </button>
           <button onClick={() => { setSearchMode(m => !m); setSearchQuery(''); }} style={{
@@ -1108,7 +1111,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                 }}
               >
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontWeight: 500 }}>{p.name}</div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>
                   {p.username ? `@${p.username}` : ''}{p.username && p.city ? ' · ' : ''}{p.city || ''}
                 </div>
               </button>
@@ -1148,7 +1151,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
             <PadelBall size={18} shadow={false} />
           </div>
           <div style={{ position: 'relative' }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.gold, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 6 }}>{t.currentLevel}</div>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 6 }}>{t.currentLevel}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
               <div style={{ fontFamily: 'Spectral, serif', fontSize: level != null ? 68 : 32, color: COURT.cream, fontWeight: 400, lineHeight: 1, animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)' }}>
                 {level != null ? level.toFixed(1) : (t.levelNotEvaluated || 'Niveau non évalué')}
@@ -1158,17 +1161,17 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
             <div style={{ height: 0.5, background: `${COURT.cream}30`, margin: '16px 0 12px' }} />
             <div style={{ display: 'flex', gap: 20 }}>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.matchesPlayed}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.matchesPlayed}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{userMatches}</div>
               </div>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.winRateLabel}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.winRateLabel}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>
                   {userWinrate != null ? `${userWinrate}%` : '—'}
                 </div>
               </div>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.confidence}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.confidence}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{confidence}%</div>
               </div>
             </div>
@@ -1188,7 +1191,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   border: `0.5px solid ${evoPeriod === key ? COURT.green : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
                   background: evoPeriod === key ? COURT.green : 'transparent',
                   color: evoPeriod === key ? '#fff' : stone,
-                  fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 }}>{lbl}</button>
               ))}
             </div>
@@ -1329,7 +1332,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   }
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>{a.date[lang]}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>{a.date[lang]}</div>
                   <div style={{ fontFamily: ff_serif, fontSize: 17, color: ink, fontWeight: 500 }}>{a.title[lang]}</div>
                   <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 2 }}>{a.sub[lang]}</div>
                   {a.scoreL && <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: COURT.green, marginTop: 4, letterSpacing: '0.1em' }}>{a.scoreL} · {a.scoreR}</div>}
@@ -1657,10 +1660,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       <div style={{ margin: '4px 0', background: card, border: `1px solid ${color}40`, borderRadius: 14, padding: '12px 14px', width: '100%' }}>
         {/* Header avec numéro de tentative */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
             🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : lang === 'he' ? 'תוצאה הוגשה' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : lang === 'he' ? 'תוצאה לאישור' : 'Score à confirmer')}
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
             {attemptNum}/3
           </div>
         </div>
@@ -1704,12 +1707,12 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </div>
             )}
             {remaining > 1 && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, textAlign: 'center' }}>
                 {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : lang === 'he' ? `${remaining - 1} ניסיון נוסף אחרי דחייה` : `${remaining - 1} tentative(s) restante(s) si refus`}
               </div>
             )}
             {remaining === 1 && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
                 ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : lang === 'he' ? 'ניסיון אחרון — דחייה = המשחק לא יירשם' : 'Dernière tentative — refus = match inenregistrable'}
               </div>
             )}
@@ -1757,7 +1760,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Spectral, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
               {formatPresence(playerIsOnline, player?.lastSeen, lang)}
             </div>
           </div>
@@ -1876,7 +1879,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
           {/* Saisie par set */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
               {lang === 'en' ? 'Sets' : 'Sets'}
             </div>
             {sets.map((s, i) => {
@@ -1985,7 +1988,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                     border: `1px solid ${accentColor}50`,
                     boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
                   }}>
-                    <div style={{ fontFamily: 'Mulish', fontSize: 9, color: accentColor, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: accentColor, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
                       📅 {lang === 'en' ? 'Match proposal' : lang === 'he' ? 'הצעת משחק' : 'Proposition de match'}
                     </div>
                     <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
@@ -2046,7 +2049,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       </div>
                     )}
 
-                    <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
                   </div>
                 );
               })()
@@ -2063,7 +2066,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 {m.text[lang] || m.text.fr}
                 {/* Ligne heure + accusé de lecture (messages envoyés uniquement) */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3, marginTop: 4 }}>
-                  <span style={{ fontFamily: 'Mulish', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
+                  <span style={{ fontFamily: 'Mulish', fontSize: 11, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
                   {m.from === 'me' && <ReadReceipt read={!!m.readAt} />}
                 </div>
               </div>
@@ -2259,7 +2262,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
     <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 20px' }}>
         <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: 'Spectral, serif', fontSize: 28, color: ink, fontStyle: 'italic', fontWeight: 500 }}>{t.chat}</div>
         </div>
         <button onClick={onShowNotifs} style={{
@@ -2273,7 +2276,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
         </button>
       </div>
@@ -2325,7 +2328,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
           {lastMessage && (
             <div style={{
               fontFamily: 'Mulish',
-              fontSize: 10,
+              fontSize: 11,
               color: hasUnread ? COURT.green : stone,
               fontWeight: hasUnread ? 700 : 400,
             }}>{lastMessage.time}</div>
@@ -2347,7 +2350,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
           ) : (
             <div style={{
               flex: 1, minWidth: 0,
-              fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.12em',
+              fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.12em',
             }}>
               {formatPresence(isOnline, player?.lastSeen, lang)}
             </div>
@@ -2452,7 +2455,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.matches}</div>
         </div>
         <button onClick={onShowNotifs} style={{
@@ -2466,7 +2469,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
         </button>
       </div>
@@ -2502,7 +2505,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 {p?.photo && <div style={{ width: 40, height: 40, borderRadius: 20, background: `url(${p.photo}) center/cover`, flexShrink: 0 }} />}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500 }}>{p?.name || 'Adversaire'}</div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                     {m.date instanceof Date ? m.date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB') : ''}
                   </div>
                   {/* Sets colorés : vert = set gagné, rouge = set perdu */}
@@ -2538,8 +2541,8 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.purple }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
               </div>
             </div>
           )}
@@ -2547,7 +2550,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
           {/* ════ JOUE CONTRE EUX ════ */}
           {myMatches && myMatches.length > 0 && (
             <div style={{ marginTop: 32 }}>
-              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 6 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 6 }}>
                 {lang === 'fr' ? 'Joue contre eux' : lang === 'he' ? 'שחק נגדם' : 'Play against them'}
               </div>
               {(showAllOpponents ? myMatches : myMatches.slice(0, 4)).map((m, i, arr) => (
@@ -2603,7 +2606,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
 
           {/* ════ PROCHAIN MATCH ════ */}
           <div style={{ marginTop: 32 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 12 }}>
               {lang === 'fr' ? 'Prochain match' : lang === 'he' ? 'המשחק הבא' : 'Next match'}
             </div>
             <div style={{
@@ -2645,7 +2648,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
           {/* ── Trophées en bas de page ── */}
           <div style={{ padding: '0 20px 20px' }}>
             <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px' }}>
-              <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
               <Achievements dark={dark} badges={[
                 {
                   icon: '🎾', label: trophies[0].label, on: trophies[0].unlocked,
@@ -2725,7 +2728,7 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>{p.name || '—'}</div>
               {p.level != null && (
-                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
               )}
             </div>
             <div style={{ color: COURT.green, fontSize: 18 }}>💚</div>
@@ -3026,7 +3029,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           {icon ? <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span> : null}
           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
             <span>{label}</span>
-            {sub && <span style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, fontStyle: 'normal', fontWeight: 400, letterSpacing: '0.05em' }}>{sub}</span>}
+            {sub && <span style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, fontStyle: 'normal', fontWeight: 400, letterSpacing: '0.05em' }}>{sub}</span>}
           </span>
         </span>
         <span style={{ color: COURT.green }}>{right || (rtl ? '←' : '→')}</span>
@@ -3074,7 +3077,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.myProfile}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -3122,7 +3125,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
           </button>
         </div>
@@ -3210,7 +3213,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 ].map((s, i) => (
                   <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
                     <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                    <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -3225,7 +3228,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               ].map((s, i) => (
                 <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
                   <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -3236,7 +3239,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
       <div style={{ padding: '24px 24px 100px' }}>
 
         {/* ════ MON PROFIL ════ */}
-        <div style={{ fontFamily: 'Mulish', fontSize: 9.5, color: stone, letterSpacing: '0.26em',
+        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.26em',
           textTransform: 'uppercase', marginBottom: 8 }}>
           {lang === 'fr' ? 'Mon profil' : lang === 'en' ? 'My profile' : 'הפרופיל שלי'}
         </div>
@@ -3252,7 +3255,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
               </svg>
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
               {lang==='fr' ? 'Modifier mon profil' : lang==='en' ? 'Edit profile' : 'עריכת פרופיל'}
             </span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -3267,10 +3270,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>
               </svg>
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
               {lang==='fr' ? 'Région' : lang==='en' ? 'Region' : 'אזור'}
             </span>
-            <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:14, color:stone }}>
+            <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 14, color:stone }}>
               {profile?.region || profile?.city || '—'}
             </span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -3285,7 +3288,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
               {t.likesReceived || 'Likes reçus'}
             </span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -3293,7 +3296,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ MON JEU ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Mon jeu' : lang==='en' ? 'My game' : 'המשחק שלי'}
         </div>
@@ -3308,7 +3311,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>
               </svg>
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
               {t.partnerPrefsTitle || 'Le partenaire idéal'}
             </span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -3332,10 +3335,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
                 </svg>
               </div>
-              <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Réévaluer mon niveau' : lang==='en' ? 'Re-evaluate my level' : 'הערך מחדש'}
               </span>
-              <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:14, color:stone }}>
+              <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 14, color:stone }}>
                 {level?.toFixed?.(1) ?? '—'}
               </span>
               {!evalBlocked && (
@@ -3344,7 +3347,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
             </div>
             {evalBlocked && nextEvalStr && (
               <div style={{
-                fontFamily:'Mulish', fontSize:10.5, color:stone,
+                fontFamily:'Mulish', fontSize: 11, color:stone,
                 letterSpacing:'0.06em', paddingLeft:48, paddingBottom:2,
               }}>
                 {lang==='fr' ? `Disponible le ${nextEvalStr}` : lang==='en' ? `Available on ${nextEvalStr}` : `זמין מ-${nextEvalStr}`}
@@ -3354,7 +3357,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ APPLICATION ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Application' : lang==='en' ? 'App' : 'אפליקציה'}
         </div>
@@ -3370,10 +3373,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               </svg>
             </div>
             <div style={{ flex:1 }}>
-              <div style={{ fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Langue' : lang==='en' ? 'Language' : 'שפה'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
                 Français · English · עברית
               </div>
             </div>
@@ -3389,7 +3392,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
               </svg>
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.darkMode}</span>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.darkMode}</span>
             <div style={{ width:44, height:24, borderRadius:12, background: dark ? COURT.green : `${stone}50`,
               position:'relative', transition:'background 0.3s', flexShrink:0 }}>
               <div style={{ position:'absolute', top:2, left: dark ? 22 : 2, width:20, height:20,
@@ -3399,7 +3402,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ AIDE & LÉGAL ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Aide & légal' : lang==='en' ? 'Help & legal' : 'עזרה'}
         </div>
@@ -3415,10 +3418,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               </svg>
             </div>
             <div style={{ flex:1 }}>
-              <div style={{ fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Aide & support' : lang==='en' ? 'Help & support' : 'עזרה ותמיכה'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Nous contacter' : lang==='en' ? 'Contact us' : 'צור קשר'}
               </div>
             </div>
@@ -3434,10 +3437,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               </svg>
             </div>
             <div style={{ flex:1 }}>
-              <div style={{ fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+              <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Confidentialité' : lang==='en' ? 'Privacy' : 'פרטיות'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
               </div>
             </div>
@@ -3446,7 +3449,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ COMPTE ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Compte' : lang==='en' ? 'Account' : 'חשבון'}
         </div>
@@ -3460,7 +3463,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <path d="M16 17l5-5-5-5M21 12H9"/>
               </svg>
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:COURT.red, fontStyle: rtl ? 'normal' : 'italic' }}>
+            <span style={{ flex:1, fontFamily:ff_serif, fontSize: 19, color:COURT.red, fontStyle: rtl ? 'normal' : 'italic' }}>
               {lang==='fr' ? 'Se déconnecter' : lang==='he' ? 'התנתק' : 'Sign out'}
             </span>
           </div>
@@ -3470,7 +3473,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         {!showDeleteConfirm ? (
           <div onClick={() => setShowDeleteConfirm(true)} style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8,
             marginTop:14, color:`${COURT.red}80`, fontFamily:ff_italic, fontStyle:'italic',
-            fontSize:13, cursor:'pointer', paddingBottom:20 }}>
+            fontSize: 13, cursor:'pointer', paddingBottom:20 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
@@ -3549,7 +3552,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
             href="https://www.iubenda.com/privacy-policy/72981168"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ fontFamily:'Mulish', fontSize:11, color:stone, opacity:0.5,
+            style={{ fontFamily:'Mulish', fontSize: 11, color:stone, opacity:0.5,
               textDecoration:'underline', textDecorationColor:`${stone}40` }}
           >
             {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
@@ -3768,7 +3771,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
               </div>
-              <div style={{ fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: dark ? COURT.darkMuted : COURT.stone }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: dark ? COURT.darkMuted : COURT.stone }}>
                 {lang==='fr' ? 'Attention' : lang==='en' ? 'Warning' : 'שים לב'}
               </div>
             </div>
@@ -3928,7 +3931,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
   const ChipRow = ({ label, value, options, onChange }) => (
     <div style={{ marginBottom: 16 }}>
       <div style={{
-        fontFamily: 'Mulish', fontSize: 9, color: stone,
+        fontFamily: 'Mulish', fontSize: 11, color: stone,
         letterSpacing: '0.22em', textTransform: 'uppercase',
         marginBottom: 8, fontWeight: 600,
       }}>{label}</div>
@@ -4029,7 +4032,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         {/* Plage de niveau */}
         <div style={{ marginBottom: 16 }}>
           <div style={{
-            fontFamily: 'Mulish', fontSize: 9, color: stone,
+            fontFamily: 'Mulish', fontSize: 11, color: stone,
             letterSpacing: '0.22em', textTransform: 'uppercase',
             marginBottom: 8, fontWeight: 600,
           }}>{t.levelRange || 'Plage de niveau'}</div>
@@ -4040,7 +4043,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {lang === 'en' ? 'MIN' : lang === 'he' ? 'מינ׳' : 'MIN'}
                 </div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
@@ -4048,7 +4051,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {lang === 'en' ? 'MAX' : lang === 'he' ? 'מקס׳' : 'MAX'}
                 </div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
@@ -4110,7 +4113,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
             )}
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: ink, lineHeight: 1.4 }}>{n.text[lang] || n.text.fr}</div>
-              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginTop: 2 }}>{n.time}</div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 2 }}>{n.time}</div>
             </div>
             {!n.read && <div style={{ width: 8, height: 8, borderRadius: 4, background: COURT.green, flexShrink: 0 }} />}
           </div>
@@ -4180,7 +4183,7 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPar
 
         {/* ── Choix du partenaire ─────────────────────────────────────── */}
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
             {lang === 'en' ? 'Partner' : lang === 'he' ? 'שותף' : 'Avec qui ?'}
           </div>
           {(!userMatches || userMatches.length === 0) ? (
@@ -4212,7 +4215,7 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPar
 
         {/* ── Date + Heure ────────────────────────────────────────────── */}
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
             {lang === 'en' ? 'Date & Time' : lang === 'he' ? 'תאריך ושעה' : 'Date et heure'}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
