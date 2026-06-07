@@ -77,7 +77,7 @@ function GlossaryCard({ termKey, lang, dark, onClose }) {
         {/* En-tête */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div style={{
-            fontFamily: 'Cormorant Garamond, serif',
+            fontFamily: 'Spectral, serif',
             fontSize: 22, fontWeight: 600, color: COURT.green,
             fontStyle: 'italic',
           }}>
@@ -103,7 +103,7 @@ function GlossaryCard({ termKey, lang, dark, onClose }) {
 
         {/* Définition */}
         <div style={{
-          fontFamily: 'Crimson Text, serif',
+          fontFamily: 'Spectral, serif',
           fontStyle: 'italic', fontSize: 15,
           color: ink, lineHeight: 1.6,
         }}>
@@ -113,7 +113,7 @@ function GlossaryCard({ termKey, lang, dark, onClose }) {
         {/* Label "Vocabulaire padel" */}
         <div style={{
           marginTop: 14,
-          fontFamily: 'Inter', fontSize: 9,
+          fontFamily: 'Mulish', fontSize: 9,
           letterSpacing: '0.2em', textTransform: 'uppercase',
           color: stone,
         }}>
@@ -198,7 +198,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
       <div style={{ position: 'absolute', top: 60, left: 70, right: 70, height: 1.5, background: `${COURT.green}25`, borderRadius: 2, overflow: 'hidden' }}>
         <div style={{ width: `${progress}%`, height: '100%', background: COURT.green, transition: 'width 0.5s ease' }} />
       </div>
-      <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginTop: 14, marginBottom: 20 }}>
+      <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginTop: 14, marginBottom: 20 }}>
         {t.quizQ} {idx + 1} {t.of} {total}
       </div>
 
@@ -209,7 +209,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
       }}>
         {/* Question avec termes cliquables */}
         <div style={{
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontSize: 26, fontWeight: 500, color: ink, lineHeight: 1.3, marginBottom: 6,
         }}>
           {renderWithGlossary(questionText, lang, openGlossary)}
@@ -221,7 +221,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
           return questionText.toLowerCase().includes(term);
         }) && (
           <div style={{
-            fontFamily: 'Inter', fontSize: 9, color: COURT.green,
+            fontFamily: 'Mulish', fontSize: 9, color: COURT.green,
             letterSpacing: '0.14em', textTransform: 'uppercase',
             marginBottom: 4, opacity: 0.7,
           }}>
@@ -233,7 +233,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
 
         {q.sub && (
           <div style={{
-            fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+            fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginBottom: 18,
           }}>{txt(q.sub)}</div>
         )}
@@ -250,10 +250,10 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = COURT.green; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.transform = 'translateY(0)'; }}>
-              <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
+              <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
                 {opt[lang] || opt.en || opt.fr}
               </div>
-              <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 2 }}>
+              <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 2 }}>
                 {subTxt(opt)}
               </div>
             </button>

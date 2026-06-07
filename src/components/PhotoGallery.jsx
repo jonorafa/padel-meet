@@ -27,7 +27,7 @@ export function PhotoGallery({
         width: '100%', aspectRatio: '1 / 1', borderRadius: 12,
         background: dark ? COURT.darkCard : COURT.creamDark,
       }}>
-        <p style={{ fontFamily: 'Inter', color: dark ? COURT.darkMuted : COURT.stone }}>
+        <p style={{ fontFamily: 'Mulish', color: dark ? COURT.darkMuted : COURT.stone }}>
           Aucune photo
         </p>
       </div>
@@ -92,7 +92,7 @@ export function PhotoGallery({
             position: 'absolute', top: 10, left: 10,
             background: COURT.green, color: COURT.cream,
             padding: '3px 9px', borderRadius: 6,
-            fontSize: 11, fontWeight: 700, fontFamily: 'Inter', letterSpacing: '0.05em',
+            fontSize: 11, fontWeight: 700, fontFamily: 'Mulish', letterSpacing: '0.05em',
           }}>
             ★ Principale
           </div>
@@ -111,7 +111,7 @@ export function PhotoGallery({
           position: 'absolute', bottom: 10, right: 10,
           background: 'rgba(0,0,0,0.55)', color: '#fff',
           padding: '2px 8px', borderRadius: 8,
-          fontSize: 11, fontFamily: 'Inter', letterSpacing: '0.03em',
+          fontSize: 11, fontFamily: 'Mulish', letterSpacing: '0.03em',
         }}>
           {currentIndex + 1} / {photos.length}
         </div>

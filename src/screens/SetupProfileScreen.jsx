@@ -120,7 +120,7 @@ function ChipGroup({ value, onChange, options, dark }) {
             color:      active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
             border:     `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '60'}`,
             borderRadius: 10, cursor: 'pointer',
-            fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14,
+            fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
             transition: 'all 0.2s',
           }}>
             {opt.label}
@@ -179,7 +179,7 @@ function CourtSidePicker({ value, onChange, dark, leftLabel, rightLabel }) {
           }}>
             <CourtHalfSVG side={s.side} active={active} />
             <span style={{
-              fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 18,
+              fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 18,
               color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
               fontWeight: active ? 600 : 400,
             }}>
@@ -231,7 +231,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     padding: '12px 14px', borderRadius: 10,
     background: dark ? '#1a2820' : COURT.cream,
     border:     `0.5px solid ${border}`,
-    fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+    fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
     fontStyle:  rtl ? 'normal' : 'italic',
     fontSize: 15, color: ink, outline: 'none',
     WebkitAppearance: 'none',
@@ -315,14 +315,14 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       <div style={{ padding: '32px 24px 12px', textAlign: 'center', flexShrink: 0 }}>
         <Ornament width={50} style={{ margin: '0 auto 8px', display: 'block' }} />
         <div style={{
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic',
           fontSize: 26, color: ink, fontWeight: 500,
         }}>
           {t.title}
         </div>
         <div style={{
-          fontFamily: 'Inter', fontSize: 12, color: stone, marginTop: 4,
+          fontFamily: 'Mulish', fontSize: 12, color: stone, marginTop: 4,
         }}>
           {t.subtitle}
         </div>
@@ -360,14 +360,14 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             onClick={() => fileRef.current?.click()}
             style={{
               marginTop: 6, background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: 'Inter', fontSize: 11, color: COURT.green, textDecoration: 'underline',
+              fontFamily: 'Mulish', fontSize: 11, color: COURT.green, textDecoration: 'underline',
             }}
           >
             {avatar ? t.changePhoto : t.photo}
           </button>
           {!avatar && (
             <div style={{
-              marginTop: 4, fontFamily: 'Inter', fontSize: 11,
+              marginTop: 4, fontFamily: 'Mulish', fontSize: 11,
               color: COURT.purple, fontStyle: 'italic',
             }}>
               {L[lang]?.photoRequired || 'Ajoutez une photo'}
@@ -384,7 +384,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Username */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 4, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 4, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.username}
             </div>
             <input
@@ -401,18 +401,18 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               autoCorrect="off"
             />
             {usernameError && (
-              <div style={{ fontFamily: 'Inter', fontSize: 11, color: '#e53e3e', marginTop: 3 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: '#e53e3e', marginTop: 3 }}>
                 {usernameError}
               </div>
             )}
             {checkingUser && (
-              <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone, marginTop: 3 }}>…</div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 3 }}>…</div>
             )}
           </div>
 
           {/* Full name */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 4, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 4, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.fullName}
             </div>
             <input
@@ -425,7 +425,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Dominant hand */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.hand}
             </div>
             <ChipGroup
@@ -438,7 +438,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Preferred side */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.side}
             </div>
             <CourtSidePicker
@@ -452,7 +452,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Play style */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.style}
             </div>
             <ChipGroup
@@ -469,7 +469,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Motivation */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.motivation}
             </div>
             <ChipGroup
@@ -486,7 +486,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Frequency */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.frequency}
             </div>
             <ChipGroup
@@ -499,7 +499,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Country */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.region}
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -520,7 +520,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                   >
                     <span style={{ fontSize: 22 }}>{flag}</span>
                     <span style={{
-                      fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 16,
+                      fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 16,
                       color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
                       fontWeight: active ? 600 : 400,
                     }}>{v}</span>
@@ -532,7 +532,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Sub-region (city) */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               {t.subRegion}
             </div>
             <ChipGroup
@@ -545,7 +545,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Form error */}
           {formError && (
-            <div style={{ fontFamily: 'Inter', fontSize: 12, color: '#e53e3e', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 12, color: '#e53e3e', textAlign: 'center' }}>
               {formError}
             </div>
           )}
@@ -561,7 +561,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               border: `0.5px solid ${COURT.gold}60`,
               borderRadius: 12,
               cursor: canSubmit ? 'pointer' : 'not-allowed',
-              fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
               fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 17,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,

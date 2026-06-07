@@ -261,7 +261,7 @@ export default function AuthScreen() {
             Padel Meet
           </div>
           <div style={{
-            fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+            fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 15, color: stone, marginTop: 7, letterSpacing: '0.02em',
           }}>
@@ -273,14 +273,14 @@ export default function AuthScreen() {
         <>
           {/* ── Récupération : nouveau mot de passe ── */}
           <div style={{
-            fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif',
+            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 22, color: ink, textAlign: 'center', marginBottom: 18,
           }}>{L.recTitle}</div>
 
           <div style={{ marginBottom: 4 }}>
             <div style={{
-              fontFamily: 'Inter', fontSize: 9.5, color: stone,
+              fontFamily: 'Mulish', fontSize: 9.5, color: stone,
               letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
             }}>{L.password}</div>
             <div style={{ position: 'relative' }}>
@@ -293,7 +293,7 @@ export default function AuthScreen() {
                 style={{
                   width: '100%', padding: '14px 44px 14px 16px', borderRadius: 12,
                   background: card, border: `0.5px solid ${border}`,
-                  fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
                   fontStyle: rtl ? 'normal' : 'italic',
                   fontSize: 16, color: ink, outline: 'none', boxSizing: 'border-box',
                 }}
@@ -327,7 +327,7 @@ export default function AuthScreen() {
                       <polyline points="2,5 4,7.5 8,2.5" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>}
                   </div>
-                  <span style={{ fontFamily: 'Inter', fontSize: 11, color: ok ? COURT.green : stone, transition: 'color 0.2s' }}>{label}</span>
+                  <span style={{ fontFamily: 'Mulish', fontSize: 11, color: ok ? COURT.green : stone, transition: 'color 0.2s' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -337,13 +337,13 @@ export default function AuthScreen() {
             <div style={{
               margin: '10px 0', padding: '10px 14px', borderRadius: 10,
               background: `${COURT.red || '#e74c3c'}10`, border: `0.5px solid ${COURT.red || '#e74c3c'}30`,
-              fontFamily: 'Inter', fontSize: 12, color: COURT.red || '#e74c3c',
+              fontFamily: 'Mulish', fontSize: 12, color: COURT.red || '#e74c3c',
             }}>{error}</div>
           ) : notice ? (
             <div style={{
               margin: '10px 0', padding: '10px 14px', borderRadius: 10,
               background: `${COURT.green}12`, border: `0.5px solid ${COURT.green}33`,
-              fontFamily: 'Inter', fontSize: 12, color: COURT.green,
+              fontFamily: 'Mulish', fontSize: 12, color: COURT.green,
             }}>{notice}</div>
           ) : <div style={{ height: 16 }} />}
 
@@ -351,7 +351,7 @@ export default function AuthScreen() {
             width: '100%', padding: '16px', borderRadius: 14,
             background: loading ? `${COURT.green}80` : COURT.green,
             color: COURT.cream, border: `0.5px solid ${COURT.gold}`,
-            fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif',
+            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 18, cursor: loading ? 'default' : 'pointer', transition: 'all 0.2s',
           }}>
@@ -371,7 +371,7 @@ export default function AuthScreen() {
               flex: 1, padding: '11px', borderRadius: 9, border: 'none', cursor: 'pointer',
               background: tab === id ? COURT.green : 'transparent',
               color: tab === id ? COURT.cream : stone,
-              fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
               fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 15, transition: 'all 0.25s',
             }}>
@@ -383,7 +383,7 @@ export default function AuthScreen() {
         {/* ── Champ Email ── */}
         <div style={{ marginBottom: 12 }}>
           <div style={{
-            fontFamily: 'Inter', fontSize: 9.5, color: stone,
+            fontFamily: 'Mulish', fontSize: 9.5, color: stone,
             letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
           }}>{L.email}</div>
           <input
@@ -395,7 +395,7 @@ export default function AuthScreen() {
             style={{
               width: '100%', padding: '14px 16px', borderRadius: 12,
               background: card, border: `0.5px solid ${border}`,
-              fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
               fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 16, color: ink, outline: 'none',
               boxSizing: 'border-box',
@@ -406,7 +406,7 @@ export default function AuthScreen() {
         {/* ── Champ Mot de passe ── */}
         <div style={{ marginBottom: 4 }}>
           <div style={{
-            fontFamily: 'Inter', fontSize: 9.5, color: stone,
+            fontFamily: 'Mulish', fontSize: 9.5, color: stone,
             letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
           }}>{L.password}</div>
           <div style={{ position: 'relative' }}>
@@ -419,7 +419,7 @@ export default function AuthScreen() {
               style={{
                 width: '100%', padding: '14px 44px 14px 16px', borderRadius: 12,
                 background: card, border: `0.5px solid ${border}`,
-                fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+                fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
                 fontStyle: rtl ? 'normal' : 'italic',
                 fontSize: 16, color: ink, outline: 'none',
                 boxSizing: 'border-box',
@@ -461,7 +461,7 @@ export default function AuthScreen() {
                   </svg>}
                 </div>
                 <span style={{
-                  fontFamily: 'Inter', fontSize: 11,
+                  fontFamily: 'Mulish', fontSize: 11,
                   color: ok ? COURT.green : stone,
                   transition: 'color 0.2s',
                 }}>{label}</span>
@@ -474,7 +474,7 @@ export default function AuthScreen() {
         {tab === 'login' && (
           <div style={{ textAlign: rtl ? 'left' : 'right', marginBottom: 16, marginTop: 6 }}>
             <span onClick={handleForgot} style={{
-              fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
               fontStyle: 'italic', fontSize: 13, color: COURT.green, cursor: 'pointer',
             }}>
               {L.forgot}
@@ -488,7 +488,7 @@ export default function AuthScreen() {
             margin: '10px 0', padding: '10px 14px', borderRadius: 10,
             background: `${COURT.red || '#e74c3c'}10`,
             border: `0.5px solid ${COURT.red || '#e74c3c'}30`,
-            fontFamily: 'Inter', fontSize: 12, color: COURT.red || '#e74c3c',
+            fontFamily: 'Mulish', fontSize: 12, color: COURT.red || '#e74c3c',
           }}>
             {error}
           </div>
@@ -497,7 +497,7 @@ export default function AuthScreen() {
             margin: '10px 0', padding: '10px 14px', borderRadius: 10,
             background: `${COURT.green}12`,
             border: `0.5px solid ${COURT.green}33`,
-            fontFamily: 'Inter', fontSize: 12, color: COURT.green,
+            fontFamily: 'Mulish', fontSize: 12, color: COURT.green,
           }}>
             {notice}
           </div>
@@ -508,7 +508,7 @@ export default function AuthScreen() {
           width: '100%', padding: '16px', borderRadius: 14,
           background: loading ? `${COURT.green}80` : COURT.green,
           color: COURT.cream, border: `0.5px solid ${COURT.gold}`,
-          fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif',
+          fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic',
           fontSize: 18, cursor: loading ? 'default' : 'pointer',
           transition: 'all 0.2s', marginBottom: 0,
@@ -520,7 +520,7 @@ export default function AuthScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '18px 0' }}>
           <div style={{ flex: 1, height: 0.5, background: `${COURT.green}25` }} />
           <span style={{
-            fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
             fontStyle: 'italic', fontSize: 14, color: stone,
           }}>{L.or}</span>
           <div style={{ flex: 1, height: 0.5, background: `${COURT.green}25` }} />
@@ -544,7 +544,7 @@ export default function AuthScreen() {
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
           </svg>
           <span style={{
-            fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 17, color: ink,
           }}>{L.google}</span>
@@ -556,7 +556,7 @@ export default function AuthScreen() {
           border: 'none', cursor: 'pointer', textAlign: 'center',
         }}>
           <span style={{
-            fontFamily: rtl ? 'Inter' : 'Crimson Text, serif',
+            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 15, color: stone,
             textDecoration: 'underline', textUnderlineOffset: 3,

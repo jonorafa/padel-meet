@@ -138,7 +138,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       onClick={onClick}
       style={{
         flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-        fontFamily: 'Inter', fontSize: 13, fontWeight: 600,
+        fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
         background: active ? COURT.green : card,
         color:      active ? COURT.cream : ink,
         border: `0.5px solid ${active ? COURT.green : border}`,
@@ -150,14 +150,14 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   // ── Section heading helper ──────────────────────────────────────
   const SectionTitle = ({ children }) => (
     <h2 style={{
-      fontFamily: 'Playfair Display, serif', fontSize: 17, fontWeight: 700,
+      fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
       color: ink, margin: '0 0 12px',
     }}>{children}</h2>
   )
 
   const FieldLabel = ({ children }) => (
     <label style={{
-      display: 'block', fontFamily: 'Inter', fontSize: 12, fontWeight: 600,
+      display: 'block', fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
       color: muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px',
     }}>{children}</label>
   )
@@ -183,7 +183,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
           <ChevronLeftIcon />
         </button>
         <h1 style={{
-          fontFamily: 'Playfair Display, serif', fontSize: 18, fontWeight: 700,
+          fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 700,
           color: ink, margin: 0,
         }}>
           {t.editProfile}
@@ -231,7 +231,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                   <text x={cx} y={cy + 5}
                     textAnchor="middle"
                     fill="#fff"
-                    fontSize="13" fontWeight="700" fontFamily="Inter">
+                    fontSize="13" fontWeight="700" fontFamily="Mulish">
                     {completionScore}%
                   </text>
                 </svg>
@@ -239,12 +239,12 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                 {/* Text */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
-                    fontFamily: 'Cormorant Garamond, Playfair Display, serif',
+                    fontFamily: 'Spectral, serif',
                     fontSize: 17, fontWeight: 700, fontStyle: 'italic',
                     color: '#fff', margin: '0 0 3px', lineHeight: 1.2,
                   }}>{completionTitle}</p>
                   <p style={{
-                    fontFamily: 'Inter', fontSize: 13,
+                    fontFamily: 'Mulish', fontSize: 13,
                     color: 'rgba(255,255,255,0.78)', margin: 0, lineHeight: 1.4,
                   }}>{completionHint}</p>
                 </div>
@@ -264,7 +264,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                 padding: '12px 14px', borderRadius: 10,
                 background: card, color: ink,
                 border: `1px solid ${border}`,
-                fontFamily: 'Inter', fontSize: 15, outline: 'none',
+                fontFamily: 'Mulish', fontSize: 15, outline: 'none',
               }}
             />
           </section>
@@ -273,10 +273,10 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
           <section>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
               <h2 style={{
-                fontFamily: 'Playfair Display, serif', fontSize: 17, fontWeight: 700,
+                fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
                 color: ink, margin: 0,
               }}>{t.photos}</h2>
-              <span style={{ fontFamily: 'Inter', fontSize: 12, color: muted }}>{photos.length}/10</span>
+              <span style={{ fontFamily: 'Mulish', fontSize: 12, color: muted }}>{photos.length}/10</span>
             </div>
 
             <PhotoGalleryEditor
@@ -313,14 +313,14 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                 style={{
                   width: '100%', boxSizing: 'border-box',
                   padding: '12px 14px', borderRadius: 10, resize: 'none',
-                  fontFamily: 'Inter', fontSize: 14, lineHeight: 1.6,
+                  fontFamily: 'Mulish', fontSize: 14, lineHeight: 1.6,
                   background: card, color: ink,
                   border: `1px solid ${border}`,
                   outline: 'none',
                 }}
               />
               <p style={{
-                fontFamily: 'Inter', fontSize: 11, color: muted,
+                fontFamily: 'Mulish', fontSize: 11, color: muted,
                 textAlign: 'right', margin: '4px 0 0',
               }}>
                 {currentBio.length}/280
@@ -404,7 +404,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               padding: '12px 14px', borderRadius: 10,
               background: `${COURT.red}15`, border: `1px solid ${COURT.red}40`,
             }}>
-              <p style={{ fontFamily: 'Inter', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
+              <p style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
             </div>
           )}
 
@@ -413,7 +413,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               padding: '12px 14px', borderRadius: 10,
               background: `${COURT.green}18`, border: `1px solid ${COURT.green}50`,
             }}>
-              <p style={{ fontFamily: 'Inter', fontSize: 13, color: COURT.green, margin: 0 }}>
+              <p style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.green, margin: 0 }}>
                 {t.profileUpdated}
               </p>
             </div>
@@ -435,7 +435,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
           style={{
             flex: 1, padding: '14px 0', borderRadius: 12,
             background: card, border: `0.5px solid ${border}`,
-            fontFamily: 'Inter', fontSize: 15, fontWeight: 600, color: ink,
+            fontFamily: 'Mulish', fontSize: 15, fontWeight: 600, color: ink,
             cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1,
           }}
         >
@@ -447,7 +447,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
           style={{
             flex: 1, padding: '14px 0', borderRadius: 12,
             background: COURT.green, border: `0.5px solid ${COURT.green}`,
-            fontFamily: 'Inter', fontSize: 15, fontWeight: 700, color: COURT.cream,
+            fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, color: COURT.cream,
             cursor: (saving || photosLoading) ? 'not-allowed' : 'pointer',
             opacity: (saving || photosLoading) ? 0.6 : 1,
           }}

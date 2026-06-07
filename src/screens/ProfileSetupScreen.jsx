@@ -22,7 +22,7 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
       <div style={{ position: 'relative', textAlign: 'center', zIndex: 2 }}>
         <div style={{
           opacity: s >= 1 ? 1 : 0, transform: `translateY(${s >= 1 ? 0 : 16}px)`, transition: 'all 0.9s ease',
-          fontFamily: 'Inter', fontSize: 11, color: COURT.gold, letterSpacing: '0.32em',
+          fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.32em',
           textTransform: 'uppercase', marginBottom: 24,
         }}>
           {level != null ? t.yourLevel : (t.levelNotEvaluated || 'Niveau non évalué')}
@@ -43,7 +43,7 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             opacity: s >= 2 ? 1 : 0, transform: `scale(${s >= 2 ? 1 : 0.6})`, transition: 'all 0.7s cubic-bezier(.2,.8,.2,1)',
           }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: level != null ? 96 : 48, color: COURT.cream, fontWeight: 400, lineHeight: 1, paddingTop: level != null ? 0 : 24 }}>
+            <div style={{ fontFamily: 'Spectral, serif', fontSize: level != null ? 96 : 48, color: COURT.cream, fontWeight: 400, lineHeight: 1, paddingTop: level != null ? 0 : 24 }}>
               {level != null ? level.toFixed(1) : '—'}
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
         </div>
 
         <div style={{
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic', fontSize: 15, color: `${COURT.cream}c0`,
           marginTop: 32, maxWidth: 280, lineHeight: 1.5,
           opacity: s >= 3 ? 1 : 0, transition: 'opacity 0.8s ease',
@@ -68,7 +68,7 @@ export default function ResultScreen({ t, lang, level, onContinue, dark }) {
             background: 'transparent', color: COURT.cream,
             border: `0.5px solid ${COURT.gold}`, borderRadius: 10,
             padding: '14px 36px',
-            fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+            fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, cursor: 'pointer',
             letterSpacing: '0.04em',
           }}>

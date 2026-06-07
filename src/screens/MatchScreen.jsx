@@ -24,6 +24,8 @@ import { PendingMatchesPanel } from '../components/PendingMatchesPanel';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
+import StreakScreen          from './StreakScreen';
+import { tickStreak }        from '../hooks/useStreak';
 import QuizScreen           from './ScoreScreen';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -102,7 +104,7 @@ function Chips({ value, onChange, options, dark }) {
             color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
             border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '60'}`,
             borderRadius: 999, cursor: 'pointer',
-            fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+            fontFamily: 'Spectral, serif', fontStyle: 'italic',
             fontSize: 14, transition: 'all 0.2s',
           }}>
             {opt.icon && <span style={{ fontSize: 11 }}>{opt.icon}</span>}
@@ -205,7 +207,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
       >
         <PadelBall size={20} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Inter', fontSize: 9, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: 9, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
         <span>{min.toFixed(1)}</span><span>{max.toFixed(1)}</span>
       </div>
     </div>
@@ -215,7 +217,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
 function PrefGroup({ label, children, dark }) {
   return (
     <div style={{ padding: '16px 24px 4px' }}>
-      <div style={{ fontFamily: 'Inter', fontSize: 10, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</div>
+      <div style={{ fontFamily: 'Mulish', fontSize: 10, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>{label}</div>
       {children}
     </div>
   );
@@ -277,7 +279,7 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
         ]} />
       </PrefGroup>
       <PrefGroup label={t.levelRange} dark={dark}>
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: COURT.green, marginBottom: 8 }}>
+        <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.green, marginBottom: 8 }}>
           {levelMin.toFixed(1)} <span style={{ color: dark ? COURT.darkMuted : COURT.stone }}>—</span> {levelMax.toFixed(1)}
         </div>
         <RangeBar dark={dark} min={1} max={7} step={0.5} valueMin={levelMin} valueMax={levelMax}
@@ -292,7 +294,7 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
               color: frequency === n ? COURT.cream : (dark ? COURT.darkText : COURT.green),
               border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '60'}`,
               borderRadius: 6, cursor: 'pointer',
-              fontFamily: 'Playfair Display, serif', fontSize: 14,
+              fontFamily: 'Spectral, serif', fontSize: 14,
             }}>{n === 0 ? '—' : `${n}+`}</button>
           ))}
         </div>
@@ -303,12 +305,12 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
           background: dark ? COURT.darkCard : COURT.cream,
           color: dark ? COURT.darkMuted : COURT.stone,
           border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '50'}`,
-          borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, cursor: 'pointer',
+          borderRadius: 10, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, cursor: 'pointer',
         }}>{t.reset}</button>
         <button onClick={() => { onApply({ side, style, motivation, hand, region, levelMin, levelMax, frequency }); onClose(); }} style={{
           flex: 2, padding: '14px', background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.green}`, borderRadius: 10,
-          fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
+          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
           letterSpacing: '0.04em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
           <PadelBall size={18} shadow={false} />{t.saveAndSwipe}
@@ -340,10 +342,10 @@ function InfoChip({ icon, label, value, color, dark }) {
         flexShrink: 0, fontSize: 12,
       }}>{icon}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
           {label}
         </div>
-        <div style={{ fontFamily: 'Crimson Text, serif', fontSize: 13, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {value || '—'}
         </div>
       </div>
@@ -356,8 +358,8 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
-  const ff_serif  = lang === 'he' ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
-  const ff_italic = lang === 'he' ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_serif  = lang === 'he' ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_italic = lang === 'he' ? 'Mulish, sans-serif' : 'Spectral, serif';
   const bg    = dark ? COURT.darkCard : COURT.cream;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
@@ -410,7 +412,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             position: 'absolute', top: 12, left: 12,
             background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
             display: 'flex', alignItems: 'center', gap: 5,
-            fontFamily: 'Inter', fontSize: 9, color: '#7ED957',
+            fontFamily: 'Mulish', fontSize: 9, color: '#7ED957',
             letterSpacing: '0.14em', textTransform: 'uppercase',
             opacity: 1 - Math.max(yesOp, noOp),
           }}>
@@ -426,8 +428,8 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           borderRadius: 10, padding: '7px 12px 5px', textAlign: 'center',
           opacity: 1 - Math.max(yesOp, noOp),
         }}>
-          <div style={{ fontFamily: 'Inter', fontSize: 7.5, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: COURT.cream, lineHeight: 1 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 7.5, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.cream, lineHeight: 1 }}>
             {p.level != null ? p.level.toFixed(1) : '—'}
           </div>
         </div>
@@ -457,7 +459,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* Ville · matchs · winrate */}
-        <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5, paddingRight: 72 }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 10.5, color: stone, letterSpacing: '0.05em', marginTop: 5, paddingRight: 72 }}>
           📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
         </div>
 
@@ -485,7 +487,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
           }}>
             <div style={{
-              fontFamily: 'Inter', fontSize: 8.5, color: COURT.gold,
+              fontFamily: 'Mulish', fontSize: 8.5, color: COURT.gold,
               letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8,
             }}>
               {t.partnerPrefsTitle || 'Le partenaire idéal'}
@@ -558,8 +560,8 @@ function EmptyStack({ t, lang, onReset, dark }) {
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 32 }}>
       <div style={{ animation: 'bounceY 2s ease-in-out infinite', marginBottom: 20 }}><PadelBall size={50} /></div>
-      <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 20, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.closedClub}</div>
-      <p style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, maxWidth: 240, margin: '12px 0 24px' }}>{t.closedHint}</p>
+      <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 20, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.closedClub}</div>
+      <p style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, maxWidth: 240, margin: '12px 0 24px' }}>{t.closedHint}</p>
       <ThinButton variant="green" onClick={onReset}>{t.refreshStack}</ThinButton>
     </div>
   );
@@ -728,8 +730,8 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
     }}>
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 10px' }}>
         <div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-          <div style={{ fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, marginLeft: 12 }}>
           {/* Cloche notifications */}
@@ -744,7 +746,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             {notifCount > 0 && (
-              <div style={{ position: 'absolute', top: -2, right: -2, width: 12, height: 12, borderRadius: 6, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 7, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{notifCount}</div>
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 12, height: 12, borderRadius: 6, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 7, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{notifCount}</div>
             )}
           </button>
           <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
@@ -761,7 +763,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
                 background: dark ? COURT.darkCard : COURT.cream,
                 border: `0.5px solid ${searchQuery ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
                 borderRadius: 999,
-                fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+                fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
                 fontStyle: rtl ? 'normal' : 'italic',
                 fontSize: 13, color: ink, outline: 'none', transition: 'border-color 0.2s',
                 boxSizing: 'border-box',
@@ -772,7 +774,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
             background: dark ? COURT.darkCard : COURT.cream,
             border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
             borderRadius: 999, padding: '0 12px', height: 30,
-            fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+            fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: COURT.green, cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
             whiteSpace: 'nowrap', boxSizing: 'border-box',
@@ -940,8 +942,8 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
   }, [searchQuery]);
 
   const rtl   = lang === 'he';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted: COURT.stone;
@@ -1008,7 +1010,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             {notifCount > 0 && (
-              <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
             )}
           </button>
           <button onClick={() => { setSearchMode(m => !m); setSearchQuery(''); }} style={{
@@ -1052,7 +1054,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                 width: '100%', padding: '12px 40px 12px 16px', boxSizing: 'border-box',
                 background: dark ? COURT.darkCard : COURT.cream,
                 border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
-                borderRadius: 10, fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                borderRadius: 10, fontFamily: 'Spectral, serif', fontStyle: 'italic',
                 fontSize: 15, color: ink, outline: 'none',
               }}
             />
@@ -1078,10 +1080,10 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
             )}
           </div>
           {searchQuery.trim() && searchLoading && (
-            <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>…</div>
+            <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>…</div>
           )}
           {searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
-            <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>{t.noPlayer}</div>
+            <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>{t.noPlayer}</div>
           )}
           {searchResults.map((p, i) => (
             <div key={p.id} style={{
@@ -1104,8 +1106,8 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   cursor: 'pointer', textAlign: 'left', padding: 0,
                 }}
               >
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontWeight: 500 }}>{p.name}</div>
-                <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontWeight: 500 }}>{p.name}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>
                   {p.username ? `@${p.username}` : ''}{p.username && p.city ? ' · ' : ''}{p.city || ''}
                 </div>
               </button>
@@ -1118,7 +1120,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                 background: addedIds.has(p.id) ? `${COURT.green}20` : COURT.green,
                 color: addedIds.has(p.id) ? COURT.green : COURT.cream,
                 border: `0.5px solid ${COURT.green}`,
-                fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13,
+                fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
                 cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
               }}>{addedIds.has(p.id) ? t.requestSent : t.addPlayer}</button>
             </div>
@@ -1145,9 +1147,9 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
             <PadelBall size={18} shadow={false} />
           </div>
           <div style={{ position: 'relative' }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.gold, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 6 }}>{t.currentLevel}</div>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.gold, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 6 }}>{t.currentLevel}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: level != null ? 68 : 32, color: COURT.cream, fontWeight: 400, lineHeight: 1, animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)' }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontSize: level != null ? 68 : 32, color: COURT.cream, fontWeight: 400, lineHeight: 1, animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)' }}>
                 {level != null ? level.toFixed(1) : (t.levelNotEvaluated || 'Niveau non évalué')}
               </div>
               {level != null && <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: `${COURT.cream}90` }}>{t.outOf} 7.0</div>}
@@ -1155,18 +1157,18 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
             <div style={{ height: 0.5, background: `${COURT.cream}30`, margin: '16px 0 12px' }} />
             <div style={{ display: 'flex', gap: 20 }}>
               <div>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.matchesPlayed}</div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.cream }}>{userMatches}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.matchesPlayed}</div>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{userMatches}</div>
               </div>
               <div>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.winRateLabel}</div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.cream }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.winRateLabel}</div>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>
                   {userWinrate != null ? `${userWinrate}%` : '—'}
                 </div>
               </div>
               <div>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.confidence}</div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.cream }}>{confidence}%</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.confidence}</div>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{confidence}%</div>
               </div>
             </div>
           </div>
@@ -1185,7 +1187,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   border: `0.5px solid ${evoPeriod === key ? COURT.green : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
                   background: evoPeriod === key ? COURT.green : 'transparent',
                   color: evoPeriod === key ? '#fff' : stone,
-                  fontFamily: 'Inter', fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, cursor: 'pointer',
                 }}>{lbl}</button>
               ))}
             </div>
@@ -1254,7 +1256,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                         <line x1={padL} y1={yy} x2={W - padR} y2={yy}
                           stroke={dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'} strokeWidth="0.5" />
                         <text x={padL - 4} y={yy + 3.5} textAnchor="end"
-                          fontSize="7" fontFamily="Inter" fill={stone}>{v}</text>
+                          fontSize="7" fontFamily="Mulish" fill={stone}>{v}</text>
                       </g>
                     );
                   })}
@@ -1265,7 +1267,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   {xIdxs.map((idx, li) => (
                     <text key={idx} x={xy[idx][0]} y={H - 4}
                       textAnchor={li === 0 ? 'start' : li === xIdxs.length - 1 ? 'end' : 'middle'}
-                      fontSize="7" fontFamily="Inter" fill={stone}>
+                      fontSize="7" fontFamily="Mulish" fill={stone}>
                       {fmtDate(evoDates?.[idx])}
                     </text>
                   ))}
@@ -1284,7 +1286,7 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                       <rect x={ttX} y={ttY} width={ttW} height={ttH} rx="3"
                         fill={dark ? COURT.darkCard : '#fff'} stroke={COURT.green + '60'} strokeWidth="0.5" />
                       <text x={ttX + ttW / 2} y={ttY + 11.5} textAnchor="middle"
-                        fontSize="8.5" fontFamily="Inter" fontWeight="600" fill={COURT.green}>
+                        fontSize="8.5" fontFamily="Mulish" fontWeight="600" fill={COURT.green}>
                         {`${evoPoints[touchIdx]?.toFixed(1)}  ·  ${fmtDate(evoDates?.[touchIdx])}`}
                       </text>
                     </g>
@@ -1326,10 +1328,10 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
                   }
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>{a.date[lang]}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>{a.date[lang]}</div>
                   <div style={{ fontFamily: ff_serif, fontSize: 17, color: ink, fontWeight: 500 }}>{a.title[lang]}</div>
                   <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 2 }}>{a.sub[lang]}</div>
-                  {a.scoreL && <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 13, color: COURT.green, marginTop: 4, letterSpacing: '0.1em' }}>{a.scoreL} · {a.scoreR}</div>}
+                  {a.scoreL && <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: COURT.green, marginTop: 4, letterSpacing: '0.1em' }}>{a.scoreL} · {a.scoreR}</div>}
                 </div>
               </div>
             ))}
@@ -1654,15 +1656,15 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       <div style={{ margin: '4px 0', background: card, border: `1px solid ${color}40`, borderRadius: 14, padding: '12px 14px', width: '100%' }}>
         {/* Header avec numéro de tentative */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: 'Inter', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 9, color, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
             🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : lang === 'he' ? 'תוצאה הוגשה' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : lang === 'he' ? 'תוצאה לאישור' : 'Score à confirmer')}
           </div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
             {attemptNum}/3
           </div>
         </div>
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
-        <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
+        <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
+        <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
           {label} · {pending.isSubmitter
             ? (lang === 'en' ? 'Awaiting confirmation…' : lang === 'he' ? 'ממתין לאישור…' : 'En attente de confirmation…')
             : (lang === 'en' ? `${player?.name} asks you to confirm` : lang === 'he' ? `${player?.name} מבקש את אישורך` : `${player?.name} demande votre confirmation`)}
@@ -1677,7 +1679,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                   flex: 1, padding: '11px', borderRadius: 8,
                   background: confirmingId === pending.id ? `${COURT.green}80` : COURT.green,
                   border: 'none', color: COURT.cream,
-                  fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer', fontWeight: 600,
                   opacity: (rejectingId === pending.id) ? 0.4 : 1,
                 }}>
                 {confirmingId === pending.id ? '…' : (lang === 'en' ? '✓ Confirm' : lang === 'he' ? '✓ אשר' : '✓ Confirmer')}
@@ -1688,7 +1690,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 style={{
                   flex: 1, padding: '11px', borderRadius: 8,
                   background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`,
-                  color: COURT.purple, fontFamily: 'Inter', fontSize: 13,
+                  color: COURT.purple, fontFamily: 'Mulish', fontSize: 13,
                   cursor: rejectingId === pending.id ? 'not-allowed' : 'pointer',
                   opacity: (rejectingId === pending.id || confirmingId === pending.id) ? 0.5 : 1,
                 }}>
@@ -1696,17 +1698,17 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </button>
             </div>
             {actionError && (
-              <div style={{ fontFamily: 'Inter', fontSize: 11, color: COURT.purple, textAlign: 'center', marginBottom: 4 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple, textAlign: 'center', marginBottom: 4 }}>
                 ⚠️ {actionError}
               </div>
             )}
             {remaining > 1 && (
-              <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, textAlign: 'center' }}>
                 {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : lang === 'he' ? `${remaining - 1} ניסיון נוסף אחרי דחייה` : `${remaining - 1} tentative(s) restante(s) si refus`}
               </div>
             )}
             {remaining === 1 && (
-              <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
                 ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : lang === 'he' ? 'ניסיון אחרון — דחייה = המשחק לא יירשם' : 'Dernière tentative — refus = match inenregistrable'}
               </div>
             )}
@@ -1720,10 +1722,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const renderLockedCard = () => (
     <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.purple}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
       <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
-      <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: COURT.purple, fontStyle: 'italic', marginBottom: 4 }}>
+      <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: COURT.purple, fontStyle: 'italic', marginBottom: 4 }}>
         {lang === 'en' ? 'Match unrecordable' : lang === 'he' ? 'לא ניתן לרשום את המשחק' : 'Match inenregistrable'}
       </div>
-      <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
+      <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
         {lang === 'en' ? '3 consecutive rejections — no score can be submitted for this match.' : lang === 'he' ? '3 דחיות רצופות — לא ניתן להגיש תוצאה למשחק זה.' : '3 désaccords consécutifs — aucun score ne peut être enregistré pour ce match.'}
       </div>
     </div>
@@ -1753,8 +1755,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 5, background: playerIsOnline ? '#4CAF50' : stone, border: `1.5px solid ${bg}` }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
+            <div style={{ fontFamily: 'Spectral, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
               {formatPresence(playerIsOnline, player?.lastSeen, lang)}
             </div>
           </div>
@@ -1791,7 +1793,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               background: sheet === key ? COURT.green : 'transparent',
               border: `0.5px solid ${disabled ? stone : sheet === key ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
               color: disabled ? stone : sheet === key ? COURT.cream : COURT.green,
-              fontFamily: 'Inter', fontSize: 12, cursor: disabled ? 'default' : 'pointer',
+              fontFamily: 'Mulish', fontSize: 12, cursor: disabled ? 'default' : 'pointer',
               opacity: disabled ? 0.45 : 1,
             }}>
             <span style={{ fontSize: 14 }}>{icon}</span> {label}
@@ -1802,21 +1804,21 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       {/* ── Sheet Proposer un match ─────────────────────────────────────────── */}
       {sheet === 'proposal' && (
         <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
             {lang === 'en' ? 'Propose a match' : lang === 'he' ? 'הצע משחק' : 'Proposer un match'}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <input type="date" value={propDate} onChange={e => setPropDate(e.target.value)}
-              style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 13, outline: 'none' }} />
+              style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Mulish', fontSize: 13, outline: 'none' }} />
             <input type="time" value={propTime} onChange={e => setPropTime(e.target.value)}
-              style={{ width: 100, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 13, outline: 'none' }} />
+              style={{ width: 100, padding: '8px 10px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Mulish', fontSize: 13, outline: 'none' }} />
           </div>
           <input placeholder={lang === 'en' ? 'Court / location (optional)' : lang === 'he' ? 'מגרש / מיקום (אופציונלי)' : 'Club / terrain (optionnel)'}
             value={propPlace} onChange={e => setPropPlace(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, outline: 'none' }} />
+            style={{ padding: '8px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, outline: 'none' }} />
           <button onClick={sendProposal} disabled={propSending || !propDate || !propTime} style={{
             padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
-            color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', opacity: (!propDate || !propTime) ? 0.4 : 1,
+            color: COURT.cream, fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer', opacity: (!propDate || !propTime) ? 0.4 : 1,
           }}>
             {propSending ? '…' : (lang === 'en' ? 'Send proposal' : lang === 'he' ? 'שלח הצעה' : 'Envoyer la proposition')}
           </button>
@@ -1826,7 +1828,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       {/* ── Sheet Entrer un score ───────────────────────────────────────────── */}
       {sheet === 'score' && (
         <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
             {lang === 'en' ? 'Submit a score' : lang === 'he' ? 'הגש תוצאה' : 'Soumettre un score'}
           </div>
 
@@ -1834,7 +1836,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           {scoreDateBlocked && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 12px', background: `${COURT.gold}18`, border: `0.5px solid ${COURT.gold}60`, borderRadius: 8 }}>
               <span style={{ fontSize: 18, flexShrink: 0 }}>⏳</span>
-              <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: ink }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: ink }}>
                 {lang === 'en'
                   ? `Match scheduled for ${latestAcceptedProposal?.metadata?.date} — submit the score after the match.`
                   : lang === 'he'
@@ -1850,10 +1852,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               {['win', 'loss'].map(r => (
                 <button key={r} onClick={() => setScoreResult(r)} style={{
                   flex: 1, padding: '8px', borderRadius: 8,
-                  background: scoreResult === r ? (r === 'win' ? COURT.green : COURT.purple) : 'transparent',
-                  border: `0.5px solid ${r === 'win' ? COURT.green : COURT.purple}`,
-                  color: scoreResult === r ? COURT.cream : (r === 'win' ? COURT.green : COURT.purple),
-                  fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
+                  background: scoreResult === r ? (r === 'win' ? COURT.green : COURT.red) : 'transparent',
+                  border: `0.5px solid ${r === 'win' ? COURT.green : COURT.red}`,
+                  color: scoreResult === r ? COURT.cream : (r === 'win' ? COURT.green : COURT.red),
+                  fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer',
                 }}>
                   {r === 'win' ? (lang === 'en' ? 'Victory 🏆' : lang === 'he' ? 'ניצחון 🏆' : 'Victoire 🏆') : (lang === 'en' ? 'Defeat' : lang === 'he' ? 'הפסד' : 'Défaite')}
                 </button>
@@ -1865,7 +1867,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               background: scoreResult === 'teammate' ? `${COURT.gold}25` : 'transparent',
               border: `0.5px solid ${COURT.gold}`,
               color: scoreResult === 'teammate' ? COURT.ink : COURT.gold,
-              fontFamily: 'Inter', fontSize: 13, cursor: 'pointer', textAlign: 'left',
+              fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer', textAlign: 'left',
             }}>
               {lang === 'en' ? '🤝 Teammate — we both won' : lang === 'he' ? '🤝 שותף — שנינו ניצחנו' : '🤝 Coéquipier — on a tous les deux gagné'}
             </button>
@@ -1873,7 +1875,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
           {/* Saisie par set */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
               {lang === 'en' ? 'Sets' : 'Sets'}
             </div>
             {sets.map((s, i) => {
@@ -1884,7 +1886,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {/* Numéro set */}
-                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 13, color: stone, minWidth: 40 }}>
+                  <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: stone, minWidth: 40 }}>
                     Set {i + 1}
                   </div>
                   {/* Mon score */}
@@ -1897,11 +1899,11 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       width: 54, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
                       border: `0.5px solid ${setWon ? COURT.green : setLost ? COURT.purple : border}`,
                       background: setWon ? `${COURT.green}15` : setLost ? `${COURT.purple}12` : bg,
-                      color: ink, fontFamily: 'Playfair Display, serif', fontSize: 16,
+                      color: ink, fontFamily: 'Spectral, serif', fontSize: 16,
                       outline: 'none', letterSpacing: '0.04em',
                     }}
                   />
-                  <span style={{ color: stone, fontFamily: 'Playfair Display, serif', fontSize: 18 }}>—</span>
+                  <span style={{ color: stone, fontFamily: 'Spectral, serif', fontSize: 18 }}>—</span>
                   {/* Score adverse */}
                   <input
                     type="number" min="0" max="7" inputMode="numeric"
@@ -1912,7 +1914,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       width: 54, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
                       border: `0.5px solid ${setLost ? COURT.purple : setWon ? COURT.green : border}`,
                       background: setLost ? `${COURT.purple}12` : setWon ? `${COURT.green}15` : bg,
-                      color: ink, fontFamily: 'Playfair Display, serif', fontSize: 16,
+                      color: ink, fontFamily: 'Spectral, serif', fontSize: 16,
                       outline: 'none', letterSpacing: '0.04em',
                     }}
                   />
@@ -1936,7 +1938,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               <button onClick={() => setSets(prev => [...prev, { me: '', them: '' }])} style={{
                 alignSelf: 'flex-start', padding: '7px 14px', borderRadius: 20,
                 border: `0.5px solid ${COURT.green}`, background: 'transparent',
-                color: COURT.green, fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+                color: COURT.green, fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
@@ -1944,13 +1946,13 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </button>
             )}
           </div>
-          {scoreError && <div style={{ fontFamily: 'Inter', fontSize: 11, color: COURT.purple }}>{scoreError}</div>}
-          <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
+          {scoreError && <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple }}>{scoreError}</div>}
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
             {lang === 'en' ? `${player?.name} will need to confirm the score.` : lang === 'he' ? `${player?.name} יצטרך לאשר את התוצאה.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
           </div>
           <button onClick={sendScore} disabled={scoreSending || !scoreText.trim() || scoreDateBlocked} style={{
             padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
-            color: COURT.cream, fontFamily: 'Inter', fontSize: 13, cursor: 'pointer',
+            color: COURT.cream, fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer',
             opacity: (!scoreText.trim() || scoreDateBlocked) ? 0.4 : 1,
           }}>
             {scoreSending ? '…' : (lang === 'en' ? 'Submit score' : lang === 'he' ? 'הגש תוצאה' : 'Soumettre le score')}
@@ -1982,14 +1984,14 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                     border: `1px solid ${accentColor}50`,
                     boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
                   }}>
-                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: accentColor, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 9, color: accentColor, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
                       📅 {lang === 'en' ? 'Match proposal' : lang === 'he' ? 'הצעת משחק' : 'Proposition de match'}
                     </div>
-                    <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
+                    <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
                       {m.metadata?.date} {lang === 'en' ? 'at' : lang === 'he' ? 'ב' : 'à'} {m.metadata?.time}
                     </div>
                     {m.metadata?.place && (
-                      <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
+                      <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
                     )}
 
                     {/* Boutons Accept/Decline (uniquement pour l'autre joueur, pas encore répondu) */}
@@ -2001,7 +2003,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                           style={{
                             flex: 1, padding: '8px', borderRadius: 8,
                             background: COURT.green, border: 'none', color: COURT.cream,
-                            fontFamily: 'Inter', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                            fontFamily: 'Mulish', fontSize: 12, fontWeight: 500, cursor: 'pointer',
                             opacity: respondingId === m._id ? 0.5 : 1,
                           }}>
                           ✓ {lang === 'en' ? 'Accept' : lang === 'he' ? 'אשר' : 'Accepter'}
@@ -2013,7 +2015,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                             flex: 1, padding: '8px', borderRadius: 8,
                             background: 'transparent', color: COURT.purple,
                             border: `0.5px solid ${COURT.purple}`,
-                            fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+                            fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
                             opacity: respondingId === m._id ? 0.5 : 1,
                           }}>
                           ✗ {lang === 'en' ? 'Decline' : lang === 'he' ? 'דחה' : 'Refuser'}
@@ -2026,7 +2028,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       <div style={{
                         marginTop: 10, padding: '6px 10px',
                         background: `${COURT.green}15`, borderRadius: 8,
-                        fontFamily: 'Inter', fontSize: 11, color: COURT.green, fontWeight: 500,
+                        fontFamily: 'Mulish', fontSize: 11, color: COURT.green, fontWeight: 500,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       }}>
                         ✓ {lang === 'en' ? 'Match accepted' : lang === 'he' ? 'משחק אושר' : 'Match accepté'}
@@ -2036,14 +2038,14 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       <div style={{
                         marginTop: 10, padding: '6px 10px',
                         background: `${COURT.purple}15`, borderRadius: 8,
-                        fontFamily: 'Inter', fontSize: 11, color: COURT.purple,
+                        fontFamily: 'Mulish', fontSize: 11, color: COURT.purple,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       }}>
                         ✗ {lang === 'en' ? 'Match declined' : lang === 'he' ? 'משחק נדחה' : 'Match refusé'}
                       </div>
                     )}
 
-                    <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
                   </div>
                 );
               })()
@@ -2054,13 +2056,13 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 borderRadius: m.from === 'me' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                 background: m.from === 'me' ? COURT.green : (dark ? '#243020' : '#EDE9DF'),
                 color: m.from === 'me' ? COURT.cream : ink,
-                fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15,
+                fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
               }}>
                 {m.text[lang] || m.text.fr}
                 {/* Ligne heure + accusé de lecture (messages envoyés uniquement) */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3, marginTop: 4 }}>
-                  <span style={{ fontFamily: 'Inter', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
+                  <span style={{ fontFamily: 'Mulish', fontSize: 9, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
                   {m.from === 'me' && <ReadReceipt read={!!m.readAt} />}
                 </div>
               </div>
@@ -2097,7 +2099,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             flex: 1, padding: '11px 16px', borderRadius: 24,
             background: dark ? COURT.darkCard : '#EDE9DF',
             border: `0.5px solid ${border}`,
-            fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+            fontFamily: 'Spectral, serif', fontStyle: 'italic',
             fontSize: 15, color: ink, outline: 'none',
           }}
         />
@@ -2134,10 +2136,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </svg>
             </button>
             <div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500 }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500 }}>
                 {lang === 'en' ? `Evaluate ${player?.name}` : lang === 'he' ? `העריך את ${player?.name}` : `Évaluer ${player?.name}`}
               </div>
-              <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, color: dark ? COURT.darkMuted : COURT.stone }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, color: dark ? COURT.darkMuted : COURT.stone }}>
                 {lang === 'en' ? 'Answer as if rating their level' : lang === 'he' ? 'ענה לפי הרמה שלו/ה' : 'Répondez en pensant à son niveau'}
               </div>
             </div>
@@ -2215,10 +2217,10 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
       <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 32px 100px' }}>
         <div style={{ textAlign: 'center', maxWidth: 280 }}>
           <div style={{ fontSize: 44, marginBottom: 16 }}>💬</div>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, color: ink, fontStyle: 'italic', fontWeight: 500, marginBottom: 10 }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: ink, fontStyle: 'italic', fontWeight: 500, marginBottom: 10 }}>
             {lang === 'en' ? 'Your matches, your chats' : lang === 'he' ? 'ההתאמות שלך, הצ׳אטים שלך' : 'Tes matchs, tes conversations'}
           </div>
-          <div style={{ fontFamily: 'Inter', fontSize: 13, color: stone, lineHeight: 1.6, marginBottom: 28 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, lineHeight: 1.6, marginBottom: 28 }}>
             {lang === 'en'
               ? 'Create an account to match with players and chat with them.'
               : lang === 'he'
@@ -2229,7 +2231,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
             padding: '14px 28px', borderRadius: 12,
             background: COURT.green, color: COURT.cream,
             border: `0.5px solid ${COURT.gold}50`, cursor: 'pointer',
-            fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 16,
+            fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 16,
           }}>
             {lang === 'en' ? 'Join the club' : lang === 'he' ? 'הצטרף למועדון' : 'Rejoindre le club'}
           </button>
@@ -2256,8 +2258,8 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
     <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 20px' }}>
         <div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: ink, fontStyle: 'italic', fontWeight: 500 }}>{t.chat}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 28, color: ink, fontStyle: 'italic', fontWeight: 500 }}>{t.chat}</div>
         </div>
         <button onClick={onShowNotifs} style={{
           position: 'relative', width: 36, height: 36, borderRadius: 18,
@@ -2270,7 +2272,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
         </button>
       </div>
@@ -2280,7 +2282,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
           <div style={{ width: 24, height: 24, margin: '0 auto', borderRadius: '50%', border: `2px solid ${COURT.green}30`, borderTopColor: COURT.green, animation: 'spin 0.7s linear infinite' }} />
         </div>
       ) : matches.length === 0 ? (
-        <div style={{ padding: '40px 24px', textAlign: 'center', color: stone, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noChats}</div>
+        <div style={{ padding: '40px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noChats}</div>
       ) : matches.map((m, i) => (
         <ChatListRow
           key={m.matchId}
@@ -2314,14 +2316,14 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{
-            fontFamily: 'Cormorant Garamond, serif',
+            fontFamily: 'Spectral, serif',
             fontSize: 17,
             color: ink,
             fontWeight: hasUnread ? 700 : 500,
           }}>{player.name}</div>
           {lastMessage && (
             <div style={{
-              fontFamily: 'Inter',
+              fontFamily: 'Mulish',
               fontSize: 10,
               color: hasUnread ? COURT.green : stone,
               fontWeight: hasUnread ? 700 : 400,
@@ -2332,7 +2334,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
           {lastMessage ? (
             <div style={{
               flex: 1, minWidth: 0,
-              fontFamily: 'Crimson Text, serif',
+              fontFamily: 'Spectral, serif',
               fontStyle: 'italic',
               fontSize: 13,
               color: hasUnread ? ink : stone,
@@ -2344,7 +2346,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
           ) : (
             <div style={{
               flex: 1, minWidth: 0,
-              fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.12em',
+              fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.12em',
             }}>
               {formatPresence(isOnline, player?.lastSeen, lang)}
             </div>
@@ -2356,7 +2358,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
               borderRadius: 10,
               background: COURT.green,
               color: COURT.cream,
-              fontFamily: 'Inter, sans-serif',
+              fontFamily: 'Mulish, sans-serif',
               fontSize: 11, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: `0 1px 4px ${COURT.green}55`,
@@ -2378,8 +2380,8 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
   const [trophyTip, setTrophyTip] = useState(null);
   const [showAllOpponents, setShowAllOpponents] = useState(false);
   const rtl   = lang === 'he';
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const card  = dark ? COURT.darkCard : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
@@ -2416,7 +2418,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.matches}</div>
         </div>
         <button onClick={onShowNotifs} style={{
@@ -2430,7 +2432,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
         </button>
       </div>
@@ -2441,7 +2443,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
             flex: 1, padding: '10px', borderRadius: 8, border: 'none', cursor: 'pointer',
             background: tab === tb.id ? COURT.green : 'transparent',
             color: tab === tb.id ? COURT.cream : stone,
-            fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14,
+            fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
             transition: 'all 0.25s',
           }}>{tb.label}</button>
         ))}
@@ -2466,7 +2468,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 {p?.photo && <div style={{ width: 40, height: 40, borderRadius: 20, background: `url(${p.photo}) center/cover`, flexShrink: 0 }} />}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500 }}>{p?.name || 'Adversaire'}</div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                     {m.date instanceof Date ? m.date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB') : ''}
                   </div>
                   {/* Sets colorés : vert = set gagné, rouge = set perdu */}
@@ -2478,7 +2480,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                         const lost = !isNaN(myG) && !isNaN(thG) && myG < thG;
                         return (
                           <span key={si} style={{
-                            fontFamily: 'Playfair Display, serif', fontSize: 13,
+                            fontFamily: 'Spectral, serif', fontSize: 13,
                             padding: '2px 7px', borderRadius: 5,
                             background: won ? `${COURT.green}20` : lost ? `${COURT.purple}18` : `${COURT.stone}15`,
                             color: won ? COURT.green : lost ? COURT.purple : stone,
@@ -2502,8 +2504,8 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
-                <div style={{ fontFamily: 'Inter', fontSize: 10, color: COURT.purple }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.purple }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
               </div>
             </div>
           )}
@@ -2511,7 +2513,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
           {/* ════ JOUE CONTRE EUX ════ */}
           {myMatches && myMatches.length > 0 && (
             <div style={{ marginTop: 32 }}>
-              <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 6 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 6 }}>
                 {lang === 'fr' ? 'Joue contre eux' : lang === 'he' ? 'שחק נגדם' : 'Play against them'}
               </div>
               {(showAllOpponents ? myMatches : myMatches.slice(0, 4)).map((m, i, arr) => (
@@ -2524,7 +2526,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: ff_serif, fontSize: 21, color: ink, fontWeight: 500 }}>{m.player.name}</div>
                     {(m.player.level != null || m.player.winrate != null) && (
-                      <div style={{ fontFamily: 'Inter', fontSize: 13, color: stone, marginTop: 2 }}>
+                      <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 2 }}>
                         {m.player.level != null && `${lang === 'fr' ? 'Niveau' : lang === 'he' ? 'רמה' : 'Level'} ${m.player.level.toFixed(1)}`}
                         {m.player.level != null && m.player.winrate != null && ' · '}
                         {m.player.winrate != null && `${m.player.winrate}% ${lang === 'fr' ? 'victoires' : lang === 'he' ? 'נצחונות' : 'wins'}`}
@@ -2567,7 +2569,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
 
           {/* ════ PROCHAIN MATCH ════ */}
           <div style={{ marginTop: 32 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 12 }}>
               {lang === 'fr' ? 'Prochain match' : lang === 'he' ? 'המשחק הבא' : 'Next match'}
             </div>
             <div style={{
@@ -2584,7 +2586,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 19, color: ink }}>
                   {lang === 'fr' ? 'Aucun match prévu' : lang === 'he' ? 'אין משחק מתוכנן' : 'No match scheduled'}
                 </div>
-                <div style={{ fontFamily: 'Inter', fontSize: 13, color: stone, marginTop: 2 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 2 }}>
                   {lang === 'fr' ? 'Planifie ton prochain défi' : lang === 'he' ? 'תכנן את האתגר הבא שלך' : 'Plan your next challenge'}
                 </div>
               </div>
@@ -2611,13 +2613,13 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
               { label: t.currentLevel,   value: level != null ? level.toFixed(1) : '—' },
             ].map((s, i) => (
               <div key={i} style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '18px 16px', animation: `cardIn 0.4s ease ${i * 0.06}s both` }}>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 28, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
               </div>
             ))}
           </div>
           <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px', marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
+            <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 16 }}>{t.trophiesTitle || 'Trophées'}</div>
             <Achievements dark={dark} badges={[
               {
                 icon: '🎾', label: trophies[0].label, on: trophies[0].unlocked,
@@ -2652,8 +2654,8 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
   const [likes, setLikes] = useState([]);
   const [loading, setLoading] = useState(true);
   const rtl = lang === 'he';
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const ink   = dark ? COURT.darkText  : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
   const card  = dark ? COURT.darkCard  : COURT.cream;
@@ -2696,7 +2698,7 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>{p.name || '—'}</div>
               {p.level != null && (
-                <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
               )}
             </div>
             <div style={{ color: COURT.green, fontSize: 18 }}>💚</div>
@@ -2716,8 +2718,8 @@ function ContactSheet({ dark, lang, onClose }) {
   const border= dark ? COURT.darkBorder : `${COURT.green}30`;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
 
   const types = ['Feedback', 'Bug', 'Aide'];
   const [type, setType]       = useState('Feedback');
@@ -2768,7 +2770,7 @@ function ContactSheet({ dark, lang, onClose }) {
   const inputStyle = {
     width: '100%', padding: '12px 14px', borderRadius: 10,
     background: bg, border: `0.5px solid ${border}`,
-    fontFamily: 'Inter', fontSize: 14, color: ink, outline: 'none',
+    fontFamily: 'Mulish', fontSize: 14, color: ink, outline: 'none',
     boxSizing: 'border-box', WebkitAppearance: 'none',
   };
 
@@ -2799,7 +2801,7 @@ function ContactSheet({ dark, lang, onClose }) {
                   background: type === tp ? COURT.green : card,
                   border: `0.5px solid ${type === tp ? COURT.gold : border}`,
                   color: type === tp ? COURT.cream : stone,
-                  fontFamily: 'Inter', fontSize: 11, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
                   transition: 'all 0.2s',
                 }}>{tp}</button>
               ))}
@@ -2833,7 +2835,7 @@ function ContactSheet({ dark, lang, onClose }) {
                 padding: '10px 14px', borderRadius: 10,
                 background: `${COURT.red}15`, border: `1px solid ${COURT.red}40`,
               }}>
-                <p style={{ fontFamily: 'Inter', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
+                <p style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
               </div>
             )}
 
@@ -2842,7 +2844,7 @@ function ContactSheet({ dark, lang, onClose }) {
               width: '100%', padding: '14px', borderRadius: 12,
               background: canSend ? COURT.green : `${COURT.green}45`,
               border: `0.5px solid ${canSend ? COURT.gold + '80' : 'transparent'}`,
-              color: COURT.cream, fontFamily: 'Inter', fontSize: 15, fontWeight: 600,
+              color: COURT.cream, fontFamily: 'Mulish', fontSize: 15, fontWeight: 600,
               cursor: canSend ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s',
             }}>
@@ -2859,7 +2861,7 @@ function ContactSheet({ dark, lang, onClose }) {
 }
 
 // ─── Profile Screen ──────────────────────────────────────────────────────────
-function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0 }) {
+function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {} }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
   const { lang, dark, level, confidence, setLang, toggleDark } = usePrefs();
   const navigate = useNavigate();
@@ -2878,8 +2880,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
   const rtl   = lang === 'he';
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const card  = dark ? COURT.darkCard : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}50`;
@@ -2978,7 +2980,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           {icon ? <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span> : null}
           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
             <span>{label}</span>
-            {sub && <span style={{ fontFamily: 'Inter', fontSize: 10, color: stone, fontStyle: 'normal', fontWeight: 400, letterSpacing: '0.05em' }}>{sub}</span>}
+            {sub && <span style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, fontStyle: 'normal', fontWeight: 400, letterSpacing: '0.05em' }}>{sub}</span>}
           </span>
         </span>
         <span style={{ color: COURT.green }}>{right || (rtl ? '←' : '→')}</span>
@@ -3026,10 +3028,18 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.myProfile}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          {/* 🔥 Série de jours */}
+          <button onClick={onOpenStreak} style={{
+            position: 'relative', width: 36, height: 36, borderRadius: 18,
+            background: dark ? COURT.darkCard : COURT.cream,
+            border: `0.5px solid ${border}`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, lineHeight: 1,
+          }}>🔥</button>
           <button onClick={() => setShowEditProfile(true)} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             background: dark ? COURT.darkCard : COURT.cream,
@@ -3066,7 +3076,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
           {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Inter', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
+            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 8, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
           )}
           </button>
         </div>
@@ -3153,8 +3163,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   { label: t.confidence,    value: `${confidence}%` },
                 ].map((s, i) => (
                   <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
-                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                    <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                    <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -3168,8 +3178,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 { label: t.confidence,    value: `${confidence}%` },
               ].map((s, i) => (
                 <div key={i} style={{ textAlign: 'center', padding: '8px 4px' }}>
-                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 8, color: stone, letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 4 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -3180,7 +3190,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
       <div style={{ padding: '24px 24px 100px' }}>
 
         {/* ════ MON PROFIL ════ */}
-        <div style={{ fontFamily: 'Inter', fontSize: 9.5, color: stone, letterSpacing: '0.26em',
+        <div style={{ fontFamily: 'Mulish', fontSize: 9.5, color: stone, letterSpacing: '0.26em',
           textTransform: 'uppercase', marginBottom: 8 }}>
           {lang === 'fr' ? 'Mon profil' : lang === 'en' ? 'My profile' : 'הפרופיל שלי'}
         </div>
@@ -3237,7 +3247,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ MON JEU ════ */}
-        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Mon jeu' : lang==='en' ? 'My game' : 'המשחק שלי'}
         </div>
@@ -3278,7 +3288,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ APPLICATION ════ */}
-        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Application' : lang==='en' ? 'App' : 'אפליקציה'}
         </div>
@@ -3323,7 +3333,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ AIDE & LÉGAL ════ */}
-        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Aide & légal' : lang==='en' ? 'Help & legal' : 'עזרה'}
         </div>
@@ -3370,7 +3380,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         </div>
 
         {/* ════ COMPTE ════ */}
-        <div style={{ fontFamily:'Inter', fontSize:9.5, color:stone, letterSpacing:'0.26em',
+        <div style={{ fontFamily:'Mulish', fontSize:9.5, color:stone, letterSpacing:'0.26em',
           textTransform:'uppercase', margin:'22px 0 8px' }}>
           {lang==='fr' ? 'Compte' : lang==='en' ? 'Account' : 'חשבון'}
         </div>
@@ -3414,10 +3424,10 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
               <div>
-                <div style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: 600, color: COURT.red, marginBottom: 4 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: COURT.red, marginBottom: 4 }}>
                   {lang === 'fr' ? 'Action irréversible' : lang === 'he' ? 'פעולה בלתי הפיכה' : 'Irreversible action'}
                 </div>
-                <div style={{ fontFamily: 'Inter', fontSize: 12, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.5, opacity: 0.8 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 12, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.5, opacity: 0.8 }}>
                   {lang === 'fr'
                     ? 'Toutes vos données seront supprimées définitivement : profil, matchs, messages et photos.'
                     : lang === 'he'
@@ -3433,7 +3443,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   flex: 1, padding: '10px 0',
                   background: 'transparent',
                   border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '50'}`,
-                  borderRadius: 8, fontFamily: 'Inter', fontSize: 13,
+                  borderRadius: 8, fontFamily: 'Mulish', fontSize: 13,
                   color: dark ? COURT.darkMuted : COURT.stone, cursor: 'pointer',
                 }}
               >
@@ -3446,7 +3456,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   flex: 2, padding: '10px 0',
                   background: COURT.red,
                   border: 'none', borderRadius: 8,
-                  fontFamily: 'Inter', fontSize: 13, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
                   color: '#fff', cursor: deleting ? 'not-allowed' : 'pointer',
                   opacity: deleting ? 0.6 : 1,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -3473,7 +3483,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
             href="https://www.iubenda.com/privacy-policy/72981168"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ fontFamily:'Inter', fontSize:11, color:stone, opacity:0.5,
+            style={{ fontFamily:'Mulish', fontSize:11, color:stone, opacity:0.5,
               textDecoration:'underline', textDecorationColor:`${stone}40` }}
           >
             {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
@@ -3537,8 +3547,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   {item.icon}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: rtl ? 'Inter' : 'Cormorant Garamond, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{item.label}</div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>{item.sub}</div>
+                  <div style={{ fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{item.label}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>{item.sub}</div>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
                   {rtl ? <polyline points="15 18 9 12 15 6"/> : <polyline points="9 18 15 12 9 6"/>}
@@ -3585,7 +3595,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 >
                   <span style={{ fontSize: 28 }}>{flag}</span>
                   <span style={{
-                    fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+                    fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
                     fontSize: 20, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic',
                     color: active ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
                   }}>{label}</span>
@@ -3618,7 +3628,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           dark={dark}
         >
           <div style={{ padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ fontFamily: 'Inter', fontSize: 11, color: stone, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>
               {lang === 'fr' ? 'Les joueurs de l\'autre pays ne seront pas visibles' : lang === 'en' ? 'Players from the other country won\'t be visible' : 'שחקנים ממדינה אחרת לא יוצגו'}
             </div>
             {[{ v: 'France', flag: '🇫🇷' }, { v: 'Israël', flag: '🇮🇱' }].map(({ v, flag }) => {
@@ -3637,7 +3647,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 >
                   <span style={{ fontSize: 28 }}>{flag}</span>
                   <span style={{
-                    fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+                    fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
                     fontSize: 20, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic',
                     color: active ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
                   }}>{v}</span>
@@ -3715,19 +3725,19 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               <div style={{ textAlign: 'center', padding: 32 }}>
                 <Ornament width={50} style={{ margin: '0 auto 16px', display: 'block' }} />
                 <div style={{
-                  fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                  fontFamily: 'Spectral, serif', fontStyle: 'italic',
                   fontSize: 14, color: dark ? COURT.darkMuted : COURT.stone,
                   letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12,
                 }}>
                   {lang === 'fr' ? 'Niveau mis à jour' : lang === 'en' ? 'Level updated' : 'הרמה עודכנה'}
                 </div>
                 <div style={{
-                  fontFamily: 'Playfair Display, serif', fontSize: 88,
+                  fontFamily: 'Spectral, serif', fontSize: 88,
                   color: COURT.green, lineHeight: 1,
                   animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)',
                 }}>
                   {reEvalDone.toFixed(1)}
-                  <span style={{ fontSize: 28, color: dark ? COURT.darkMuted : COURT.stone, fontStyle: 'italic', fontFamily: 'Crimson Text, serif' }}>/7.0</span>
+                  <span style={{ fontSize: 28, color: dark ? COURT.darkMuted : COURT.stone, fontStyle: 'italic', fontFamily: 'Spectral, serif' }}>/7.0</span>
                 </div>
               </div>
             </div>
@@ -3743,7 +3753,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
   const rtl   = lang === 'he';
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const [prefs, setPrefs] = useState({
     hand:   initial.hand   || 'any',
     side:   initial.side   || 'any',
@@ -3758,7 +3768,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
   const ChipRow = ({ label, value, options, onChange }) => (
     <div style={{ marginBottom: 16 }}>
       <div style={{
-        fontFamily: 'Inter', fontSize: 9, color: stone,
+        fontFamily: 'Mulish', fontSize: 9, color: stone,
         letterSpacing: '0.22em', textTransform: 'uppercase',
         marginBottom: 8, fontWeight: 600,
       }}>{label}</div>
@@ -3859,7 +3869,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         {/* Plage de niveau */}
         <div style={{ marginBottom: 16 }}>
           <div style={{
-            fontFamily: 'Inter', fontSize: 9, color: stone,
+            fontFamily: 'Mulish', fontSize: 9, color: stone,
             letterSpacing: '0.22em', textTransform: 'uppercase',
             marginBottom: 8, fontWeight: 600,
           }}>{t.levelRange || 'Plage de niveau'}</div>
@@ -3870,18 +3880,18 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {lang === 'en' ? 'MIN' : lang === 'he' ? 'מינ׳' : 'MIN'}
                 </div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
                   {Number.isInteger(prefs.levelMin) ? prefs.levelMin : prefs.levelMin.toFixed(1)}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'Inter', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {lang === 'en' ? 'MAX' : lang === 'he' ? 'מקס׳' : 'MAX'}
                 </div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
                   {Number.isInteger(prefs.levelMax) ? prefs.levelMax : prefs.levelMax.toFixed(1)}
                 </div>
               </div>
@@ -3921,7 +3931,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
   return (
     <BottomSheet onClose={onClose} title={t.notifications} dark={dark}>
       {notifications.length === 0 ? (
-        <div style={{ padding: '32px 24px', textAlign: 'center', color: stone, fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noNotifs}</div>
+        <div style={{ padding: '32px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noNotifs}</div>
       ) : notifications.map((n, i) => {
         const from = n.fromPlayer;
         return (
@@ -3939,8 +3949,8 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
               </div>
             )}
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 14, color: ink, lineHeight: 1.4 }}>{n.text[lang] || n.text.fr}</div>
-              <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, marginTop: 2 }}>{n.time}</div>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: ink, lineHeight: 1.4 }}>{n.text[lang] || n.text.fr}</div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginTop: 2 }}>{n.time}</div>
             </div>
             {!n.read && <div style={{ width: 8, height: 8, borderRadius: 4, background: COURT.green, flexShrink: 0 }} />}
           </div>
@@ -3975,8 +3985,8 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPar
   const border   = dark ? COURT.darkBorder : `${COURT.green}25`;
   const ink      = dark ? COURT.darkText  : COURT.ink;
   const stone    = dark ? COURT.darkMuted : COURT.stone;
-  const ff_serif  = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif';
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif';
+  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const canSend  = selectedMatch && propDate && propTime;
 
   const handleSend = async () => {
@@ -4010,7 +4020,7 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPar
 
         {/* ── Choix du partenaire ─────────────────────────────────────── */}
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
             {lang === 'en' ? 'Partner' : lang === 'he' ? 'שותף' : 'Avec qui ?'}
           </div>
           {(!userMatches || userMatches.length === 0) ? (
@@ -4042,14 +4052,14 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPar
 
         {/* ── Date + Heure ────────────────────────────────────────────── */}
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 10 }}>
             {lang === 'en' ? 'Date & Time' : lang === 'he' ? 'תאריך ושעה' : 'Date et heure'}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <input type="date" value={propDate} onChange={e => setPropDate(e.target.value)}
-              style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 14, outline: 'none' }} />
+              style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Mulish', fontSize: 14, outline: 'none' }} />
             <input type="time" value={propTime} onChange={e => setPropTime(e.target.value)}
-              style={{ width: 110, padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Inter', fontSize: 14, outline: 'none' }} />
+              style={{ width: 110, padding: '10px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Mulish', fontSize: 14, outline: 'none' }} />
           </div>
         </div>
 
@@ -4109,14 +4119,14 @@ function GuestLoginModal({ lang, dark, onSignIn, onClose }) {
       }}>
         <Ornament width={40} />
         <div style={{
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic',
           fontSize: 22, color: ink, textAlign: 'center',
         }}>
           {lang === 'fr' ? 'Rejoindre le club' : lang === 'en' ? 'Join the club' : 'הצטרף למועדון'}
         </div>
         <div style={{
-          fontFamily: 'Inter', fontSize: 13, color: stone, textAlign: 'center', lineHeight: 1.5,
+          fontFamily: 'Mulish', fontSize: 13, color: stone, textAlign: 'center', lineHeight: 1.5,
         }}>
           {lang === 'fr'
             ? 'Connectez-vous avec Google pour liker, matcher et jouer.'
@@ -4129,7 +4139,7 @@ function GuestLoginModal({ lang, dark, onSignIn, onClose }) {
           background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.gold}60`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Crimson Text, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic', fontSize: 17,
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -4142,7 +4152,7 @@ function GuestLoginModal({ lang, dark, onSignIn, onClose }) {
         </button>
         <button onClick={onClose} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontFamily: 'Inter', fontSize: 13, color: stone,
+          fontFamily: 'Mulish', fontSize: 13, color: stone,
         }}>
           {lang === 'fr' ? 'Plus tard' : lang === 'en' ? 'Maybe later' : 'אולי אחר כך'}
         </button>
@@ -4164,6 +4174,7 @@ export default function MainApp() {
   const [showPending,  setShowPending]  = useState(false);
   const [detailPlayerId, setDetailPlayerId] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showStreak,      setShowStreak]      = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
 
   // Les invités peuvent naviguer librement — on bloque seulement les ACTIONS
@@ -4183,6 +4194,14 @@ export default function MainApp() {
   // Pending match results (anti-fraud system)
   const { pendingToConfirm } = useMatchResults();
   const pendingCount = pendingToConfirm.length;
+
+  // ── Streak daily tick — fires once per session on app open ────────────────
+  const _streakTicked = useRef(false);
+  useEffect(() => {
+    if (!profile?.id || _streakTicked.current) return;
+    _streakTicked.current = true;
+    tickStreak(profile.id).catch(() => {});
+  }, [profile?.id]);
 
   // Sync le niveau depuis la DB vers localStorage (ex: connexion depuis un nouvel appareil)
   useEffect(() => {
@@ -4210,7 +4229,7 @@ export default function MainApp() {
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
-    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} {...bellProps} />,
+    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} {...bellProps} />,
   };
 
   const bg    = darkMode ? COURT.darkBg : COURT.cream;
@@ -4228,7 +4247,7 @@ export default function MainApp() {
           background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.gold}`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
-          fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12,
+          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12,
           boxShadow: '0 2px 8px rgba(15,61,41,0.25)', animation: 'notifPop 0.4s ease',
         }}>
           <PadelBall size={14} shadow={false} />
@@ -4243,7 +4262,7 @@ export default function MainApp() {
           padding: '10px 16px', borderRadius: 24,
           background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.gold}50`,
-          fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 13,
+          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
           cursor: 'pointer', boxShadow: '0 4px 16px rgba(15,61,41,0.25)',
           display: 'flex', alignItems: 'center', gap: 6,
           animation: 'fadeUp 0.6s ease 1s both',
@@ -4279,6 +4298,10 @@ export default function MainApp() {
           onClose={() => setDetailPlayerId(null)}
           dark={darkMode}
         />
+      )}
+
+      {showStreak && (
+        <StreakScreen onClose={() => setShowStreak(false)} />
       )}
 
       {showEditProfile && (

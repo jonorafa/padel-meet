@@ -115,12 +115,12 @@ export function PhotoUploadField({
           <UploadIcon color={dark ? COURT.darkMuted : COURT.green} />
         </div>
         <p style={{
-          fontFamily: 'Inter', fontSize: 14, fontWeight: 600, margin: '0 0 4px',
+          fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, margin: '0 0 4px',
           color: dark ? COURT.darkText : COURT.ink,
         }}>
           Glissez ou appuyez pour ajouter
         </p>
-        <p style={{ fontFamily: 'Inter', fontSize: 12, margin: 0, color: dark ? COURT.darkMuted : COURT.stone }}>
+        <p style={{ fontFamily: 'Mulish', fontSize: 12, margin: 0, color: dark ? COURT.darkMuted : COURT.stone }}>
           JPEG, PNG ou WebP · Max 5 Mo
         </p>
       </div>
@@ -156,7 +156,7 @@ export function PhotoUploadField({
             )}
           </div>
           <p style={{
-            fontFamily: 'Inter', fontSize: 12, marginTop: 6,
+            fontFamily: 'Mulish', fontSize: 12, marginTop: 6,
             color: dark ? COURT.darkMuted : COURT.stone,
           }}>
             Prêt à envoyer ✓
@@ -172,7 +172,7 @@ export function PhotoUploadField({
           display: 'flex', gap: 8, alignItems: 'flex-start',
         }}>
           <span style={{ color: COURT.red, fontSize: 16, flexShrink: 0 }}>⚠</span>
-          <p style={{ fontFamily: 'Inter', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
+          <p style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.red, margin: 0 }}>{error}</p>
         </div>
       )}
     </div>

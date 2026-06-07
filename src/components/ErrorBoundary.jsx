@@ -72,14 +72,14 @@ export class ErrorBoundary extends Component {
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎾</div>
 
         <h1 style={{
-          fontFamily: 'Playfair Display, serif',
+          fontFamily: 'Spectral, serif',
           fontSize: 22, fontWeight: 700, color: ink, margin: '0 0 10px',
         }}>
           Une erreur est survenue
         </h1>
 
         <p style={{
-          fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+          fontFamily: 'Spectral, serif', fontStyle: 'italic',
           fontSize: 15, color: stone, margin: '0 0 16px', maxWidth: 280,
         }}>
           Rechargez la page pour réessayer.
@@ -108,7 +108,7 @@ export class ErrorBoundary extends Component {
                   background: this.state.copied ? COURT.green : 'transparent',
                   color: this.state.copied ? COURT.cream : stone,
                   border: `0.5px solid ${stone}`,
-                  fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+                  fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
                 }}
               >
                 {this.state.copied ? '✓ Copié !' : '📋 Copier l\'erreur'}
@@ -125,7 +125,7 @@ export class ErrorBoundary extends Component {
                 padding: '12px 24px', borderRadius: 12,
                 background: 'transparent', color: stone,
                 border: `0.5px solid ${stone}`,
-                fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+                fontFamily: 'Spectral, serif', fontStyle: 'italic',
                 fontSize: 15, cursor: 'pointer',
               }}
             >
@@ -138,7 +138,7 @@ export class ErrorBoundary extends Component {
               padding: '14px 32px', borderRadius: 12,
               background: COURT.green, color: COURT.cream,
               border: `0.5px solid ${COURT.gold}50`,
-              fontFamily: 'Crimson Text, serif', fontStyle: 'italic',
+              fontFamily: 'Spectral, serif', fontStyle: 'italic',
               fontSize: 16, cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(15,61,41,0.2)',
             }}

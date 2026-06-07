@@ -53,7 +53,7 @@ export function PhotoGalleryEditor({
       {/* Hint — only shown when there are photos to drag */}
       {photos.length > 0 && (
         <p style={{
-          fontFamily: 'Inter', fontSize: 12.5, color: muted,
+          fontFamily: 'Mulish', fontSize: 12.5, color: muted,
           margin: '0 0 10px', fontStyle: 'italic', textAlign: 'center',
         }}>
           Glissez pour réordonner · la 1<sup style={{ fontSize: 9 }}>re</sup> est votre photo principale
@@ -122,7 +122,7 @@ export function PhotoGalleryEditor({
                   background: COURT.gold,
                   color: '#fff',
                   borderRadius: 20, padding: '4px 9px',
-                  fontFamily: 'Inter', fontSize: 11.5, fontWeight: 700,
+                  fontFamily: 'Mulish', fontSize: 11.5, fontWeight: 700,
                   display: 'flex', alignItems: 'center', gap: 3,
                   boxShadow: '0 1px 4px rgba(0,0,0,0.22)',
                   letterSpacing: '0.01em',
@@ -137,7 +137,7 @@ export function PhotoGalleryEditor({
                   color: '#fff',
                   borderRadius: 6,
                   width: 22, height: 22,
-                  fontFamily: 'Inter', fontSize: 12, fontWeight: 700,
+                  fontFamily: 'Mulish', fontSize: 12, fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {index + 1}
@@ -165,11 +165,11 @@ export function PhotoGalleryEditor({
             onMouseLeave={e => e.currentTarget.style.background = dark ? `${COURT.darkCard}70` : `${COURT.green}06`}
           >
             <span style={{
-              fontFamily: 'Inter', fontSize: 28, fontWeight: 300, lineHeight: 1,
+              fontFamily: 'Mulish', fontSize: 28, fontWeight: 300, lineHeight: 1,
               color: dark ? COURT.darkMuted : COURT.stone,
             }}>+</span>
             <span style={{
-              fontFamily: 'Inter', fontSize: 13, fontWeight: 500,
+              fontFamily: 'Mulish', fontSize: 13, fontWeight: 500,
               color: dark ? COURT.darkMuted : COURT.stone,
             }}>Ajouter</span>
           </div>

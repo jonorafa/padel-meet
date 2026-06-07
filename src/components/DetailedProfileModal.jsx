@@ -96,13 +96,13 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         background: dark ? 'rgba(0,0,0,0.7)' : 'rgba(245,241,232,0.8)',
       }}>
         <div style={{ borderRadius: 16, padding: 24, background: bg, border: `0.5px solid ${border}` }}>
-          <p style={{ fontFamily: 'Inter', color: ink }}>{t.playerNotFound || 'Joueur introuvable'}</p>
+          <p style={{ fontFamily: 'Mulish', color: ink }}>{t.playerNotFound || 'Joueur introuvable'}</p>
           <button
             onClick={onClose}
             style={{
               marginTop: 16, width: '100%', padding: '10px 0', borderRadius: 10,
               background: card, border: `0.5px solid ${border}`,
-              fontFamily: 'Inter', fontWeight: 600, color: ink, cursor: 'pointer',
+              fontFamily: 'Mulish', fontWeight: 600, color: ink, cursor: 'pointer',
             }}
           >{t.close || 'Fermer'}</button>
         </div>
@@ -199,7 +199,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
       }}>
         <div style={{ width: 40 }} />
         <h1 style={{
-          fontFamily: 'Playfair Display, serif', fontSize: 18, fontWeight: 700,
+          fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 700,
           color: ink, margin: 0,
         }}>
           {t.profile || 'Profil'}
@@ -229,7 +229,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               aspectRatio: '1 / 1', borderRadius: 12,
               background: card, border: `0.5px solid ${border}`,
             }}>
-              <p style={{ fontFamily: 'Inter', color: muted }}>{t.noPhotos || 'Aucune photo'}</p>
+              <p style={{ fontFamily: 'Mulish', color: muted }}>{t.noPhotos || 'Aucune photo'}</p>
             </div>
           )}
 
@@ -239,12 +239,12 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             background: card, border: `0.5px solid ${border}`,
           }}>
             <h2 style={{
-              fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 800,
+              fontFamily: 'Spectral, serif', fontSize: 24, fontWeight: 800,
               color: ink, margin: '0 0 4px',
             }}>
               {player.name || player.username || 'Joueur'}
             </h2>
-            <p style={{ fontFamily: 'Inter', fontSize: 13, color: muted, margin: 0 }}>
+            <p style={{ fontFamily: 'Mulish', fontSize: 13, color: muted, margin: 0 }}>
               {player.age ? `${player.age} ans` : ''}
               {player.age && (player.region || player.city) ? ' · ' : ''}
               {player.region || player.city || ''}
@@ -255,12 +255,12 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
           {bio && (
             <div>
               <p style={{
-                fontFamily: 'Inter', fontSize: 11, fontWeight: 600, color: muted,
+                fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, color: muted,
                 textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px',
               }}>
                 {t.bio || 'Bio'}
               </p>
-              <p style={{ fontFamily: 'Inter', fontSize: 14, color: ink, lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontFamily: 'Mulish', fontSize: 14, color: ink, lineHeight: 1.6, margin: 0 }}>
                 {bio}
               </p>
             </div>
@@ -279,10 +279,10 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   background: card, border: `0.5px solid ${border}`,
                 }}>
                   <p style={{
-                    fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 800,
+                    fontFamily: 'Spectral, serif', fontSize: 26, fontWeight: 800,
                     color: COURT.green, margin: '0 0 4px',
                   }}>{value}</p>
-                  <p style={{ fontFamily: 'Inter', fontSize: 11, color: muted, margin: 0 }}>{label}</p>
+                  <p style={{ fontFamily: 'Mulish', fontSize: 11, color: muted, margin: 0 }}>{label}</p>
                 </div>
               ))}
             </div>
@@ -301,7 +301,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             ]
             return (
               <div style={{ padding: '16px', borderRadius: 12, background: card, border: `0.5px solid ${border}` }}>
-                <p style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>
+                <p style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>
                   {t.trophiesTitle || 'Trophées'}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -323,7 +323,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                           <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
                         )}
                       </div>
-                      <p style={{ fontFamily: 'Inter', fontSize: 9, color: tr.unlocked ? (dark ? '#E8E0CC' : '#1A1A1A') : muted, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, margin: 0, maxWidth: 60 }}>{tr.label}</p>
+                      <p style={{ fontFamily: 'Mulish', fontSize: 9, color: tr.unlocked ? (dark ? '#E8E0CC' : '#1A1A1A') : muted, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, margin: 0, maxWidth: 60 }}>{tr.label}</p>
                     </div>
                   ))}
                 </div>
@@ -342,13 +342,13 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               }}>
                 <div />
                 <div style={{
-                  fontFamily: 'Inter', fontSize: 9, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 9, fontWeight: 600,
                   color: COURT.green, letterSpacing: '0.22em', textTransform: 'uppercase',
                 }}>
                   {myGameLabel}
                 </div>
                 <div style={{
-                  fontFamily: 'Inter', fontSize: 9, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 9, fontWeight: 600,
                   color: COURT.purple, letterSpacing: '0.22em', textTransform: 'uppercase',
                 }}>
                   {seekingLabel}
@@ -371,11 +371,11 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   {/* Mon jeu */}
                   <div>
                     <div style={{
-                      fontFamily: 'Inter', fontSize: 8,
+                      fontFamily: 'Mulish', fontSize: 8,
                       color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
                     }}>{label}</div>
                     <div style={{
-                      fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                      fontFamily: 'Spectral, serif', fontStyle: 'italic',
                       fontSize: 16, fontWeight: mine === '—' ? 400 : 600,
                       color: mine === '—' ? muted : COURT.green,
                     }}>{mine}</div>
@@ -384,11 +384,11 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   {/* Je recherche */}
                   <div>
                     <div style={{
-                      fontFamily: 'Inter', fontSize: 8,
+                      fontFamily: 'Mulish', fontSize: 8,
                       color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
                     }}>{label}</div>
                     <div style={{
-                      fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                      fontFamily: 'Spectral, serif', fontStyle: 'italic',
                       fontSize: 16, fontWeight: seeks == null ? 400 : 600,
                       color: seeks == null ? muted : COURT.purple,
                     }}>
@@ -404,7 +404,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
           {!historyLoading && matchHistory && matchHistory.length > 0 && (
             <div>
               <h3 style={{
-                fontFamily: 'Playfair Display, serif', fontSize: 17, fontWeight: 700,
+                fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
                 color: ink, margin: '0 0 12px',
               }}>
                 {t.matchHistoryWith || 'Historique avec'} {player.name || player.username || ''}
@@ -424,23 +424,23 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                       }}
                     >
                       <div>
-                        <p style={{ fontFamily: 'Inter', fontSize: 14, fontWeight: 600, color: ink, margin: '0 0 2px' }}>
+                        <p style={{ fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, color: ink, margin: '0 0 2px' }}>
                           {isWin  ? `✓ ${t.youWon  || 'Victoire'}`
                          : isLoss ? `✗ ${t.youLost || 'Défaite'}`
                          : (t.draw || 'Égalité')}
                         </p>
-                        <p style={{ fontFamily: 'Inter', fontSize: 12, color: muted, margin: 0 }}>
+                        <p style={{ fontFamily: 'Mulish', fontSize: 12, color: muted, margin: 0 }}>
                           {match.playedAt
                             ? match.playedAt.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-US')
                             : ''}
                         </p>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontFamily: 'Inter', fontSize: 15, fontWeight: 700, color: resultColor, margin: '0 0 2px' }}>
+                        <p style={{ fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, color: resultColor, margin: '0 0 2px' }}>
                           {match.score || '—'}
                         </p>
                         {match.eloDelta != null && (
-                          <p style={{ fontFamily: 'Inter', fontSize: 11, color: match.eloDelta >= 0 ? COURT.greenLight : COURT.red, margin: 0 }}>
+                          <p style={{ fontFamily: 'Mulish', fontSize: 11, color: match.eloDelta >= 0 ? COURT.greenLight : COURT.red, margin: 0 }}>
                             {match.eloDelta >= 0 ? '+' : ''}{match.eloDelta}
                           </p>
                         )}
@@ -463,7 +463,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
           style={{
             width: '100%', padding: '14px 0', borderRadius: 12,
             background: card, border: `0.5px solid ${border}`,
-            fontFamily: 'Inter', fontSize: 15, fontWeight: 600, color: ink,
+            fontFamily: 'Mulish', fontSize: 15, fontWeight: 600, color: ink,
             cursor: 'pointer',
           }}
         >

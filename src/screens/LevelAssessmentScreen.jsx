@@ -42,7 +42,7 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
           Padel Meet
         </div>
         <div style={{
-          fontFamily: rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic',
           fontSize: 19, color: dark ? stone : COURT.ink, letterSpacing: '0.04em', marginTop: 4,
           opacity: visible ? 1 : 0, transition: 'opacity 0.8s ease 0.3s',
@@ -65,7 +65,7 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
               onClick={onSkip}
               style={{
                 marginTop: 18,
-                fontFamily: 'Inter', fontSize: 11,
+                fontFamily: 'Mulish', fontSize: 11,
                 color: stone, letterSpacing: '0.16em', textTransform: 'uppercase',
                 cursor: 'pointer',
                 opacity: visible ? 0.6 : 0,

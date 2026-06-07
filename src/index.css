@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Mulish:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +7,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: 'Mulish', -apple-system, system-ui, sans-serif;
   background: #1a1a18;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -268,4 +268,14 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
 @keyframes bubbleIn {
   from { opacity: 0; transform: translate(-50%, 8px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ─── Streak Flame ─── */
+@keyframes streakFlick {
+  0%, 100% { transform: scale(1) rotate(-1deg); }
+  50%      { transform: scale(1.05) rotate(1deg); }
+}
+@keyframes streakGlow {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.85; }
 }

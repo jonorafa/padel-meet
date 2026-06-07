@@ -29,11 +29,11 @@ function AppCrash() {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      height: '100dvh', padding: 32, fontFamily: 'Inter, sans-serif', textAlign: 'center',
+      height: '100dvh', padding: 32, fontFamily: 'Mulish, sans-serif', textAlign: 'center',
       background: '#F5F1E8', color: '#1F5C3F',
     }}>
       <div style={{ fontSize: 40, marginBottom: 16 }}>🎾</div>
-      <div style={{ fontSize: 20, fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', marginBottom: 8 }}>
+      <div style={{ fontSize: 20, fontFamily: 'Spectral, serif', fontStyle: 'italic', marginBottom: 8 }}>
         Une erreur inattendue s'est produite
       </div>
       <div style={{ fontSize: 13, color: '#6B7280', marginBottom: 24 }}>
@@ -43,7 +43,7 @@ function AppCrash() {
         onClick={() => window.location.reload()}
         style={{
           padding: '10px 24px', borderRadius: 999, background: '#1F5C3F', color: '#F5F1E8',
-          border: 'none', fontFamily: 'Inter, sans-serif', fontSize: 14, cursor: 'pointer',
+          border: 'none', fontFamily: 'Mulish, sans-serif', fontSize: 14, cursor: 'pointer',
         }}
       >
         Recharger l'application

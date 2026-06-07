@@ -50,7 +50,7 @@ export default function LanguageScreen() {
         <Ornament width={120} style={{ margin: '16px auto 0', display: 'block' }} />
 
         <div style={{
-          marginTop: 44, fontFamily: 'Cormorant Garamond, serif',
+          marginTop: 44, fontFamily: 'Spectral, serif',
           fontSize: 24, color: ink, fontStyle: 'italic', fontWeight: 500,
           letterSpacing: '0.04em',
         }}>Language</div>

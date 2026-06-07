@@ -39,8 +39,8 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
   const stone = dark ? COURT.darkMuted : COURT.stone
   const card = dark ? COURT.darkCard : COURT.cream
   const border = dark ? COURT.darkBorder : `${COURT.green}40`
-  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif'
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif'
+  const ff_serif = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
 
   const isWin = pending.myResult === 'win'
   const isLoss = pending.myResult === 'loss'
@@ -64,7 +64,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
           <div style={{ fontFamily: ff_serif, fontSize: 17, color: ink, fontWeight: 500 }}>
             {pending.otherPlayer?.name || t.opponent}
           </div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.12em' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.12em' }}>
             {t.scoreSubmittedByThem} · {formatTimeRemaining(pending.expiresAt)}
           </div>
         </div>
@@ -78,7 +78,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
         borderRadius: 8, border: `0.5px solid ${border}`,
       }}>
         <div style={{
-          fontFamily: 'Playfair Display, serif', fontSize: 22, color: resultColor,
+          fontFamily: 'Spectral, serif', fontSize: 22, color: resultColor,
           fontWeight: 500, letterSpacing: '0.02em',
         }}>
           {pending.score}
@@ -103,14 +103,14 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
             <button onClick={onCancelReject} disabled={busy} style={{
               flex: 1, padding: '8px', borderRadius: 8, background: 'transparent',
               border: `0.5px solid ${border}`, color: stone,
-              fontFamily: 'Inter', fontSize: 12, cursor: 'pointer',
+              fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
             }}>
               {lang === 'en' ? 'Cancel' : lang === 'he' ? 'ביטול' : 'Annuler'}
             </button>
             <button onClick={() => onReject(pending.id)} disabled={busy} style={{
               flex: 2, padding: '8px', borderRadius: 8,
               background: COURT.purple, border: 'none', color: COURT.cream,
-              fontFamily: 'Inter', fontSize: 12, fontWeight: 600,
+              fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
               cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
             }}>
               {busy ? '…' : (lang === 'en' ? '✕ Reject' : lang === 'he' ? '✕ דחה' : '✕ Refuser')}
@@ -161,8 +161,8 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
   const stone = dark ? COURT.darkMuted : COURT.stone
   const card = dark ? COURT.darkCard : COURT.cream
   const border = dark ? COURT.darkBorder : `${COURT.green}30`
-  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif'
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif'
+  const ff_serif = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
 
   return (
     <div style={{
@@ -179,12 +179,12 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
           <div style={{ fontFamily: ff_serif, fontSize: 14, color: ink }}>
             {t.waitingConfirmFrom} <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.green }}>{pending.otherPlayer?.name}</span>
           </div>
-          <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.1em', marginTop: 2 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em', marginTop: 2 }}>
             {pending.score} · {t.expiresIn} {formatTimeRemaining(pending.expiresAt)}
           </div>
         </div>
         <div style={{
-          fontFamily: 'Inter', fontSize: 9, color: stone,
+          fontFamily: 'Mulish', fontSize: 9, color: stone,
           letterSpacing: '0.16em', textTransform: 'uppercase',
         }}>
           ⏳
@@ -219,8 +219,8 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
   const rtl = lang === 'he'
   const ink = dark ? COURT.darkText : COURT.ink
   const stone = dark ? COURT.darkMuted : COURT.stone
-  const ff_serif = rtl ? 'Inter, sans-serif' : 'Cormorant Garamond, serif'
-  const ff_italic = rtl ? 'Inter, sans-serif' : 'Crimson Text, serif'
+  const ff_serif = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
 
   const handleConfirm = async (pendingId) => {
     const item = pendingToConfirm.find(p => p.id === pendingId)
@@ -289,7 +289,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         {pendingToConfirm.length > 0 && (
           <>
             <div style={{
-              fontFamily: 'Inter', fontSize: 10, color: COURT.green,
+              fontFamily: 'Mulish', fontSize: 10, color: COURT.green,
               letterSpacing: '0.24em', textTransform: 'uppercase',
               fontWeight: 600, marginBottom: 12,
             }}>
@@ -299,7 +299,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
               <div style={{
                 padding: '8px 12px', borderRadius: 8, marginBottom: 10,
                 background: `${COURT.purple}12`, border: `0.5px solid ${COURT.purple}40`,
-                fontFamily: 'Inter', fontSize: 12, color: COURT.purple,
+                fontFamily: 'Mulish', fontSize: 12, color: COURT.purple,
               }}>
                 ⚠️ {panelError}
               </div>
@@ -320,7 +320,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         {pendingAwaitingConfirmation.length > 0 && (
           <>
             <div style={{
-              fontFamily: 'Inter', fontSize: 10, color: stone,
+              fontFamily: 'Mulish', fontSize: 10, color: stone,
               letterSpacing: '0.24em', textTransform: 'uppercase',
               marginBottom: 12,
             }}>
@@ -390,7 +390,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
           {evalSent ? (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🎾</div>
-              <p style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: COURT.green, margin: '0 0 6px' }}>
+              <p style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.green, margin: '0 0 6px' }}>
                 {t.evalThanks}
               </p>
             </div>
@@ -407,7 +407,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
 
               {/* Titre */}
               <p style={{
-                fontFamily: 'Playfair Display, serif', fontSize: 18,
+                fontFamily: 'Spectral, serif', fontSize: 18,
                 color: ink, margin: '0 0 4px', textAlign: 'center',
               }}>
                 {t.evalLevelTitle || 'Quel est son vrai niveau ?'}
@@ -425,14 +425,14 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
                 marginBottom: 8,
               }}>
                 <span style={{
-                  fontFamily: 'Playfair Display, serif',
+                  fontFamily: 'Spectral, serif',
                   fontSize: 72, lineHeight: 1,
                   color: COURT.green, fontWeight: 600,
                 }}>
                   {evalProposedLevel % 1 === 0 ? evalProposedLevel.toFixed(1) : evalProposedLevel}
                 </span>
                 <span style={{
-                  fontFamily: 'Cormorant Garamond, serif',
+                  fontFamily: 'Spectral, serif',
                   fontSize: 22, color: stone, fontStyle: 'italic',
                 }}>
                   /7
@@ -441,7 +441,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
 
               {/* Label de description */}
               <div style={{
-                fontFamily: 'Inter', fontSize: 11, letterSpacing: '0.18em',
+                fontFamily: 'Mulish', fontSize: 11, letterSpacing: '0.18em',
                 textTransform: 'uppercase', color: COURT.green,
                 marginBottom: 20,
               }}>

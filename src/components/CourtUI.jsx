@@ -97,11 +97,11 @@ export function PadelSlider({
     <div style={{ width: '100%' }} dir="ltr">
       {bigValue && (
         <div style={{
-          textAlign: 'center', fontFamily: 'Playfair Display, serif',
+          textAlign: 'center', fontFamily: 'Spectral, serif',
           fontSize: 88, lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
         }}>
           {value}
-          {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: 'italic', fontFamily: 'Crimson Text, serif' }}>{suffix}</span>}
+          {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: 'italic', fontFamily: 'Spectral, serif' }}>{suffix}</span>}
         </div>
       )}
       <input
@@ -114,7 +114,7 @@ export function PadelSlider({
       {(leftLabel != null || rightLabel != null) && (
         <div style={{
           display: 'flex', justifyContent: 'space-between',
-          fontFamily: 'Inter', fontSize: 11, color: stone, marginTop: 4,
+          fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 4,
         }}>
           <span>{leftLabel}</span><span>{rightLabel}</span>
         </div>
@@ -219,7 +219,7 @@ export function SectionHeading({ children, italic = true }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
       <h3 style={{
-        fontFamily: 'Crimson Text, serif',
+        fontFamily: 'Spectral, serif',
         fontStyle: italic ? 'italic' : 'normal',
         fontWeight: 400, fontSize: 20, margin: 0, color,
       }}>{children}</h3>
@@ -243,7 +243,7 @@ export function ThinButton({ children, onClick, variant = 'cream', icon, style =
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
       padding: '14px 20px', background: bg, color,
       border, borderRadius: 10,
-      fontFamily: 'Crimson Text, serif',
+      fontFamily: 'Spectral, serif',
       fontSize: 16, fontStyle: 'italic',
       letterSpacing: '0.02em', cursor: 'pointer',
       transition: 'all 0.3s ease',
@@ -262,7 +262,7 @@ export function HeritageTag({ children, color }) {
       display: 'inline-flex', alignItems: 'center',
       padding: '4px 10px', background: bg,
       color: c, border: `0.5px solid ${c}40`,
-      borderRadius: 4, fontFamily: 'Crimson Text, serif',
+      borderRadius: 4, fontFamily: 'Spectral, serif',
       fontSize: 12, letterSpacing: '0.04em',
     }}>{children}</span>
   );
@@ -318,15 +318,15 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
       {/* En-tête sobre */}
       <div style={{ textAlign: 'center', animation: 'fadeUp 0.5s ease both' }}>
         <div style={{
-          fontFamily: 'Inter', fontSize: 10, color: COURT.gold,
+          fontFamily: 'Mulish', fontSize: 10, color: COURT.gold,
           letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 14,
         }}>PADEL MEET</div>
         <div style={{
-          fontFamily: 'Cormorant Garamond, serif', fontSize: 40, fontWeight: 600,
+          fontFamily: 'Spectral, serif', fontSize: 40, fontWeight: 600,
           color: COURT.cream, lineHeight: 1.05,
         }}>{t.partnerFound || 'Partenaire trouvé'}</div>
         <div style={{
-          fontFamily: 'Inter', fontSize: 14, color: `${COURT.cream}99`,
+          fontFamily: 'Mulish', fontSize: 14, color: `${COURT.cream}99`,
           marginTop: 10, maxWidth: 300, lineHeight: 1.5,
         }}>{t.partnerFoundSub || 'Vous cherchez tous les deux à jouer. Organisez votre partie.'}</div>
       </div>
@@ -347,12 +347,12 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
         }} />
         <div style={{ minWidth: 0, flex: 1, textAlign: rtl ? 'right' : 'left' }}>
           <div style={{
-            fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 600,
+            fontFamily: 'Spectral, serif', fontSize: 22, fontWeight: 600,
             color: COURT.cream, lineHeight: 1.15,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>{player.name}</div>
           <div style={{
-            fontFamily: 'Inter', fontSize: 12, color: `${COURT.cream}aa`,
+            fontFamily: 'Mulish', fontSize: 12, color: `${COURT.cream}aa`,
             marginTop: 4, lineHeight: 1.4,
           }}>{meta.join(' · ')}</div>
         </div>
@@ -367,7 +367,7 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
         <button onClick={handlePropose} style={{
           padding: '15px', background: COURT.green,
           color: COURT.cream, border: `0.5px solid ${COURT.gold}50`,
-          borderRadius: 12, fontFamily: 'Inter', fontWeight: 600,
+          borderRadius: 12, fontFamily: 'Mulish', fontWeight: 600,
           fontSize: 15, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
         }}>
@@ -385,7 +385,7 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
         <button onClick={onMessage} style={{
           padding: '14px', background: 'transparent',
           color: COURT.cream, border: `0.5px solid ${COURT.cream}40`,
-          borderRadius: 12, fontFamily: 'Inter', fontWeight: 500,
+          borderRadius: 12, fontFamily: 'Mulish', fontWeight: 500,
           fontSize: 14, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
         }}>
@@ -399,7 +399,7 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
         {/* Lien discret — Continuer à chercher */}
         <button onClick={onContinue} style={{
           marginTop: 4, padding: '8px', background: 'none', border: 'none',
-          color: `${COURT.cream}66`, fontFamily: 'Inter', fontSize: 13,
+          color: `${COURT.cream}66`, fontFamily: 'Mulish', fontSize: 13,
           cursor: 'pointer', letterSpacing: '0.02em',
         }}>{t.continueSearching || 'Continuer à chercher'}</button>
       </div>
@@ -415,7 +415,7 @@ export function NotifBadge({ count }) {
       position: 'absolute', top: -4, right: -4,
       width: 16, height: 16, borderRadius: 8,
       background: COURT.red, color: '#fff',
-      fontSize: 9, fontFamily: 'Inter', fontWeight: 600,
+      fontSize: 9, fontFamily: 'Mulish', fontWeight: 600,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       animation: 'notifPop 0.4s cubic-bezier(.2,.9,.3,1.4)',
       border: `1.5px solid ${_darkMode ? COURT.darkBg : COURT.cream}`,
@@ -539,7 +539,7 @@ export function BottomSheet({ children, onClose, title, dark }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
             }}>
               <div style={{
-                fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                fontFamily: 'Spectral, serif', fontStyle: 'italic',
                 fontSize: 22, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500,
                 flex: 1, minWidth: 0,
               }}>{title}</div>
@@ -701,16 +701,16 @@ export function Achievements({ badges, dark }) {
           animation:   'bubbleIn 0.25s ease',
           pointerEvents: 'none',
         }}>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontWeight: 600, fontSize: 14, color: COURT.gold }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontWeight: 600, fontSize: 14, color: COURT.gold }}>
             {b.label}
           </div>
-          <div style={{ fontFamily: 'Crimson Text, serif', fontStyle: 'italic', fontSize: 12, lineHeight: 1.4, marginTop: 3 }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, lineHeight: 1.4, marginTop: 3 }}>
             {b.desc}
           </div>
           <div style={{ height: 5, background: `${COURT.cream}25`, borderRadius: 3, marginTop: 10, overflow: 'hidden' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: COURT.gold, borderRadius: 3 }} />
           </div>
-          <div style={{ fontFamily: 'Inter', fontSize: 9, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 9, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
             {b.on ? '100%' : `${b.progress.cur} / ${b.progress.max}`}
           </div>
           <div style={{
@@ -743,7 +743,7 @@ export function Achievements({ badges, dark }) {
             >
               {badge.on ? badge.icon : '🔒'}
             </button>
-            <div style={{ fontFamily: 'Inter', fontSize: 10, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
               {badge.label}
             </div>
           </div>
@@ -774,7 +774,7 @@ export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = C
             {/* RTL : on inverse les caractères de la chaîne so qu'ils se lisent
                 droite→gauche le long de l'arc gauche→droite (effet visuel correct) */}
             <text fill={txt} textAnchor="middle" style={{
-              fontFamily: 'Inter', fontSize: labelSize, letterSpacing: '0.01em',
+              fontFamily: 'Mulish', fontSize: labelSize, letterSpacing: '0.01em',
             }}>
               <textPath href={`#${pathId}`} startOffset="50%">
                 {rtl ? [...label].reverse().join('') : label}
@@ -785,7 +785,7 @@ export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = C
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{
-          fontFamily: 'Playfair Display, serif', fontSize: size * 0.28, color: txt, lineHeight: 1,
+          fontFamily: 'Spectral, serif', fontSize: size * 0.28, color: txt, lineHeight: 1,
           transform: label ? 'translateY(-3px)' : 'none',
         }}>{value}%</span>
       </div>
