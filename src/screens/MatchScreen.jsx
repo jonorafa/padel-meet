@@ -2855,7 +2855,7 @@ function ContactSheet({ dark, lang, onClose }) {
 // ─── Profile Screen ──────────────────────────────────────────────────────────
 function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {} }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
-  const { lang, dark, level, confidence, setLang, toggleDark } = usePrefs();
+  const { lang, dark, level, confidence, setLang, toggleDark, setConfidence } = usePrefs();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
@@ -2863,6 +2863,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [showPartnerPrefs, setShowPartnerPrefs] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
   const [showReEval, setShowReEval] = useState(false);
+  const [showReEvalConfirm, setShowReEvalConfirm] = useState(false); // dialog d'avertissement
   const [showCountry, setShowCountry] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -2871,6 +2872,24 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [deleting, setDeleting] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
+
+  // ─── Cooldown mensuel réévaluation ──────────────────────────────────────────
+  const lastEvalRaw  = profile?.last_self_eval_date;
+  const lastEvalDate = lastEvalRaw ? new Date(lastEvalRaw) : null;
+  const today        = new Date();
+  const evalBlocked  = lastEvalDate != null
+    && lastEvalDate.getFullYear() === today.getFullYear()
+    && lastEvalDate.getMonth()    === today.getMonth();
+  // 1er du mois suivant
+  const nextEvalDate = lastEvalDate
+    ? new Date(lastEvalDate.getFullYear(), lastEvalDate.getMonth() + 1, 1)
+    : null;
+  const nextEvalStr  = nextEvalDate
+    ? nextEvalDate.toLocaleDateString(
+        lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB',
+        { day: 'numeric', month: 'long' }
+      )
+    : null;
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
@@ -3261,21 +3280,41 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           </div>
 
           {/* Réévaluer mon niveau */}
-          <div onClick={() => setShowReEval(true)} style={{ display:'flex', alignItems:'center',
-            gap:14, padding:'14px 16px', cursor:'pointer' }}>
-            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
-              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
-                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-              </svg>
+          <div
+            onClick={evalBlocked ? undefined : () => setShowReEvalConfirm(true)}
+            style={{
+              display:'flex', alignItems:'center', gap:14, padding:'14px 16px',
+              cursor: evalBlocked ? 'default' : 'pointer',
+              opacity: evalBlocked ? 0.4 : 1,
+              transition: 'opacity 0.3s',
+              flexDirection: 'column', alignItems: 'stretch',
+            }}
+          >
+            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+              <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+              </div>
+              <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+                {lang==='fr' ? 'Réévaluer mon niveau' : lang==='en' ? 'Re-evaluate my level' : 'הערך מחדש'}
+              </span>
+              <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:14, color:stone }}>
+                {level?.toFixed?.(1) ?? '—'}
+              </span>
+              {!evalBlocked && (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+              )}
             </div>
-            <span style={{ flex:1, fontFamily:ff_serif, fontSize:19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
-              {lang==='fr' ? 'Réévaluer mon niveau' : lang==='en' ? 'Re-evaluate my level' : 'הערך מחדש'}
-            </span>
-            <span style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize:14, color:stone }}>
-              {level?.toFixed?.(1) ?? '—'}
-            </span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+            {evalBlocked && nextEvalStr && (
+              <div style={{
+                fontFamily:'Mulish', fontSize:10.5, color:stone,
+                letterSpacing:'0.06em', paddingLeft:48, paddingBottom:2,
+              }}>
+                {lang==='fr' ? `Disponible le ${nextEvalStr}` : lang==='en' ? `Available on ${nextEvalStr}` : `זמין מ-${nextEvalStr}`}
+              </div>
+            )}
           </div>
         </div>
 
@@ -3668,6 +3707,94 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
         />
       )}
 
+      {/* ── Dialog confirmation réévaluation ── */}
+      {showReEvalConfirm && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          display: 'flex', alignItems: 'flex-end',
+          background: 'rgba(0,0,0,0.45)',
+          animation: 'fadeIn 0.2s ease',
+        }}>
+          <div style={{
+            width: '100%', background: dark ? COURT.darkCard : '#F7F3EA',
+            borderRadius: '20px 20px 0 0',
+            padding: '24px 24px 40px',
+            animation: 'sheetUp 0.3s ease',
+          }}>
+            {/* Icône avertissement */}
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 26,
+                background: `${COURT.gold}20`, margin: '0 auto 12px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COURT.gold} strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: dark ? COURT.darkMuted : COURT.stone }}>
+                {lang==='fr' ? 'Attention' : lang==='en' ? 'Warning' : 'שים לב'}
+              </div>
+            </div>
+            {/* Titre */}
+            <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, fontStyle: 'italic', color: dark ? COURT.darkText : COURT.ink, textAlign: 'center', marginBottom: 12, lineHeight: 1.4 }}>
+              {lang==='fr' ? 'Réévaluation mensuelle' : lang==='en' ? 'Monthly re-evaluation' : 'הערכה חודשית'}
+            </div>
+            {/* Message principal */}
+            <div style={{ fontFamily: 'Mulish', fontSize: 13.5, color: dark ? COURT.darkMuted : COURT.stone, textAlign: 'center', lineHeight: 1.6, marginBottom: 18 }}>
+              {lang==='fr'
+                ? 'Tu ne peux réévaluer ton niveau qu\'une seule fois par mois.'
+                : lang==='en'
+                ? 'You can only re-evaluate your level once per month.'
+                : 'ניתן לבצע הערכה מחדש פעם אחת בחודש בלבד.'}
+            </div>
+            {/* Avertissement pénalité */}
+            <div style={{
+              background: `${COURT.red}12`, border: `0.5px solid ${COURT.red}40`,
+              borderRadius: 12, padding: '12px 14px', marginBottom: 22,
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+            }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COURT.red} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div style={{ fontFamily: 'Mulish', fontSize: 12.5, color: COURT.red, lineHeight: 1.55 }}>
+                {lang==='fr'
+                  ? `Cette action réduira ton indice de confiance de 10 % (minimum 50 %). Actuellement : ${confidence}% → ${Math.max(50, confidence - 10)}%`
+                  : lang==='en'
+                  ? `This will reduce your confidence index by 10% (min. 50%). Currently: ${confidence}% → ${Math.max(50, confidence - 10)}%`
+                  : `פעולה זו תפחית את מדד האמינות שלך ב-10% (מינימום 50%). כרגע: ${confidence}% → ${Math.max(50, confidence - 10)}%`}
+              </div>
+            </div>
+            {/* Boutons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setShowReEvalConfirm(false)}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: 12,
+                  background: 'transparent', border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
+                  fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
+                  color: dark ? COURT.darkText : COURT.green, cursor: 'pointer',
+                }}
+              >
+                {lang==='fr' ? 'Annuler' : lang==='en' ? 'Cancel' : 'ביטול'}
+              </button>
+              <button
+                onClick={() => { setShowReEvalConfirm(false); setShowReEval(true); }}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: 12,
+                  background: COURT.green, border: `0.5px solid ${COURT.gold}60`,
+                  fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
+                  color: COURT.cream, cursor: 'pointer',
+                }}
+              >
+                {lang==='fr' ? 'Continuer' : lang==='en' ? 'Continue' : 'המשך'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Réévaluation du niveau (quiz seul, sans refaire le profil) ── */}
       {showReEval && (
         <div style={{
@@ -3679,9 +3806,14 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
             t={t} lang={lang} dark={dark}
             onDone={async (computedLevel) => {
               setReEvalSaving(true);
-              // IMPORTANT : on ne touche QUE au champ level. Username, photo,
-              // nom, hand, side, style, region restent inchangés.
-              await saveProfile({ level: computedLevel });
+              // Pénalité indice de confiance : −10%, minimum 50%
+              const newConf = Math.max(50, confidence - 10);
+              setConfidence(newConf);
+              // IMPORTANT : on ne touche QUE level + last_self_eval_date
+              await saveProfile({
+                level: computedLevel,
+                last_self_eval_date: new Date().toISOString().slice(0, 10),
+              });
               setReEvalSaving(false);
               setReEvalDone(computedLevel);
               // Ferme automatiquement après confirmation visuelle (1.6s)
