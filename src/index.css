@@ -279,3 +279,17 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
   0%, 100% { opacity: 0.5; }
   50%      { opacity: 0.85; }
 }
+@keyframes flameFlick {
+  0%,100% { transform: scale(1) rotate(-2deg) skewX(-1deg); }
+  30%     { transform: scale(1.06) rotate(3deg) skewX(1deg); }
+  60%     { transform: scale(0.97) rotate(-1.5deg) skewX(0deg); }
+}
+@keyframes flameGlow {
+  0%,100% { filter: drop-shadow(0 4px 12px rgba(232,148,58,0.4)); }
+  50%     { filter: drop-shadow(0 8px 28px rgba(232,148,58,0.85)); }
+}
+.flame-anim {
+  animation: flameFlick 2.2s ease-in-out infinite, flameGlow 2.2s ease-in-out infinite;
+  transform-origin: 50% 92%;
+  display: inline-block;
+}
