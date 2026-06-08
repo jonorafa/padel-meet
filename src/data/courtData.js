@@ -54,7 +54,7 @@ export const I18N = {
     atClub: 'Au club', partners: 'Partenaires', available: 'disponibles',
     yes: 'Au jeu', no: 'Une autre fois',
     filters: 'Préférences', applyFilters: 'Appliquer',
-    side: 'Côté', forehand: 'Drive', backhand: 'Revers', anySide: 'Indifférent',
+    side: 'Côté', forehand: 'Droite', backhand: 'Gauche', anySide: 'Indifférent',
     playerStyle: 'Style', aggressive: 'Offensif', defensive: 'Défensif', allcourt: 'Polyvalent', anyStyle: 'Indifférent',
     motivation: 'Motivation', fun: 'Le plaisir', improve: 'Progresser', compete: 'Compétition', anyMot: 'Indifférent',
     region: 'Région', frequency: 'Fréquence', availability: 'Disponibilités',

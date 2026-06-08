@@ -3999,8 +3999,8 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
           onChange={(v) => setPrefs(p => ({ ...p, side: v }))}
           options={[
             { value: 'any',      label: t.anySide || 'Indifférent' },
-            { value: 'forehand', label: t.forehand || 'Drive' },
-            { value: 'backhand', label: t.backhand || 'Revers' },
+            { value: 'forehand', label: t.forehand || 'Droite' },
+            { value: 'backhand', label: t.backhand || 'Gauche' },
           ]}
         />
 
