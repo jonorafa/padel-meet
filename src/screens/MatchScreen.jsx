@@ -2714,7 +2714,11 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
         )}
         {!loading && likes.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>💚</div>
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: `${COURT.green}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <svg width="32" height="30" viewBox="0 0 24 22" fill="none" stroke={COURT.green} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20C12 20 2 13.5 2 7a5 5 0 0 1 10 0 5 5 0 0 1 10 0c0 6.5-10 13-10 13Z" />
+              </svg>
+            </div>
             <p style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 17, color: ink, margin: 0 }}>{t.noLikesYet || 'Aucun like pour l\'instant'}</p>
           </div>
         )}
@@ -2731,7 +2735,9 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
                 <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
               )}
             </div>
-            <div style={{ color: COURT.green, fontSize: 18 }}>💚</div>
+            <svg width="18" height="17" viewBox="0 0 24 22" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20C12 20 2 13.5 2 7a5 5 0 0 1 10 0 5 5 0 0 1 10 0c0 6.5-10 13-10 13Z" />
+            </svg>
           </div>
         ))}
       </div>
