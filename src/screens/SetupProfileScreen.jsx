@@ -34,6 +34,7 @@ const L = {
     submit:      'Entrer au club',
     required:    'Remplis tous les champs.',
     photoRequired: 'Ajoutez une photo pour continuer',
+    uploadError: "Échec de l'envoi de la photo. Réessaie.",
   },
   en: {
     title:       'My profile',
@@ -63,6 +64,7 @@ const L = {
     submit:      'Enter the club',
     required:    'Please fill in all fields.',
     photoRequired: 'Add a photo to continue',
+    uploadError: 'Photo upload failed. Please try again.',
   },
   he: {
     title:       'הפרופיל שלי',
@@ -92,7 +94,39 @@ const L = {
     submit:      'כניסה למועדון',
     required:    'אנא מלא את כל השדות.',
     photoRequired: 'הוסף תמונה כדי להמשיך',
+    uploadError: 'העלאת התמונה נכשלה. נסה שוב.',
   },
+}
+
+// Compresse une image en JPEG (max 1600 px, qualité 0.82). Gère les gros
+// fichiers et NORMALISE le type vers image/jpeg — indispensable car le bucket
+// n'accepte que jpeg/png/webp ≤ 5 Mo (un HEIC d'iPhone brut serait rejeté).
+function compressToJpeg(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Lecture du fichier impossible'))
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('Image illisible (format non supporté ?)'))
+      img.onload = () => {
+        let { width, height } = img
+        const max = 1600
+        if (width > height && width > max) { height = (height * max) / width; width = max }
+        else if (height > max)            { width = (width * max) / height; height = max }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error('Compression échouée'))),
+          'image/jpeg',
+          0.82,
+        )
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 // ─── Chip group ───────────────────────────────────────────────────────────────
@@ -191,6 +225,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
   const [fullName,        setFullName]        = useState(googleName)
   const [avatar,          setAvatar]          = useState(googlePhoto)
+  const [avatarPath,      setAvatarPath]      = useState('')   // chemin storage (pour créer la ligne galerie après submit)
+  const [uploadError,     setUploadError]     = useState('')
   const [hand,            setHand]            = useState('right')
   const [side,            setSide]            = useState('forehand')
   const [style,           setStyle]           = useState('all-court')
@@ -231,21 +267,27 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   }
 
   // ── Avatar upload ────────────────────────────────────────────────────────
+  // Upload vers le bucket `profile-photos` (le seul qui existe) au chemin
+  // `photos/{uid}/...` exigé par la RLS storage. On compresse en JPEG d'abord,
+  // et surtout on REMONTE les erreurs (l'ancienne version les avalait → spinner
+  // qui tournait dans le vide).
   const handleAvatarUpload = async (file) => {
     if (!file) return
+    setUploadError('')
     setUploading(true)
     try {
-      const ext  = file.name.split('.').pop()
-      const path = `avatars/${user.id}.${ext}`
+      const blob = await compressToJpeg(file)
+      const storagePath = `photos/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.jpg`
       const { error } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true })
-      if (!error) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(path)
-        setAvatar(publicUrl)
-      }
+        .from('profile-photos')
+        .upload(storagePath, blob, { contentType: 'image/jpeg', upsert: true })
+      if (error) throw error
+      const { data } = supabase.storage.from('profile-photos').getPublicUrl(storagePath)
+      setAvatar(data?.publicUrl || '')
+      setAvatarPath(storagePath)
+    } catch (err) {
+      console.error('Avatar upload failed:', err)
+      setUploadError(err?.message ? `${t.uploadError} (${err.message})` : t.uploadError)
     } finally {
       setUploading(false)
     }
@@ -270,8 +312,21 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       city,
       level,
     })
+    if (error) { setSubmitting(false); setFormError(error.message); return }
+
+    // Le profil existe maintenant → on peut créer la ligne galerie (FK vers
+    // profiles). Le trigger SQL la marque automatiquement comme primary.
+    // Non-bloquant : l'avatar marche déjà via photo_url même si ça échoue.
+    if (avatarPath) {
+      const { error: photoErr } = await supabase.from('profile_photos').insert({
+        user_id:      user.id,
+        url:          avatar,
+        storage_path: avatarPath,
+      })
+      if (photoErr) console.warn('[onboarding] insert galerie non-bloquant:', photoErr.message)
+    }
+
     setSubmitting(false)
-    if (error) { setFormError(error.message); return }
     onDone()
   }
 
@@ -337,7 +392,15 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           >
             {avatar ? t.changePhoto : t.photo}
           </button>
-          {!avatar && (
+          {uploadError ? (
+            <div style={{
+              marginTop: 4, fontFamily: 'Mulish', fontSize: 11,
+              color: '#e53e3e', fontStyle: 'italic',
+              textAlign: 'center', maxWidth: 260,
+            }}>
+              {uploadError}
+            </div>
+          ) : !avatar && (
             <div style={{
               marginTop: 4, fontFamily: 'Mulish', fontSize: 11,
               color: COURT.purple, fontStyle: 'italic',
