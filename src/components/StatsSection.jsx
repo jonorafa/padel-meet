@@ -234,10 +234,28 @@ export default function StatsSection() {
             )}
           </div>
         </div>
-        <SparkLine data={progressionData} color={COURT.gold} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+
+        {/* ── Graph avec axes ── */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+          {/* Y-axis labels */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: 9, color: stone, textAlign: 'right', minWidth: 20, paddingRight: 4 }}>
+            <span>7.0</span>
+            <span>4.0</span>
+            <span>0.5</span>
+          </div>
+
+          {/* Graph */}
+          <div style={{ flex: 1 }}>
+            <SparkLine data={progressionData} color={COURT.gold} />
+          </div>
+        </div>
+
+        {/* ── X-axis (dates) ── */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
           {progressionLabels.map((m, i) => (
-            <span key={i} style={{ fontFamily: 'Mulish', fontSize: 11, color: stone }}>{m}</span>
+            <span key={i} style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, flex: 1, textAlign: i === 0 ? 'left' : i === progressionLabels.length - 1 ? 'right' : 'center' }}>
+              {m}
+            </span>
           ))}
         </div>
       </div>
