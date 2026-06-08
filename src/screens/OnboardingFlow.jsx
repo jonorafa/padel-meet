@@ -3,10 +3,11 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { usePrefs } from '../context/PrefsContext'
 import { useAuth }  from '../context/AuthContext'
 import { I18N }     from '../data/courtData'
-import WelcomeScreen    from './LevelAssessmentScreen'
-import QuizScreen       from './ScoreScreen'
-import ResultScreen     from './ProfileSetupScreen'
-import SetupProfileScreen from './SetupProfileScreen'
+import WelcomeScreen       from './LevelAssessmentScreen'
+import QuizScreen          from './ScoreScreen'
+import ResultScreen        from './ProfileSetupScreen'
+import SetupProfileScreen  from './SetupProfileScreen'
+import PartnerPrefsScreen  from './PartnerPrefsScreen'
 
 /**
  * Flux d'onboarding complet pour un nouvel utilisateur :
@@ -48,6 +49,10 @@ export default function OnboardingFlow() {
   }
 
   const handleSetupDone = () => {
+    setPhase('partner')
+  }
+
+  const handlePartnerDone = () => {
     navigate('/app', { replace: true })
   }
 
@@ -80,6 +85,13 @@ export default function OnboardingFlow() {
     <SetupProfileScreen
       lang={lang} dark={dark} level={level}
       onDone={handleSetupDone}
+    />
+  )
+
+  if (phase === 'partner') return (
+    <PartnerPrefsScreen
+      lang={lang} dark={dark}
+      onDone={handlePartnerDone}
     />
   )
 
