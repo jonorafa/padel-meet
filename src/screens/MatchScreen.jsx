@@ -29,6 +29,37 @@ import { tickStreak }        from '../hooks/useStreak';
 const StatsSection = lazy(() => import('../components/StatsSection'));
 import QuizScreen           from './ScoreScreen';
 
+// ─── Composant bouton de langue ─────────────────────────────────────────────
+function LangButton({ code, flag, label, onSelect }) {
+  const [hovered, setHovered] = useState(false);
+  const dark = isDark();
+  const card = dark ? COURT.darkCard : '#F7F3EA';
+  const border = dark ? COURT.darkBorder : `${COURT.green}50`;
+  const ink = dark ? COURT.darkText : COURT.ink;
+
+  return (
+    <button
+      onClick={() => onSelect(code)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
+        background: hovered ? COURT.green : card,
+        border: `0.5px solid ${hovered ? COURT.green : border}`,
+        transition: 'all 0.2s',
+      }}
+    >
+      <span style={{ fontSize: 28 }}>{flag}</span>
+      <span style={{
+        fontFamily: 'Mulish, sans-serif',
+        fontSize: 20, fontWeight: 500,
+        color: hovered ? COURT.cream : ink,
+      }}>{label}</span>
+    </button>
+  );
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 /** Compresse une image via canvas (max ~1200px côté long, qualité 0.82). */
@@ -3658,31 +3689,15 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               { code: 'fr', flag: '🇫🇷', label: 'Français' },
               { code: 'en', flag: '🇬🇧', label: 'English' },
               { code: 'he', flag: '🇮🇱', label: 'עברית' },
-            ].map(({ code, flag, label }) => {
-              const [hovered, setHovered] = useState(false);
-              return (
-                <button
-                  key={code}
-                  onClick={() => { setLang(code); setShowLangPicker(false); }}
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 14,
-                    padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
-                    background: hovered ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
-                    border: `0.5px solid ${hovered ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <span style={{ fontSize: 28 }}>{flag}</span>
-                  <span style={{
-                    fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-                    fontSize: 20, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic',
-                    color: hovered ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
-                  }}>{label}</span>
-                </button>
-              );
-            })}
+            ].map(({ code, flag, label }) => (
+              <LangButton
+                key={code}
+                code={code}
+                flag={flag}
+                label={label}
+                onSelect={(c) => { setLang(c); setShowLangPicker(false); }}
+              />
+            ))}
           </div>
         </BottomSheet>
       )}
