@@ -174,9 +174,18 @@ export default function AuthScreen() {
           options: { emailRedirectTo: `${window.location.origin}/auth` },
         })
         if (e) { setError(mapError(e.message)); return }
-        // Email déjà enregistré : Supabase renvoie un user "fantôme" sans identités
-        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          setError(L.errTaken); setTab('login'); return
+        // Email déjà enregistré : Supabase renvoie un user "fantôme" dont la liste
+        // d'identités est VIDE (une vraie inscription en contient toujours au moins
+        // une). On bloque alors la "re-création" et on bascule sur « Se connecter ».
+        // ⚠️ Aucune écriture n'a lieu côté DB dans ce cas : le compte existant n'est
+        // JAMAIS écrasé — Supabase renvoie juste cette réponse factice par sécurité.
+        const identities = data?.user?.identities
+        const alreadyRegistered = !!data?.user && (!identities || identities.length === 0)
+        if (alreadyRegistered) {
+          setError(L.errTaken)
+          setTab('login')
+          setPassword('')
+          return
         }
         // Pas de session => confirmation email activée : invite à vérifier la boîte mail.
         // Si une session existe, onAuthStateChange (AuthContext) déclenche la redirection.
