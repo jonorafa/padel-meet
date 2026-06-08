@@ -2893,7 +2893,7 @@ function ContactSheet({ dark, lang, onClose }) {
 // ─── Profile Screen ──────────────────────────────────────────────────────────
 function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {} }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
-  const { lang, dark, level, confidence, setLang, toggleDark, setConfidence } = usePrefs();
+  const { lang, dark, level, confidence, setLang, toggleDark, setLevel, setConfidence } = usePrefs();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
