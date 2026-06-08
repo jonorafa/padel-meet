@@ -3659,7 +3659,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               { code: 'en', flag: '🇬🇧', label: 'English' },
               { code: 'he', flag: '🇮🇱', label: 'עברית' },
             ].map(({ code, flag, label }) => {
-              const [hovered, setHovered] = React.useState(false);
+              const [hovered, setHovered] = useState(false);
               return (
                 <button
                   key={code}
