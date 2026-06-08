@@ -187,28 +187,63 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
     : null
   const photosToShow = playerPhotos && playerPhotos.length > 0 ? playerPhotos : fallbackPhotos
 
+  const rtl = lang === 'he'
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
       display: 'flex', flexDirection: 'column', background: bg,
     }}>
-      {/* Header */}
+      {/* ─── COMPACT HEADER + PROFILE INFO ─── */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 16px', borderBottom: `0.5px solid ${border}`,
+        padding: '16px', borderBottom: `0.5px solid ${border}`,
+        display: 'flex', alignItems: 'flex-start', gap: 16,
       }}>
-        <div style={{ width: 40 }} />
-        <h1 style={{
-          fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 700,
-          color: ink, margin: 0,
-        }}>
-          {t.profile || 'Profil'}
-        </h1>
+        {/* Photo petite à gauche */}
+        <div style={{
+          width: 76, height: 76, minWidth: 76, borderRadius: 12, flexShrink: 0,
+          background: player.photo_url
+            ? `url(${player.photo_url}) center/cover`
+            : card,
+          border: `1px solid ${border}`,
+        }} />
+
+        {/* Infos à droite : nom + age + région + niveau */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <h2 style={{
+            fontFamily: 'Spectral, serif', fontSize: 20, fontWeight: 800,
+            color: ink, margin: 0,
+          }}>
+            {player.name || player.username || 'Joueur'}
+          </h2>
+          <p style={{ fontFamily: 'Mulish', fontSize: 12, color: muted, margin: 0, whiteSpace: 'nowrap' }}>
+            {player.age ? `${player.age} ans` : ''}
+            {player.age && (player.region || player.city) ? ' · ' : ''}
+            {player.region || player.city || ''}
+          </p>
+          {player.level != null && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 11px', borderRadius: 8,
+              background: `${COURT.green}18`, border: `0.5px solid ${COURT.green}40`,
+              width: 'fit-content',
+            }}>
+              <span style={{ fontFamily: 'Mulish', fontSize: 10, color: muted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                {t.currentLevel || 'Niveau'}
+              </span>
+              <span style={{ fontFamily: 'Spectral, serif', fontSize: 15, fontWeight: 700, color: COURT.green, fontStyle: 'italic' }}>
+                {player.level.toFixed(1)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Bouton fermer */}
         <button
           onClick={onClose}
           style={{
-            width: 40, height: 40, borderRadius: 10, border: `0.5px solid ${border}`,
-            background: card, color: ink, cursor: 'pointer',
+            width: 36, height: 36, borderRadius: 10, border: `0.5px solid ${border}`,
+            background: card, color: ink, cursor: 'pointer', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -216,254 +251,103 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         </button>
       </div>
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', background: bg }}>
-        <div style={{ maxWidth: 600, margin: '0 auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-          {/* Photos */}
-          {photosToShow ? (
-            <PhotoGallery photos={photosToShow} dark={dark} />
-          ) : (
+      {/* ─── CONTENU PRINCIPAL (scroll si besoin) ─── */}
+      <div style={{ flex: 1, overflowY: 'auto', background: bg, padding: '0 16px 16px' }}>
+        {/* Mon jeu + Il recherche */}
+        {(player.dominant_hand || player.preferred_side || player.play_style || player.motivation || player.level != null) && (
+          <div style={{ marginTop: 12 }}>
+            {/* En-têtes */}
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              aspectRatio: '1 / 1', borderRadius: 12,
-              background: card, border: `0.5px solid ${border}`,
+              display: 'grid', gridTemplateColumns: '24px 1fr 1fr',
+              gap: '0 12px', marginBottom: 10, paddingBottom: 10,
+              borderBottom: `0.5px solid ${border}`,
             }}>
-              <p style={{ fontFamily: 'Mulish', color: muted }}>{t.noPhotos || 'Aucune photo'}</p>
-            </div>
-          )}
-
-          {/* Player info */}
-          <div style={{
-            padding: '14px 16px', borderRadius: 12,
-            background: card, border: `0.5px solid ${border}`,
-          }}>
-            <h2 style={{
-              fontFamily: 'Spectral, serif', fontSize: 24, fontWeight: 800,
-              color: ink, margin: '0 0 4px',
-            }}>
-              {player.name || player.username || 'Joueur'}
-            </h2>
-            <p style={{ fontFamily: 'Mulish', fontSize: 13, color: muted, margin: 0 }}>
-              {player.age ? `${player.age} ans` : ''}
-              {player.age && (player.region || player.city) ? ' · ' : ''}
-              {player.region || player.city || ''}
-            </p>
-          </div>
-
-          {/* Bio */}
-          {bio && (
-            <div>
-              <p style={{
-                fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, color: muted,
-                textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px',
-              }}>
-                {t.bio || 'Bio'}
-              </p>
-              <p style={{ fontFamily: 'Mulish', fontSize: 14, color: ink, lineHeight: 1.6, margin: 0 }}>
-                {bio}
-              </p>
-            </div>
-          )}
-
-          {/* Stats grid */}
-          {stats && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-              {[
-                { value: stats.matches_played || 0, label: t.matches || 'Matchs' },
-                { value: stats.wins || 0,           label: t.wins || 'Victoires' },
-                { value: winrate !== null ? `${winrate}%` : '—', label: t.winrate || 'Winrate' },
-              ].map(({ value, label }) => (
-                <div key={label} style={{
-                  textAlign: 'center', padding: '12px 8px', borderRadius: 10,
-                  background: card, border: `0.5px solid ${border}`,
-                }}>
-                  <p style={{
-                    fontFamily: 'Spectral, serif', fontSize: 26, fontWeight: 800,
-                    color: COURT.green, margin: '0 0 4px',
-                  }}>{value}</p>
-                  <p style={{ fontFamily: 'Mulish', fontSize: 11, color: muted, margin: 0 }}>{label}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Trophées */}
-          {stats && (() => {
-            const mp = stats.matches_played || 0
-            const sk = stats.streak || 0
-            const lv = player.level != null ? Number(player.level) : null
-            const playerTrophies = [
-              { key: 'first',  icon: '🎾', label: t.trophyFirstMatch || 'Premier match', unlocked: mp >= 1 },
-              { key: 'streak', icon: '🔥', label: t.trophyStreak5    || 'Série de 5',    unlocked: sk >= 5 },
-              { key: 'ten',    icon: '⭐', label: t.trophyTenMatches || '10 matchs',     unlocked: mp >= 10 },
-              { key: 'level5', icon: '👑', label: t.trophyLevel5     || 'Niveau 5',      unlocked: lv != null && lv >= 5 },
-            ]
-            return (
-              <div style={{ padding: '16px', borderRadius: 12, background: card, border: `0.5px solid ${border}` }}>
-                <p style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>
-                  {t.trophiesTitle || 'Trophées'}
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                  {playerTrophies.map((tr, i) => (
-                    <div key={tr.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                      <div style={{ position: 'relative', width: 54, height: 54 }}>
-                        <div style={{
-                          width: 54, height: 54, borderRadius: 27,
-                          background: tr.unlocked
-                            ? 'radial-gradient(circle at 35% 30%, rgba(42,122,82,0.4), #0F3D29)'
-                            : (dark ? '#1A2820' : 'rgba(107,107,107,0.12)'),
-                          border: `1.5px solid ${tr.unlocked ? COURT.gold : (dark ? '#2A4A3A' : 'rgba(107,107,107,0.25)')}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24,
-                          filter: tr.unlocked ? 'none' : 'grayscale(1) opacity(0.45)',
-                          boxShadow: tr.unlocked ? '0 4px 12px rgba(15,61,41,0.3)' : 'none',
-                        }}>{tr.icon}</div>
-                        {!tr.unlocked && (
-                          <div style={{ position: 'absolute', inset: 0, borderRadius: 27, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🔒</div>
-                        )}
-                      </div>
-                      <p style={{ fontFamily: 'Mulish', fontSize: 11, color: tr.unlocked ? (dark ? '#E8E0CC' : '#1A1A1A') : muted, textAlign: 'center', letterSpacing: '0.05em', lineHeight: 1.3, margin: 0, maxWidth: 60 }}>{tr.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })()}
-
-          {/* ─── Mon jeu + Je recherche (tableau hairline aligné) ─── */}
-          {(player.dominant_hand || player.preferred_side || player.play_style || player.motivation || player.level != null) && (
-            <div>
-              {/* En-têtes des colonnes */}
+              <div />
               <div style={{
+                fontFamily: 'Mulish', fontSize: 10, fontWeight: 700,
+                color: COURT.green, letterSpacing: '0.2em', textTransform: 'uppercase',
+              }}>
+                {myGameLabel}
+              </div>
+              <div style={{
+                fontFamily: 'Mulish', fontSize: 10, fontWeight: 700,
+                color: COURT.purple, letterSpacing: '0.2em', textTransform: 'uppercase',
+              }}>
+                {seekingLabel}
+              </div>
+            </div>
+
+            {/* Lignes */}
+            {profileRows.map(({ icon, label, mine, seeks }, i) => (
+              <div key={label} style={{
                 display: 'grid', gridTemplateColumns: '24px 1fr 1fr',
-                gap: '0 12px', marginBottom: 8, paddingBottom: 8,
-                borderBottom: `0.5px solid ${border}`,
+                gap: '0 12px', alignItems: 'center',
+                padding: '9px 0',
+                borderBottom: i < profileRows.length - 1 ? `0.5px solid ${border}` : 'none',
               }}>
-                <div />
-                <div style={{
-                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
-                  color: COURT.green, letterSpacing: '0.22em', textTransform: 'uppercase',
-                }}>
-                  {myGameLabel}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, opacity: 0.6 }}>
+                  {icon}
                 </div>
-                <div style={{
-                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
-                  color: COURT.purple, letterSpacing: '0.22em', textTransform: 'uppercase',
-                }}>
-                  {seekingLabel}
+                <div>
+                  <div style={{
+                    fontFamily: 'Mulish', fontSize: 9,
+                    color: muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 1,
+                  }}>{label}</div>
+                  <div style={{
+                    fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                    fontSize: 15, fontWeight: mine === '—' ? 400 : 600,
+                    color: mine === '—' ? muted : COURT.green,
+                  }}>{mine}</div>
+                </div>
+                <div>
+                  <div style={{
+                    fontFamily: 'Mulish', fontSize: 9,
+                    color: muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 1,
+                  }}>{label}</div>
+                  <div style={{
+                    fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                    fontSize: 15, fontWeight: seeks == null ? 400 : 600,
+                    color: seeks == null ? muted : COURT.purple,
+                  }}>
+                    {seeks ?? '—'}
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
 
-              {/* Lignes alignées */}
-              {profileRows.map(({ icon, label, mine, seeks }, i) => (
-                <div key={label} style={{
-                  display: 'grid', gridTemplateColumns: '24px 1fr 1fr',
-                  gap: '0 12px', alignItems: 'center',
-                  padding: '11px 0',
-                  borderBottom: i < profileRows.length - 1 ? `0.5px solid ${border}` : 'none',
-                }}>
-                  {/* Icône */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 13, opacity: 0.7 }}>{icon}</span>
-                  </div>
-
-                  {/* Mon jeu */}
-                  <div>
-                    <div style={{
-                      fontFamily: 'Mulish', fontSize: 11,
-                      color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
-                    }}>{label}</div>
-                    <div style={{
-                      fontFamily: 'Spectral, serif', fontStyle: 'italic',
-                      fontSize: 16, fontWeight: mine === '—' ? 400 : 600,
-                      color: mine === '—' ? muted : COURT.green,
-                    }}>{mine}</div>
-                  </div>
-
-                  {/* Je recherche */}
-                  <div>
-                    <div style={{
-                      fontFamily: 'Mulish', fontSize: 11,
-                      color: muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2,
-                    }}>{label}</div>
-                    <div style={{
-                      fontFamily: 'Spectral, serif', fontStyle: 'italic',
-                      fontSize: 16, fontWeight: seeks == null ? 400 : 600,
-                      color: seeks == null ? muted : COURT.purple,
-                    }}>
-                      {seeks ?? '—'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Match history */}
-          {!historyLoading && matchHistory && matchHistory.length > 0 && (
-            <div>
-              <h3 style={{
-                fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
-                color: ink, margin: '0 0 12px',
+        {/* Stats compactes si présentes */}
+        {stats && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 14 }}>
+            {[
+              { value: stats.matches_played || 0, label: t.matches || 'Matchs' },
+              { value: stats.wins || 0,           label: t.wins || 'Victoires' },
+              { value: winrate !== null ? `${winrate}%` : '—', label: t.winrate || 'Winrate' },
+            ].map(({ value, label }) => (
+              <div key={label} style={{
+                textAlign: 'center', padding: '10px 8px', borderRadius: 10,
+                background: card, border: `0.5px solid ${border}`,
               }}>
-                {t.matchHistoryWith || 'Historique avec'} {player.name || player.username || ''}
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {matchHistory.map(match => {
-                  const isWin  = match.result === 'win'
-                  const isLoss = match.result === 'loss'
-                  const resultColor = isWin ? COURT.greenLight : isLoss ? COURT.red : muted
-                  return (
-                    <div
-                      key={match.id}
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '12px 14px', borderRadius: 10,
-                        background: card, border: `0.5px solid ${border}`,
-                      }}
-                    >
-                      <div>
-                        <p style={{ fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, color: ink, margin: '0 0 2px' }}>
-                          {isWin  ? `✓ ${t.youWon  || 'Victoire'}`
-                         : isLoss ? `✗ ${t.youLost || 'Défaite'}`
-                         : (t.draw || 'Égalité')}
-                        </p>
-                        <p style={{ fontFamily: 'Mulish', fontSize: 12, color: muted, margin: 0 }}>
-                          {match.playedAt
-                            ? match.playedAt.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-US')
-                            : ''}
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, color: resultColor, margin: '0 0 2px' }}>
-                          {match.score || '—'}
-                        </p>
-                        {match.eloDelta != null && (
-                          <p style={{ fontFamily: 'Mulish', fontSize: 11, color: match.eloDelta >= 0 ? COURT.greenLight : COURT.red, margin: 0 }}>
-                            {match.eloDelta >= 0 ? '+' : ''}{match.eloDelta}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
+                <p style={{
+                  fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 800,
+                  color: COURT.green, margin: '0 0 2px',
+                }}>{value}</p>
+                <p style={{ fontFamily: 'Mulish', fontSize: 9, color: muted, margin: 0 }}>{label}</p>
               </div>
-            </div>
-          )}
-
-          <div style={{ height: 8 }} />
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Footer */}
+      {/* ─── FOOTER COMPACT ─── */}
       <div style={{ borderTop: `0.5px solid ${border}`, padding: '12px 16px' }}>
         <button
           onClick={onClose}
           style={{
-            width: '100%', padding: '14px 0', borderRadius: 12,
+            width: '100%', padding: '12px 0', borderRadius: 10,
             background: card, border: `0.5px solid ${border}`,
-            fontFamily: 'Mulish', fontSize: 15, fontWeight: 600, color: ink,
+            fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, color: ink,
             cursor: 'pointer',
           }}
         >
