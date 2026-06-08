@@ -3660,15 +3660,18 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               { code: 'he', flag: '🇮🇱', label: 'עברית' },
             ].map(({ code, flag, label }) => {
               const active = lang === code;
+              const [hovered, setHovered] = React.useState(false);
               return (
                 <button
                   key={code}
                   onClick={() => { setLang(code); setShowLangPicker(false); }}
+                  onMouseEnter={() => setHovered(true)}
+                  onMouseLeave={() => setHovered(false)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
                     padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
-                    background: active ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
-                    border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
+                    background: (active || hovered) ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
+                    border: `0.5px solid ${(active || hovered) ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
                     transition: 'all 0.2s',
                   }}
                 >
@@ -3676,7 +3679,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                   <span style={{
                     fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
                     fontSize: 20, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic',
-                    color: active ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
+                    color: (active || hovered) ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
                   }}>{label}</span>
                   {active && (
                     <svg style={{ marginLeft: 'auto' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="2.5" strokeLinecap="round">
