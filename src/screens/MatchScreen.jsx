@@ -2817,7 +2817,11 @@ function ContactSheet({ dark, lang, onClose }) {
       <div style={{ padding: '8px 20px 36px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {sent ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
+            <div style={{ width: 72, height: 72, borderRadius: 18, background: `${COURT.green}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
             <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 22, color: ink, marginBottom: 8 }}>
               {lang === 'fr' ? 'Message envoyé !' : lang === 'en' ? 'Message sent!' : '!ההודעה נשלחה'}
             </div>

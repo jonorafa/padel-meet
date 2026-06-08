@@ -29,13 +29,34 @@ export function AuthProvider({ children }) {
       if (session?.user) {
         // User signed in — exit guest mode automatically
         sessionStorage.removeItem('padel-guest')
+        sessionStorage.setItem('current_user_id', session.user.id)
         setIsGuest(false)
         loadProfile(session.user.id)
-      } else { setProfile(null); setLoading(false) }
+      } else {
+        sessionStorage.removeItem('current_user_id')
+        setProfile(null);
+        setLoading(false)
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Nettoie le localStorage des données utilisateur quand on change d'utilisateur
+  useEffect(() => {
+    const stored = localStorage.getItem('padel_user_id')
+    const current = user?.id || null
+    if (stored && stored !== current && !current) {
+      // Utilisateur précédent n'est plus connecté
+      localStorage.removeItem('padel_level')
+      localStorage.removeItem('padel_confidence')
+      localStorage.removeItem('padel_level_history')
+      localStorage.removeItem('padel_user_id')
+    }
+    if (current) {
+      localStorage.setItem('padel_user_id', current)
+    }
+  }, [user?.id])
 
   // Met à jour last_seen quand l'onglet change d'état (changement de visibilité).
   // Le statut online vient désormais de PresenceContext (Supabase Realtime Presence),
@@ -132,6 +153,10 @@ export function AuthProvider({ children }) {
         .update({ last_seen: new Date().toISOString() })
         .eq('id', user.id)
     }
+    // Nettoie les données utilisateur du localStorage
+    localStorage.removeItem('padel_level')
+    localStorage.removeItem('padel_confidence')
+    localStorage.removeItem('padel_level_history')
     await supabase.auth.signOut()
   }
 

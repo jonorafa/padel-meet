@@ -25,10 +25,32 @@ function loadLevelHistory() {
   return []
 }
 
+// Nettoie les données utilisateur du localStorage si le user a changé.
+// Appelée avant de charger les prefs pour garantir que chaque utilisateur
+// part d'une ardoise propre (pas d'historique du user précédent).
+function cleanupOldUserData() {
+  try {
+    const storedUserId = localStorage.getItem('padel_user_id')
+    const currentUserId = sessionStorage.getItem('current_user_id')
+    if (storedUserId && currentUserId && storedUserId !== currentUserId) {
+      // User a changé → nettoie les données du précédent
+      localStorage.removeItem('padel_level')
+      localStorage.removeItem('padel_confidence')
+      localStorage.removeItem('padel_level_history')
+    }
+    if (currentUserId) {
+      localStorage.setItem('padel_user_id', currentUserId)
+    }
+  } catch (e) {
+    // Ignore les erreurs de storage
+  }
+}
+
 export function PrefsProvider({ children }) {
   const [lang,       _setLang]       = useState(() => localStorage.getItem('padel_lang') || 'fr')
   const [dark,       _setDark]       = useState(() => localStorage.getItem('padel_dark') === 'true')
   const [level,      _setLevel]      = useState(() => {
+    cleanupOldUserData() // nettoie avant de charger
     const v = parseFloat(localStorage.getItem('padel_level'))
     return isNaN(v) ? null : v  // null = quiz non effectué
   })
@@ -36,7 +58,10 @@ export function PrefsProvider({ children }) {
     const v = parseFloat(localStorage.getItem('padel_confidence'))
     return isNaN(v) ? 50 : v
   })
-  const [levelHistory, _setLevelHistory] = useState(loadLevelHistory)
+  const [levelHistory, _setLevelHistory] = useState(() => {
+    cleanupOldUserData() // nettoie avant de charger l'historique
+    return loadLevelHistory()
+  })
 
   // Sync dark mode on mount and whenever dark changes
   useEffect(() => {
