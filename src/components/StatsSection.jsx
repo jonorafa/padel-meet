@@ -192,13 +192,12 @@ export default function StatsSection() {
   }
   const lbl = {
     fontFamily:    'Mulish',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight:    600,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
     color:         stone,
     marginBottom:  10,
-    whiteSpace:    'nowrap',
   }
   const valStyle = {
     fontFamily: ff_serif,

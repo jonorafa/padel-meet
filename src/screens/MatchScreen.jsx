@@ -1159,19 +1159,19 @@ function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetai
               {level != null && <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: `${COURT.cream}90` }}>{t.outOf} 7.0</div>}
             </div>
             <div style={{ height: 0.5, background: `${COURT.cream}30`, margin: '16px 0 12px' }} />
-            <div style={{ display: 'flex', gap: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.matchesPlayed}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t.matchesPlayed}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{userMatches}</div>
               </div>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.winRateLabel}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t.winRateLabel}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>
                   {userWinrate != null ? `${userWinrate}%` : '—'}
                 </div>
               </div>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.24em', textTransform: 'uppercase' }}>{t.confidence}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t.confidence}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{confidence}%</div>
               </div>
             </div>
