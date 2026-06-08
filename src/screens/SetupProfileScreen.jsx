@@ -9,8 +9,6 @@ const L = {
   fr: {
     title:       'Mon profil',
     subtitle:    'Complète ton profil pour rejoindre le club.',
-    username:    'Pseudo (unique)',
-    usernamePh:  '@votre_pseudo',
     fullName:    'Nom complet',
     fullNamePh:  'Prénom Nom',
     photo:       'Photo de profil',
@@ -34,16 +32,12 @@ const L = {
     region:      'Région',
     subRegion:   'Où habites-tu ?',
     submit:      'Entrer au club',
-    taken:       'Ce pseudo est déjà pris.',
-    tooShort:    'Minimum 3 caractères.',
     required:    'Remplis tous les champs.',
     photoRequired: 'Ajoutez une photo pour continuer',
   },
   en: {
     title:       'My profile',
     subtitle:    'Complete your profile to join the club.',
-    username:    'Username (unique)',
-    usernamePh:  '@your_handle',
     fullName:    'Full name',
     fullNamePh:  'First Last',
     photo:       'Profile photo',
@@ -67,16 +61,12 @@ const L = {
     region:      'Region',
     subRegion:   'Where do you live?',
     submit:      'Enter the club',
-    taken:       'This username is already taken.',
-    tooShort:    'Minimum 3 characters.',
     required:    'Please fill in all fields.',
     photoRequired: 'Add a photo to continue',
   },
   he: {
     title:       'הפרופיל שלי',
     subtitle:    'השלם את הפרופיל שלך כדי להצטרף למועדון.',
-    username:    'שם משתמש (ייחודי)',
-    usernamePh:  '@שם_משתמש',
     fullName:    'שם מלא',
     fullNamePh:  'שם פרטי שם משפחה',
     photo:       'תמונת פרופיל',
@@ -100,8 +90,6 @@ const L = {
     region:      'אזור',
     subRegion:   'איפה אתה גר?',
     submit:      'כניסה למועדון',
-    taken:       'שם המשתמש הזה תפוס.',
-    tooShort:    'מינימום 3 תווים.',
     required:    'אנא מלא את כל השדות.',
     photoRequired: 'הוסף תמונה כדי להמשיך',
   },
@@ -196,13 +184,11 @@ function CourtSidePicker({ value, onChange, dark, leftLabel, rightLabel }) {
 export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const { user, saveProfile }  = useAuth()
   const fileRef                = useRef()
-  const usernameTimer          = useRef()
 
   // Pre-fill from Google profile if available
   const googleName  = user?.user_metadata?.full_name  || ''
   const googlePhoto = user?.user_metadata?.avatar_url || ''
 
-  const [username,        setUsername]        = useState('')
   const [fullName,        setFullName]        = useState(googleName)
   const [avatar,          setAvatar]          = useState(googlePhoto)
   const [hand,            setHand]            = useState('right')
@@ -212,11 +198,18 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [frequency,       setFrequency]       = useState(2)
   const [region,          setRegion]          = useState('Israël')
   const [city,            setCity]            = useState(SUB_REGIONS['Israël'][0])
-  const [usernameError,   setUsernameError]   = useState('')
-  const [checkingUser,    setCheckingUser]    = useState(false)
   const [uploading,       setUploading]       = useState(false)
   const [submitting,      setSubmitting]      = useState(false)
   const [formError,       setFormError]       = useState('')
+
+  /** Génère un username unique à partir du nom complet. */
+  const generateUsername = (name) => {
+    const base = name.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')  // enlève les accents
+      .replace(/[^a-z0-9]/g, '')                          // garde lettres/chiffres
+      .slice(0, 14) || 'player'
+    return `${base}_${Date.now().toString(36).slice(-4)}`
+  }
 
   const t   = L[lang] || L.en
   const rtl = lang === 'he'
@@ -235,26 +228,6 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     fontStyle:  rtl ? 'normal' : 'italic',
     fontSize: 15, color: ink, outline: 'none',
     WebkitAppearance: 'none',
-  }
-
-  // ── Validations ──────────────────────────────────────────────────────────
-  const checkUsername = (val) => {
-    clearTimeout(usernameTimer.current)
-    if (!val || val.length < 3) {
-      setUsernameError(val.length > 0 ? t.tooShort : '')
-      return
-    }
-    setCheckingUser(true)
-    usernameTimer.current = setTimeout(async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', val.toLowerCase().trim())
-        .neq('id', user.id)
-        .maybeSingle()
-      setUsernameError(data ? t.taken : '')
-      setCheckingUser(false)
-    }, 400)
   }
 
   // ── Avatar upload ────────────────────────────────────────────────────────
@@ -281,11 +254,10 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   // ── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setFormError('')
-    if (!username.trim() || !fullName.trim()) { setFormError(t.required); return }
-    if (usernameError) return
+    if (!fullName.trim()) { setFormError(t.required); return }
     setSubmitting(true)
     const { error } = await saveProfile({
-      username:       username.toLowerCase().trim(),
+      username:       generateUsername(fullName),
       name:           fullName.trim(),
       full_name:      fullName.trim(),
       photo_url:      avatar,
@@ -303,7 +275,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     onDone()
   }
 
-  const canSubmit = username.length >= 3 && fullName.trim() && !!avatar && !usernameError && !submitting
+  const canSubmit = fullName.trim().length >= 2 && !!avatar && !submitting
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
@@ -381,34 +353,6 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Username */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 4, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              {t.username}
-            </div>
-            <input
-              value={username}
-              onChange={e => { setUsername(e.target.value); checkUsername(e.target.value) }}
-              placeholder={t.usernamePh}
-              style={{
-                ...inputStyle,
-                borderColor: usernameError
-                  ? '#e53e3e'
-                  : (username.length >= 3 && !checkingUser && !usernameError ? COURT.green : border),
-              }}
-              autoCapitalize="none"
-              autoCorrect="off"
-            />
-            {usernameError && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: '#e53e3e', marginTop: 3 }}>
-                {usernameError}
-              </div>
-            )}
-            {checkingUser && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 3 }}>…</div>
-            )}
-          </div>
 
           {/* Full name */}
           <div>
