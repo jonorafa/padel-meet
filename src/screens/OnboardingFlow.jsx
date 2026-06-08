@@ -20,6 +20,7 @@ export default function OnboardingFlow() {
   const navigate                             = useNavigate()
   const [phase,      setPhase]      = useState('welcome')
   const [level,      setLocalLevel] = useState(null)
+  const [quizAnswers, setQuizAnswers] = useState({})
   const [confidence, setLocalConf]  = useState(50)  // toujours 50 — évolue via peer eval
 
   const t = I18N[lang] || I18N.fr
@@ -35,8 +36,9 @@ export default function OnboardingFlow() {
     setPhase('result')
   }
 
-  const handleQuizDone  = (computedLevel) => {
+  const handleQuizDone  = (computedLevel, answers) => {
     setLocalLevel(computedLevel)
+    setQuizAnswers(answers || {})
     // confidence_rate reste à 50 — il évolue uniquement via peer evaluations
     setPhase('result')
   }
@@ -77,6 +79,7 @@ export default function OnboardingFlow() {
     <ResultScreen
       t={t} lang={lang} dark={dark}
       level={level}
+      answers={quizAnswers}
       onContinue={handleEnterClub}
     />
   )

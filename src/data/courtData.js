@@ -798,6 +798,170 @@ export function computeLevel(answers) {
   return Math.max(0.5, Math.min(7.0, finalScore));
 }
 
+// ─── Percentile top joueurs ───────────────────────────────────────────────────
+// Basé sur une distribution typique de joueurs de padel.
+// Retourne "Top X%" de joueurs que le joueur dépasse.
+export function levelToTopPercent(level) {
+  const table = [
+    [7.0, 2], [6.5, 4], [6.0, 7], [5.5, 12],
+    [5.0, 18], [4.5, 28], [4.0, 40], [3.5, 55],
+    [3.0, 68], [2.5, 78], [2.0, 86], [1.5, 93],
+    [1.0, 97], [0.5, 100],
+  ];
+  for (const [lvl, pct] of table) {
+    if (level >= lvl) return pct;
+  }
+  return 100;
+}
+
+// ─── Résumé de niveau personnalisé ───────────────────────────────────────────
+// Génère 2 phrases basées sur les réponses RÉELLES au quiz.
+// Déterministe : les mêmes réponses → le même texte toujours.
+export function generateLevelSummary(answers, lang) {
+  if (!answers || Object.keys(answers).length === 0) return null;
+  const l = lang === 'en' ? 'en' : lang === 'he' ? 'he' : 'fr';
+
+  // Phrases par question × valeur (fr/en/he)
+  const PHRASES = {
+    // Q1 — Bandeja
+    1: {
+      1:   { fr: "tu découvres encore les coups hauts comme la bandeja",                    en: "you're still discovering overhead shots like the bandeja",               he: "אתה עדיין מגלה מכות גבוהות כמו הבנדחה" },
+      3:   { fr: "ta bandeja se construit progressivement",                                  en: "your bandeja is gradually improving",                                   he: "הבנדחה שלך מתפתחת בהדרגה" },
+      5.5: { fr: "ta bandeja est un coup de routine fiable en match",                        en: "your bandeja is a reliable routine shot in matches",                    he: "הבנדחה שלך היא מכה אמינה במשחקים" },
+      7:   { fr: "ta bandeja est parfaitement maîtrisée — direction et effet au choix",      en: "your bandeja is fully mastered — direction and spin at will",           he: "הבנדחה שלך שלוטה לחלוטין — כיוון וספין לפי הרצון" },
+    },
+    // Q2 — Sorties de vitre
+    2: {
+      1:   { fr: "les rebonds de vitre te surprennent encore",                               en: "wall rebounds still catch you off guard",                               he: "ניתוזי קיר עדיין מפתיעים אותך" },
+      3:   { fr: "tu récupères les balles de vitre sans grande précision",                   en: "you retrieve wall balls without much precision",                        he: "אתה מציל כדורי קיר ללא דיוק רב" },
+      5.5: { fr: "tu relances proprement depuis les vitres avec intention",                  en: "you cleanly replay from the walls with intent",                         he: "אתה מחזיר נקי מהקירות עם כוונה" },
+      7:   { fr: "tu transformes les doubles vitres en situations d'attaque",                en: "you turn double-wall shots into attacking opportunities",                he: "אתה הופך כפל-קיר להזדמנויות התקפה" },
+    },
+    // Q3 — Régularité
+    3: {
+      1:   { fr: "tu perds encore des points par des fautes directes sous pression",         en: "you still lose points from direct errors under pressure",               he: "אתה עדיין מאבד נקודות משגיאות ישירות תחת לחץ" },
+      3:   { fr: "ta régularité tient à froid mais se fragilise dans les moments chauds",    en: "your consistency holds when calm but wavers at key moments",            he: "העקביות שלך מחזיקה בשלווה אך נחלשת ברגעים מכריעים" },
+      5.5: { fr: "ta régularité est fiable même dans les matchs serrés",                     en: "your consistency holds even in tight matches",                          he: "העקביות שלך אמינה גם במשחקים קרובים" },
+      7:   { fr: "la fatigue et le score ne t'affectent jamais — régularité de compétition", en: "fatigue and score never affect you — competition-level consistency",   he: "עייפות ותוצאה לא משפיעות עליך — עקביות תחרותית" },
+    },
+    // Q4 — Vibora
+    4: {
+      1:   { fr: "la vibora est encore un coup à découvrir",                                  en: "the vibora is still a shot to discover",                               he: "הויברה היא עדיין מכה לגלות" },
+      3:   { fr: "ta vibora est en apprentissage, le timing n'est pas encore constant",       en: "your vibora is in progress, timing is still inconsistent",             he: "הויברה שלך בלמידה, התזמון עדיין לא עקבי" },
+      5.5: { fr: "tu places ta vibora avec intention — exécution et direction maîtrisées",    en: "you place your vibora with intent — execution and direction mastered",  he: "אתה ממקם את הויברה בכוונה — ביצוע וכיוון נשלטים" },
+      7:   { fr: "ta vibora — croisée ou à la ligne — est une vraie arme offensive",          en: "your vibora — cross or line — is a genuine offensive weapon",          he: "הויברה שלך — אלכסונית או קווית — היא נשק התקפי אמיתי" },
+    },
+    // Q5 — Puissance
+    5: {
+      1:   { fr: "ton jeu repose sur le placement plutôt que la puissance",                   en: "your game relies on placement rather than power",                      he: "המשחק שלך מסתמך על מיקום יותר מכוח" },
+      3:   { fr: "ta puissance est encore irrégulière, parfois sans intention",               en: "your power is still inconsistent, sometimes without purpose",          he: "הכוח שלך עדיין לא עקבי, לפעמים ללא כוונה" },
+      5.5: { fr: "tu choisis quand accélérer — puissance avec effet et direction",            en: "you choose when to accelerate — power with spin and direction",        he: "אתה בוחר מתי להאיץ — כוח עם ספין וכיוון" },
+      7:   { fr: "tu imposes le rythme par ta puissance constante et précise",                en: "you dictate the pace with consistent, precise power",                  he: "אתה מכתיב את הקצב בכוחך העקבי והמדויק" },
+    },
+    // Q6 — Lecture tactique
+    6: {
+      1:   { fr: "tu réagis encore en retard sur les frappes adverses",                       en: "you still react too late to opponents' shots",                         he: "אתה עדיין מגיב באיחור למכות היריבים" },
+      3:   { fr: "tu devines la zone adverse sans toujours anticiper la direction",            en: "you guess the opponent's zone without always reading the direction",   he: "אתה מנחש את אזור היריב מבלי תמיד לקרוא את הכיוון" },
+      5.5: { fr: "tu anticipes les intentions et les zones adverses avec précision",           en: "you anticipate opponents' intentions and zones with accuracy",         he: "אתה מצפה לכוונות ואזורי היריב בדיוק" },
+      7:   { fr: "tu lis simultanément ton partenaire et les deux adversaires — niveau tournoi", en: "you read your partner and both opponents simultaneously — tournament level", he: "אתה קורא שותף ושני יריבים בו-זמנית — רמת טורניר" },
+    },
+    // Q7 — Placement
+    7: {
+      1:   { fr: "ton replacement sur le court reste encore réactif et sans lecture",         en: "your court positioning is still reactive with no court vision",        he: "המיקום שלך במגרש עדיין תגובתי ללא ראיית מגרש" },
+      3:   { fr: "tu couvres bien ta zone mais tardes parfois à te replacer",                 en: "you cover your zone well but are sometimes slow to reposition",        he: "אתה מכסה את אזורך טוב אבל לפעמים איטי להתמקם מחדש" },
+      5.5: { fr: "tu contrôles ta moitié de court avec intention et anticipation",            en: "you control your half of the court with intent and anticipation",      he: "אתה שולט בחצי המגרש שלך עם כוונה וציפייה" },
+      7:   { fr: "ton placement seul suffit à déplacer tes adversaires — niveau compétition", en: "your positioning alone moves opponents — competition level",           he: "המיקום שלך לבדו מזיז את היריבים — רמת תחרות" },
+    },
+    // Q8 — Mental / Pression
+    8: {
+      1:   { fr: "la pression provoque encore des fautes directes sur les points importants", en: "pressure still causes direct errors on important points",              he: "לחץ עדיין גורם לשגיאות ישירות בנקודות חשובות" },
+      3:   { fr: "les moments décisifs affectent encore la qualité de ton jeu",               en: "decisive moments still affect the quality of your game",               he: "רגעים מכריעים עדיין משפיעים על איכות המשחק שלך" },
+      5.5: { fr: "tu gardes ton sang-froid dans les matchs serrés sans paniquer",             en: "you stay composed in tight matches without panicking",                  he: "אתה שומר על קור רוח במשחקים קרובים ללא פאניקה" },
+      7:   { fr: "les points importants révèlent le meilleur de ton jeu — mental de compétition", en: "big points bring out your best — competition mindset",           he: "נקודות גדולות מוציאות ממך את הטוב ביותר — מנטלות תחרותית" },
+    },
+    // Q9 — Précision
+    9: {
+      1:   { fr: "la direction de ta balle est encore souvent aléatoire",                     en: "your ball direction is still often random",                             he: "כיוון הכדור שלך עדיין לרוב אקראי" },
+      3:   { fr: "tu vises des zones larges, la précision reste à affiner",                   en: "you aim for broad zones, precision still needs work",                  he: "אתה מכוון לאזורים רחבים, הדיוק עדיין דורש עבודה" },
+      5.5: { fr: "tu places régulièrement la balle là où tu le souhaites",                    en: "you regularly place the ball where you want it",                       he: "אתה ממקם את הכדור באופן קבוע איפה שאתה רוצה" },
+      7:   { fr: "ta précision est chirurgicale — direction et profondeur maîtrisées",        en: "your precision is surgical — direction and depth fully mastered",       he: "הדיוק שלך כירורגי — כיוון ועומק נשלטים לחלוטין" },
+    },
+    // Q10 — Smash
+    10: {
+      1:   { fr: "le smash est encore difficile à exécuter pour toi",                         en: "the smash is still difficult to execute",                               he: "הסמאש עדיין קשה לביצוע עבורך" },
+      3:   { fr: "la balle sort parfois du terrain, encore sans vraie intention",             en: "the ball exits sometimes but without real intent",                     he: "הכדור יוצא לפעמים אך ללא כוונה אמיתית" },
+      5.5: { fr: "ton par 3 sort régulièrement — smash latéral contrôlé",                    en: "your par 3 exits consistently — controlled lateral smash",             he: "הפר 3 שלך יוצא בהתמדה — סמאש צידי מבוקר" },
+      7:   { fr: "tu choisis entre par 3 et par 4 selon la situation — smash de compétition", en: "you choose par 3 or par 4 by situation — competition-level smash",   he: "אתה בוחר פר 3 או פר 4 לפי המצב — סמאש תחרותי" },
+    },
+  };
+
+  const INTRO = {
+    fr: {
+      high:  "Joueur expérimenté,",
+      mid:   "Joueur intermédiaire avancé,",
+      low:   "En progression,",
+      begin: "En phase d'apprentissage,",
+    },
+    en: {
+      high:  "Experienced player,",
+      mid:   "Advanced intermediate player,",
+      low:   "On the rise,",
+      begin: "In the learning phase,",
+    },
+    he: {
+      high:  "שחקן מנוסה,",
+      mid:   "שחקן ביניים מתקדם,",
+      low:   "בהתפתחות,",
+      begin: "בשלב הלמידה,",
+    },
+  };
+
+  const CONNECTOR = {
+    fr: { and: " et ", but: ". À travailler : ", develop: ". Ton prochain cap : " },
+    en: { and: " and ", but: ". To work on: ", develop: ". Your next step: " },
+    he: { and: " ו", but: ". לעבוד על: ", develop: ". האתגר הבא שלך: " },
+  };
+
+  // Collect answered questions with their values
+  const answered = QUIZ_QUESTIONS
+    .filter(q => answers[q.id] != null)
+    .map(q => ({ id: q.id, val: answers[q.id] }));
+
+  if (answered.length === 0) return null;
+
+  const sorted = [...answered].sort((a, b) => b.val - a.val);
+  const avg = answered.reduce((s, q) => s + q.val, 0) / answered.length;
+
+  const topQ    = sorted[0];
+  const secondQ = sorted[1] && sorted[1].val >= sorted[0].val - 0.5 ? sorted[1] : null;
+  const weakQ   = sorted[sorted.length - 1];
+
+  const intro = INTRO[l];
+  const conn  = CONNECTOR[l];
+
+  const introKey = avg >= 5.5 ? 'high' : avg >= 3.5 ? 'mid' : avg >= 2 ? 'low' : 'begin';
+
+  const strongPhrase = PHRASES[topQ.id]?.[topQ.val]?.[l] ?? '';
+  const weakPhrase   = PHRASES[weakQ.id]?.[weakQ.val]?.[l] ?? '';
+
+  // Sentence 1 : intro + strength + optional 2nd strength
+  let s1 = `${intro[introKey]} ${strongPhrase}`;
+  if (secondQ && secondQ.id !== topQ.id && secondQ.val >= 5.5) {
+    const s2phrase = PHRASES[secondQ.id]?.[secondQ.val]?.[l] ?? '';
+    if (s2phrase) s1 += `${conn.and}${s2phrase}`;
+  }
+  s1 = s1.charAt(0).toUpperCase() + s1.slice(1) + '.';
+
+  // Sentence 2 : weakness / next step
+  let s2 = '';
+  if (weakQ.val < 5.5) {
+    const connector = avg >= 5 ? conn.develop : conn.but;
+    s2 = `${connector.trim().replace(/^./, c => c.toUpperCase())} ${weakPhrase}.`;
+  }
+
+  return { sentence1: s1, sentence2: s2 };
+}
+
 // ELO simple: +/- selon résultat et différence de niveau
 export function computeELODelta(myLevel, theirLevel, result) {
   const expected = 1 / (1 + Math.pow(10, (theirLevel - myLevel) / 2));

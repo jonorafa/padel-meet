@@ -159,7 +159,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
     setTimeout(() => {
       if (idx + 1 >= total) {
         const lvl = computeLevel(newAnswers);
-        onDone(lvl);
+        onDone(lvl, newAnswers);
       } else {
         setIdx(idx + 1);
         setAnimDir('in');
