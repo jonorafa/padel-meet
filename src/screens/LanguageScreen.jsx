@@ -66,18 +66,17 @@ export default function LanguageScreen() {
         {/* Liste langues — cliquable direct, sans rond */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {langs.map((l, i) => {
-            const isActive = current === l.code
             return (
               <button
                 key={l.code}
                 onClick={() => { setLang(l.code); navigate('/auth') }}
                 style={{
-                  background: isActive ? COURT.greenDeep : card,
-                  border: `0.5px solid ${isActive ? COURT.gold : border}`,
+                  background: card,
+                  border: `0.5px solid ${border}`,
                   borderRadius: 14, padding: '14px 20px',
                   display: 'flex', alignItems: 'center', gap: 14,
                   cursor: 'pointer', width: '100%', textAlign: 'left',
-                  boxShadow: isActive ? '0 6px 20px rgba(15,61,41,0.22)' : '0 2px 8px rgba(15,61,41,0.06)',
+                  boxShadow: '0 2px 8px rgba(15,61,41,0.06)',
                   transition: 'all 0.22s ease',
                   animation: `cardIn 0.4s ease ${0.08 * i}s both`,
                 }}
@@ -85,17 +84,19 @@ export default function LanguageScreen() {
                   e.currentTarget.style.background = COURT.greenDeep
                   e.currentTarget.style.borderColor = COURT.gold
                   e.currentTarget.style.boxShadow = '0 8px 24px rgba(15,61,41,0.24)'
+                  e.currentTarget.style.color = COURT.cream
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = isActive ? COURT.greenDeep : card
-                  e.currentTarget.style.borderColor = isActive ? COURT.gold : border
-                  e.currentTarget.style.boxShadow = isActive ? '0 6px 20px rgba(15,61,41,0.22)' : '0 2px 8px rgba(15,61,41,0.06)'
+                  e.currentTarget.style.background = card
+                  e.currentTarget.style.borderColor = border
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(15,61,41,0.06)'
+                  e.currentTarget.style.color = ink
                 }}
               >
                 <span style={{ fontSize: 26 }}>{l.flag}</span>
                 <span style={{
                   fontFamily: 'Mulish', fontSize: 15, fontWeight: 600,
-                  color: isActive ? COURT.cream : ink,
+                  color: ink,
                 }}>{l.label}</span>
               </button>
             )
