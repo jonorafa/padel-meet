@@ -3,12 +3,34 @@ import { usePrefs }        from '../context/PrefsContext'
 import { useAuth }         from '../context/AuthContext'
 import { useMatchHistory } from '../hooks/useMatchHistory'
 import { usePlayerStats }  from '../hooks/usePlayerStats'
+import { useLevelHistory } from '../hooks/useLevelHistory'
 
 // ─── Mois par langue ──────────────────────────────────────────────────────────
 const MONTHS = {
   fr: ['Jan','Fév','Mar','Avr','Mai','Jui','Jul','Aoû','Sep','Oct','Nov','Déc'],
   en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   he: ['ינ','פב','מר','אפ','מי','יו','יל','אג','ספ','אק','נו','דצ'],
+}
+
+/**
+ * Fusionne deux sources d'historique de niveau (DB + localStorage), trie par
+ * date et déduplique les niveaux consécutifs identiques. Garantit qu'on affiche
+ * la série la plus complète, que la donnée vienne du serveur ou du local.
+ */
+function mergeLevelHistories(a, b) {
+  const all = [...(a || []), ...(b || [])]
+    .filter(p => p && p.level != null && p.date)
+    .map(p => ({ level: parseFloat(p.level), date: p.date, t: new Date(p.date).getTime() }))
+    .filter(p => !isNaN(p.t))
+    .sort((x, y) => x.t - y.t)
+
+  const out = []
+  for (const p of all) {
+    const last = out[out.length - 1]
+    if (last && Math.abs(last.level - p.level) < 0.001) continue  // dédoublonne les paliers identiques
+    out.push({ level: p.level, date: p.date })
+  }
+  return out
 }
 
 /** Libellé court d'une date — "8 jui" / "8 Jun". */
@@ -83,6 +105,7 @@ export default function StatsSection() {
   const { profile }  = useAuth()
   const history      = useMatchHistory()
   const { stats }    = usePlayerStats()
+  const dbLevelHist  = useLevelHistory()
   const rtl          = lang === 'he'
 
   // ── Vraies données ──────────────────────────────────────────────────────────
@@ -94,7 +117,9 @@ export default function StatsSection() {
   const confScore     = Math.round(confidence ?? 0)           // 0–100
   const confLeft      = Math.max(0, 10 - matchCount)          // matchs pour vérifier le niveau
 
-  const { points: progressionData, labels: progressionLabels } = buildLevelSeries(levelHistory, currentLevel, lang)
+  // Fusionne historique DB (cross-device) + local (offline) → série la plus complète
+  const mergedHistory = mergeLevelHistories(dbLevelHist, levelHistory)
+  const { points: progressionData, labels: progressionLabels } = buildLevelSeries(mergedHistory, currentLevel, lang)
   const levelStart      = progressionData[0]
   const levelEnd        = progressionData[progressionData.length - 1]
   const levelDelta      = parseFloat((levelEnd - levelStart).toFixed(1))
