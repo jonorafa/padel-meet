@@ -173,7 +173,14 @@ export default function AuthScreen() {
           password,
           options: { emailRedirectTo: `${window.location.origin}/auth` },
         })
-        if (e) { setError(mapError(e.message)); return }
+        if (e) {
+          const friendly = mapError(e.message)
+          setError(friendly)
+          // Confirmation email désactivée : un email déjà pris renvoie directement
+          // l'erreur « already registered ». On bascule alors sur « Se connecter ».
+          if (friendly === L.errTaken) { setTab('login'); setPassword('') }
+          return
+        }
         // Email déjà enregistré : Supabase renvoie un user "fantôme" dont la liste
         // d'identités est VIDE (une vraie inscription en contient toujours au moins
         // une). On bloque alors la "re-création" et on bascule sur « Se connecter ».
