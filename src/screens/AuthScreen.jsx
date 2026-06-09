@@ -4,6 +4,7 @@ import { COURT, FloatingBalls, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { supabase } from '../lib/supabase'
+import { normalizeUsername, usernameToEmail, validateUsername } from '../lib/username'
 
 const LABELS = {
   fr: {
@@ -11,8 +12,11 @@ const LABELS = {
     create:    'Créer un compte',
     login:     'Se connecter',
     email:     'Email',
+    username:  "Nom d'utilisateur",
     password:  'Mot de passe',
     emailPh:   'ton@email.com',
+    usernamePh:'Ex: jonathan',
+    usernameHint:'3 à 20 caractères : lettres, chiffres et _',
     pwPh:      'Ex: Padel2024',
     loginPwPh: '••••••••',
     cta_create:'Créer mon compte',
@@ -22,14 +26,16 @@ const LABELS = {
     google:    'Continuer avec Google',
     guest:     "Continuer en tant qu'invité",
     errEmail:  'Adresse email invalide',
+    errUser:   "Choisis un nom d'utilisateur (3 à 20 caractères : lettres, chiffres, _).",
+    errUserTaken:'Ce nom d’utilisateur est déjà pris. Choisis-en un autre.',
     errPw:     'Le mot de passe doit contenir 8 caractères min., dont des lettres et des chiffres.',
     errPwLen:  '8 caractères minimum',
     errPwLet:  'Au moins une lettre',
     errPwNum:  'Au moins un chiffre',
     errGen:    'Une erreur est survenue',
-    errInvalid:'Email ou mot de passe incorrect.',
+    errInvalid:"Nom d'utilisateur ou mot de passe incorrect.",
     errNotConf:'Confirme ton email avant de te connecter (vérifie ta boîte mail).',
-    errTaken:  'Cet email est déjà utilisé. Connecte-toi.',
+    errTaken:  'Ce nom d’utilisateur est déjà pris. Connecte-toi.',
     checkEmail:'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.',
     resetSent: "Si un compte existe, un lien de réinitialisation vient d'être envoyé.",
     resetAsk:  'Entre ton email puis reclique sur « Mot de passe oublié ».',
@@ -46,8 +52,11 @@ const LABELS = {
     create:    'Create account',
     login:     'Sign in',
     email:     'Email',
+    username:  'Username',
     password:  'Password',
     emailPh:   'you@email.com',
+    usernamePh:'e.g. jonathan',
+    usernameHint:'3 to 20 characters: letters, numbers and _',
     pwPh:      'e.g. Padel2024',
     loginPwPh: '••••••••',
     cta_create:'Create my account',
@@ -57,14 +66,16 @@ const LABELS = {
     google:    'Continue with Google',
     guest:     'Continue as guest',
     errEmail:  'Invalid email address',
+    errUser:   'Choose a username (3 to 20 characters: letters, numbers, _).',
+    errUserTaken:'This username is already taken. Pick another one.',
     errPw:     'Password must be at least 8 characters and include letters and numbers.',
     errPwLen:  'At least 8 characters',
     errPwLet:  'At least one letter',
     errPwNum:  'At least one number',
     errGen:    'An error occurred',
-    errInvalid:'Incorrect email or password.',
+    errInvalid:'Incorrect username or password.',
     errNotConf:'Confirm your email before signing in (check your inbox).',
-    errTaken:  'This email is already registered. Sign in instead.',
+    errTaken:  'This username is already taken. Sign in instead.',
     checkEmail:'Account created! Check your inbox to confirm your address, then sign in.',
     resetSent: 'If an account exists, a reset link has just been sent.',
     resetAsk:  'Enter your email then click "Forgot password" again.',
@@ -81,8 +92,11 @@ const LABELS = {
     create:    'צור חשבון',
     login:     'התחבר',
     email:     'אימייל',
+    username:  'שם משתמש',
     password:  'סיסמה',
     emailPh:   'you@email.com',
+    usernamePh:'לדוג׳ jonathan',
+    usernameHint:'3 עד 20 תווים: אותיות, ספרות ו־_',
     pwPh:      'לדוג׳ Padel2024',
     loginPwPh: '••••••••',
     cta_create:'צור חשבון',
@@ -92,14 +106,16 @@ const LABELS = {
     google:    'המשך עם Google',
     guest:     'המשך כאורח',
     errEmail:  'כתובת אימייל לא תקינה',
+    errUser:   'בחר שם משתמש (3 עד 20 תווים: אותיות, ספרות, _).',
+    errUserTaken:'שם המשתמש הזה כבר תפוס. בחר אחר.',
     errPw:     'הסיסמה חייבת להכיל לפחות 8 תווים, אותיות וספרות.',
     errPwLen:  'לפחות 8 תווים',
     errPwLet:  'לפחות אות אחת',
     errPwNum:  'לפחות ספרה אחת',
     errGen:    'שגיאה',
-    errInvalid:'אימייל או סיסמה שגויים.',
+    errInvalid:'שם משתמש או סיסמה שגויים.',
     errNotConf:'אשר את האימייל שלך לפני ההתחברות (בדוק את תיבת הדואר).',
-    errTaken:  'האימייל הזה כבר רשום. התחבר במקום.',
+    errTaken:  'שם המשתמש הזה כבר תפוס. התחבר במקום.',
     checkEmail:'החשבון נוצר! בדוק את תיבת הדואר כדי לאשר את הכתובת, ואז התחבר.',
     resetSent: 'אם קיים חשבון, נשלח כעת קישור לאיפוס.',
     resetAsk:  'הזן את האימייל שלך ולחץ שוב על "שכחת סיסמה".',
@@ -121,7 +137,7 @@ export default function AuthScreen() {
   const rtl = lang === 'he'
 
   const [tab, setTab]           = useState('create') // 'create' | 'login'
-  const [email, setEmail]       = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw]     = useState(false)
   const [loading, setLoading]   = useState(false)
@@ -147,7 +163,8 @@ export default function AuthScreen() {
     num: /[0-9]/.test(password),
   }
   const pwValid   = pwRules.len && pwRules.let && pwRules.num
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())
+  // Pseudo valide = format OK (3–20 car. [a-z0-9_] après normalisation)
+  const usernameValid = validateUsername(username) === null
 
   // Traduit les messages d'erreur Supabase (anglais) en message convivial localisé
   const mapError = (msg = '') => {
@@ -162,44 +179,56 @@ export default function AuthScreen() {
 
   const handleSubmit = async () => {
     setError(''); setNotice('')
-    if (!emailValid)           return setError(L.errEmail)
+    if (!usernameValid)               return setError(L.errUser)
     if (tab === 'create' && !pwValid) return setError(L.errPw)
     if (tab === 'login' && password.length < 1) return setError(L.errPw)
+
+    // Auth par pseudo : Supabase travaille avec un email TECHNIQUE invisible
+    // dérivé du pseudo (cf. src/lib/username.js). L'utilisateur ne voit que le pseudo.
+    const normalized = normalizeUsername(username)
+    const authEmail  = usernameToEmail(username)
     setLoading(true)
     try {
       if (tab === 'create') {
+        // Pré-vérif d'unicité contre profiles.username. Indispensable car les
+        // comptes Google existants ont un pseudo SANS email technique
+        // correspondant : on ne peut pas se fier uniquement à l'unicité de
+        // l'email Supabase. (La contrainte UNIQUE DB reste le garde-fou final.)
+        const { data: available, error: rpcErr } = await supabase
+          .rpc('username_available', { p_username: normalized })
+        if (!rpcErr && available === false) {
+          setError(L.errUserTaken); setTab('login'); setPassword('')
+          return
+        }
+
         const { data, error: e } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: authEmail,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth` },
+          // Le pseudo voyage dans user_metadata → réutilisé tel quel à l'onboarding
+          // (SetupProfileScreen) pour renseigner profiles.username.
+          options: { data: { username: normalized } },
         })
         if (e) {
           const friendly = mapError(e.message)
           setError(friendly)
-          // Confirmation email désactivée : un email déjà pris renvoie directement
-          // l'erreur « already registered ». On bascule alors sur « Se connecter ».
           if (friendly === L.errTaken) { setTab('login'); setPassword('') }
           return
         }
-        // Email déjà enregistré : Supabase renvoie un user "fantôme" dont la liste
-        // d'identités est VIDE (une vraie inscription en contient toujours au moins
-        // une). On bloque alors la "re-création" et on bascule sur « Se connecter ».
-        // ⚠️ Aucune écriture n'a lieu côté DB dans ce cas : le compte existant n'est
-        // JAMAIS écrasé — Supabase renvoie juste cette réponse factice par sécurité.
+        // Pseudo déjà pris (email technique existant) : Supabase renvoie un user
+        // "fantôme" dont la liste d'identités est VIDE. Aucune écriture DB : le
+        // compte existant n'est JAMAIS écrasé.
         const identities = data?.user?.identities
         const alreadyRegistered = !!data?.user && (!identities || identities.length === 0)
         if (alreadyRegistered) {
-          setError(L.errTaken)
-          setTab('login')
-          setPassword('')
+          setError(L.errTaken); setTab('login'); setPassword('')
           return
         }
-        // Pas de session => confirmation email activée : invite à vérifier la boîte mail.
-        // Si une session existe, onAuthStateChange (AuthContext) déclenche la redirection.
+        // mailer_autoconfirm=true → une session est renvoyée directement →
+        // onAuthStateChange (AuthContext) redirige vers /onboarding.
         if (!data?.session) setNotice(L.checkEmail)
       } else {
         const { error: e } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: authEmail,
           password,
         })
         if (e) { setError(mapError(e.message)); return }
@@ -212,19 +241,8 @@ export default function AuthScreen() {
     }
   }
 
-  // Réinitialisation du mot de passe — envoie un lien par email
-  const handleForgot = async () => {
-    setError(''); setNotice('')
-    if (!emailValid) { setError(L.resetAsk); return }
-    try {
-      await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth`,
-      })
-      setNotice(L.resetSent)
-    } catch (e) {
-      setError(mapError(e?.message))
-    }
-  }
+  // NB : plus de « mot de passe oublié » — l'auth par pseudo n'a pas d'email réel,
+  // donc aucune réinitialisation par email n'est possible (choix assumé).
 
   // Définit le nouveau mot de passe après clic sur le lien de récupération
   const handleResetPassword = async () => {
@@ -407,18 +425,21 @@ export default function AuthScreen() {
           ))}
         </div>
 
-        {/* ── Champ Email ── */}
+        {/* ── Champ Nom d'utilisateur ── */}
         <div style={{ marginBottom: 12 }}>
           <div style={{
             fontFamily: 'Mulish', fontSize: 9.5, color: stone,
             letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
-          }}>{L.email}</div>
+          }}>{L.username}</div>
           <input
-            type="email" value={email}
-            onChange={e => setEmail(e.target.value)}
+            type="text" value={username}
+            onChange={e => setUsername(e.target.value)}
             onKeyDown={onKey}
-            placeholder={L.emailPh}
-            autoComplete="email"
+            placeholder={L.usernamePh}
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             style={{
               width: '100%', padding: '14px 16px', borderRadius: 12,
               background: card, border: `0.5px solid ${border}`,
@@ -428,6 +449,12 @@ export default function AuthScreen() {
               boxSizing: 'border-box',
             }}
           />
+          {tab === 'create' && (
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 10.5, color: stone,
+              marginTop: 5, marginLeft: 2,
+            }}>{L.usernameHint}</div>
+          )}
         </div>
 
         {/* ── Champ Mot de passe ── */}
@@ -497,17 +524,7 @@ export default function AuthScreen() {
           </div>
         )}
 
-        {/* ── Mot de passe oublié (login seulement) ── */}
-        {tab === 'login' && (
-          <div style={{ textAlign: rtl ? 'left' : 'right', marginBottom: 16, marginTop: 6 }}>
-            <span onClick={handleForgot} style={{
-              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-              fontStyle: 'italic', fontSize: 13, color: COURT.green, cursor: 'pointer',
-            }}>
-              {L.forgot}
-            </span>
-          </div>
-        )}
+        {tab === 'login' && <div style={{ height: 10 }} />}
 
         {/* ── Message (erreur ou info) ── */}
         {error ? (

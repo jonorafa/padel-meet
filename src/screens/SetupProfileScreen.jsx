@@ -298,8 +298,12 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     setFormError('')
     if (!fullName.trim()) { setFormError(t.required); return }
     setSubmitting(true)
+    // Pseudo : on réutilise celui choisi à l'inscription (stocké dans
+    // user_metadata.username via AuthScreen). Fallback = génération auto à partir
+    // du nom — utilisé pour les comptes Google (qui n'ont pas saisi de pseudo).
+    const chosenUsername = user?.user_metadata?.username || generateUsername(fullName)
     const { error } = await saveProfile({
-      username:       generateUsername(fullName),
+      username:       chosenUsername,
       name:           fullName.trim(),
       full_name:      fullName.trim(),
       photo_url:      avatar,
