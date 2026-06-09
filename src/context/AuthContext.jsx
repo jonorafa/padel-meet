@@ -31,6 +31,12 @@ export function AuthProvider({ children }) {
         sessionStorage.removeItem('padel-guest')
         sessionStorage.setItem('current_user_id', session.user.id)
         setIsGuest(false)
+        // ⚠️ On repasse loading=true AVANT de charger le profil. Sinon, à la
+        // reconnexion d'un user existant, il existe une fenêtre où user est
+        // défini, loading=false et profile encore null → isOnboarding devient
+        // FAUSSEMENT true → AuthScreen redirige vers /onboarding (ré-évaluation
+        // du niveau) avant que le vrai profil (avec username) soit chargé.
+        setLoading(true)
         loadProfile(session.user.id)
       } else {
         sessionStorage.removeItem('current_user_id')
