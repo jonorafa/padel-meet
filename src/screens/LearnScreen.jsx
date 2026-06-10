@@ -449,17 +449,17 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
           {/* ── Mascotte + bulle de dialogue ── */}
           <div style={{
             padding: '0 20px', flexShrink: 0,
-            display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 28,
+            display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 24,
           }}>
             <Mascot size={118} anim={mascotAnim} src={MASCOT3_SRC}
-              style={{ flexShrink: 0, marginBottom: -4, width: 'auto', height: 118 }} />
-            {/* Bulle */}
-            <div style={{ position: 'relative', flex: 1 }}>
+              style={{ flexShrink: 0, width: 'auto', height: 118 }} />
+            {/* Bulle — alignée à la hauteur de la main */}
+            <div style={{ position: 'relative', flex: 1, marginTop: 16 }}>
               {/* Queue de la bulle pointant vers la mascotte */}
               <div style={{
                 position: 'absolute',
                 left: rtl ? 'auto' : -10, right: rtl ? -10 : 'auto',
-                bottom: 20,
+                top: 22,
                 width: 0, height: 0,
                 borderTop: '9px solid transparent',
                 borderBottom: '9px solid transparent',
@@ -470,7 +470,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
               <div style={{
                 position: 'absolute',
                 left: rtl ? 'auto' : -13, right: rtl ? -13 : 'auto',
-                bottom: 19,
+                top: 21,
                 width: 0, height: 0,
                 borderTop: '10px solid transparent',
                 borderBottom: '10px solid transparent',
@@ -480,12 +480,12 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
               <div style={{
                 background: card,
                 border: `1.5px solid ${dark ? COURT.darkBorder : COURT.green + '22'}`,
-                borderRadius: 18, padding: '14px 16px',
+                borderRadius: 18, padding: '16px 18px',
                 boxShadow: '0 3px 16px rgba(0,0,0,0.08)',
               }}>
                 <div style={{
                   fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-                  fontSize: 17, color: ink, lineHeight: 1.45,
+                  fontSize: 20, color: ink, lineHeight: 1.45,
                 }}>{tr(q.q)}</div>
               </div>
             </div>
