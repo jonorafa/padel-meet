@@ -241,6 +241,30 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
                 marginBottom: 30, transform: `translateX(${rtl ? -offset : offset}px)`,
               }}
             >
+              {/* ── Mascotte déco : à gauche du nœud "Le service" ── */}
+              {ch.id === 'serve' && !rtl && (
+                <div style={{
+                  position: 'absolute',
+                  left: 'calc(50% - 148px)',
+                  top: -12,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                }}>
+                  <Mascot size={92} anim="float" />
+                </div>
+              )}
+              {ch.id === 'serve' && rtl && (
+                <div style={{
+                  position: 'absolute',
+                  right: 'calc(50% - 148px)',
+                  top: -12,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                  transform: 'scaleX(-1)',
+                }}>
+                  <Mascot size={92} anim="float" />
+                </div>
+              )}
               <Node
                 icon={ch.icon}
                 state={completed ? 'done' : unlocked ? 'current' : 'locked'}
