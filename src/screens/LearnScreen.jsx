@@ -241,28 +241,72 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
                 marginBottom: 30, transform: `translateX(${rtl ? -offset : offset}px)`,
               }}
             >
-              {/* ── Mascotte déco : à gauche du nœud "Le service" ── */}
+              {/* ── Mascotte déco : à gauche du nœud "Le service" — statique + ombre ── */}
               {ch.id === 'serve' && !rtl && (
                 <div style={{
                   position: 'absolute',
-                  left: 'calc(50% - 148px)',
-                  top: -12,
+                  left: 'calc(50% - 198px)',
+                  top: -22,
                   pointerEvents: 'none',
                   zIndex: 2,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
                 }}>
-                  <Mascot size={92} anim="float" />
+                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <div style={{
+                    width: 68, height: 8, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                  }} />
                 </div>
               )}
               {ch.id === 'serve' && rtl && (
                 <div style={{
                   position: 'absolute',
-                  right: 'calc(50% - 148px)',
-                  top: -12,
+                  right: 'calc(50% - 198px)',
+                  top: -22,
                   pointerEvents: 'none',
                   zIndex: 2,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
                   transform: 'scaleX(-1)',
                 }}>
-                  <Mascot size={92} anim="float" />
+                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <div style={{
+                    width: 68, height: 8, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                  }} />
+                </div>
+              )}
+              {/* ── Mascotte déco : à droite du nœud "Les bases" — statique + ombre ── */}
+              {ch.id === 'basics' && !rtl && (
+                <div style={{
+                  position: 'absolute',
+                  left: 'calc(50% + 52px)',
+                  top: -22,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                }}>
+                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <div style={{
+                    width: 68, height: 8, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                  }} />
+                </div>
+              )}
+              {ch.id === 'basics' && rtl && (
+                <div style={{
+                  position: 'absolute',
+                  right: 'calc(50% + 52px)',
+                  top: -22,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  transform: 'scaleX(-1)',
+                }}>
+                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <div style={{
+                    width: 68, height: 8, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                  }} />
                 </div>
               )}
               <Node
