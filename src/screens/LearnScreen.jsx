@@ -9,7 +9,7 @@ import { QUIZ_CHAPTERS } from '../data/quizData'
 // ───────────────────────────────────────────────────────────────────────────
 
 const STORE_KEY  = 'padel_learn_progress'
-const MASCOT_SRC = '/mascot.jpg'
+const MASCOT_SRC = '/mascot.png'
 
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { stars: {} } }
