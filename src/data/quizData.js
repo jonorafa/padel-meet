@@ -76,6 +76,25 @@ export const QUIZ_CHAPTERS = [
           he: 'המגרש באורך 20 מ׳ וברוחב 10 מ׳, מוקף בקירות זכוכית ורשת מתכת.',
         },
       },
+      {
+        id: 'b4',
+        q: {
+          fr: 'Combien de formes différentes de raquette de padel existe-t-il ?',
+          en: 'How many different padel racquet shapes are there?',
+          he: 'כמה צורות שונות של מחבט פאדל קיימות?',
+        },
+        options: [
+          { id: 'a', text: { fr: '3 (tête ronde, goutte d’eau, diamant)', en: '3 (round, teardrop, diamond)', he: '3 (עגול, טיפה, יהלום)' } },
+          { id: 'b', text: { fr: '2 (ronde et ovale)', en: '2 (round and oval)', he: '2 (עגול ואובלי)' } },
+          { id: 'c', text: { fr: '4 (ronde, ovale, carrée, triangulaire)', en: '4 (round, oval, square, triangular)', he: '4 (עגול, אובלי, מרובע, משולש)' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'Tête ronde : sweet spot large et bas, idéale pour le contrôle. Goutte d’eau : sweet spot centré, équilibre puissance/contrôle. Diamant : sweet spot haut, plus de puissance mais moins de contrôle — adaptée aux joueurs avancés.',
+          en: 'Round head: large low sweet spot, ideal for control. Teardrop: centred sweet spot, balance of power and control. Diamond: high sweet spot, more power but less control — suited to advanced players.',
+          he: 'ראש עגול: אזור מתיקה גדול ונמוך, אידאלי לשליטה. טיפה: אזור מתיקה מרכזי, איזון עוצמה/שליטה. יהלום: אזור מתיקה גבוהה, יותר עוצמה אך פחות שליטה — מתאים לשחקנים מתקדמים.',
+        },
+      },
     ],
   },
 
@@ -306,6 +325,44 @@ export const QUIZ_CHAPTERS = [
           he: 'כיוון למרכז יוצר היסוס: "שלך / שלי". זה נשק קלאסי במשחק זוגות.',
         },
       },
+      {
+        id: 't3',
+        q: {
+          fr: 'Dans un cas normal, comment doivent se déplacer les deux coéquipiers ?',
+          en: 'In a normal situation, how should the two teammates move?',
+          he: 'במצב רגיל, כיצד צריכים שני השחקנים להתנייד?',
+        },
+        options: [
+          { id: 'a', text: { fr: 'Ensemble : monter et descendre en même temps', en: 'Together: move up and back at the same time', he: 'יחד: לעלות ולרדת בו-זמנית' } },
+          { id: 'b', text: { fr: 'Chacun de son côté, indépendamment', en: 'Each independently on their side', he: 'כל אחד בצד שלו, באופן עצמאי' } },
+          { id: 'c', text: { fr: 'L’un au filet, l’autre au fond', en: 'One at the net while the other defends at the back', he: 'אחד ברשת, השני בעומק' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'Monter ensemble au filet permet d’étouffer les adversaires : ils commettent plus de fautes et tu peux finir le point avec un smash ou un coup bien placé.',
+          en: 'Moving up to the net together suffocates opponents: they make more errors and you can finish the point with a smash or a well-placed shot.',
+          he: 'עלייה ביחד לרשת חונקת את היריבים: הם עושים יותר שגיאות ואפשר לסיים את הנקודה עם סמאש או חבטה ממוקמת היטב.',
+        },
+      },
+      {
+        id: 't4',
+        q: {
+          fr: 'Environ quel pourcentage des points est gagné au filet au padel ?',
+          en: 'Roughly what percentage of points is won at the net in padel?',
+          he: 'בערך איזה אחוז מהנקודות מנוצח ברשת בפאדל?',
+        },
+        options: [
+          { id: 'a', text: { fr: '80 %', en: '80 %', he: '80%' } },
+          { id: 'b', text: { fr: '50 %', en: '50 %', he: '50%' } },
+          { id: 'c', text: { fr: '30 %', en: '30 %', he: '30%' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'Environ 80 % des points se gagnent au filet. C’est pourquoi le lob long est une arme clé : il permet de récupérer le contrôle du filet quand on est repoussé au fond.',
+          en: 'Around 80 % of points are won at the net. That’s why a long lob is a key weapon: it lets you recover the net when pushed to the back.',
+          he: 'כ-80% מהנקודות מנוצחות ברשת. לכן לוב ארוך הוא נשק מפתח: הוא מאפשר לך לחזור לשליטה ברשת כשנדחקת לעומק.',
+        },
+      },
     ],
   },
 
@@ -352,6 +409,25 @@ export const QUIZ_CHAPTERS = [
           fr: 'À 40-40, au lieu des avantages, on joue UN point décisif. L’équipe qui reçoit choisit le côté. Très courant en compétition.',
           en: 'At 40-40, instead of advantages, ONE deciding point is played. The receiving team picks the side. Very common in competition.',
           he: 'ב-40-40, במקום יתרונות, משחקים נקודה מכרעת אחת. הקבוצה המקבלת בוחרת צד. נפוץ מאוד בתחרויות.',
+        },
+      },
+      {
+        id: 'a3',
+        q: {
+          fr: 'Pour un joueur côté gauche, quel coup prioriser si la balle adverse atterrit au milieu du terrain ?',
+          en: 'For a left-side player, which shot to prioritise if the ball lands in the middle of the court?',
+          he: 'לשחקן בצד שמאל, איזו חבטה לתעדף אם הכדור נוחת במרכז המגרש?',
+        },
+        options: [
+          { id: 'a', text: { fr: 'La vibora', en: 'The vibora', he: 'הויברה' } },
+          { id: 'b', text: { fr: 'La bandeja', en: 'The bandeja', he: 'הבנדחה' } },
+          { id: 'c', text: { fr: 'Le lob défensif', en: 'The defensive lob', he: 'לוב הגנתי' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'Balle au centre côté gauche → vibora : plus d’angle et d’agressivité. Si la balle tombe plus à gauche (côté revers), on préférera la bandeja, plus contrôlée et qui permet de rester au filet.',
+          en: 'Ball in the centre on the left side → vibora: more angle and aggression. If the ball falls further left (backhand side), the bandeja is preferred: more control and keeps you at the net.',
+          he: 'כדור במרכז בצד שמאל → ויברה: יותר זווית ואגרסיביות. אם הכדור נופל יותר שמאלה (צד בקהנד), מועדפת הבנדחה: יותר שליטה ושמירה על הרשת.',
         },
       },
     ],
