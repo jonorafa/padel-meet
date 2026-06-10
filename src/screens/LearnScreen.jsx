@@ -279,42 +279,6 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
                   }} />
                 </div>
               )}
-              {/* ── Mascotte déco : à droite du nœud "Les bases" — statique + ombre ── */}
-              {ch.id === 'basics' && !rtl && (
-                <div style={{
-                  position: 'absolute',
-                  left: 'calc(50% + 48px)',
-                  top: -18,
-                  pointerEvents: 'none',
-                  zIndex: 2,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                }}>
-                  <Mascot size={105} anim="bob" src={MASCOT2_SRC}
-                    style={{ animation: 'none', width: 'auto', height: 105, filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.22))' }} />
-                  <div style={{
-                    width: 70, height: 9, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.15)', filter: 'blur(6px)', marginTop: -8,
-                  }} />
-                </div>
-              )}
-              {ch.id === 'basics' && rtl && (
-                <div style={{
-                  position: 'absolute',
-                  right: 'calc(50% + 48px)',
-                  top: -18,
-                  pointerEvents: 'none',
-                  zIndex: 2,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  transform: 'scaleX(-1)',
-                }}>
-                  <Mascot size={105} anim="bob" src={MASCOT2_SRC}
-                    style={{ animation: 'none', width: 'auto', height: 105, filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.22))' }} />
-                  <div style={{
-                    width: 70, height: 9, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.15)', filter: 'blur(6px)', marginTop: -8,
-                  }} />
-                </div>
-              )}
               <Node
                 icon={ch.icon}
                 state={completed ? 'done' : unlocked ? 'current' : 'locked'}
