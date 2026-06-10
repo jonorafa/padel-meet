@@ -344,8 +344,8 @@ function Node({ icon, state, pulse, dark, onClick }) {
         filter: state === 'locked' ? 'grayscale(0.6) opacity(0.75)' : 'none',
         transition: 'transform 0.12s',
         animation: pulse ? 'bounceY 1.8s ease-in-out infinite' : 'none',
-        outline: pulse ? `2.5px solid ${COURT.gold}` : 'none',
-        outlineOffset: '6px',
+        outline: pulse ? `3px solid ${COURT.gold}` : 'none',
+        outlineOffset: '10px',
       }}
       onMouseDown={e => { if (state !== 'locked') e.currentTarget.style.transform = 'translateY(3px)' }}
       onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)' }}
