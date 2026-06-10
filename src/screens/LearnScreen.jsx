@@ -354,7 +354,7 @@ function Node({ icon, state, pulse, dark, onClick }) {
         <div style={{
           position: 'absolute',
           top: '50%', left: '50%',
-          width: 92, height: 92,
+          width: 88, height: 88,
           transform: 'translate(-50%, -50%)',
           borderRadius: '50%',
           border: `2.5px solid ${COURT.gold}`,
