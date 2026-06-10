@@ -337,15 +337,15 @@ function Node({ icon, state, pulse, dark, onClick }) {
       style={{
         width: 76, height: 76, borderRadius: '50%', border: 'none',
         background: palette.bg,
-        boxShadow: `0 6px 0 ${palette.shadow}`,
+        boxShadow: pulse
+          ? `0 0 0 5px ${COURT.gold}, 0 6px 0 ${palette.shadow}`
+          : `0 6px 0 ${palette.shadow}`,
         cursor: state === 'locked' ? 'default' : 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative', fontSize: 32, lineHeight: 1,
         filter: state === 'locked' ? 'grayscale(0.6) opacity(0.75)' : 'none',
         transition: 'transform 0.12s',
         animation: pulse ? 'bounceY 1.8s ease-in-out infinite' : 'none',
-        outline: pulse ? `3px solid ${COURT.gold}` : 'none',
-        outlineOffset: '10px',
       }}
       onMouseDown={e => { if (state !== 'locked') e.currentTarget.style.transform = 'translateY(3px)' }}
       onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)' }}
