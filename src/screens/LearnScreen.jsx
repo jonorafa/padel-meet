@@ -162,7 +162,8 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
       position: 'absolute', inset: 0, background: bg,
-      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch',
+      touchAction: 'pan-y',
     }}>
 
       {/* ── En-tête sticky ── */}
@@ -343,6 +344,8 @@ function Node({ icon, state, pulse, dark, onClick }) {
         filter: state === 'locked' ? 'grayscale(0.6) opacity(0.75)' : 'none',
         transition: 'transform 0.12s',
         animation: pulse ? 'bounceY 1.8s ease-in-out infinite' : 'none',
+        outline: pulse ? `2.5px solid ${COURT.gold}` : 'none',
+        outlineOffset: '6px',
       }}
       onMouseDown={e => { if (state !== 'locked') e.currentTarget.style.transform = 'translateY(3px)' }}
       onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)' }}
@@ -351,18 +354,6 @@ function Node({ icon, state, pulse, dark, onClick }) {
       {state === 'locked'
         ? <LockIcon />
         : <span style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))' }}>{icon}</span>}
-      {pulse && (
-        <div style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
-          width: 88, height: 88,
-          transform: 'translate(-50%, -50%)',
-          borderRadius: '50%',
-          border: `2.5px solid ${COURT.gold}`,
-          opacity: 0.9,
-          pointerEvents: 'none',
-        }} />
-      )}
     </button>
   )
 }
