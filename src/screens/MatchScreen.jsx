@@ -99,31 +99,6 @@ function formatLastSeen(ts) {
   return `${Math.floor(diff / 86400)}j`;
 }
 
-function matchToActivity(m) {
-  const d = m.date || new Date();
-  const relDay = () => {
-    const diffH = (Date.now() - d.getTime()) / 3600000;
-    if (diffH < 30) return { fr: 'Hier', en: 'Yesterday', he: 'אתמול' };
-    return {
-      fr: d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-      en: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-      he: d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short' }),
-    };
-  };
-  const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  const rd = relDay();
-  return {
-    id: m.id,
-    kind: 'match',
-    date:  { fr: `${rd.fr} · ${time}`, en: `${rd.en} · ${time}`, he: `${rd.he} · ${time}` },
-    title: { fr: m.result === 'win' ? 'Victoire' : 'Défaite serrée', en: m.result === 'win' ? 'Win' : 'Close loss', he: m.result === 'win' ? 'ניצחון' : 'הפסד' },
-    sub:   { fr: `contre ${m.player?.name || 'Adversaire'}`, en: `vs ${m.player?.name || 'Opponent'}`, he: `נגד ${m.player?.name || 'יריב'}` },
-    delta: m.delta,
-    scoreL: m.score?.split(' ')[0],
-    scoreR: m.score?.split(' ')[1],
-  };
-}
-
 // ─── Preferences Chips ─────────────────────────────────────────────────────
 function Chips({ value, onChange, options, dark }) {
   return (
@@ -935,451 +910,6 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
         />
       )}
     </>
-  );
-}
-
-// ─── Home Screen ────────────────────────────────────────────────────────────
-function HomeScreen({ t, lang, level, confidence, dark, detailPlayerId, setDetailPlayerId, isGuest, onGuestAction, onGoToProfile, onShowNotifs, notifCount = 0 }) {
-  const { profile } = useAuth();
-  const matchHistory = useMatchHistory();
-
-  const [showRing, setShowRing] = useState(false);
-  const [searchMode, setSearchMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [addedIds,      setAddedIds]      = useState(new Set());
-  const { recordSwipe } = useSwipes();
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const searchTimer = useRef();
-
-  // ─── Évolution interactive ─────────────────────────────────────────
-  const [evoPeriod, setEvoPeriod] = useState('all');
-  const [touchIdx,  setTouchIdx]  = useState(null);
-  const evoRef = useRef(null);
-
-  useEffect(() => { const tt = setTimeout(() => setShowRing(true), 200); return () => clearTimeout(tt); }, []);
-
-  // Recherche Supabase en temps réel — name OU username (ILIKE, toutes les personnes)
-  useEffect(() => {
-    clearTimeout(searchTimer.current);
-    if (!searchQuery.trim()) { setSearchResults([]); setSearchLoading(false); return; }
-    setSearchLoading(true);
-    searchTimer.current = setTimeout(async () => {
-      const q = searchQuery.trim();
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, name, username, photo_url, level, city')
-        .or(`name.ilike.%${q}%,username.ilike.%${q}%`)
-        .limit(20);
-      setSearchResults(data || []);
-      setSearchLoading(false);
-    }, 300);
-    return () => clearTimeout(searchTimer.current);
-  }, [searchQuery]);
-
-  const rtl   = lang === 'he';
-  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
-  const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
-  const bg    = dark ? COURT.darkBg   : COURT.cream;
-  const ink   = dark ? COURT.darkText : COURT.ink;
-  const stone = dark ? COURT.darkMuted: COURT.stone;
-
-  // Données du profil utilisateur — uniquement depuis la DB
-  const userName    = profile?.name     || '';
-  const userPhoto   = profile?.photo_url || '';
-  const userMatches = profile?.matches_played ?? 0;
-  const userWins    = profile?.wins ?? 0;
-  // null si aucun match — jamais de faux pourcentage
-  const userWinrate = userMatches > 0 ? Math.round((userWins / userMatches) * 100) : null;
-
-  // Activité récente : depuis la DB uniquement (jamais de données statiques)
-  const recentItems = matchHistory.slice(0, 4).map(matchToActivity);
-
-  const hasLevel = level != null;
-
-  // ─── Évolution du niveau (reconstruit depuis les deltas ELO) ──────
-  let allEvoPoints = [], allEvoDates = [];
-  if (hasLevel && matchHistory.length >= 1) {
-    // matchHistory est trié récent → ancien
-    let running = level;
-    const _pts = [running];
-    const _dts = [new Date()]; // point actuel = aujourd'hui
-    for (const m of matchHistory) {
-      running = running - (m.delta || 0);
-      running = Math.max(0, Math.min(7, running));
-      _pts.push(running);
-      _dts.push(m.date instanceof Date ? m.date : new Date(m.date));
-    }
-    _pts.reverse(); // ancien → récent
-    _dts.reverse();
-    allEvoPoints = _pts;
-    allEvoDates  = _dts;
-  }
-  // Filtre par période sélectionnée
-  const _evoNow = new Date();
-  let evoPoints = allEvoPoints;
-  let evoDates  = allEvoDates;
-  if (evoPeriod !== 'all' && allEvoDates.length > 0) {
-    const cutoff = new Date(_evoNow);
-    if      (evoPeriod === '1M') cutoff.setMonth(cutoff.getMonth() - 1);
-    else if (evoPeriod === '3M') cutoff.setMonth(cutoff.getMonth() - 3);
-    else if (evoPeriod === '6M') cutoff.setMonth(cutoff.getMonth() - 6);
-    else if (evoPeriod === '1Y') cutoff.setFullYear(cutoff.getFullYear() - 1);
-    const si = allEvoDates.findIndex(d => d >= cutoff);
-    if (si !== -1) { evoPoints = allEvoPoints.slice(si); evoDates = allEvoDates.slice(si); }
-  }
-
-  return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
-        <div style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 32, color: COURT.green, lineHeight: 1 }}>Padel Meet</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Cloche notifications */}
-          <button onClick={onShowNotifs} style={{
-            position: 'relative', width: 36, height: 36, borderRadius: 18,
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: dark ? COURT.darkText : COURT.green,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            {notifCount > 0 && (
-              <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
-            )}
-          </button>
-          <button onClick={() => { setSearchMode(m => !m); setSearchQuery(''); }} style={{
-            width: 36, height: 36, borderRadius: 18,
-            // En mode "X" (searchMode=true) on force un vert vif en dark pour assurer le contraste de l'icône
-            background: searchMode
-              ? (dark ? COURT.greenLight : COURT.green)
-              : (dark ? COURT.darkCard : COURT.cream),
-            border: `0.5px solid ${searchMode ? (dark ? COURT.greenLight : COURT.green) : COURT.green}`,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: searchMode ? '#FFFFFF' : COURT.green,
-          }}>
-            {searchMode
-              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-            }
-          </button>
-          <button
-            onClick={onGoToProfile}
-            aria-label="Mon profil"
-            style={{
-              width: 36, height: 36, borderRadius: 18, padding: 2,
-              border: `0.5px solid ${COURT.green}`,
-              background: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `url(${userPhoto}) center/cover` }} />
-          </button>
-        </div>
-      </div>
-
-      {searchMode && (
-        <div style={{ padding: '0 24px' }}>
-          <div style={{ position: 'relative', marginBottom: 12 }}>
-            <input
-              value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-              placeholder={t.searchPlayer} autoFocus
-              style={{
-                width: '100%', padding: '12px 40px 12px 16px', boxSizing: 'border-box',
-                background: dark ? COURT.darkCard : COURT.cream,
-                border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
-                borderRadius: 10, fontFamily: 'Spectral, serif', fontStyle: 'italic',
-                fontSize: 15, color: ink, outline: 'none',
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                aria-label="Clear"
-                style={{
-                  position: 'absolute', top: '50%', [rtl ? 'left' : 'right']: 10,
-                  transform: 'translateY(-50%)',
-                  width: 22, height: 22, borderRadius: 11,
-                  background: dark ? COURT.darkBorder : `${COURT.green}25`,
-                  border: 'none', cursor: 'pointer', padding: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: dark ? COURT.darkText : COURT.green,
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            )}
-          </div>
-          {searchQuery.trim() && searchLoading && (
-            <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>…</div>
-          )}
-          {searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
-            <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>{t.noPlayer}</div>
-          )}
-          {searchResults.map((p, i) => (
-            <div key={p.id} style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0',
-              borderBottom: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
-              animation: `cardIn 0.3s ease ${i * 0.05}s both`,
-            }}>
-              <button
-                onClick={() => setDetailPlayerId(p.id)}
-                style={{
-                  width: 44, height: 44, borderRadius: 22, flexShrink: 0,
-                  background: `url(${p.photo_url || initialsAvatar(p.name || p.id)}) center/cover`,
-                  border: 'none', cursor: 'pointer', padding: 0,
-                }}
-              />
-              <button
-                onClick={() => setDetailPlayerId(p.id)}
-                style={{
-                  flex: 1, minWidth: 0, background: 'transparent', border: 'none',
-                  cursor: 'pointer', textAlign: 'left', padding: 0,
-                }}
-              >
-                <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontWeight: 500 }}>{p.name}</div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>
-                  {p.username ? `@${p.username}` : ''}{p.username && p.city ? ' · ' : ''}{p.city || ''}
-                </div>
-              </button>
-              <button onClick={async () => {
-                if (addedIds.has(p.id)) return;
-                setAddedIds(prev => new Set([...prev, p.id]));
-                await recordSwipe(p.id, 'right');
-              }} style={{
-                padding: '8px 14px', borderRadius: 20,
-                background: addedIds.has(p.id) ? `${COURT.green}20` : COURT.green,
-                color: addedIds.has(p.id) ? COURT.green : COURT.cream,
-                border: `0.5px solid ${COURT.green}`,
-                fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
-                cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
-              }}>{addedIds.has(p.id) ? t.requestSent : t.addPlayer}</button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!searchMode && <>
-        <div style={{ padding: '0 24px 4px' }}>
-          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>{t.greeting}</div>
-          <div style={{ fontFamily: ff_serif, fontSize: 32, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', lineHeight: 1.1 }}>{userName}</div>
-        </div>
-
-        {/* Level card */}
-        <div style={{
-          margin: '20px 20px 0', background: COURT.green, borderRadius: 14,
-          padding: '24px 24px 20px', position: 'relative', overflow: 'hidden',
-          boxShadow: '0 8px 24px rgba(15,61,41,0.25)', border: `0.5px solid ${COURT.gold}50`,
-        }}>
-          <div style={{ position: 'absolute', right: -28, top: -10, opacity: 0.08, transform: 'rotate(18deg)' }}>
-            <PadelRacket size={180} frame={COURT.cream} grip={COURT.cream} accent={COURT.gold} />
-          </div>
-          <div style={{ position: 'absolute', right: 20, top: 20, animation: 'gentleBob 3s ease-in-out infinite' }}>
-            <PadelBall size={18} shadow={false} />
-          </div>
-          <div style={{ position: 'relative' }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.32em', textTransform: 'uppercase', marginBottom: 6 }}>{t.currentLevel}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-              <div style={{ fontFamily: 'Spectral, serif', fontSize: level != null ? 68 : 32, color: COURT.cream, fontWeight: 400, lineHeight: 1, animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)' }}>
-                {level != null ? level.toFixed(1) : (t.levelNotEvaluated || 'Niveau non évalué')}
-              </div>
-              {level != null && <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 16, color: `${COURT.cream}90` }}>{t.outOf} 7.0</div>}
-            </div>
-            <div style={{ height: 0.5, background: `${COURT.cream}30`, margin: '16px 0 12px' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t.matchesPlayed}</div>
-                <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{userMatches}</div>
-              </div>
-              <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t.winRateLabel}</div>
-                <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>
-                  {userWinrate != null ? `${userWinrate}%` : '—'}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, color: COURT.gold, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t.confidence}</div>
-                <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.cream }}>{confidence}%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-
-        {/* Évolution */}
-        <div style={{ padding: '28px 24px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <SectionHeading style={{ marginBottom: 0 }}>{t.evolutionTitle}</SectionHeading>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {[['1M', '1M'], ['3M', '3M'], ['6M', '6M'], ['1Y', '1Y'], ['all', t.periodAll || 'Tout']].map(([key, lbl]) => (
-                <button key={key} onClick={() => { setEvoPeriod(key); setTouchIdx(null); }} style={{
-                  padding: '4px 7px', borderRadius: 6,
-                  border: `0.5px solid ${evoPeriod === key ? COURT.green : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
-                  background: evoPeriod === key ? COURT.green : 'transparent',
-                  color: evoPeriod === key ? '#fff' : stone,
-                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                }}>{lbl}</button>
-              ))}
-            </div>
-          </div>
-          <div style={{
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '30'}`,
-            borderRadius: 14, padding: '14px 12px 12px',
-          }}>
-            {evoPoints.length >= 2 ? (() => {
-              const W = 300, H = 130;
-              const padL = 26, padR = 8, padT = 10, padB = 22;
-              const chartW = W - padL - padR;
-              const chartH = H - padT - padB;
-              const minY = 0, maxY = 7;
-              const n = evoPoints.length;
-              const xy = evoPoints.map((v, i) => {
-                const x = padL + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
-                const y = padT + chartH - ((v - minY) / (maxY - minY)) * chartH;
-                return [x, y];
-              });
-              const linePath = xy.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-              const areaPath = `${linePath} L ${xy[n-1][0].toFixed(1)} ${padT + chartH} L ${xy[0][0].toFixed(1)} ${padT + chartH} Z`;
-              const yTicks = [0, 2, 4, 6, 7];
-              const fmtDate = (d) => {
-                if (!d) return '';
-                const dd = d instanceof Date ? d : new Date(d);
-                return dd.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB', { day: 'numeric', month: 'short' });
-              };
-              const xIdxs = n <= 2 ? [0, n - 1] : [0, Math.floor((n - 1) / 2), n - 1];
-              const handlePointer = (e) => {
-                e.preventDefault();
-                const svg = evoRef.current;
-                if (!svg) return;
-                const rect = svg.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const svgX = ((clientX - rect.left) / rect.width) * W;
-                let ci = 0, cd = Infinity;
-                for (let i = 0; i < xy.length; i++) {
-                  const d = Math.abs(xy[i][0] - svgX);
-                  if (d < cd) { cd = d; ci = i; }
-                }
-                setTouchIdx(ci);
-              };
-              const cursor = touchIdx !== null ? xy[touchIdx] : null;
-              const ttW = 90, ttH = 18;
-              const ttX = cursor ? Math.min(Math.max(cursor[0] - ttW / 2, padL), W - padR - ttW) : 0;
-              const ttY = cursor ? Math.max(cursor[1] - ttH - 8, padT) : 0;
-              return (
-                <svg ref={evoRef} width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
-                  style={{ display: 'block', touchAction: 'none' }}
-                  onTouchStart={handlePointer} onTouchMove={handlePointer} onTouchEnd={() => setTouchIdx(null)}
-                  onMouseMove={handlePointer} onMouseLeave={() => setTouchIdx(null)}
-                >
-                  <defs>
-                    <linearGradient id="evoFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={COURT.green} stopOpacity="0.22" />
-                      <stop offset="100%" stopColor={COURT.green} stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  {/* Y axis grid + labels */}
-                  {yTicks.map(v => {
-                    const yy = padT + chartH - ((v - minY) / (maxY - minY)) * chartH;
-                    return (
-                      <g key={v}>
-                        <line x1={padL} y1={yy} x2={W - padR} y2={yy}
-                          stroke={dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'} strokeWidth="0.5" />
-                        <text x={padL - 4} y={yy + 3.5} textAnchor="end"
-                          fontSize="7" fontFamily="Mulish" fill={stone}>{v}</text>
-                      </g>
-                    );
-                  })}
-                  {/* Area + line */}
-                  <path d={areaPath} fill="url(#evoFill)" />
-                  <path d={linePath} fill="none" stroke={COURT.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  {/* X axis date labels */}
-                  {xIdxs.map((idx, li) => (
-                    <text key={idx} x={xy[idx][0]} y={H - 4}
-                      textAnchor={li === 0 ? 'start' : li === xIdxs.length - 1 ? 'end' : 'middle'}
-                      fontSize="7" fontFamily="Mulish" fill={stone}>
-                      {fmtDate(evoDates?.[idx])}
-                    </text>
-                  ))}
-                  {/* Endpoint dot (no cursor) */}
-                  {!cursor && (
-                    <circle cx={xy[n-1][0]} cy={xy[n-1][1]} r="3.5"
-                      fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
-                  )}
-                  {/* Interactive cursor */}
-                  {cursor && (
-                    <g>
-                      <line x1={cursor[0]} y1={padT} x2={cursor[0]} y2={padT + chartH}
-                        stroke={COURT.green} strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
-                      <circle cx={cursor[0]} cy={cursor[1]} r="4"
-                        fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
-                      <rect x={ttX} y={ttY} width={ttW} height={ttH} rx="3"
-                        fill={dark ? COURT.darkCard : '#fff'} stroke={COURT.green + '60'} strokeWidth="0.5" />
-                      <text x={ttX + ttW / 2} y={ttY + 11.5} textAnchor="middle"
-                        fontSize="8.5" fontFamily="Mulish" fontWeight="600" fill={COURT.green}>
-                        {`${evoPoints[touchIdx]?.toFixed(1)}  ·  ${fmtDate(evoDates?.[touchIdx])}`}
-                      </text>
-                    </g>
-                  )}
-                </svg>
-              );
-            })() : (
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone, textAlign: 'center', padding: '8px 0' }}>{t.noEvolutionYet}</div>
-            )}
-          </div>
-        </div>
-
-        {/* Recent activity */}
-        <div style={{ padding: '28px 24px 0' }}>
-          <SectionHeading>{t.recent}</SectionHeading>
-          <div style={{ marginTop: 16 }}>
-            {recentItems.length === 0 && (
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone, padding: '12px 0' }}>
-                {t.noActivity || 'Aucune activité récente.'}
-              </div>
-            )}
-            {recentItems.map((a, i) => (
-              <div key={a.id} style={{
-                padding: '14px 0',
-                borderBottom: i < recentItems.length - 1 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '25'}` : 'none',
-                display: 'flex', alignItems: 'flex-start', gap: 14,
-                animation: `cardIn 0.5s ease ${i * 0.06}s both`,
-              }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 14,
-                  border: `0.5px solid ${a.kind === 'match' ? COURT.green : COURT.purple}40`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: a.kind === 'match' ? COURT.green : COURT.purple, flexShrink: 0,
-                }}>
-                  {a.kind === 'match' ? <PadelBall size={14} shadow={false} /> :
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-                      <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8 12 2" />
-                    </svg>
-                  }
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>{a.date[lang]}</div>
-                  <div style={{ fontFamily: ff_serif, fontSize: 17, color: ink, fontWeight: 500 }}>{a.title[lang]}</div>
-                  <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 2 }}>{a.sub[lang]}</div>
-                  {a.scoreL && <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: COURT.green, marginTop: 4, letterSpacing: '0.1em' }}>{a.scoreL} · {a.scoreR}</div>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '32px 0 16px' }}>
-          <Ornament width={80} />
-          <div style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 18, color: COURT.green, opacity: 0.5 }}>est. 2026</div>
-        </div>
-      </>}
-    </div>
   );
 }
 
@@ -2238,7 +1768,7 @@ function ReadReceipt({ read }) {
 }
 
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
-function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
+function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0, onStartMatch }) {
   const { matches, loading: matchesLoading } = useUserMatches();
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const rtl   = lang === 'he';
@@ -2291,6 +1821,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
   }
 
   return (
+    <>
     <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 20px' }}>
         <div>
@@ -2329,6 +1860,23 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
         />
       ))}
     </div>
+    {/* Bouton « Démarrer un match » flottant — déplacé depuis l'ancien Accueil.
+        Hors du <div> scrollable → reste fixe ; uniquement sur la liste (pas en conversation). */}
+    {onStartMatch && (
+      <button onClick={onStartMatch} style={{
+        position: 'absolute', bottom: 115, right: 20, zIndex: 50,
+        padding: '10px 16px', borderRadius: 24,
+        background: COURT.green, color: COURT.cream,
+        border: `0.5px solid ${COURT.gold}50`,
+        fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
+        cursor: 'pointer', boxShadow: '0 4px 16px rgba(15,61,41,0.25)',
+        display: 'flex', alignItems: 'center', gap: 6,
+        animation: 'fadeUp 0.6s ease 1s both',
+      }}>
+        <PadelBall size={16} shadow={false} /> {t.startMatch}
+      </button>
+    )}
+    </>
   );
 }
 
@@ -3119,8 +2667,9 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.member}</div>
-          <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.myProfile}</div>
+          {/* Salutation (fusion de l'ancien écran Accueil) */}
+          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>{t.greeting}</div>
+          <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{userName || t.myProfile}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {/* 🔥 Série de jours */}
@@ -4356,7 +3905,9 @@ export default function MainApp() {
   const { lang, dark: darkMode, level, confidence, setLevel, setConfidence } = usePrefs();
   const t = I18N[lang] || I18N.fr;
 
-  const [tab, setTab] = useState('home');
+  // Onglet Accueil supprimé : on s'ouvre sur Profil. Un invité ne peut pas
+  // ouvrir le Profil (bloqué dans handleTabChange) → il démarre sur Trouver.
+  const [tab, setTab] = useState(isGuest ? 'search' : 'profile');
   const [showNotifs,   setShowNotifs]   = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduleTargetId, setScheduleTargetId] = useState(null);
@@ -4423,10 +3974,9 @@ export default function MainApp() {
   const bellProps = { onShowNotifs: () => setShowNotifs(true), notifCount: unreadCount };
 
   const screens = {
-    home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} {...bellProps} />,
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
     learn:   <LearnScreen   lang={lang} dark={darkMode} />,
-    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
+    chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onStartMatch={() => setShowSchedule(true)} {...bellProps} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} {...bellProps} />,
   };
@@ -4454,21 +4004,7 @@ export default function MainApp() {
         </button>
       )}
 
-      {/* Bouton planifier un match (flottant) */}
-      {tab === 'home' && (
-        <button onClick={() => setShowSchedule(true)} style={{
-          position: 'absolute', bottom: 115, right: 20, zIndex: 50,
-          padding: '10px 16px', borderRadius: 24,
-          background: COURT.green, color: COURT.cream,
-          border: `0.5px solid ${COURT.gold}50`,
-          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
-          cursor: 'pointer', boxShadow: '0 4px 16px rgba(15,61,41,0.25)',
-          display: 'flex', alignItems: 'center', gap: 6,
-          animation: 'fadeUp 0.6s ease 1s both',
-        }}>
-          <PadelBall size={16} shadow={false} /> {t.startMatch}
-        </button>
-      )}
+      {/* Le bouton « Démarrer un match » est désormais dans l'onglet Messages (ChatScreen). */}
 
       <BottomNav active={tab} onChange={handleTabChange} t={t} notifCount={unreadCount} chatCount={chatUnread} dark={darkMode} />
 
