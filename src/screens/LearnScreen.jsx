@@ -393,13 +393,13 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
     }}>
       {phase === 'play' ? (
         <>
-          {/* ── Barre de progression ── */}
-          <div style={{ padding: '16px 18px 10px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* ── Barre de progression + fermeture ── */}
+          <div style={{ padding: '16px 18px 10px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             <button onClick={onClose} style={{
               background: 'none', border: 'none', cursor: 'pointer', fontSize: 26,
               color: stone, lineHeight: 1, padding: 2,
             }}>×</button>
-            <div style={{ flex: 1, height: 10, borderRadius: 6, background: dark ? COURT.darkBorder : COURT.creamDark, overflow: 'hidden' }}>
+            <div style={{ flex: 1, height: 10, borderRadius: 6, background: dark ? COURT.darkBorder : '#E0DDD4', overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 6, background: COURT.green,
                 width: `${((qIndex + (answered ? 1 : 0)) / questions.length) * 100}%`,
@@ -408,70 +408,116 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
             </div>
           </div>
 
-          {/* ── Contenu scrollable ── */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 22px 0' }}>
+          {/* ── Label chapitre ── */}
+          <div style={{ padding: '0 22px 16px', flexShrink: 0 }}>
             <div style={{
               fontFamily: 'Mulish', fontSize: 10.5, color: stone,
-              letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
             }}>{tr(chapter.title)} · {L.question} {qIndex + 1} {L.of} {questions.length}</div>
+          </div>
 
-            <div style={{
-              fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 22, color: ink, lineHeight: 1.35, marginBottom: 22,
-            }}>{tr(q.q)}</div>
+          {/* ── Mascotte + bulle de dialogue ── */}
+          <div style={{
+            padding: '0 20px', flexShrink: 0,
+            display: 'flex', alignItems: 'flex-end', gap: 12, marginBottom: 28,
+          }}>
+            <Mascot size={100} anim={mascotAnim} style={{ flexShrink: 0, marginBottom: -4 }} />
+            {/* Bulle */}
+            <div style={{ position: 'relative', flex: 1 }}>
+              {/* Queue de la bulle pointant vers la mascotte */}
+              <div style={{
+                position: 'absolute',
+                left: rtl ? 'auto' : -10, right: rtl ? -10 : 'auto',
+                bottom: 20,
+                width: 0, height: 0,
+                borderTop: '9px solid transparent',
+                borderBottom: '9px solid transparent',
+                borderRight: rtl ? 'none' : `11px solid ${card}`,
+                borderLeft: rtl ? `11px solid ${card}` : 'none',
+              }} />
+              {/* Bordure de la queue */}
+              <div style={{
+                position: 'absolute',
+                left: rtl ? 'auto' : -13, right: rtl ? -13 : 'auto',
+                bottom: 19,
+                width: 0, height: 0,
+                borderTop: '10px solid transparent',
+                borderBottom: '10px solid transparent',
+                borderRight: rtl ? 'none' : `12px solid ${dark ? COURT.darkBorder : COURT.green + '22'}`,
+                borderLeft: rtl ? `12px solid ${dark ? COURT.darkBorder : COURT.green + '22'}` : 'none',
+              }} />
+              <div style={{
+                background: card,
+                border: `1.5px solid ${dark ? COURT.darkBorder : COURT.green + '22'}`,
+                borderRadius: 18, padding: '14px 16px',
+                boxShadow: '0 3px 16px rgba(0,0,0,0.08)',
+              }}>
+                <div style={{
+                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
+                  fontSize: 17, color: ink, lineHeight: 1.45,
+                }}>{tr(q.q)}</div>
+              </div>
+            </div>
+          </div>
 
+          {/* ── Options de réponse ── */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px' }}>
             {q.options.map(opt => (
               <button key={opt.id} onClick={() => pick(opt.id)} style={optStyle(opt.id)}>
                 {tr(opt.text)}
               </button>
             ))}
+          </div>
 
-            {/* ── Feedback mascotte après réponse ── */}
-            {answered && (
+          {/* ── Panel feedback (style Duolingo) + bouton ── */}
+          <div style={{ flexShrink: 0 }}>
+            {answered ? (
               <div style={{
-                marginTop: 8, padding: '14px 14px 14px 12px', borderRadius: 16,
-                background: isCorrect ? `${COURT.green}12` : `${COURT.red}0E`,
-                border: `0.5px solid ${isCorrect ? COURT.green : COURT.red}40`,
-                animation: 'fadeUp 0.3s ease',
-                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '18px 22px',
+                paddingBottom: 'max(100px, calc(env(safe-area-inset-bottom, 0px) + 100px))',
+                background: isCorrect ? `${COURT.green}15` : `${COURT.red}10`,
+                borderTop: `2.5px solid ${isCorrect ? COURT.green : COURT.red}`,
+                animation: 'fadeUp 0.22s ease',
               }}>
-                {/* Mascotte animée */}
-                <div style={{ flexShrink: 0 }}>
-                  <Mascot
-                    size={64}
-                    anim={mascotAnim}
-                    style={{ marginTop: -8 }}
-                  />
-                </div>
-                {/* Texte */}
-                <div style={{ flex: 1, paddingTop: 2 }}>
+                <div style={{ marginBottom: 14 }}>
                   <div style={{
                     fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: 'italic',
-                    fontWeight: 700, fontSize: 15, marginBottom: 5,
-                    color: isCorrect ? COURT.green : COURT.red,
+                    fontWeight: 700, fontSize: 16,
+                    color: isCorrect ? COURT.green : COURT.red, marginBottom: 4,
                   }}>{isCorrect ? L.mascotCheer : L.mascotWrong}</div>
                   <div style={{
                     fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-                    fontSize: 14, color: ink, lineHeight: 1.45,
+                    fontSize: 14, color: ink, lineHeight: 1.5,
                   }}>{tr(q.explain)}</div>
                 </div>
+                <button onClick={next} style={{
+                  width: '100%', padding: '15px', borderRadius: 14,
+                  background: isCorrect ? COURT.green : COURT.red,
+                  color: '#fff', border: 'none',
+                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
+                  fontSize: 17, fontWeight: 700, cursor: 'pointer',
+                  boxShadow: `0 4px 0 ${isCorrect ? COURT.greenDeep : '#8B1A1A'}`,
+                  letterSpacing: '0.03em',
+                }}>
+                  {qIndex < questions.length - 1 ? L.continue.toUpperCase() : L.finish.toUpperCase()}
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                padding: '12px 22px',
+                paddingBottom: 'max(100px, calc(env(safe-area-inset-bottom, 0px) + 100px))',
+              }}>
+                <button disabled style={{
+                  width: '100%', padding: '15px', borderRadius: 14,
+                  background: `${COURT.green}35`, color: `${COURT.cream}99`,
+                  border: 'none', cursor: 'default',
+                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
+                  fontSize: 17, fontWeight: 700, letterSpacing: '0.03em',
+                }}>
+                  {qIndex < questions.length - 1 ? L.continue.toUpperCase() : L.finish.toUpperCase()}
+                </button>
               </div>
             )}
-          </div>
-
-          {/* ── Bouton continuer ── */}
-          <div style={{ padding: '12px 22px', paddingBottom: 'max(96px, calc(env(safe-area-inset-bottom, 0px) + 96px))' }}>
-            <button onClick={next} disabled={!answered} style={{
-              width: '100%', padding: '16px', borderRadius: 14,
-              background: answered ? (isCorrect ? COURT.green : COURT.red) : `${COURT.green}40`,
-              color: COURT.cream, border: `0.5px solid ${answered ? (isCorrect ? COURT.gold : COURT.red + '80') : COURT.gold}`,
-              fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 18, cursor: answered ? 'pointer' : 'default',
-              boxShadow: answered ? `0 4px 0 ${isCorrect ? COURT.greenDeep : '#8B1A1A'}` : 'none',
-              transition: 'all 0.2s',
-            }}>
-              {qIndex < questions.length - 1 ? L.continue : L.finish}
-            </button>
           </div>
         </>
       ) : (
