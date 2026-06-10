@@ -11,6 +11,7 @@ import { QUIZ_CHAPTERS } from '../data/quizData'
 const STORE_KEY   = 'padel_learn_progress'
 const MASCOT_SRC  = '/mascot.png'
 const MASCOT2_SRC = '/mascot2.png'   // casquette "Padel Meet" — déco du chemin
+const MASCOT3_SRC = '/mascot3.png'   // casquette "Padel Meet" avec main (quiz)
 
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { stars: {} } }
@@ -459,7 +460,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
             padding: '0 20px', flexShrink: 0,
             display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 28,
           }}>
-            <Mascot size={118} anim={mascotAnim} src={MASCOT2_SRC}
+            <Mascot size={118} anim={mascotAnim} src={MASCOT3_SRC}
               style={{ flexShrink: 0, marginBottom: -4, width: 'auto', height: 118 }} />
             {/* Bulle */}
             <div style={{ position: 'relative', flex: 1 }}>
