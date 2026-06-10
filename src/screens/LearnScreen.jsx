@@ -200,7 +200,7 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
         display: 'flex', alignItems: 'center', gap: 16,
         overflow: 'hidden',
       }}>
-        <Mascot size={88} anim="bob" />
+        <Mascot size={110} anim="bob" />
         <div style={{
           fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
           fontSize: 15, color: ink, lineHeight: 1.45, flex: 1,
