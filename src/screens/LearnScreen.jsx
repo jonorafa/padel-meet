@@ -382,7 +382,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
           </div>
 
           {/* Bouton continuer */}
-          <div style={{ padding: '12px 22px 30px' }}>
+          <div style={{ padding: '12px 22px', paddingBottom: 'max(96px, calc(env(safe-area-inset-bottom, 0px) + 96px))' }}>
             <button onClick={next} disabled={!answered} style={{
               width: '100%', padding: '16px', borderRadius: 14,
               background: answered ? COURT.green : `${COURT.green}40`,
