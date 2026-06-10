@@ -581,6 +581,12 @@ const NAV_ICONS = {
       <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
     </svg>
   ),
+  learn: (active, dark) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H10a2 2 0 0 1 2 2v13a1.6 1.6 0 0 0-1.6-1.2H4.5A1.5 1.5 0 0 1 3 16.3z" />
+      <path d="M21 5.5A1.5 1.5 0 0 0 19.5 4H14a2 2 0 0 0-2 2v13a1.6 1.6 0 0 1 1.6-1.2h5.9a1.5 1.5 0 0 0 1.5-1.5z" />
+    </svg>
+  ),
   trophy: (active, dark) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 4h12v4a6 6 0 0 1-12 0V4z" />
@@ -610,6 +616,7 @@ export function BottomNav({ active, onChange, t, notifCount, chatCount, dark }) 
   const items = [
     { id: 'home', label: t?.home || 'Home', iconKey: 'home' },
     { id: 'search', label: t?.search || 'Find', iconKey: 'search' },
+    { id: 'learn', label: t?.learn || 'Learn', iconKey: 'learn' },
     { id: 'chat', label: t?.chat || 'Chat', iconKey: 'chat', badge: chatCount },
     { id: 'trophy', label: t?.matches || 'Matches', iconKey: 'trophy' },
     { id: 'profile', label: t?.profile || 'Profile', iconKey: 'user' },

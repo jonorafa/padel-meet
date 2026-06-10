@@ -20,6 +20,7 @@ import { useMatchHistory }  from '../hooks/useMatchHistory';
 import { useNotifications } from '../hooks/useNotifications';
 import { DetailedProfileModal } from '../components/DetailedProfileModal';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
+import LearnScreen from '../screens/LearnScreen';
 import { PendingMatchesPanel } from '../components/PendingMatchesPanel';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useMatchResults } from '../hooks/useMatchResults';
@@ -4424,6 +4425,7 @@ export default function MainApp() {
   const screens = {
     home:    <HomeScreen    t={t} lang={lang} level={level} confidence={confidence} dark={darkMode} detailPlayerId={detailPlayerId} setDetailPlayerId={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onGoToProfile={() => setTab('profile')} {...bellProps} />,
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
+    learn:   <LearnScreen   lang={lang} dark={darkMode} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} {...bellProps} />,
