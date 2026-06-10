@@ -449,8 +449,11 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
             padding: '0 20px', flexShrink: 0,
             display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 24,
           }}>
-            <Mascot size={106} anim={mascotAnim} src={MASCOT3_SRC}
-              style={{ flexShrink: 0, width: 'auto', height: 106 }} />
+            {/* Div de flip : scaleX(-1) en RTL pour que la mascotte regarde vers la bulle */}
+            <div style={{ flexShrink: 0, transform: rtl ? 'scaleX(-1)' : 'none' }}>
+              <Mascot size={106} anim={mascotAnim} src={MASCOT3_SRC}
+                style={{ width: 'auto', height: 106 }} />
+            </div>
             {/* Bulle — alignée à la hauteur de la main */}
             <div style={{ position: 'relative', flex: 1, marginTop: 16 }}>
               {/* Queue de la bulle pointant vers la mascotte */}
