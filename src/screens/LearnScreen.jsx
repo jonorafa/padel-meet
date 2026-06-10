@@ -1,17 +1,15 @@
-import { useState, useMemo } from 'react'
-import { COURT, PadelBall, Ornament } from '../components/CourtUI'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { COURT, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { QUIZ_CHAPTERS } from '../data/quizData'
 
 // ───────────────────────────────────────────────────────────────────────────
 // Module « Apprendre » — quizz pédagogique gamifié (style Duolingo).
-//
-// 100% INDÉPENDANT du niveau / confidence_rate. La progression est stockée
-// localement (localStorage) — aucune écriture Supabase, aucun appel aux RPC
-// de scoring. Cf. quizData.js pour le contenu.
+// 100% INDÉPENDANT du niveau / confidence_rate.
 // ───────────────────────────────────────────────────────────────────────────
 
-const STORE_KEY = 'padel_learn_progress'
+const STORE_KEY  = 'padel_learn_progress'
+const MASCOT_SRC = '/mascot.jpg'
 
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { stars: {} } }
@@ -21,7 +19,6 @@ function saveProgress(p) {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(p)) } catch { /* quota */ }
 }
 
-// Étoiles gagnées selon le score (0–3)
 function starsFromScore(correct, total) {
   const pct = total ? correct / total : 0
   if (pct >= 0.999) return 3
@@ -39,7 +36,7 @@ const LABELS = {
     resultTitle: 'Chapitre terminé !', score: 'Score',
     perfect: 'Parfait, sans faute ! 🎾', good: 'Bien joué !', keep: 'Continue à t’entraîner !',
     mascotMsg: 'Apprends une notion par jour et deviens redoutable sur le terrain !',
-    soon: 'Mascotte à venir',
+    mascotCheer: 'C’est exactement ça ! 🎾', mascotWrong: 'Presque… relis bien l’explication !',
   },
   en: {
     title: 'Learn', tagline: 'Progress at your own pace',
@@ -49,7 +46,7 @@ const LABELS = {
     resultTitle: 'Chapter complete!', score: 'Score',
     perfect: 'Perfect, flawless! 🎾', good: 'Well played!', keep: 'Keep practising!',
     mascotMsg: 'Learn one concept a day and become unstoppable on court!',
-    soon: 'Mascot coming soon',
+    mascotCheer: 'That’s exactly it! 🎾', mascotWrong: 'Almost… read the explanation!',
   },
   he: {
     title: 'ללמוד', tagline: 'התקדם בקצב שלך',
@@ -59,29 +56,60 @@ const LABELS = {
     resultTitle: 'הפרק הושלם!', score: 'ניקוד',
     perfect: 'מושלם, ללא טעות! 🎾', good: 'כל הכבוד!', keep: 'תמשיך להתאמן!',
     mascotMsg: 'למד מושג אחד ביום והפוך לבלתי מנוצח במגרש!',
-    soon: 'הקמע בקרוב',
+    mascotCheer: 'בדיוק נכון! 🎾', mascotWrong: 'כמעט… קרא את ההסבר!',
   },
 }
 
-// Décalage horizontal des nodes pour créer le chemin sinueux (style Duolingo)
+// Décalage horizontal (style Duolingo) : 34px par unité
 const WAVE = [0, 1, 2, 1, 0, -1, -2, -1]
 
+// ─── Composant Mascotte réutilisable ────────────────────────────────────────
+function Mascot({ size = 80, anim = 'bob', style: extraStyle = {} }) {
+  const animMap = {
+    bob:   'mascotBob   2.8s ease-in-out infinite',
+    float: 'mascotFloat 3.2s ease-in-out infinite',
+    cheer: 'mascotCheer 0.75s ease forwards',
+    shake: 'mascotShake 0.6s  ease forwards',
+    pop:   'mascotPop   0.5s  cubic-bezier(.34,1.56,.64,1) forwards',
+  }
+  return (
+    <img
+      src={MASCOT_SRC}
+      alt="mascotte padel"
+      style={{
+        width: size, height: size,
+        objectFit: 'contain',
+        display: 'block',
+        animation: animMap[anim] || animMap.bob,
+        filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.18))',
+        userSelect: 'none', pointerEvents: 'none',
+        ...extraStyle,
+      }}
+    />
+  )
+}
+
+// ─── Écran principal ─────────────────────────────────────────────────────────
 export default function LearnScreen({ lang = 'fr', dark = false }) {
   const { profile } = useAuth()
-  const L = LABELS[lang] || LABELS.fr
+  const L   = LABELS[lang] || LABELS.fr
   const rtl = lang === 'he'
-  const tr = (obj) => (obj && (obj[lang] ?? obj.fr)) || ''
+  const tr  = (obj) => (obj && (obj[lang] ?? obj.fr)) || ''
 
-  const [progress, setProgress] = useState(loadProgress)
-  const [activeIdx, setActiveIdx] = useState(null) // index du chapitre en quizz
+  const [progress,  setProgress]  = useState(loadProgress)
+  const [activeIdx, setActiveIdx] = useState(null)
 
-  const bg     = dark ? COURT.darkBg   : COURT.cream
-  const card   = dark ? COURT.darkCard : '#ffffff'
-  const ink    = dark ? COURT.darkText : COURT.ink
+  // Refs pour tracer la ligne SVG entre les nodes
+  const pathRef        = useRef(null)
+  const nodeWrapperRefs = useRef([])
+  const [connectors, setConnectors] = useState([])
+
+  const bg     = dark ? COURT.darkBg    : COURT.cream
+  const card   = dark ? COURT.darkCard  : '#ffffff'
+  const ink    = dark ? COURT.darkText  : COURT.ink
   const stone  = dark ? COURT.darkMuted : COURT.stone
   const border = dark ? COURT.darkBorder : `${COURT.green}30`
 
-  // index du premier chapitre non terminé = node « actif »
   const currentIdx = useMemo(() => {
     const i = QUIZ_CHAPTERS.findIndex(c => progress.stars[c.id] === undefined)
     return i === -1 ? QUIZ_CHAPTERS.length : i
@@ -104,12 +132,37 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
     setActiveIdx(null)
   }
 
+  // ── Calcul des connecteurs SVG (positions réelles des nodes) ──
+  useEffect(() => {
+    const measure = () => {
+      if (!pathRef.current) return
+      const pathRect = pathRef.current.getBoundingClientRect()
+      const pts = nodeWrapperRefs.current.map(wrapper => {
+        if (!wrapper) return null
+        const r = wrapper.getBoundingClientRect()
+        return {
+          x: r.left + r.width / 2 - pathRect.left,
+          y: r.top  + 38          - pathRect.top,   // 38 = half of 76px button
+        }
+      })
+      const lines = []
+      for (let i = 0; i < pts.length - 1; i++) {
+        if (pts[i] && pts[i + 1]) {
+          lines.push({ x1: pts[i].x, y1: pts[i].y, x2: pts[i+1].x, y2: pts[i+1].y })
+        }
+      }
+      setConnectors(lines)
+    }
+    requestAnimationFrame(measure)
+  }, [progress]) // on remesure si la progression change (les étoiles modifient la hauteur)
+
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
       position: 'absolute', inset: 0, background: bg,
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
-      {/* ── En-tête ── */}
+
+      {/* ── En-tête sticky ── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 10, background: bg,
         padding: '18px 20px 12px', borderBottom: `0.5px solid ${border}`,
@@ -125,7 +178,7 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
               fontSize: 13, color: stone, marginTop: 2,
             }}>{L.tagline}</div>
           </div>
-          {/* Compteur d'étoiles global */}
+          {/* Compteur étoiles global */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             background: card, borderRadius: 20, padding: '6px 12px',
@@ -139,53 +192,55 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
         </div>
       </div>
 
-      {/* ── Bandeau mascotte (placeholder — remplacé plus tard) ── */}
+      {/* ── Bandeau mascotte ── */}
       <div style={{
-        margin: '16px 20px 4px', padding: '14px 16px', borderRadius: 18,
-        background: dark ? COURT.darkCard : `${COURT.green}0D`,
-        border: `1px dashed ${COURT.green}55`,
-        display: 'flex', alignItems: 'center', gap: 14,
+        margin: '16px 20px 4px', padding: '16px', borderRadius: 20,
+        background: dark ? `${COURT.green}18` : `${COURT.green}0D`,
+        border: `1.5px solid ${COURT.green}35`,
+        display: 'flex', alignItems: 'center', gap: 16,
+        overflow: 'hidden',
       }}>
-        {/* MASCOTTE_PLACEHOLDER : zone à remplacer par la vraie mascotte tennis */}
-        <div style={{
-          width: 60, height: 60, borderRadius: '50%', flexShrink: 0,
-          background: `radial-gradient(circle at 35% 30%, ${COURT.goldLight}, ${COURT.gold})`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 4px 0 ${COURT.green}33`, position: 'relative',
-        }}>
-          <PadelBall size={34} shadow={false} />
-          <div style={{
-            position: 'absolute', bottom: -6, fontFamily: 'Mulish', fontSize: 7,
-            letterSpacing: '0.1em', color: COURT.green, fontWeight: 700,
-            textTransform: 'uppercase', whiteSpace: 'nowrap',
-          }}>{L.soon}</div>
-        </div>
+        <Mascot size={88} anim="bob" />
         <div style={{
           fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-          fontSize: 14, color: ink, lineHeight: 1.4,
+          fontSize: 15, color: ink, lineHeight: 1.45, flex: 1,
         }}>{L.mascotMsg}</div>
       </div>
 
-      {/* ── Le chemin (nodes) ── */}
-      <div style={{ position: 'relative', padding: '24px 0 120px' }}>
-        {/* ligne pointillée centrale */}
-        <div style={{
-          position: 'absolute', top: 30, bottom: 90, left: '50%', width: 0,
-          borderLeft: `2px dashed ${dark ? COURT.darkBorder : `${COURT.green}33`}`,
-          transform: 'translateX(-50%)', zIndex: 0,
-        }} />
+      {/* ── Chemin des chapitres ── */}
+      <div ref={pathRef} style={{ position: 'relative', padding: '24px 0 120px' }}>
+
+        {/* SVG : ligne pointillée qui relie les nodes */}
+        <svg style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          pointerEvents: 'none', zIndex: 0, overflow: 'visible',
+        }}>
+          {connectors.map((c, i) => (
+            <line key={i}
+              x1={c.x1} y1={c.y1} x2={c.x2} y2={c.y2}
+              stroke={dark ? COURT.darkBorder : `${COURT.green}35`}
+              strokeWidth="2.5"
+              strokeDasharray="7 5"
+              strokeLinecap="round"
+            />
+          ))}
+        </svg>
 
         {QUIZ_CHAPTERS.map((ch, idx) => {
-          const offset = WAVE[idx % WAVE.length] * 34
+          const offset    = WAVE[idx % WAVE.length] * 34
           const unlocked  = isUnlocked(idx)
           const completed = isCompleted(idx)
           const isCurrent = idx === currentIdx
           return (
-            <div key={ch.id} style={{
-              position: 'relative', zIndex: 1,
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              marginBottom: 30, transform: `translateX(${rtl ? -offset : offset}px)`,
-            }}>
+            <div
+              key={ch.id}
+              ref={el => { nodeWrapperRefs.current[idx] = el }}
+              style={{
+                position: 'relative', zIndex: 1,
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                marginBottom: 30, transform: `translateX(${rtl ? -offset : offset}px)`,
+              }}
+            >
               <Node
                 icon={ch.icon}
                 state={completed ? 'done' : unlocked ? 'current' : 'locked'}
@@ -193,7 +248,6 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
                 dark={dark}
                 onClick={() => unlocked && setActiveIdx(idx)}
               />
-              {/* Titre + étoiles */}
               <div style={{
                 fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
                 fontSize: 14, color: unlocked ? ink : stone, marginTop: 8, textAlign: 'center',
@@ -208,7 +262,7 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
                 <div style={{
                   fontFamily: 'Mulish', fontSize: 10.5, color: COURT.green, marginTop: 4,
                   letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700,
-                }}>{L.start}</div>
+                }}>{isCurrent ? L.start : L.review}</div>
               )}
             </div>
           )
@@ -228,12 +282,12 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
   )
 }
 
-// ─── Node circulaire (état : done / current / locked) ───────────────────────
+// ─── Node circulaire ────────────────────────────────────────────────────────
 function Node({ icon, state, pulse, dark, onClick }) {
   const palette = {
-    done:    { bg: COURT.green,     ring: COURT.gold,        shadow: COURT.greenDeep },
-    current: { bg: COURT.greenLight, ring: COURT.gold,       shadow: COURT.green },
-    locked:  { bg: dark ? COURT.darkBorder : '#D8D2C4', ring: 'transparent', shadow: dark ? '#0e1611' : '#C3BCA9' },
+    done:    { bg: COURT.green,      shadow: COURT.greenDeep },
+    current: { bg: COURT.greenLight, shadow: COURT.green },
+    locked:  { bg: dark ? COURT.darkBorder : '#D8D2C4', shadow: dark ? '#0e1611' : '#C3BCA9' },
   }[state]
 
   return (
@@ -258,7 +312,6 @@ function Node({ icon, state, pulse, dark, onClick }) {
       {state === 'locked'
         ? <LockIcon />
         : <span style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))' }}>{icon}</span>}
-      {/* anneau doré pour le node actif */}
       {pulse && (
         <div style={{
           position: 'absolute', inset: -6, borderRadius: '50%',
@@ -272,29 +325,36 @@ function Node({ icon, state, pulse, dark, onClick }) {
 // ─── Moteur de quizz ────────────────────────────────────────────────────────
 function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
   const questions = chapter.questions
-  const [qIndex, setQIndex] = useState(0)
-  const [selected, setSelected] = useState(null)
-  const [answered, setAnswered] = useState(false)
+  const [qIndex,       setQIndex]       = useState(0)
+  const [selected,     setSelected]     = useState(null)
+  const [answered,     setAnswered]     = useState(false)
   const [correctCount, setCorrectCount] = useState(0)
-  const [phase, setPhase] = useState('play') // 'play' | 'result'
+  const [phase,        setPhase]        = useState('play') // 'play' | 'result'
+  const [mascotAnim,   setMascotAnim]   = useState('float')
 
-  const bg    = dark ? COURT.darkBg   : COURT.cream
-  const card  = dark ? COURT.darkCard : '#ffffff'
-  const ink   = dark ? COURT.darkText : COURT.ink
-  const stone = dark ? COURT.darkMuted : COURT.stone
-  const border= dark ? COURT.darkBorder : `${COURT.green}30`
+  const bg     = dark ? COURT.darkBg    : COURT.cream
+  const card   = dark ? COURT.darkCard  : '#ffffff'
+  const ink    = dark ? COURT.darkText  : COURT.ink
+  const stone  = dark ? COURT.darkMuted : COURT.stone
+  const border = dark ? COURT.darkBorder : `${COURT.green}30`
 
-  const q = questions[qIndex]
-  const isCorrect = answered && selected === q.correct
+  const q          = questions[qIndex]
+  const isCorrect  = answered && selected === q.correct
 
   const pick = (optId) => {
     if (answered) return
     setSelected(optId)
     setAnswered(true)
-    if (optId === q.correct) setCorrectCount(c => c + 1)
+    if (optId === q.correct) {
+      setCorrectCount(c => c + 1)
+      setMascotAnim('cheer')
+    } else {
+      setMascotAnim('shake')
+    }
   }
 
   const next = () => {
+    setMascotAnim('float')
     if (qIndex < questions.length - 1) {
       setQIndex(i => i + 1)
       setSelected(null)
@@ -306,7 +366,6 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
 
   const earned = starsFromScore(correctCount, questions.length)
 
-  // Couleur d'une option après réponse
   const optStyle = (optId) => {
     const base = {
       width: '100%', textAlign: rtl ? 'right' : 'left', padding: '15px 16px',
@@ -317,7 +376,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
     }
     if (!answered) return base
     if (optId === q.correct) return { ...base, background: `${COURT.green}1A`, border: `1.5px solid ${COURT.green}`, color: COURT.green }
-    if (optId === selected)  return { ...base, background: `${COURT.red}14`, border: `1.5px solid ${COURT.red}`, color: COURT.red }
+    if (optId === selected)  return { ...base, background: `${COURT.red}14`,   border: `1.5px solid ${COURT.red}`,   color: COURT.red }
     return { ...base, opacity: 0.55 }
   }
 
@@ -328,7 +387,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
     }}>
       {phase === 'play' ? (
         <>
-          {/* Barre de progression + fermeture */}
+          {/* ── Barre de progression ── */}
           <div style={{ padding: '16px 18px 10px', display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={onClose} style={{
               background: 'none', border: 'none', cursor: 'pointer', fontSize: 26,
@@ -343,6 +402,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
             </div>
           </div>
 
+          {/* ── Contenu scrollable ── */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '14px 22px 0' }}>
             <div style={{
               fontFamily: 'Mulish', fontSize: 10.5, color: stone,
@@ -360,36 +420,49 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
               </button>
             ))}
 
-            {/* Explication après réponse */}
+            {/* ── Feedback mascotte après réponse ── */}
             {answered && (
               <div style={{
-                marginTop: 8, padding: '14px 16px', borderRadius: 14,
+                marginTop: 8, padding: '14px 14px 14px 12px', borderRadius: 16,
                 background: isCorrect ? `${COURT.green}12` : `${COURT.red}0E`,
                 border: `0.5px solid ${isCorrect ? COURT.green : COURT.red}40`,
                 animation: 'fadeUp 0.3s ease',
+                display: 'flex', alignItems: 'flex-start', gap: 12,
               }}>
-                <div style={{
-                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: 'italic',
-                  fontWeight: 700, fontSize: 15, marginBottom: 5,
-                  color: isCorrect ? COURT.green : COURT.red,
-                }}>{isCorrect ? L.correct : L.wrong}</div>
-                <div style={{
-                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-                  fontSize: 14, color: ink, lineHeight: 1.45,
-                }}>{tr(q.explain)}</div>
+                {/* Mascotte animée */}
+                <div style={{ flexShrink: 0 }}>
+                  <Mascot
+                    size={64}
+                    anim={mascotAnim}
+                    style={{ marginTop: -8 }}
+                  />
+                </div>
+                {/* Texte */}
+                <div style={{ flex: 1, paddingTop: 2 }}>
+                  <div style={{
+                    fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: 'italic',
+                    fontWeight: 700, fontSize: 15, marginBottom: 5,
+                    color: isCorrect ? COURT.green : COURT.red,
+                  }}>{isCorrect ? L.mascotCheer : L.mascotWrong}</div>
+                  <div style={{
+                    fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
+                    fontSize: 14, color: ink, lineHeight: 1.45,
+                  }}>{tr(q.explain)}</div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Bouton continuer */}
+          {/* ── Bouton continuer ── */}
           <div style={{ padding: '12px 22px', paddingBottom: 'max(96px, calc(env(safe-area-inset-bottom, 0px) + 96px))' }}>
             <button onClick={next} disabled={!answered} style={{
               width: '100%', padding: '16px', borderRadius: 14,
-              background: answered ? COURT.green : `${COURT.green}40`,
-              color: COURT.cream, border: `0.5px solid ${COURT.gold}`,
+              background: answered ? (isCorrect ? COURT.green : COURT.red) : `${COURT.green}40`,
+              color: COURT.cream, border: `0.5px solid ${answered ? (isCorrect ? COURT.gold : COURT.red + '80') : COURT.gold}`,
               fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 18, cursor: answered ? 'pointer' : 'default',
-              boxShadow: answered ? `0 4px 0 ${COURT.greenDeep}` : 'none', transition: 'all 0.15s',
+              boxShadow: answered ? `0 4px 0 ${isCorrect ? COURT.greenDeep : '#8B1A1A'}` : 'none',
+              transition: 'all 0.2s',
             }}>
               {qIndex < questions.length - 1 ? L.continue : L.finish}
             </button>
@@ -402,7 +475,19 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
           alignItems: 'center', justifyContent: 'center', padding: '0 28px',
           textAlign: 'center',
         }}>
-          <Ornament width={64} style={{ marginBottom: 14 }} />
+          {/* Grande mascotte qui célèbre */}
+          <div style={{ marginBottom: 16 }}>
+            <Mascot
+              size={120}
+              anim={earned >= 2 ? 'cheer' : 'bob'}
+              style={{ animation: earned >= 2
+                ? 'mascotCheer 0.75s ease forwards, mascotBob 2.8s ease-in-out 0.8s infinite'
+                : 'mascotBob 2.8s ease-in-out infinite',
+              }}
+            />
+          </div>
+
+          {/* Étoiles */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
             {[1, 2, 3].map(s => (
               <span key={s} style={{ animation: `levelPop 0.4s ease ${s * 0.12}s both` }}>
@@ -410,6 +495,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
               </span>
             ))}
           </div>
+
           <div style={{
             fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 26, color: ink, marginBottom: 6,
@@ -448,7 +534,8 @@ function Star({ filled, size = 14 }) {
 
 function LockIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff"
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}>
       <rect x="5" y="11" width="14" height="9" rx="2" />
       <path d="M8 11V8a4 4 0 0 1 8 0v3" />
     </svg>
