@@ -15,8 +15,9 @@ import { useOnline }        from '../context/PresenceContext';
 import { formatPresence }   from '../lib/presence';
 import { usePlayers }       from '../hooks/usePlayers';
 import { useSwipes }        from '../hooks/useSwipes';
-import { useUserMatches }   from '../hooks/useUserMatches';
-import { useMatchHistory }  from '../hooks/useMatchHistory';
+import { useUserMatches }        from '../hooks/useUserMatches';
+import { useMatchPartnersQuick } from '../hooks/useMatchPartnersQuick';
+import { useMatchHistory }       from '../hooks/useMatchHistory';
 import { useNotifications } from '../hooks/useNotifications';
 import { DetailedProfileModal } from '../components/DetailedProfileModal';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
@@ -3702,7 +3703,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
 // Remplace le Live Score Tracker : choisir partenaire + date → proposition envoyée
 function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPartnerId }) {
   const { user } = useAuth();
-  const { matches: userMatches } = useUserMatches();
+  const { partners: userMatches } = useMatchPartnersQuick();  // ⚡ Quick load sans messages
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [propDate,  setPropDate]  = useState('');
   const [propTime,  setPropTime]  = useState('');
