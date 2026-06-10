@@ -337,9 +337,7 @@ function Node({ icon, state, pulse, dark, onClick }) {
       style={{
         width: 76, height: 76, borderRadius: '50%', border: 'none',
         background: palette.bg,
-        boxShadow: pulse
-          ? `0 0 0 5px ${COURT.gold}, 0 6px 0 ${palette.shadow}`
-          : `0 6px 0 ${palette.shadow}`,
+        boxShadow: `0 6px 0 ${palette.shadow}`,
         cursor: state === 'locked' ? 'default' : 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative', fontSize: 32, lineHeight: 1,
