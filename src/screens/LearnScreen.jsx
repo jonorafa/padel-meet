@@ -8,8 +8,9 @@ import { QUIZ_CHAPTERS } from '../data/quizData'
 // 100% INDÉPENDANT du niveau / confidence_rate.
 // ───────────────────────────────────────────────────────────────────────────
 
-const STORE_KEY  = 'padel_learn_progress'
-const MASCOT_SRC = '/mascot.png'
+const STORE_KEY   = 'padel_learn_progress'
+const MASCOT_SRC  = '/mascot.png'
+const MASCOT2_SRC = '/mascot2.png'   // casquette "Padel Meet" — déco du chemin
 
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { stars: {} } }
@@ -64,7 +65,8 @@ const LABELS = {
 const WAVE = [0, 1, 2, 1, 0, -1, -2, -1]
 
 // ─── Composant Mascotte réutilisable ────────────────────────────────────────
-function Mascot({ size = 80, anim = 'bob', style: extraStyle = {} }) {
+function Mascot({ size = 80, anim = 'bob', style: extraStyle = {}, src: srcProp }) {
+  const src = srcProp || MASCOT_SRC
   const animMap = {
     bob:   'mascotBob   2.8s ease-in-out infinite',
     float: 'mascotFloat 3.2s ease-in-out infinite',
@@ -74,7 +76,7 @@ function Mascot({ size = 80, anim = 'bob', style: extraStyle = {} }) {
   }
   return (
     <img
-      src={MASCOT_SRC}
+      src={src}
       alt="mascotte padel"
       style={{
         width: size, height: size,
@@ -245,33 +247,35 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
               {ch.id === 'serve' && !rtl && (
                 <div style={{
                   position: 'absolute',
-                  left: 'calc(50% - 198px)',
-                  top: -22,
+                  left: 'calc(50% - 210px)',
+                  top: -18,
                   pointerEvents: 'none',
                   zIndex: 2,
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                 }}>
-                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <Mascot size={105} anim="bob" src={MASCOT2_SRC}
+                    style={{ animation: 'none', width: 'auto', height: 105, filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.22))' }} />
                   <div style={{
-                    width: 68, height: 8, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                    width: 70, height: 9, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.15)', filter: 'blur(6px)', marginTop: -8,
                   }} />
                 </div>
               )}
               {ch.id === 'serve' && rtl && (
                 <div style={{
                   position: 'absolute',
-                  right: 'calc(50% - 198px)',
-                  top: -22,
+                  right: 'calc(50% - 210px)',
+                  top: -18,
                   pointerEvents: 'none',
                   zIndex: 2,
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                   transform: 'scaleX(-1)',
                 }}>
-                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <Mascot size={105} anim="bob" src={MASCOT2_SRC}
+                    style={{ animation: 'none', width: 'auto', height: 105, filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.22))' }} />
                   <div style={{
-                    width: 68, height: 8, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                    width: 70, height: 9, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.15)', filter: 'blur(6px)', marginTop: -8,
                   }} />
                 </div>
               )}
@@ -279,33 +283,35 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
               {ch.id === 'basics' && !rtl && (
                 <div style={{
                   position: 'absolute',
-                  left: 'calc(50% + 52px)',
-                  top: -22,
+                  left: 'calc(50% + 48px)',
+                  top: -18,
                   pointerEvents: 'none',
                   zIndex: 2,
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                 }}>
-                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <Mascot size={105} anim="bob" src={MASCOT2_SRC}
+                    style={{ animation: 'none', width: 'auto', height: 105, filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.22))' }} />
                   <div style={{
-                    width: 68, height: 8, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                    width: 70, height: 9, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.15)', filter: 'blur(6px)', marginTop: -8,
                   }} />
                 </div>
               )}
               {ch.id === 'basics' && rtl && (
                 <div style={{
                   position: 'absolute',
-                  right: 'calc(50% + 52px)',
-                  top: -22,
+                  right: 'calc(50% + 48px)',
+                  top: -18,
                   pointerEvents: 'none',
                   zIndex: 2,
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                   transform: 'scaleX(-1)',
                 }}>
-                  <Mascot size={112} anim="bob" style={{ animation: 'none', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.22))' }} />
+                  <Mascot size={105} anim="bob" src={MASCOT2_SRC}
+                    style={{ animation: 'none', width: 'auto', height: 105, filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.22))' }} />
                   <div style={{
-                    width: 68, height: 8, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.14)', filter: 'blur(5px)', marginTop: -10,
+                    width: 70, height: 9, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.15)', filter: 'blur(6px)', marginTop: -8,
                   }} />
                 </div>
               )}
