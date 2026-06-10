@@ -314,8 +314,14 @@ function Node({ icon, state, pulse, dark, onClick }) {
         : <span style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))' }}>{icon}</span>}
       {pulse && (
         <div style={{
-          position: 'absolute', inset: -6, borderRadius: '50%',
-          border: `2.5px solid ${COURT.gold}`, opacity: 0.9,
+          position: 'absolute',
+          top: '50%', left: '50%',
+          width: 92, height: 92,
+          transform: 'translate(-50%, -50%)',
+          borderRadius: '50%',
+          border: `2.5px solid ${COURT.gold}`,
+          opacity: 0.9,
+          pointerEvents: 'none',
         }} />
       )}
     </button>
