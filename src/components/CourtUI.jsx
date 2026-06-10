@@ -614,8 +614,8 @@ export function BottomNav({ active, onChange, t, notifCount, chatCount, dark }) 
   const dotColor = dark ? COURT.darkGold : COURT.gold;
 
   const items = [
-    { id: 'search', label: t?.search || 'Find', iconKey: 'search' },
     { id: 'learn', label: t?.learn || 'Learn', iconKey: 'learn' },
+    { id: 'search', label: t?.search || 'Find', iconKey: 'search' },
     { id: 'chat', label: t?.chat || 'Chat', iconKey: 'chat', badge: chatCount },
     { id: 'trophy', label: t?.matches || 'Matches', iconKey: 'trophy' },
     { id: 'profile', label: t?.profile || 'Profile', iconKey: 'user' },
