@@ -7,13 +7,14 @@ import {
   setDarkMode, isDark, initialsAvatar, Achievements, CompatRing,
 } from '../components/CourtUI';
 import { compatScore } from '../lib/compatibility';
-import { REGIONS, computeELODelta, I18N, regionToCountry } from '../data/courtData';
+import { REGIONS, computeELODelta, I18N, regionToCountry, getGreeting } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
 import { usePrefs }         from '../context/PrefsContext';
 import { useOnline }        from '../context/PresenceContext';
 import { formatPresence }   from '../lib/presence';
 import { usePlayers }       from '../hooks/usePlayers';
+import { useBlocks }        from '../hooks/useBlocks';
 import { useSwipes }        from '../hooks/useSwipes';
 import { useUserMatches }        from '../hooks/useUserMatches';
 import { useMatchPartnersQuick } from '../hooks/useMatchPartnersQuick';
@@ -918,6 +919,40 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
 function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const { user } = useAuth();
   const playerIsOnline = useOnline(player?.id);
+  // ── Modération (signaler / bloquer) ──────────────────────────────
+  const { blockUser, reportUser } = useBlocks();
+  const [modSheet, setModSheet] = useState(null);  // null|'menu'|'block'|'report'|'blocked'|'reported'
+  const [modBusy,  setModBusy]  = useState(false);
+  const doBlock = async () => {
+    setModBusy(true);
+    await blockUser(player?.id);
+    setModBusy(false);
+    setModSheet('blocked');
+    setTimeout(() => onBack(), 1200);
+  };
+  const doReport = async (reason) => {
+    setModBusy(true);
+    await reportUser(player?.id, reason);
+    setModBusy(false);
+    setModSheet('reported');
+  };
+  const modLabels = {
+    fr: { menu:'Options', report:'Signaler', block:'Bloquer', cancel:'Annuler',
+      blockTitle:'Bloquer ce joueur ?', blockBody:'Vous ne verrez plus son profil et il ne pourra plus vous contacter.', confirmBlock:'Bloquer',
+      reportTitle:'Signaler ce joueur', reportBody:'Pourquoi le signales-tu ?',
+      blockedMsg:'Joueur bloqué ✓', reportedMsg:'Merci, signalement envoyé ✓',
+      reasons:{ harassment:'Harcèlement / insultes', inappropriate:'Contenu inapproprié', fake:'Faux profil', spam:'Spam / publicité', other:'Autre' } },
+    en: { menu:'Options', report:'Report', block:'Block', cancel:'Cancel',
+      blockTitle:'Block this player?', blockBody:"You won't see their profile and they can't contact you anymore.", confirmBlock:'Block',
+      reportTitle:'Report this player', reportBody:'Why are you reporting them?',
+      blockedMsg:'Player blocked ✓', reportedMsg:'Thanks, report sent ✓',
+      reasons:{ harassment:'Harassment / abuse', inappropriate:'Inappropriate content', fake:'Fake profile', spam:'Spam / ads', other:'Other' } },
+    he: { menu:'אפשרויות', report:'דיווח', block:'חסימה', cancel:'ביטול',
+      blockTitle:'לחסום את השחקן הזה?', blockBody:'לא תראה יותר את הפרופיל שלו והוא לא יוכל ליצור איתך קשר.', confirmBlock:'חסום',
+      reportTitle:'דיווח על השחקן', reportBody:'מדוע אתה מדווח עליו?',
+      blockedMsg:'השחקן נחסם ✓', reportedMsg:'תודה, הדיווח נשלח ✓',
+      reasons:{ harassment:'הטרדה / קללות', inappropriate:'תוכן לא הולם', fake:'פרופיל מזויף', spam:'ספאם / פרסומת', other:'אחר' } },
+  }[lang] || {};
   const [messages,        setMessages]        = useState([]);
   const [input,           setInput]           = useState('');
   const [sheet,           setSheet]           = useState(null); // 'proposal'|'score'|'eval'
@@ -1328,7 +1363,107 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             </div>
           </div>
         </div>
+
+        {/* Menu modération (signaler / bloquer) */}
+        <button
+          onClick={() => setModSheet('menu')}
+          aria-label={modLabels.menu}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', color: stone,
+            padding: 6, flexShrink: 0, display: 'flex', alignItems: 'center',
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" />
+          </svg>
+        </button>
       </div>
+
+      {/* ── Action sheet modération (signaler / bloquer) ─────────────────────── */}
+      {modSheet && (
+        <div
+          dir={rtl ? 'rtl' : 'ltr'}
+          onClick={() => !modBusy && setModSheet(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 400, display: 'flex',
+            alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.45)',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 430, background: bg,
+              borderRadius: '20px 20px 0 0', padding: '18px 18px 28px', borderTop: `0.5px solid ${border}`,
+            }}
+          >
+            {modSheet === 'menu' && (
+              <>
+                <button onClick={() => setModSheet('report')} style={{
+                  width: '100%', padding: '14px', borderRadius: 12, marginBottom: 8,
+                  background: card, border: `0.5px solid ${border}`, color: ink,
+                  fontFamily: 'Mulish', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                  textAlign: rtl ? 'right' : 'left',
+                }}>{modLabels.report}</button>
+                <button onClick={() => setModSheet('block')} style={{
+                  width: '100%', padding: '14px', borderRadius: 12, marginBottom: 8,
+                  background: card, border: `0.5px solid ${border}`, color: '#C0392B',
+                  fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                  textAlign: rtl ? 'right' : 'left',
+                }}>{modLabels.block}</button>
+                <button onClick={() => setModSheet(null)} style={{
+                  width: '100%', padding: '12px', borderRadius: 12, background: 'none',
+                  border: 'none', color: stone, fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>{modLabels.cancel}</button>
+              </>
+            )}
+
+            {modSheet === 'block' && (
+              <>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 19, fontWeight: 800, color: ink, marginBottom: 6 }}>{modLabels.blockTitle}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13.5, color: stone, marginBottom: 18, lineHeight: 1.5 }}>{modLabels.blockBody}</div>
+                <button disabled={modBusy} onClick={doBlock} style={{
+                  width: '100%', padding: '14px', borderRadius: 12, marginBottom: 10,
+                  background: '#C0392B', border: 'none', color: '#fff',
+                  fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                }}>{modLabels.confirmBlock}</button>
+                <button disabled={modBusy} onClick={() => setModSheet('menu')} style={{
+                  width: '100%', padding: '12px', borderRadius: 12,
+                  background: card, border: `0.5px solid ${border}`, color: ink,
+                  fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>{modLabels.cancel}</button>
+              </>
+            )}
+
+            {modSheet === 'report' && (
+              <>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 19, fontWeight: 800, color: ink, marginBottom: 6 }}>{modLabels.reportTitle}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13.5, color: stone, marginBottom: 16 }}>{modLabels.reportBody}</div>
+                {Object.entries(modLabels.reasons || {}).map(([key, label]) => (
+                  <button key={key} disabled={modBusy} onClick={() => doReport(key)} style={{
+                    width: '100%', padding: '13px 14px', borderRadius: 12, marginBottom: 8,
+                    background: card, border: `0.5px solid ${border}`, color: ink,
+                    fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    textAlign: rtl ? 'right' : 'left',
+                  }}>{label}</button>
+                ))}
+                <button disabled={modBusy} onClick={() => setModSheet('menu')} style={{
+                  width: '100%', padding: '12px', borderRadius: 12, marginTop: 4, background: 'none',
+                  border: 'none', color: stone, fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>{modLabels.cancel}</button>
+              </>
+            )}
+
+            {(modSheet === 'blocked' || modSheet === 'reported') && (
+              <div style={{
+                fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 700,
+                color: COURT.green, textAlign: 'center', padding: '12px 0',
+              }}>
+                {modSheet === 'blocked' ? modLabels.blockedMsg : modLabels.reportedMsg}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Barre d'actions rapides ─────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 8, padding: '8px 14px', borderBottom: `0.5px solid ${border}`, background: dark ? '#1a1f1a' : '#F7F4EE', overflowX: 'auto' }}>
@@ -2668,8 +2803,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
         <div>
-          {/* Salutation (fusion de l'ancien écran Accueil) */}
-          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>{t.greeting}</div>
+          {/* Salutation selon l'heure : Bonjour (4h–17h) / Bonsoir (17h–4h) */}
+          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>{getGreeting(lang)}</div>
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{userName || t.myProfile}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

@@ -1,5 +1,22 @@
 export const REGIONS = ['France', 'Israël'];
 
+/**
+ * getGreeting — salutation selon l'heure locale de l'appareil.
+ *   • 04:00 → 16:59  → « Bonjour » (journée)
+ *   • 17:00 → 03:59  → « Bonsoir » (soirée/nuit)
+ * Recalculé à chaque rendu → l'affichage suit l'horaire.
+ */
+export function getGreeting(lang = 'fr') {
+  const h = new Date().getHours();
+  const isDay = h >= 4 && h < 17;
+  const G = {
+    fr: { day: 'Bonjour,',  eve: 'Bonsoir,' },
+    en: { day: 'Hello,',    eve: 'Good evening,' },
+    he: { day: 'שלום,',      eve: 'ערב טוב,' },
+  }[lang] || { day: 'Bonjour,', eve: 'Bonsoir,' };
+  return isDay ? G.day : G.eve;
+}
+
 // Sous-régions par pays — utilisé à l'inscription et dans le filtrage
 export const SUB_REGIONS = {
   'France': ['Paris', 'Marseille'],
