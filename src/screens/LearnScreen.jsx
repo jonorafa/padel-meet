@@ -450,9 +450,18 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
             display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 24,
           }}>
             {/* Div de flip : scaleX(-1) en RTL pour que la mascotte regarde vers la bulle */}
-            <div style={{ flexShrink: 0, transform: rtl ? 'scaleX(-1)' : 'none' }}>
+            <div style={{ flexShrink: 0, transform: rtl ? 'scaleX(-1)' : 'none', position: 'relative', display: 'inline-block' }}>
               <Mascot size={106} anim={mascotAnim} src={MASCOT3_SRC}
-                style={{ width: 'auto', height: 106 }} />
+                style={{ width: 'auto', height: 106, display: 'block' }} />
+              {/* Texte "Padel Meet" sur casquette — re-flipé en RTL pour rester à l'endroit */}
+              {rtl && (
+                <div style={{
+                  position: 'absolute',
+                  top: '8px', left: '50%', transform: 'scaleX(-1) translateX(-50%)',
+                  fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.6)',
+                  fontFamily: 'Arial, sans-serif', whiteSpace: 'nowrap', pointerEvents: 'none',
+                }}>Padel Meet</div>
+              )}
             </div>
             {/* Bulle — alignée à la hauteur de la main */}
             <div style={{ position: 'relative', flex: 1, marginTop: 16 }}>
