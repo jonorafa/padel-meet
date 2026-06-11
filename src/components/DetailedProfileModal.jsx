@@ -5,8 +5,40 @@ import { useProfilePhotos } from '../hooks/useProfilePhotos'
 import { useMatchHistoryWithPlayer } from '../hooks/useMatchHistoryWithPlayer'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
+import { useBlocks } from '../hooks/useBlocks'
 import { I18N } from '../data/courtData'
 import { PhotoGallery } from './PhotoGallery'
+
+// ── Libellés modération (signaler / bloquer) ──────────────────────────────────
+const MOD_L = {
+  fr: {
+    report: 'Signaler', block: 'Bloquer',
+    blockTitle: 'Bloquer ce joueur ?',
+    blockBody: 'Vous ne verrez plus son profil et il ne pourra plus vous contacter.',
+    confirmBlock: 'Bloquer', cancel: 'Annuler',
+    reportTitle: 'Signaler ce joueur', reportBody: 'Pourquoi le signales-tu ?',
+    blockedMsg: 'Joueur bloqué ✓', reportedMsg: 'Merci, signalement envoyé ✓',
+    reasons: { harassment: 'Harcèlement / insultes', inappropriate: 'Contenu inapproprié', fake: 'Faux profil', spam: 'Spam / publicité', other: 'Autre' },
+  },
+  en: {
+    report: 'Report', block: 'Block',
+    blockTitle: 'Block this player?',
+    blockBody: "You won't see their profile and they can't contact you anymore.",
+    confirmBlock: 'Block', cancel: 'Cancel',
+    reportTitle: 'Report this player', reportBody: 'Why are you reporting them?',
+    blockedMsg: 'Player blocked ✓', reportedMsg: 'Thanks, report sent ✓',
+    reasons: { harassment: 'Harassment / abuse', inappropriate: 'Inappropriate content', fake: 'Fake profile', spam: 'Spam / ads', other: 'Other' },
+  },
+  he: {
+    report: 'דיווח', block: 'חסימה',
+    blockTitle: 'לחסום את השחקן הזה?',
+    blockBody: 'לא תראה יותר את הפרופיל שלו והוא לא יוכל ליצור איתך קשר.',
+    confirmBlock: 'חסום', cancel: 'ביטול',
+    reportTitle: 'דיווח על השחקן', reportBody: 'מדוע אתה מדווח עליו?',
+    blockedMsg: 'השחקן נחסם ✓', reportedMsg: 'תודה, הדיווח נשלח ✓',
+    reasons: { harassment: 'הטרדה / קללות', inappropriate: 'תוכן לא הולם', fake: 'פרופיל מזויף', spam: 'ספאם / פרסומת', other: 'אחר' },
+  },
+}
 
 const XIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -30,10 +62,31 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   const t = I18N[lang] || I18N.fr
   const { photos: playerPhotos } = useProfilePhotos(playerId)
   const { matches: matchHistory, loading: historyLoading } = useMatchHistoryWithPlayer(user?.id, playerId)
+  const { blockUser, reportUser } = useBlocks()
 
   const [player, setPlayer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState(null)
+
+  // ── Modération ─────────────────────────────────────────────────
+  const ML = MOD_L[lang] || MOD_L.fr
+  const canModerate = !!user?.id && user.id !== playerId
+  const [modSheet, setModSheet] = useState(null)  // null|'block'|'report'|'blocked'|'reported'
+  const [modBusy, setModBusy] = useState(false)
+
+  const doBlock = async () => {
+    setModBusy(true)
+    await blockUser(playerId)
+    setModBusy(false)
+    setModSheet('blocked')
+    setTimeout(() => onClose(), 1200)
+  }
+  const doReport = async (reason) => {
+    setModBusy(true)
+    await reportUser(playerId, reason)
+    setModBusy(false)
+    setModSheet('reported')
+  }
 
   useEffect(() => {
     const fetchPlayerData = async () => {
@@ -355,7 +408,93 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         >
           {t.close || 'Fermer'}
         </button>
+
+        {/* Modération : signaler / bloquer (discret) */}
+        {canModerate && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 12 }}>
+            <button onClick={() => setModSheet('report')} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: 'Mulish', fontSize: 12.5, fontWeight: 600, color: muted,
+            }}>{ML.report}</button>
+            <span style={{ color: border }}>·</span>
+            <button onClick={() => setModSheet('block')} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: 'Mulish', fontSize: 12.5, fontWeight: 600, color: '#C0392B',
+            }}>{ML.block}</button>
+          </div>
+        )}
       </div>
+
+      {/* ─── ACTION SHEET MODÉRATION ─── */}
+      {modSheet && (
+        <div
+          dir={rtl ? 'rtl' : 'ltr'}
+          onClick={() => !modBusy && setModSheet(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 320, display: 'flex',
+            alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 430, background: bg,
+              borderRadius: '20px 20px 0 0', padding: '20px 18px 28px',
+              borderTop: `0.5px solid ${border}`,
+            }}
+          >
+            {/* Confirmation de blocage */}
+            {modSheet === 'block' && (
+              <>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 19, fontWeight: 800, color: ink, marginBottom: 6 }}>{ML.blockTitle}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13.5, color: muted, marginBottom: 18, lineHeight: 1.5 }}>{ML.blockBody}</div>
+                <button disabled={modBusy} onClick={doBlock} style={{
+                  width: '100%', padding: '14px 0', borderRadius: 12, marginBottom: 10,
+                  background: '#C0392B', border: 'none', color: '#fff',
+                  fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                }}>{ML.confirmBlock}</button>
+                <button disabled={modBusy} onClick={() => setModSheet(null)} style={{
+                  width: '100%', padding: '12px 0', borderRadius: 12,
+                  background: card, border: `0.5px solid ${border}`, color: ink,
+                  fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>{ML.cancel}</button>
+              </>
+            )}
+
+            {/* Choix du motif de signalement */}
+            {modSheet === 'report' && (
+              <>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 19, fontWeight: 800, color: ink, marginBottom: 6 }}>{ML.reportTitle}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13.5, color: muted, marginBottom: 16 }}>{ML.reportBody}</div>
+                {Object.entries(ML.reasons).map(([key, label]) => (
+                  <button key={key} disabled={modBusy} onClick={() => doReport(key)} style={{
+                    width: '100%', padding: '13px 14px', borderRadius: 12, marginBottom: 8,
+                    background: card, border: `0.5px solid ${border}`, color: ink,
+                    fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    textAlign: rtl ? 'right' : 'left',
+                  }}>{label}</button>
+                ))}
+                <button disabled={modBusy} onClick={() => setModSheet(null)} style={{
+                  width: '100%', padding: '12px 0', borderRadius: 12, marginTop: 4,
+                  background: 'none', border: 'none', color: muted,
+                  fontFamily: 'Mulish', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>{ML.cancel}</button>
+              </>
+            )}
+
+            {/* Confirmations */}
+            {(modSheet === 'blocked' || modSheet === 'reported') && (
+              <div style={{
+                fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 700,
+                color: COURT.green, textAlign: 'center', padding: '12px 0',
+              }}>
+                {modSheet === 'blocked' ? ML.blockedMsg : ML.reportedMsg}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

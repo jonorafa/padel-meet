@@ -608,6 +608,18 @@ export default function AuthScreen() {
             {L.guest}
           </span>
         </button>
+
+        {/* ── Consentement CGU / Confidentialité ── */}
+        <div style={{ marginTop: 18, textAlign: 'center', fontFamily: 'Mulish', fontSize: 11.5, lineHeight: 1.6, color: stone }}>
+          {lang === 'en' ? 'By continuing, you agree to our ' : lang === 'he' ? 'בהמשך, אתה מסכים ל' : 'En continuant, tu acceptes nos '}
+          <span onClick={() => navigate('/terms')} style={{ textDecoration: 'underline', cursor: 'pointer', color: COURT.green }}>
+            {lang === 'en' ? 'Terms' : lang === 'he' ? 'תנאי השימוש' : 'CGU'}
+          </span>
+          {lang === 'en' ? ' and ' : lang === 'he' ? ' ו' : ' et notre '}
+          <span onClick={() => navigate('/privacy')} style={{ textDecoration: 'underline', cursor: 'pointer', color: COURT.green }}>
+            {lang === 'en' ? 'Privacy Policy' : lang === 'he' ? 'מדיניות הפרטיות' : 'Politique de confidentialité'}
+          </span>.
+        </div>
         </>
         )}
 

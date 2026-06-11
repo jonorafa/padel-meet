@@ -3,6 +3,7 @@ import LanguageScreen from './screens/LanguageScreen'
 import AuthScreen     from './screens/AuthScreen'
 import OnboardingFlow from './screens/OnboardingFlow'
 import MainApp        from './screens/MatchScreen'
+import LegalScreen    from './screens/LegalScreen'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { usePrefs }   from './context/PrefsContext'
@@ -41,6 +42,9 @@ export default function App() {
           <Route path="/"           element={<LanguageScreen />} />
           <Route path="/auth"       element={<AuthScreen />} />
           <Route path="/onboarding" element={<OnboardingFlow />} />
+          <Route path="/privacy"    element={<LegalScreen doc="privacy" />} />
+          <Route path="/terms"      element={<LegalScreen doc="terms" />} />
+          <Route path="/cgu"        element={<LegalScreen doc="terms" />} />
 
           {/* Routes protégées */}
           <Route element={<ProtectedRoute />}>

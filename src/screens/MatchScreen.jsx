@@ -3021,7 +3021,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           </div>
 
           {/* Confidentialité */}
-          <div onClick={() => window.open('https://www.iubenda.com/privacy-policy/72981168', '_blank')} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', cursor:'pointer' }}>
+          <div onClick={() => navigate('/privacy')} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', cursor:'pointer' }}>
             <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
               display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
@@ -3034,6 +3034,25 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               </div>
               <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
+              </div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          {/* CGU / Conditions d'utilisation */}
+          <div onClick={() => navigate('/terms')} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', cursor:'pointer', borderTop:`0.5px solid ${border}` }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${COURT.green}0E`,
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>
+              </svg>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
+                {lang==='fr' ? "Conditions d'utilisation" : lang==='en' ? 'Terms of use' : 'תנאי שימוש'}
+              </div>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
+                {lang==='fr' ? 'CGU & règles de la communauté' : lang==='en' ? 'Terms & community rules' : 'תנאים וכללי קהילה'}
               </div>
             </div>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.4" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>

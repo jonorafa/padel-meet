@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { usePresence } from '../context/PresenceContext'
+import { useBlocks } from './useBlocks'
 import { initialsAvatar } from '../components/CourtUI'
 import { regionToCountry } from '../data/courtData'
 
@@ -46,6 +47,7 @@ function transformDBProfile(p, onlineIds) {
 export function usePlayers() {
   const { user, profile } = useAuth()
   const { onlineSet } = usePresence()
+  const { blockedIds } = useBlocks()
   const [players, setPlayers] = useState(null) // null = chargement
 
   // Pays de l'utilisateur — isolation stricte France / Israël.
@@ -87,16 +89,17 @@ export function usePlayers() {
 
     if (!error && profiles && profiles.length > 0) {
       // Isolation par pays (tolère les valeurs de region héritées) +
-      // exclusion des profils déjà swipés.
+      // exclusion des profils déjà swipés + des utilisateurs bloqués (2 sens).
       const fresh = profiles.filter(p =>
         !swipedIds.has(p.id) &&
+        !blockedIds.has(p.id) &&
         (!myCountry || regionToCountry(p) === myCountry)
       )
       setPlayers(fresh.map(p => transformDBProfile(p)))
     } else {
       setPlayers([])
     }
-  }, [user?.id, myCountry])
+  }, [user?.id, myCountry, blockedIds])
 
   useEffect(() => {
     fetchAll()

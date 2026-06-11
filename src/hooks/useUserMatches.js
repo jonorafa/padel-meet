@@ -36,9 +36,22 @@ export function useUserMatches() {
 
       if (error || !matchRows || !isMounted) return
 
+      // Masque les conversations avec des utilisateurs bloqués (dans les 2 sens)
+      const { data: blockRows } = await supabase
+        .from('blocks')
+        .select('blocker_id, blocked_id')
+        .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`)
+      const blockedSet = new Set((blockRows || []).map(
+        b => (b.blocker_id === user.id ? b.blocked_id : b.blocker_id)
+      ))
+      const visibleRows = matchRows.filter(m => {
+        const otherId = m.player1_id === user.id ? m.player2_id : m.player1_id
+        return !blockedSet.has(otherId)
+      })
+
       // Pour chaque match, récupère l'autre joueur + dernier message + non-lus
       const enriched = await Promise.all(
-        matchRows.map(async (m) => {
+        visibleRows.map(async (m) => {
           const otherId = m.player1_id === user.id ? m.player2_id : m.player1_id
 
           const [
