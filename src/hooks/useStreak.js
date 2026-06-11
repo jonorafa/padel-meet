@@ -23,9 +23,9 @@ function isoWeek(d) {
   return Math.ceil(((d - jan4) / 86400000 + jan4.getDay() + 1) / 7)
 }
 
-/** Today's date string in Europe/Paris timezone → 'YYYY-MM-DD' */
+/** Today's date string in the user's local timezone → 'YYYY-MM-DD' */
 function todayParis() {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' })
+  return new Date().toLocaleDateString('sv-SE')
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

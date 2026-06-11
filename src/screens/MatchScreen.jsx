@@ -3902,7 +3902,7 @@ function GuestLoginModal({ lang, dark, onSignIn, onClose }) {
 
 // ─── Main App ────────────────────────────────────────────────────────────────
 export default function MainApp() {
-  const { profile, isGuest, signInWithGoogle }             = useAuth();
+  const { profile, isGuest, signInWithGoogle, refreshProfile } = useAuth();
   const { lang, dark: darkMode, level, confidence, setLevel, setConfidence } = usePrefs();
   const t = I18N[lang] || I18N.fr;
 
@@ -3941,7 +3941,9 @@ export default function MainApp() {
   useEffect(() => {
     if (!profile?.id || _streakTicked.current) return;
     _streakTicked.current = true;
-    tickStreak(profile.id).catch(() => {});
+    tickStreak(profile.id)
+      .then(() => refreshProfile())   // rafraîchit profile.streak_current en mémoire
+      .catch(() => {});
   }, [profile?.id]);
 
   // Sync le niveau depuis la DB vers le state React (ex: connexion depuis un nouvel appareil)
