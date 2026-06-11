@@ -18,6 +18,9 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dominant_hand  VARCHAR(20);
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS preferred_side VARCHAR(20);
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS play_style     VARCHAR(50);
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS region         VARCHAR(100);
+-- NB : état réel en prod (cf. migrations) — `level` NUMERIC sans défaut (null
+-- tant que le quiz n'est pas fait) ; la confiance est `confidence_rate` NUMERIC
+-- DEFAULT 50 (l'ancienne colonne `confidence INT` a été remplacée).
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS level          FLOAT   DEFAULT 3.5;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS confidence     INT     DEFAULT 50;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS online         BOOLEAN DEFAULT FALSE;

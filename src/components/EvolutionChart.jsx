@@ -1,18 +1,18 @@
 import { useState, useRef } from 'react'
 import { COURT, SectionHeading } from './CourtUI'
 import { usePrefs } from '../context/PrefsContext'
-import { useMatchHistory } from '../hooks/useMatchHistory'
+import { useLevelHistory } from '../hooks/useLevelHistory'
 import { I18N } from '../data/courtData'
 
 // ───────────────────────────────────────────────────────────────────────────
 // Graphe d'évolution du niveau — INTERACTIF (sélecteur de période + curseur tactile).
-// Extrait de l'ancien écran Accueil (HomeScreen) pour être réutilisé dans
-// Matchs → Mes statistiques. Reconstruit la courbe depuis les deltas ELO de
-// l'historique des matchs (matchHistory) — pas depuis level_history.
+// Source = les VRAIS points de niveau (level_history en DB, repli localStorage),
+// c.-à-d. chaque (ré)évaluation. Le niveau ne bouge que par quiz + ré-éval — pas
+// par les matchs — donc la courbe affiche ces paliers réels (échelle 0.5–7).
 // ───────────────────────────────────────────────────────────────────────────
 export default function EvolutionChart() {
-  const { lang, dark, level } = usePrefs()
-  const matchHistory = useMatchHistory()
+  const { lang, dark, level, levelHistory } = usePrefs()
+  const dbHistory = useLevelHistory()
   const t = I18N[lang] || I18N.fr
   const rtl = lang === 'he'
   const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
@@ -24,23 +24,29 @@ export default function EvolutionChart() {
 
   const hasLevel = level != null
 
-  // ─── Reconstruction de la courbe depuis les deltas ELO ───────────────
+  // ─── Vrais points de niveau (DB d'abord, repli localStorage) ─────────
+  const rawHistory = (dbHistory && dbHistory.length > 0) ? dbHistory : (levelHistory || [])
   let allEvoPoints = [], allEvoDates = []
-  if (hasLevel && matchHistory.length >= 1) {
-    // matchHistory est trié récent → ancien
-    let running = level
-    const _pts = [running]
-    const _dts = [new Date()] // point actuel = aujourd'hui
-    for (const m of matchHistory) {
-      running = running - (m.delta || 0)
-      running = Math.max(0, Math.min(7, running))
-      _pts.push(running)
-      _dts.push(m.date instanceof Date ? m.date : new Date(m.date))
+  if (rawHistory.length > 0) {
+    const sorted = rawHistory
+      .map(p => ({
+        level: parseFloat(p.level),
+        date:  p.date instanceof Date ? p.date : new Date(p.date),
+      }))
+      .filter(p => !isNaN(p.level) && !isNaN(p.date.getTime()))
+      .sort((a, b) => a.date - b.date)
+    allEvoPoints = sorted.map(p => p.level)
+    allEvoDates  = sorted.map(p => p.date)
+
+    // Ancre le niveau actuel comme dernier point (si différent du dernier connu),
+    // pour que la courbe atteigne « aujourd'hui ».
+    if (hasLevel) {
+      const lastLvl = allEvoPoints[allEvoPoints.length - 1]
+      if (lastLvl == null || Math.abs(lastLvl - level) > 0.001) {
+        allEvoPoints = [...allEvoPoints, level]
+        allEvoDates  = [...allEvoDates, new Date()]
+      }
     }
-    _pts.reverse() // ancien → récent
-    _dts.reverse()
-    allEvoPoints = _pts
-    allEvoDates  = _dts
   }
 
   // ─── Filtre par période ──────────────────────────────────────────────

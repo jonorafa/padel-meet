@@ -1,4 +1,9 @@
 -- ============================================================================
+-- ⚠️ LEGACY / OBSOLÈTE — NE PAS APPLIQUER.
+-- Remplacé par supabase/migrations/014_backend_coherence.sql. Le +8 fixe et le
+-- +1 explicite sur matches_played (double comptage) sont corrigés là-bas.
+-- La source de vérité est désormais `supabase/migrations/`.
+-- ============================================================================
 -- CHANTIER 13 — Réparer confidence_rate + confirm_match_result
 -- ============================================================================
 --

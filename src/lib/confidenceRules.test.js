@@ -1,8 +1,12 @@
 /**
- * Tests unitaires — confidenceRules.js
+ * Tests unitaires — confidenceRules.js (modèle 50/50, monotone)
  * Exécuter avec : node src/lib/confidenceRules.test.js
  */
-import { applyConfidenceDelta, clampConfidenceRate } from './confidenceRules.js';
+import {
+  applyConfidenceDelta,
+  playConfidenceCredit,
+  clampConfidenceRate,
+} from './confidenceRules.js';
 
 let pass = 0;
 let fail = 0;
@@ -17,44 +21,34 @@ function assert(label, got, expected) {
   }
 }
 
-// ─── applyConfidenceDelta ────────────────────────────────────
+// ─── Canal « peer » : applyConfidenceDelta (jamais négatif) ──────────
 
-console.log('\napplyConfidenceDelta');
+console.log('\napplyConfidenceDelta (canal peer)');
 
-// Écart 0.0 → +3 (parfait accord)
-assert('gap 0.00 → +3', applyConfidenceDelta(3.5, 3.5), +3);
+assert('gap 0.00 → +5', applyConfidenceDelta(3.5, 3.5), +5);
+assert('gap 0.50 → +5', applyConfidenceDelta(4.0, 3.5), +5);
+assert('gap 0.60 → +2', applyConfidenceDelta(3.5, 4.1), +2);
+assert('gap 1.00 → +2', applyConfidenceDelta(3.5, 4.5), +2);
+assert('gap 1.50 → 0  (stagne)', applyConfidenceDelta(3.0, 4.5), 0);
+assert('gap 3.00 → 0  (stagne)', applyConfidenceDelta(1.0, 4.0), 0);
 
-// Écart 0.25 exactement → +3
-assert('gap 0.25 → +3', applyConfidenceDelta(3.5, 3.75), +3);
+// ─── Canal « play » : playConfidenceCredit ──────────────────────────
 
-// Écart 0.30 → +1
-assert('gap 0.30 → +1', applyConfidenceDelta(3.5, 3.8), +1);
+console.log('\nplayConfidenceCredit (canal play)');
 
-// Écart 0.50 exactement → +1
-assert('gap 0.50 → +1', applyConfidenceDelta(4.0, 3.5), +1);
+assert('niveaux égaux → +5',      playConfidenceCredit(4.0, 4.0), 5);
+assert('écart 0.5 → +5',          playConfidenceCredit(4.0, 3.5), 5);
+assert('écart 0.6 → 0 (stagne)',  playConfidenceCredit(4.0, 3.4), 0);
+assert('écart 2.0 → 0 (stagne)',  playConfidenceCredit(5.0, 3.0), 0);
 
-// Écart 0.80 → -2
-assert('gap 0.80 → -2', applyConfidenceDelta(3.5, 4.3), -2);
-
-// Écart 1.00 exactement → -2
-assert('gap 1.00 → -2', applyConfidenceDelta(3.5, 4.5), -2);
-
-// Écart 1.50 → -5
-assert('gap 1.50 → -5', applyConfidenceDelta(3.0, 4.5), -5);
-
-// ─── clampConfidenceRate ─────────────────────────────────────
+// ─── clampConfidenceRate : borné [50, 100], jamais sous la base ─────
 
 console.log('\nclampConfidenceRate');
 
-// Application normale
-assert('50 + 3 = 53',   clampConfidenceRate(50, +3), 53);
-assert('50 - 5 = 45',   clampConfidenceRate(50, -5), 45);
-
-// Borne haute
-assert('98 + 3 → 100',  clampConfidenceRate(98, +3), 100);
-
-// Borne basse
-assert('2 - 5 → 0',     clampConfidenceRate(2, -5), 0);
+assert('50 + 5 = 55',       clampConfidenceRate(55), 55);
+assert('borne haute → 100', clampConfidenceRate(120), 100);
+assert('borne basse → 50',  clampConfidenceRate(40), 50);
+assert('base exacte 50',    clampConfidenceRate(50), 50);
 
 // ─── Résumé ──────────────────────────────────────────────────
 

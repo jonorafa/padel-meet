@@ -1,4 +1,9 @@
 -- ============================================================================
+-- ⚠️ LEGACY / OBSOLÈTE — NE PAS APPLIQUER.
+-- Remplacé par supabase/migrations/014_backend_coherence.sql (modèle 50/50
+-- monotone : peer + play, ne baisse jamais). Conservé pour historique seulement.
+-- La source de vérité est désormais `supabase/migrations/`.
+-- ============================================================================
 -- CHANTIER 14 — Restaurer la logique gap pour confidence_rate
 -- ============================================================================
 --

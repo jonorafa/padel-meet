@@ -3417,16 +3417,16 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
             t={t} lang={lang} dark={dark}
             onDone={async (computedLevel) => {
               setReEvalSaving(true);
-              // Pénalité indice de confiance : −10%, minimum 50%
-              const newConf = Math.max(50, confidence - 10);
-              setConfidence(newConf);
+              // L'indice de confiance ne baisse JAMAIS : il n'est plus piloté ici.
+              // Il évolue uniquement côté serveur via submit_peer_evaluation (accord
+              // des pairs) et confirm_match_result (matchs de niveau similaire).
+              // On ne touche donc plus à confidence_rate lors de la ré-évaluation.
               // Enregistre le niveau + un point d'historique IMMÉDIATEMENT (robuste
               // même si la sauvegarde DB échoue : réseau coupé, etc.)
               setLevel(computedLevel);
-              // Sauvegarde level + pénalité confidence_rate + cooldown en une seule écriture DB
+              // Sauvegarde level + cooldown en une seule écriture DB
               await saveProfile({
                 level: computedLevel,
-                confidence_rate: newConf,
                 last_self_eval_date: new Date().toISOString().slice(0, 10),
               });
               setReEvalSaving(false);
