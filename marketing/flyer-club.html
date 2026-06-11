@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Padel Meet — Flyer club</title>
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     Flyer A6 (105 × 148 mm) — imprime 4 par feuille A4.
+     Ouvre dans le navigateur → Imprimer → format A4, marges « aucune ».
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --green:#1F5C3F; --green-dk:#143827; --gold:#C9A961; --cream:#F5F1E8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#888; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  .sheet {
+    display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
+    width:210mm; height:297mm; margin:0 auto; background:#fff;
+  }
+  .flyer {
+    position:relative; width:105mm; height:148mm; overflow:hidden;
+    background:linear-gradient(160deg, var(--green) 0%, var(--green-dk) 100%);
+    color:var(--cream); padding:10mm 9mm;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    border:0.2mm dashed rgba(255,255,255,0.18);
+  }
+  .eyebrow { font-size:3.2mm; letter-spacing:0.32em; text-transform:uppercase; color:var(--gold); margin-bottom:5mm; font-weight:700; }
+  .title { font-family: Georgia, 'Times New Roman', serif; font-size:11mm; font-weight:800; line-height:1.0; }
+  .title em { color:var(--gold); font-style:italic; }
+  .sub { font-size:4mm; line-height:1.4; margin-top:4mm; opacity:0.92; max-width:80mm; }
+  .mascot { width:34mm; margin:5mm 0 3mm; }
+  .qrwrap { background:#fff; border-radius:4mm; padding:3mm; margin-top:auto; }
+  .qr { width:34mm; height:34mm; display:block; }
+  .scan { font-size:3.4mm; font-weight:700; margin-top:3mm; letter-spacing:0.04em; }
+  .url { font-size:3mm; color:var(--gold); margin-top:1mm; }
+  .feat { display:flex; gap:3mm; margin-top:4mm; font-size:2.9mm; opacity:0.9; flex-wrap:wrap; justify-content:center; }
+  .feat span { background:rgba(255,255,255,0.12); border-radius:999px; padding:1.4mm 3mm; }
+  @media print {
+    body { background:#fff; }
+    @page { size:A4; margin:0; }
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <!-- 4 copies identiques sur une feuille A4 -->
+    <div class="flyer">
+      <div class="eyebrow">Padel Meet</div>
+      <div class="title">Trouve ton<br><em>partenaire</em><br>de padel</div>
+      <div class="sub">Selon ton niveau, ton club et tes dispos. Près de chez toi.</div>
+      <img class="mascot" src="../public/mascot3.png" alt="" />
+      <div class="feat"><span>🎾 Ton niveau</span><span>📍 Ton club</span><span>💬 Chat</span></div>
+      <div class="qrwrap"><img class="qr" src="qr-code.png" alt="QR Padel Meet" /></div>
+      <div class="scan">Scanne et joue 👇</div>
+      <div class="url">padel-meet.vercel.app</div>
+    </div>
+    <div class="flyer">
+      <div class="eyebrow">Padel Meet</div>
+      <div class="title">Trouve ton<br><em>partenaire</em><br>de padel</div>
+      <div class="sub">Selon ton niveau, ton club et tes dispos. Près de chez toi.</div>
+      <img class="mascot" src="../public/mascot3.png" alt="" />
+      <div class="feat"><span>🎾 Ton niveau</span><span>📍 Ton club</span><span>💬 Chat</span></div>
+      <div class="qrwrap"><img class="qr" src="qr-code.png" alt="QR Padel Meet" /></div>
+      <div class="scan">Scanne et joue 👇</div>
+      <div class="url">padel-meet.vercel.app</div>
+    </div>
+    <div class="flyer">
+      <div class="eyebrow">Padel Meet</div>
+      <div class="title">Trouve ton<br><em>partenaire</em><br>de padel</div>
+      <div class="sub">Selon ton niveau, ton club et tes dispos. Près de chez toi.</div>
+      <img class="mascot" src="../public/mascot3.png" alt="" />
+      <div class="feat"><span>🎾 Ton niveau</span><span>📍 Ton club</span><span>💬 Chat</span></div>
+      <div class="qrwrap"><img class="qr" src="qr-code.png" alt="QR Padel Meet" /></div>
+      <div class="scan">Scanne et joue 👇</div>
+      <div class="url">padel-meet.vercel.app</div>
+    </div>
+    <div class="flyer">
+      <div class="eyebrow">Padel Meet</div>
+      <div class="title">Trouve ton<br><em>partenaire</em><br>de padel</div>
+      <div class="sub">Selon ton niveau, ton club et tes dispos. Près de chez toi.</div>
+      <img class="mascot" src="../public/mascot3.png" alt="" />
+      <div class="feat"><span>🎾 Ton niveau</span><span>📍 Ton club</span><span>💬 Chat</span></div>
+      <div class="qrwrap"><img class="qr" src="qr-code.png" alt="QR Padel Meet" /></div>
+      <div class="scan">Scanne et joue 👇</div>
+      <div class="url">padel-meet.vercel.app</div>
+    </div>
+  </div>
+</body>
+</html>
