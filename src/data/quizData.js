@@ -95,6 +95,25 @@ export const QUIZ_CHAPTERS = [
           he: 'ראש עגול: אזור מתיקה גדול ונמוך, אידאלי לשליטה. טיפה: אזור מתיקה מרכזי, איזון עוצמה/שליטה. יהלום: אזור מתיקה גבוהה, יותר עוצמה אך פחות שליטה — מתאים לשחקנים מתקדמים.',
         },
       },
+      {
+        id: 'b5',
+        q: {
+          fr: 'Qui a inventé le padel et en quelle année ?',
+          en: 'Who invented padel and in what year?',
+          he: 'מי המציא את הפאדל ובאיזו שנה?',
+        },
+        options: [
+          { id: 'a', text: { fr: 'Enrique Corcuera, au Mexique en 1969', en: 'Enrique Corcuera, in Mexico in 1969', he: 'אנריקה קורקוורה, במקסיקו ב-1969' } },
+          { id: 'b', text: { fr: 'Carlos Moya, en Espagne en 1982', en: 'Carlos Moya, in Spain in 1982', he: 'קרלוס מויה, בספרד ב-1982' } },
+          { id: 'c', text: { fr: 'Juan Lebrón, en Argentine en 1995', en: 'Juan Lebrón, in Argentina in 1995', he: 'חואן לברון, בארגנטינה ב-1995' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'Le padel est né en 1969 à Acapulco, au Mexique. Enrique Corcuera n’avait pas assez de place pour un court de tennis, alors il a entouré son terrain de murs — l’origine de la « cage » en verre et grillage qu’on connaît aujourd’hui.',
+          en: 'Padel was born in 1969 in Acapulco, Mexico. Enrique Corcuera didn’t have room for a tennis court, so he surrounded his court with walls — the origin of today’s glass-and-mesh cage.',
+          he: 'הפאדל נולד ב-1969 באקפולקו, מקסיקו. לאנריקה קורקוורה לא היה מקום למגרש טניס, אז הוא הקיף את המגרש שלו בקירות — מקור ה“כלוב” מזכוכית ורשת שאנו מכירים היום.',
+        },
+      },
     ],
   },
 
@@ -363,6 +382,25 @@ export const QUIZ_CHAPTERS = [
           he: 'כ-80% מהנקודות מנוצחות ברשת. לכן לוב ארוך הוא נשק מפתח: הוא מאפשר לך לחזור לשליטה ברשת כשנדחקת לעומק.',
         },
       },
+      {
+        id: 't5',
+        q: {
+          fr: 'Comment la majorité des points se gagnent-ils au haut niveau ?',
+          en: 'How are most points won at the top level?',
+          he: 'כיצד רוב הנקודות מנוצחות ברמה הגבוהה?',
+        },
+        options: [
+          { id: 'a', text: { fr: 'Sur des fautes directes de l’adversaire (~80 %)', en: 'On the opponent\'s direct errors (~80 %)', he: 'על שגיאות ישירות של היריב (~80%)' } },
+          { id: 'b', text: { fr: 'Sur des coups gagnants spectaculaires (~80 %)', en: 'On spectacular winners (~80 %)', he: 'על חבטות זוכות מרהיבות (~80%)' } },
+          { id: 'c', text: { fr: 'Sur des aces de service (~80 %)', en: 'On service aces (~80 %)', he: 'על אייסים בהגשה (~80%)' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'Les stats montrent qu’environ 80 % des points se gagnent sur des fautes adverses, pas sur des coups extraordinaires. Remettre la balle une fois de plus que l’adversaire suffit. La patience gagne les matchs.',
+          en: 'Stats show ~80 % of points are won on opponent errors, not brilliant winners. Returning the ball one more time than your opponent is enough. Patience wins matches.',
+          he: 'הסטטיסטיקות מראות שכ-80% מהנקודות מנוצחות על שגיאות היריב, לא על חבטות יוצאות דופן. להחזיר את הכדור פעם אחת יותר מהיריב מספיק. סבלנות מנצחת משחקים.',
+        },
+      },
     ],
   },
 
@@ -428,6 +466,25 @@ export const QUIZ_CHAPTERS = [
           fr: 'Balle au centre côté gauche → vibora : plus d’angle et d’agressivité. Si la balle tombe plus à gauche (côté revers), on préférera la bandeja, plus contrôlée et qui permet de rester au filet.',
           en: 'Ball in the centre on the left side → vibora: more angle and aggression. If the ball falls further left (backhand side), the bandeja is preferred: more control and keeps you at the net.',
           he: 'כדור במרכז בצד שמאל → ויברה: יותר זווית ואגרסיביות. אם הכדור נופל יותר שמאלה (צד בקהנד), מועדפת הבנדחה: יותר שליטה ושמירה על הרשת.',
+        },
+      },
+      {
+        id: 'a4',
+        q: {
+          fr: 'Qu’est-ce que la « chiquita » ?',
+          en: 'What is the "chiquita"?',
+          he: 'מהי ה“צ’יקיטה”?',
+        },
+        options: [
+          { id: 'a', text: { fr: 'Une balle lente qui plonge dans les pieds des adversaires au filet', en: 'A slow ball that dips at the opponents’ feet when they’re at the net', he: 'כדור איטי שצולל לכפות הרגליים של היריבים ברשת' } },
+          { id: 'b', text: { fr: 'Un smash très court vers le filet adverse', en: 'A very short smash towards the opponents’ net', he: 'סמאש קצר מאוד לכיוון רשת היריב' } },
+          { id: 'c', text: { fr: 'Un lob très haut joué depuis le fond', en: 'A very high lob played from the back', he: 'לוב גבוה מאוד שמשוחק מהעומק' } },
+        ],
+        correct: 'a',
+        explain: {
+          fr: 'La chiquita est un coup tactique : balle lente qui plonge dans les pieds des adversaires au filet. Ils sont obligés de frapper de bas en haut, ce qui t’offre une volée agressive pour conclure le point.',
+          en: 'The chiquita is a tactical shot: a slow ball that dips at the opponents’ feet at the net. They’re forced to hit upward, giving you an easy aggressive volley to finish the point.',
+          he: 'הצ’יקיטה היא חבטה טקטית: כדור איטי שצולל לכפות הרגליים של היריבים ברשת. הם מאולצים לחבוט מלמטה למעלה, מה שמעניק לך וולי אגרסיבי קל לסיים את הנקודה.',
         },
       },
     ],
