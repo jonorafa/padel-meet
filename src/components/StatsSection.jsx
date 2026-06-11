@@ -106,14 +106,6 @@ export default function StatsSection() {
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ background: bg, padding: '24px 20px 20px' }}>
 
-      {/* ── En-tête ── */}
-      <div style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, letterSpacing: '0.26em', textTransform: 'uppercase', color: stone }}>
-        {L.eyebrow}
-      </div>
-      <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 28, color: dark ? COURT.cream : COURT.greenDeep, fontWeight: 500, margin: '6px 0 18px' }}>
-        {L.title}
-      </div>
-
       {/* ── Évolution du niveau (graphe interactif, ex-Accueil) ── */}
       <EvolutionChart />
 
