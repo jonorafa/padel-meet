@@ -2124,12 +2124,17 @@ function StatsSkeleton({ dark }) {
 }
 
 // ─── Matches / Stats Screen ──────────────────────────────────────────────────
-function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onSchedule }) {
+function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onSchedule, statsSignal = 0 }) {
   const { profile } = useAuth();
   const history = useMatchHistory();
   const { stats } = usePlayerStats();
   const { matches: myMatches } = useUserMatches();
   const [tab, setTab] = useState('history');
+
+  // Ouverture directe des stats depuis le menu "Mes statistiques" (signal incrémental)
+  useEffect(() => {
+    if (statsSignal > 0) setTab('stats');
+  }, [statsSignal]);
   const [trophyTip, setTrophyTip] = useState(null);
   const [showAllOpponents, setShowAllOpponents] = useState(false);
   const rtl   = lang === 'he';
@@ -2617,7 +2622,7 @@ function ContactSheet({ dark, lang, onClose }) {
 }
 
 // ─── Profile Screen ──────────────────────────────────────────────────────────
-function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {} }) {
+function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {}, onOpenStats = () => {} }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
   const { lang, dark, level, confidence, setLang, toggleDark, setLevel, setConfidence } = usePrefs();
   const navigate = useNavigate();
@@ -3354,15 +3359,27 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
               },
               {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
-                label: lang === 'fr' ? 'Préférence partenaire' : lang === 'en' ? 'Partner preference' : 'העדפת שותף',
-                sub: lang === 'fr' ? 'Afficher le partenaire idéal' : lang === 'en' ? 'Set your ideal partner' : 'הגדר שותף אידיאלי',
+                label: lang === 'fr' ? 'Partenaire idéal' : lang === 'en' ? 'Ideal partner' : 'שותף אידיאלי',
+                sub: lang === 'fr' ? 'Définir mes préférences' : lang === 'en' ? 'Set your preferences' : 'הגדר העדפות',
                 action: () => { setShowMenu(false); setShowPartnerPrefs(true); },
+              },
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><circle cx="12" cy="12" r="4"/></svg>,
+                label: lang === 'fr' ? 'Ré-évaluer mon niveau' : lang === 'en' ? 'Re-assess my level' : 'הערך מחדש את הרמה',
+                sub: lang === 'fr' ? 'Refaire le quiz (1×/mois)' : lang === 'en' ? 'Retake the quiz (1×/month)' : 'בצע מחדש את החידון',
+                action: () => { setShowMenu(false); setShowReEvalConfirm(true); },
               },
               {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
                 label: lang === 'fr' ? 'Évaluer un partenaire' : lang === 'en' ? 'Rate a partner' : 'דרג שחקן',
                 sub: lang === 'fr' ? 'Évaluer le niveau d\'un joueur' : lang === 'en' ? 'Rate a player\'s level' : 'הערך רמת שחקן',
                 action: () => { setShowMenu(false); setShowEvalPicker(true); },
+              },
+              {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+                label: lang === 'fr' ? 'Mes statistiques' : lang === 'en' ? 'My statistics' : 'הסטטיסטיקות שלי',
+                sub: lang === 'fr' ? 'Progression, victoires, série' : lang === 'en' ? 'Progress, wins, streak' : 'התקדמות, נצחונות',
+                action: () => { setShowMenu(false); onOpenStats?.(); },
               },
               {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
@@ -3389,8 +3406,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   padding: '14px 0',
-                  borderBottom: i < 5 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
-                  background: 'transparent', border: 'none', borderBottom: i < 5 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  borderBottom: i < 7 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  background: 'transparent', border: 'none', borderBottom: i < 7 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
                   cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
                   animation: `cardIn 0.3s ease ${i * 0.05}s both`,
                 }}
@@ -3684,21 +3701,21 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 ? 'You can only re-evaluate your level once per month.'
                 : 'ניתן לבצע הערכה מחדש פעם אחת בחודש בלבד.'}
             </div>
-            {/* Avertissement pénalité */}
+            {/* Info : la ré-éval ne touche PAS l'indice de confiance */}
             <div style={{
-              background: `${COURT.red}12`, border: `0.5px solid ${COURT.red}40`,
+              background: `${COURT.gold}14`, border: `0.5px solid ${COURT.gold}45`,
               borderRadius: 12, padding: '12px 14px', marginBottom: 22,
               display: 'flex', alignItems: 'flex-start', gap: 10,
             }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COURT.red} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COURT.gold} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
               </svg>
-              <div style={{ fontFamily: 'Mulish', fontSize: 12.5, color: COURT.red, lineHeight: 1.55 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 12.5, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.55 }}>
                 {lang==='fr'
-                  ? `Cette action réduira ton indice de confiance de 10 % (minimum 50 %). Actuellement : ${confidence}% → ${Math.max(50, confidence - 10)}%`
+                  ? 'Ton niveau sera mis à jour selon tes réponses. Ton indice de confiance n\'est pas affecté.'
                   : lang==='en'
-                  ? `This will reduce your confidence index by 10% (min. 50%). Currently: ${confidence}% → ${Math.max(50, confidence - 10)}%`
-                  : `פעולה זו תפחית את מדד האמינות שלך ב-10% (מינימום 50%). כרגע: ${confidence}% → ${Math.max(50, confidence - 10)}%`}
+                  ? 'Your level will be updated from your answers. Your confidence index is not affected.'
+                  : 'הרמה שלך תעודכן לפי התשובות. מדד האמינות שלך לא יושפע.'}
               </div>
             </div>
             {/* Boutons */}
@@ -4241,6 +4258,8 @@ export default function MainApp() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showStreak,      setShowStreak]      = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
+  // Signal pour ouvrir directement les stats (depuis le menu "Mes statistiques")
+  const [statsSignal, setStatsSignal] = useState(0);
 
   // Les invités peuvent naviguer librement — on bloque seulement les ACTIONS
   // (like, message) au niveau de chaque composant, pas la navigation entre onglets.
@@ -4304,8 +4323,8 @@ export default function MainApp() {
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
     learn:   <LearnScreen   lang={lang} dark={darkMode} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onStartMatch={() => setShowSchedule(true)} {...bellProps} />,
-    trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
-    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} {...bellProps} />,
+    trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} statsSignal={statsSignal} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
+    profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} onOpenStats={() => { setStatsSignal(s => s + 1); setTab('trophy'); }} {...bellProps} />,
   };
 
   const bg    = darkMode ? COURT.darkBg : COURT.cream;
