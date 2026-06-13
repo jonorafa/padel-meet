@@ -12,7 +12,7 @@ import { COURT } from '../components/CourtUI'
 //   • Les CGU incluent la clause « tolérance zéro » exigée par l'App Store (1.2)
 // ─────────────────────────────────────────────────────────────────────────────
 const CONTACT_EMAIL = 'contact@padelmeet.app'   // TODO: remplacer par ta vraie adresse
-const UPDATED = '12 juin 2026'
+const UPDATED = '13 juin 2026'
 
 export default function LegalScreen({ doc = 'privacy' }) {
   const { dark } = usePrefs()
@@ -95,8 +95,8 @@ export default function LegalScreen({ doc = 'privacy' }) {
 
       <h2 style={h2}>Admissibilité</h2>
       <p style={p}>
-        Tu dois avoir au moins 16 ans pour utiliser l'application. Tu es responsable de l'exactitude des
-        informations de ton profil.
+        Tu dois avoir au moins <b>18 ans</b> pour utiliser l'application. En créant un compte, tu déclares
+        avoir l'âge requis. Tu es responsable de l'exactitude des informations de ton profil.
       </p>
 
       <h2 style={h2}>Règles de conduite — tolérance zéro</h2>
@@ -111,10 +111,10 @@ export default function LegalScreen({ doc = 'privacy' }) {
 
       <h2 style={h2}>Signalement & blocage</h2>
       <p style={p}>
-        Tu peux <b>signaler</b> ou <b>bloquer</b> tout utilisateur depuis son profil. Nous examinons les
-        signalements et nous engageons à agir (avertissement, suppression de contenu, suspension ou
-        suppression du compte) <b>sous 24 heures</b> pour les contenus répréhensibles. Les utilisateurs
-        bloqués ne peuvent plus te contacter ni voir ton profil.
+        Tu peux <b>signaler</b> ou <b>bloquer</b> tout utilisateur depuis son profil ou depuis
+        la conversation. Nous examinons chaque signalement et nous efforçons d'agir dans les
+        meilleurs délais (avertissement, suppression de contenu, suspension ou suppression du compte).
+        Les utilisateurs bloqués ne peuvent plus te contacter ni voir ton profil.
       </p>
 
       <h2 style={h2}>Contenu des utilisateurs</h2>
@@ -130,11 +130,30 @@ export default function LegalScreen({ doc = 'privacy' }) {
         gravité le justifie. Tu peux supprimer ton compte à tout moment.
       </p>
 
-      <h2 style={h2}>Rencontres & responsabilité</h2>
+      <h2 style={h2}>Données personnelles</h2>
       <p style={p}>
-        Padel Meet est un outil de mise en relation sportive. Les rencontres et matchs se font sous ta
-        propre responsabilité. Nous ne sommes pas responsables des interactions entre utilisateurs hors de
-        l'application.
+        Padel Meet collecte et traite tes données personnelles (email, profil, activité) dans le cadre
+        du service. Tu bénéficies d'un droit d'accès, de rectification et de suppression de tes données.
+        Pour toute demande, écris-nous à {CONTACT_EMAIL} ou consulte notre{' '}
+        <b>Politique de confidentialité</b> (accessible depuis l'application).
+      </p>
+
+      <h2 style={h2}>Rencontres & limitation de responsabilité</h2>
+      <p style={p}>
+        Padel Meet est un outil de <b>mise en relation</b> sportive uniquement. L'application
+        n'organise pas les matchs, ne contrôle pas les installations sportives, ne vérifie pas les
+        équipements des clubs et ne supervise pas les rencontres physiques.{' '}
+        <b>Padel Meet ne peut être tenu responsable de tout dommage corporel, matériel ou moral</b>{' '}
+        survenant lors ou à la suite d'un match organisé via la plateforme. Les rencontres se font
+        sous l'entière responsabilité des joueurs concernés.
+      </p>
+
+      <h2 style={h2}>Loi applicable & juridiction</h2>
+      <p style={p}>
+        Les présentes conditions sont régies par le <b>droit israélien</b>. En cas de litige,
+        les tribunaux compétents sont ceux de <b>Tel Aviv-Jaffa (Israël)</b>.{' '}
+        Padel Meet est exploité à titre individuel par son fondateur dans l'attente de la constitution
+        d'une société.
       </p>
 
       <h2 style={h2}>Contact</h2>

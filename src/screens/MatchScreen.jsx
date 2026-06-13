@@ -2636,6 +2636,37 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [deleting, setDeleting] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
+  // ── Évaluer un partenaire depuis le menu ────────────────────────────────────
+  const [showEvalPicker,   setShowEvalPicker]   = useState(false);
+  const [evalTarget,       setEvalTarget]       = useState(null); // { id, name, photo, matchId }
+  const [showMenuEvalQuiz, setShowMenuEvalQuiz] = useState(false);
+  const [menuEvalSending,  setMenuEvalSending]  = useState(false);
+  const [menuEvalDone,     setMenuEvalDone]     = useState(false);
+
+  // ── Fetch partenaires pour l'évaluation depuis le menu ─────────────────────
+  const { matches: evalMatches } = useUserMatches();
+
+  const sendMenuEval = async (computedLevel) => {
+    if (!evalTarget) return;
+    setMenuEvalSending(true);
+    try {
+      await supabase.rpc('submit_peer_evaluation', {
+        p_match_id:       evalTarget.matchId,
+        p_evaluated_id:   evalTarget.id,
+        p_proposed_level: Math.round(computedLevel * 2) / 2,
+      });
+      setMenuEvalDone(true);
+      setTimeout(() => {
+        setMenuEvalDone(false);
+        setShowMenuEvalQuiz(false);
+        setEvalTarget(null);
+      }, 1800);
+    } catch (err) {
+      console.warn('[sendMenuEval]', err);
+      setShowMenuEvalQuiz(false);
+    }
+    setMenuEvalSending(false);
+  };
 
   // ─── Cooldown mensuel réévaluation ──────────────────────────────────────────
   const lastEvalRaw  = profile?.last_self_eval_date;
@@ -3328,6 +3359,12 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 action: () => { setShowMenu(false); setShowPartnerPrefs(true); },
               },
               {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+                label: lang === 'fr' ? 'Évaluer un partenaire' : lang === 'en' ? 'Rate a partner' : 'דרג שחקן',
+                sub: lang === 'fr' ? 'Évaluer le niveau d\'un joueur' : lang === 'en' ? 'Rate a player\'s level' : 'הערך רמת שחקן',
+                action: () => { setShowMenu(false); setShowEvalPicker(true); },
+              },
+              {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
                 label: lang === 'fr' ? 'Région' : lang === 'en' ? 'Region' : 'אזור',
                 sub: profile?.region || (lang === 'fr' ? 'Non défini' : lang === 'en' ? 'Not set' : 'לא מוגדר'),
@@ -3352,8 +3389,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   padding: '14px 0',
-                  borderBottom: i < 4 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
-                  background: 'transparent', border: 'none', borderBottom: i < 4 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  borderBottom: i < 5 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  background: 'transparent', border: 'none', borderBottom: i < 5 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
                   cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
                   animation: `cardIn 0.3s ease ${i * 0.05}s both`,
                 }}
@@ -3380,6 +3417,139 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           dark={dark} lang={lang}
           onClose={() => setShowContact(false)}
         />
+      )}
+
+      {/* BottomSheet : Sélection du joueur à évaluer */}
+      {showEvalPicker && (
+        <BottomSheet
+          onClose={() => setShowEvalPicker(false)}
+          title={lang === 'fr' ? 'Choisir un joueur' : lang === 'en' ? 'Choose a player' : 'בחר שחקן'}
+          dark={dark}
+        >
+          <div style={{ padding: '4px 20px 32px' }}>
+            {(!evalMatches || evalMatches.length === 0) ? (
+              <p style={{ fontFamily: 'Mulish', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>
+                {lang === 'fr' ? 'Joue d\'abord un match pour évaluer un partenaire.' : lang === 'en' ? 'Play a match first to rate a partner.' : 'שחק משחק קודם כדי לדרג שחקן.'}
+              </p>
+            ) : evalMatches.map((m, i) => (
+              <button
+                key={m.matchId}
+                onClick={() => {
+                  setEvalTarget({ ...m.player, matchId: m.matchId });
+                  setShowEvalPicker(false);
+                  setShowMenuEvalQuiz(true);
+                }}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '13px 0',
+                  borderBottom: i < evalMatches.length - 1 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  background: 'transparent', border: 'none',
+                  borderBottom: i < evalMatches.length - 1 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                  cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
+                }}
+              >
+                <img
+                  src={m.player.photo}
+                  alt={m.player.name}
+                  style={{ width: 40, height: 40, borderRadius: 20, objectFit: 'cover', flexShrink: 0, border: `1.5px solid ${COURT.green}30` }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{m.player.name}</div>
+                  {m.player.level && (
+                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 1 }}>
+                      {lang === 'fr' ? `Niveau ${m.player.level}` : lang === 'en' ? `Level ${m.player.level}` : `רמה ${m.player.level}`}
+                    </div>
+                  )}
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
+                  {rtl ? <polyline points="15 18 9 12 15 6"/> : <polyline points="9 18 15 12 9 6"/>}
+                </svg>
+              </button>
+            ))}
+          </div>
+        </BottomSheet>
+      )}
+
+      {/* Overlay quiz : évaluer le niveau d'un partenaire depuis le menu */}
+      {showMenuEvalQuiz && evalTarget && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 50,
+          background: dark ? COURT.darkBg : COURT.cream,
+        }}>
+          {/* Header */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            paddingTop: 'max(52px, env(safe-area-inset-top, 0px))',
+            padding: `max(52px, env(safe-area-inset-top, 0px)) 16px 8px`,
+            background: dark ? COURT.darkBg : COURT.cream,
+            borderBottom: `0.5px solid ${border}`,
+            zIndex: 51, display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <button onClick={() => { setShowMenuEvalQuiz(false); setEvalTarget(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <img
+                src={evalTarget.photo}
+                alt={evalTarget.name}
+                style={{ width: 34, height: 34, borderRadius: 17, objectFit: 'cover', border: `1.5px solid ${COURT.green}40` }}
+              />
+              <div>
+                <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>
+                  {lang === 'fr' ? `Évaluer ${evalTarget.name}` : lang === 'en' ? `Rate ${evalTarget.name}` : `דרג את ${evalTarget.name}`}
+                </div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 12, color: stone }}>
+                  {lang === 'fr' ? 'Réponds en pensant à son niveau' : lang === 'en' ? 'Answer thinking about their level' : 'ענה לפי הרמה שלו/ה'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <QuizScreen
+            t={t} lang={lang} dark={dark}
+            playerFirstName={evalTarget.name?.split(' ')[0] || ''}
+            onDone={(computedLevel) => sendMenuEval(computedLevel)}
+            onBack={() => { setShowMenuEvalQuiz(false); setEvalTarget(null); }}
+          />
+
+          {/* Spinner pendant l'envoi */}
+          {menuEvalSending && (
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300,
+            }}>
+              <div style={{
+                width: 48, height: 48, border: `3px solid ${COURT.cream}40`,
+                borderTop: `3px solid ${COURT.cream}`,
+                borderRadius: 24, animation: 'spin 0.8s linear infinite',
+              }} />
+            </div>
+          )}
+
+          {/* Succès */}
+          {menuEvalDone && (
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 400,
+            }}>
+              <div style={{
+                background: dark ? COURT.darkCard : COURT.cream,
+                borderRadius: 20, padding: '28px 32px', textAlign: 'center',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
+              }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
+                <div style={{ fontFamily: ff_serif, fontSize: 18, color: COURT.green, fontWeight: 700, fontStyle: 'italic' }}>
+                  {lang === 'fr' ? 'Évaluation envoyée !' : lang === 'en' ? 'Rating sent!' : 'הערכה נשלחה!'}
+                </div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 6 }}>
+                  {lang === 'fr' ? `Merci pour ton retour sur ${evalTarget.name}` : lang === 'en' ? `Thanks for rating ${evalTarget.name}` : `תודה על הדירוג של ${evalTarget.name}`}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* BottomSheet : Choix de la langue */}
