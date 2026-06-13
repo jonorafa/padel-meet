@@ -53,12 +53,14 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     .filter(Boolean)
     .sort((a, b) => b.length - a.length)[0] || ''
 
+  const bioWordCount = longestBio.trim().split(/\s+/).filter(Boolean).length
+
   const completionItems = [
     { pts: 15, done: !!formData.name?.trim() },
     { pts: 20, done: photos.length >= 1 },
     { pts: 10, done: photos.length >= 3 },
-    { pts: 20, done: longestBio.length >= 1 },
-    { pts: 20, done: longestBio.length >= 80 },
+    { pts: 20, done: bioWordCount >= 1 },
+    { pts: 20, done: bioWordCount >= 10 },
     { pts: 15, done: !!(formData.dominant_hand && formData.preferred_side && formData.play_style && formData.motivation) },
   ]
   const completionScore = completionItems.reduce((s, c) => s + (c.done ? c.pts : 0), 0)
@@ -73,8 +75,8 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const completionHint = (() => {
     if (photos.length === 0)        return lang === 'he' ? 'הוסף תמונה לפרופיל שלך' : lang === 'en' ? 'Add a profile photo' : 'Ajoute ta première photo'
     if (!formData.name?.trim())     return lang === 'he' ? 'הוסף את שמך המלא' : lang === 'en' ? 'Add your full name' : 'Ajoute ton nom complet'
-    if (!longestBio)                return lang === 'he' ? 'כתוב ביוגרפיה' : lang === 'en' ? 'Write a bio to introduce yourself' : 'Écris ta bio pour te présenter'
-    if (longestBio.length < 80)     return lang === 'he' ? 'הארך את הביוגרפיה' : lang === 'en' ? 'Make your bio longer to reach 100%' : 'Allonge ta bio pour atteindre 100%'
+    if (bioWordCount === 0)          return lang === 'he' ? 'כתוב ביוגרפיה' : lang === 'en' ? 'Write a bio to introduce yourself' : 'Écris ta bio pour te présenter'
+    if (bioWordCount < 10)           return lang === 'he' ? 'הוסף לפחות 10 מילים לביוגרפיה' : lang === 'en' ? 'Add at least 10 words to your bio' : 'Ajoute au moins 10 mots dans ta bio'
     if (photos.length < 3)          return lang === 'he' ? 'הוסף עוד תמונות' : lang === 'en' ? 'Add more photos to stand out' : 'Ajoute plus de photos pour te démarquer'
     return lang === 'he' ? 'הפרופיל שלך מושלם !' : lang === 'en' ? 'Your profile is perfect!' : 'Ton profil est parfait !'
   })()
