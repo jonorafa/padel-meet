@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { COURT, Ornament } from '../components/CourtUI';
 import { QUIZ_QUESTIONS, GLOSSARY, computeLevel } from '../data/courtData';
 
@@ -130,8 +130,16 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
   const [answers, setAnswers]   = useState({});
   const [animDir, setAnimDir]   = useState('in');
   const [glossaryKey, setGlossaryKey] = useState(null); // terme ouvert dans le tooltip
-  const total = QUIZ_QUESTIONS.length;
-  const q = QUIZ_QUESTIONS[idx];
+  // Mode « évaluer un partenaire » → on retire les ancres objectives (selfOnly) :
+  // on ne connaît pas l'ancienneté/fréquence de quelqu'un d'autre, on ne juge
+  // que ce qu'on l'a vu jouer (les 10 questions techniques).
+  const isPeerEval = !!playerFirstName;
+  const questions = useMemo(
+    () => QUIZ_QUESTIONS.filter(qq => !(isPeerEval && qq.selfOnly)),
+    [isPeerEval]
+  );
+  const total = questions.length;
+  const q = questions[idx];
   const progress = ((idx + 1) / total) * 100;
   const rtl = lang === 'he';
 

@@ -702,6 +702,43 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Je réussis régulièrement un par 3',              en: 'I regularly pull off a par 3',                he: 'אני מבצע בהצלחה פר 3 באופן קבוע',       subFr: "Smash latéral contrôlé — la balle sort du côté.",  subEn: "Controlled side smash — the ball exits the side.",  subHe: 'סמאש צידי מבוקר — הכדור יוצא מהצד.', value: 5.5 },
       { fr: 'Par 3 et par 4 au choix selon la situation',    en: 'Par 3 or par 4, I choose based on situation',  he: 'פר 3 או פר 4, אני בוחר לפי המצב',       subFr: "Je choisis la sortie — côté ou fond — avec intention.", subEn: "I choose the exit — side or back — with full intent.", subHe: 'אני בוחר יציאה — צד או אחור — עם כוונה מלאה.', value: 7   },
     ]},
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ANCRES OBJECTIVES (auto-évaluation uniquement — `selfOnly`).
+  // Exclues du mode « évaluer un partenaire » (on ne connaît pas l'ancienneté
+  // ni la fréquence de quelqu'un d'autre). Pondérées plus fort que la technique
+  // car ce sont des faits, plus difficiles à sur-estimer que l'auto-jugement.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // ── Q11 · Ancre : Ancienneté ──────────────────────────────────────────────
+  { id: 11, type: 'anchor', selfOnly: true, weight: 2,
+    q: { fr: "Depuis combien de temps joues-tu au padel ?", en: "How long have you been playing padel?", he: "כמה זמן אתה משחק פאדל?" },
+    options: [
+      { fr: 'Moins de 6 mois',            en: 'Less than 6 months',     he: 'פחות מ-6 חודשים',  subFr: "Je débute.",                          subEn: "I'm just starting.",                  subHe: 'אני רק מתחיל.',                  value: 1   },
+      { fr: '6 mois à 2 ans',             en: '6 months to 2 years',    he: '6 חודשים עד שנתיים', subFr: "Je construis mes bases.",             subEn: "Building my foundations.",            subHe: 'בונה את הבסיס.',                 value: 3   },
+      { fr: '2 à 5 ans',                  en: '2 to 5 years',           he: '2 עד 5 שנים',       subFr: "Pratique installée.",                 subEn: "Well-established practice.",          subHe: 'תרגול מבוסס.',                   value: 5   },
+      { fr: 'Plus de 5 ans, régulièrement', en: 'Over 5 years, regularly', he: 'מעל 5 שנים, באופן קבוע', subFr: "Joueur de longue date.",          subEn: "Long-time player.",                   subHe: 'שחקן ותיק.',                     value: 7   },
+    ]},
+
+  // ── Q12 · Ancre : Fréquence de jeu ────────────────────────────────────────
+  { id: 12, type: 'anchor', selfOnly: true, weight: 1,
+    q: { fr: "À quelle fréquence joues-tu en ce moment ?", en: "How often do you play right now?", he: "באיזו תדירות אתה משחק כעת?" },
+    options: [
+      { fr: 'Rarement (quelques fois par an)', en: 'Rarely (a few times a year)', he: 'לעיתים רחוקות (כמה פעמים בשנה)', subFr: "Jeu occasionnel.",            subEn: "Occasional play.",            subHe: 'משחק מזדמן.',          value: 1.5 },
+      { fr: '1 fois par semaine ou moins',     en: 'Once a week or less',          he: 'פעם בשבוע או פחות',           subFr: "Rythme léger.",               subEn: "Light pace.",                 subHe: 'קצב קל.',              value: 3   },
+      { fr: '2 à 3 fois par semaine',          en: '2 to 3 times a week',          he: '2 עד 3 פעמים בשבוע',          subFr: "Joueur régulier.",            subEn: "Regular player.",             subHe: 'שחקן קבוע.',           value: 4.5 },
+      { fr: '4 fois ou plus par semaine',      en: '4+ times a week',              he: '4 פעמים או יותר בשבוע',       subFr: "Pratique intensive.",         subEn: "Intensive practice.",         subHe: 'תרגול אינטנסיבי.',     value: 6.5 },
+    ]},
+
+  // ── Q13 · Ancre : Niveau / compétition ────────────────────────────────────
+  { id: 13, type: 'anchor', selfOnly: true, weight: 2,
+    q: { fr: "À quel niveau de jeu te situes-tu ?", en: "Where do you place your level of play?", he: "באיזו רמת משחק אתה ממקם את עצמך?" },
+    options: [
+      { fr: 'Je débute, je joue pour apprendre',          en: "Beginner, I play to learn",                 he: 'מתחיל, משחק כדי ללמוד',         subFr: "Phase d'apprentissage.",            subEn: "Learning phase.",                  subHe: 'שלב למידה.',                value: 1.5 },
+      { fr: 'Loisir : je joue entre amis, sans compétition', en: "Casual: friendly games, no competition", he: 'פנאי: משחק עם חברים, ללא תחרות', subFr: "Bon niveau loisir.",               subEn: "Solid casual level.",              subHe: 'רמת פנאי טובה.',            value: 3.5 },
+      { fr: 'Je gagne souvent en loisir / petits tournois', en: "I often win casual / small tournaments",  he: 'מנצח לעיתים קרובות בפנאי / טורנירים קטנים', subFr: "Au-dessus du loisir moyen.", subEn: "Above average casual.",        subHe: 'מעל ממוצע הפנאי.',         value: 5   },
+      { fr: 'Je joue en compétition officielle (tournois classés)', en: "I play official competition (ranked tournaments)", he: 'משחק בתחרות רשמית (טורנירים מדורגים)', subFr: "Niveau compétiteur.",  subEn: "Competitor level.",            subHe: 'רמת מתחרה.',               value: 7   },
+    ]},
 ];
 
 /**
@@ -776,39 +813,40 @@ export const GLOSSARY = [
  *   3.5 – 5.5  Avancé
  *   5.5 – 7.0  Expert / Compétition
  *
- * BARÈME DES OPTIONS (8 questions tech, valeurs {1, 3, 5.5, 7})
- *   Débutant      → value: 1.0
- *   Intermédiaire → value: 3.0
- *   Avancé        → value: 5.5
- *   Expert        → value: 7.0
+ * QUESTIONS
+ *   • 10 questions TECHNIQUES (type:'tech') — auto/peer-éval, poids 1.
+ *   • 3 ANCRES OBJECTIVES (type:'anchor', selfOnly) — ancienneté (poids 2),
+ *     fréquence (poids 1), niveau/compétition (poids 2). Présentes uniquement
+ *     en AUTO-évaluation ; en peer-éval seules les 10 techniques comptent.
  *
- * FORMULE : moyenne pure des 8 réponses (toutes sur la même échelle)
- *   Score_Final = moyenne(answers) → clamp [0.5, 7.0]
+ * FORMULE : moyenne PONDÉRÉE des réponses (chaque option a une `value` sur la
+ *   même échelle 0.5–7 ; `weight` par défaut = 1).
+ *     Score = Σ(value × weight) / Σ(weight) → arrondi 1 déc. → clamp [0.5, 7.0]
  *
- * SIMULATIONS DE VÉRIFICATION
- *   MAX    8×7.0 → 7.0  ✓
- *   EXPERT 8×5.5 → 5.5  ✓
- *   AVANCÉ mix(5.5,3.0) → valeur intermédiaire cohérente ✓
+ * VÉRIFICATIONS
+ *   Peer-éval : 10 tech × 7   / 10        = 7.0  ✓ (ancres absentes)
+ *   Auto MAX  : (10×7 + 6.5×2 + 5.5×1 + 6.5×2) / 15 ≈ 6.8  ✓ (réaliste)
+ *   Débutant honnête : tech 1 + ancres bas → ~1.2  ✓
  *
  * CAS SKIP : retourne null — ne jamais inventer de valeur par défaut.
  */
 export function computeLevel(answers) {
   if (!answers || Object.keys(answers).length === 0) return null;
 
-  let sum = 0, count = 0;
+  let sum = 0, wsum = 0;
 
   QUIZ_QUESTIONS.forEach(q => {
     const v = answers[q.id];
-    if (v == null) return;
-    // Toutes les questions sont type:'tech' — valeurs {1, 3, 5.5, 7}
-    sum += v;
-    count++;
+    if (v == null) return;            // question non répondue (ex. ancres en peer-éval)
+    const w = q.weight ?? 1;          // technique = 1 ; ancres pondérées
+    sum  += v * w;
+    wsum += w;
   });
 
   // Aucune réponse → pas de niveau attribué
-  if (count === 0) return null;
+  if (wsum === 0) return null;
 
-  const raw = sum / count;
+  const raw = sum / wsum;
 
   // Arrondi à 1 décimale, clamp [0.5, 7.0]
   const finalScore = Math.round(raw * 10) / 10;
@@ -939,9 +977,12 @@ export function generateLevelSummary(answers, lang) {
     he: { and: " ו", but: ". לעבוד על: ", develop: ". האתגר הבא שלך: " },
   };
 
-  // Collect answered questions with their values
+  // Collect answered questions with their values.
+  // Restreint aux questions ayant une PHRASE descriptive (technique 1–10) :
+  // les ancres objectives (ancienneté, fréquence, niveau) ne décrivent pas un
+  // « point fort/faible » de jeu et n'ont pas de phrase.
   const answered = QUIZ_QUESTIONS
-    .filter(q => answers[q.id] != null)
+    .filter(q => answers[q.id] != null && PHRASES[q.id])
     .map(q => ({ id: q.id, val: answers[q.id] }));
 
   if (answered.length === 0) return null;
