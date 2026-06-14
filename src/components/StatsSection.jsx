@@ -16,9 +16,8 @@ export default function StatsSection() {
   const wins          = stats?.wins          ?? 0
   const winRate       = matchCount > 0 ? Math.round((wins / matchCount) * 100) : 0
   const streak        = profile?.streak_current ?? 0          // jours consécutifs
-  const currentLevel  = level  ?? 4.0
+  const currentLevel  = level ?? null
   const confScore     = Math.round(confidence ?? 0)           // 0–100
-  const confLeft      = Math.max(0, 10 - matchCount)          // matchs pour vérifier le niveau
 
   // ── Design tokens ───────────────────────────────────────────────────────────
   const bg     = dark ? COURT.darkBg     : COURT.cream
@@ -43,9 +42,7 @@ export default function StatsSection() {
       niveau:        'Niveau actuel',
       jours:         'jours',
       confiance:     'Indice de confiance',
-      confianceSub:  confLeft > 0
-        ? `Encore ${confLeft} match${confLeft > 1 ? 's' : ''} pour fiabiliser ton niveau ${currentLevel.toFixed(1)}`
-        : `Niveau ${currentLevel.toFixed(1)} bien fiabilisé ✓`,
+      confianceSub:  'Augmente en jouant avec des partenaires de ton niveau · ou en te faisant évaluer',
     },
     en: {
       eyebrow:       'At the club',
@@ -58,9 +55,7 @@ export default function StatsSection() {
       niveau:        'Current level',
       jours:         'days',
       confiance:     'Confidence index',
-      confianceSub:  confLeft > 0
-        ? `${confLeft} more match${confLeft > 1 ? 'es' : ''} to verify level ${currentLevel.toFixed(1)}`
-        : `Level ${currentLevel.toFixed(1)} verified ✓`,
+      confianceSub:  'Grows by playing with partners at your level · or getting peer evaluations',
     },
     he: {
       eyebrow:       'במגרש',
@@ -73,9 +68,7 @@ export default function StatsSection() {
       niveau:        'רמה נוכחית',
       jours:         'ימים',
       confiance:     'מדד ביטחון',
-      confianceSub:  confLeft > 0
-        ? `עוד ${confLeft} משחקים לאימות רמה ${currentLevel.toFixed(1)}`
-        : `רמה ${currentLevel.toFixed(1)} מאומתת ✓`,
+      confianceSub:  'גדל על ידי משחק עם שחקנים ברמה שלך · או הערכות עמיתים',
     },
   }[lang] ?? {}
 
@@ -153,7 +146,13 @@ export default function StatsSection() {
         {/* Niveau actuel */}
         <div style={cardStyle}>
           <div style={lbl}>{L.niveau}</div>
-          <div style={valStyle}>{currentLevel != null ? currentLevel.toFixed(1) : '—'}</div>
+          {currentLevel != null ? (
+            <div style={valStyle}>{currentLevel.toFixed(1)}</div>
+          ) : (
+            <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 4, lineHeight: 1.4 }}>
+              {lang === 'he' ? 'לא הוערך' : lang === 'en' ? 'Not evaluated' : 'Non évalué'}
+            </div>
+          )}
         </div>
       </div>
 
