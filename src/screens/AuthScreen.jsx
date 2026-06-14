@@ -4,7 +4,7 @@ import { COURT, FloatingBalls, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { supabase } from '../lib/supabase'
-import { normalizeUsername, usernameToEmail, validateUsername } from '../lib/username'
+import { normalizeUsername, validateUsername } from '../lib/username'
 
 const LABELS = {
   fr: {
@@ -24,6 +24,7 @@ const LABELS = {
     forgot:    'Mot de passe oublié ?',
     or:        'ou',
     google:    'Continuer avec Google',
+    apple:     'Continuer avec Apple',
     guest:     "Continuer en tant qu'invité",
     errEmail:  'Adresse email invalide',
     errUser:   "Choisis un nom d'utilisateur (3 à 20 caractères : lettres, chiffres, _).",
@@ -37,6 +38,7 @@ const LABELS = {
     errNotConf:'Confirme ton email avant de te connecter (vérifie ta boîte mail).',
     errTaken:  'Ce nom d’utilisateur est déjà pris. Connecte-toi.',
     errTakenWrongPw:'Ce pseudo existe déjà et le mot de passe ne correspond pas. Si c’est ton compte, vérifie ton mot de passe ci-dessous.',
+    errEmailTaken:'Cet email a déjà un compte. Connecte-toi.',
     checkEmail:'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.',
     resetSent: "Si un compte existe, un lien de réinitialisation vient d'être envoyé.",
     resetAsk:  'Entre ton email puis reclique sur « Mot de passe oublié ».',
@@ -65,6 +67,7 @@ const LABELS = {
     forgot:    'Forgot password?',
     or:        'or',
     google:    'Continue with Google',
+    apple:     'Continue with Apple',
     guest:     'Continue as guest',
     errEmail:  'Invalid email address',
     errUser:   'Choose a username (3 to 20 characters: letters, numbers, _).',
@@ -78,6 +81,7 @@ const LABELS = {
     errNotConf:'Confirm your email before signing in (check your inbox).',
     errTaken:  'This username is already taken. Sign in instead.',
     errTakenWrongPw:'This username already exists and the password doesn’t match. If it’s your account, check your password below.',
+    errEmailTaken:'This email already has an account. Sign in instead.',
     checkEmail:'Account created! Check your inbox to confirm your address, then sign in.',
     resetSent: 'If an account exists, a reset link has just been sent.',
     resetAsk:  'Enter your email then click "Forgot password" again.',
@@ -106,6 +110,7 @@ const LABELS = {
     forgot:    'שכחת סיסמה?',
     or:        'או',
     google:    'המשך עם Google',
+    apple:     'המשך עם Apple',
     guest:     'המשך כאורח',
     errEmail:  'כתובת אימייל לא תקינה',
     errUser:   'בחר שם משתמש (3 עד 20 תווים: אותיות, ספרות, _).',
@@ -119,6 +124,7 @@ const LABELS = {
     errNotConf:'אשר את האימייל שלך לפני ההתחברות (בדוק את תיבת הדואר).',
     errTaken:  'שם המשתמש הזה כבר תפוס. התחבר במקום.',
     errTakenWrongPw:'שם המשתמש כבר קיים והסיסמה אינה תואמת. אם זה החשבון שלך, בדוק את הסיסמה למטה.',
+    errEmailTaken:'לאימייל הזה כבר יש חשבון. התחבר במקום.',
     checkEmail:'החשבון נוצר! בדוק את תיבת הדואר כדי לאשר את הכתובת, ואז התחבר.',
     resetSent: 'אם קיים חשבון, נשלח כעת קישור לאיפוס.',
     resetAsk:  'הזן את האימייל שלך ולחץ שוב על "שכחת סיסמה".',
@@ -133,13 +139,14 @@ const LABELS = {
 }
 
 export default function AuthScreen() {
-  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest, recovery, endRecovery } = useAuth()
+  const { user, loading: authLoading, isOnboarding, signInWithGoogle, signInWithApple, enterAsGuest, recovery, endRecovery } = useAuth()
   const { lang, dark } = usePrefs()
   const navigate = useNavigate()
   const L = LABELS[lang] || LABELS.fr
   const rtl = lang === 'he'
 
   const [tab, setTab]           = useState('create') // 'create' | 'login'
+  const [email, setEmail]       = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw]     = useState(false)
@@ -168,6 +175,8 @@ export default function AuthScreen() {
   const pwValid   = pwRules.len && pwRules.let && pwRules.num
   // Pseudo valide = format OK (3–20 car. [a-z0-9_] après normalisation)
   const usernameValid = validateUsername(username) === null
+  // Email valide = format basique a@b.c
+  const emailValid    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 
   // Traduit les messages d'erreur Supabase (anglais) en message convivial localisé
   const mapError = (msg = '') => {
@@ -175,68 +184,61 @@ export default function AuthScreen() {
     if (m.includes('invalid login credentials'))        return L.errInvalid
     if (m.includes('email not confirmed'))              return L.errNotConf
     if (m.includes('already registered') ||
-        m.includes('already been registered'))          return L.errTaken
+        m.includes('already been registered') ||
+        m.includes('user_already_exists'))              return L.errEmailTaken
     if (m.includes('password') && m.includes('least')) return L.errPw
     return msg || L.errGen
   }
 
   const handleSubmit = async () => {
     setError(''); setNotice('')
-    if (!usernameValid)               return setError(L.errUser)
-    if (tab === 'create' && !pwValid) return setError(L.errPw)
+    // Identifiant de connexion = EMAIL réel (récupérable). Le pseudo n'est qu'un
+    // nom d'affichage public, collecté à l'inscription et écrit dans profiles.
+    if (!emailValid)                          return setError(L.errEmail)
+    if (tab === 'create' && !usernameValid)   return setError(L.errUser)
+    if (tab === 'create' && !pwValid)         return setError(L.errPw)
     if (tab === 'login' && password.length < 1) return setError(L.errPw)
 
-    // Auth par pseudo : Supabase travaille avec un email TECHNIQUE invisible
-    // dérivé du pseudo (cf. src/lib/username.js). L'utilisateur ne voit que le pseudo.
+    const cleanEmail = email.trim().toLowerCase()
     const normalized = normalizeUsername(username)
-    const authEmail  = usernameToEmail(username)
     setLoading(true)
     try {
       if (tab === 'create') {
-        // On tente directement la création. Le pseudo voyage dans user_metadata
-        // → réutilisé tel quel à l'onboarding (SetupProfileScreen) pour
-        // renseigner profiles.username.
-        const { data, error: e } = await supabase.auth.signUp({
-          email: authEmail,
-          password,
-          options: { data: { username: normalized } },
-        })
-
-        // ── Cas « pseudo déjà pris au niveau AUTH » ─────────────────────────
-        // Deux formes selon la config Supabase :
-        //  • confirmation email OFF (notre cas) → erreur 422 "User already
-        //    registered".
-        //  • confirmation email ON → user "fantôme" avec identities = [].
-        // IMPORTANT : ça arrive même quand le pré-check profiles.username dirait
-        // « libre », car un compte auth dont l'onboarding n'a JAMAIS été terminé
-        // n'a pas de ligne profiles (compte « orphelin »). C'était la cause du
-        // verrouillage : message « déjà pris » sans moyen d'entrer.
-        const identities = data?.user?.identities
-        const ghost = !!data?.user && (!identities || identities.length === 0)
-        const dup = ghost || (e && /already (registered|been registered)|user_already_exists/i.test(e.message || ''))
-
-        if (dup) {
-          // Le pseudo t'appartient peut-être (tentative précédente non finie, ou
-          // tu avais déjà un compte). On te connecte AVEC LE MOT DE PASSE que tu
-          // viens de saisir : si c'est le bon, tu entres directement ; sinon, on
-          // te le dit clairement. (Aucun risque : on n'entre que si le mot de
-          // passe correspond vraiment — vérifié par la base.)
-          const { error: signInErr } = await supabase.auth.signInWithPassword({
-            email: authEmail, password,
-          })
-          if (!signInErr) return  // ✓ connecté → onAuthStateChange redirige
-          setError(L.errTakenWrongPw); setTab('login')
+        // Pré-vérif du pseudo d'affichage (unicité profiles.username). Feedback
+        // précoce ; la contrainte UNIQUE DB reste le garde-fou final à l'onboarding.
+        const { data: available, error: rpcErr } = await supabase
+          .rpc('username_available', { p_username: normalized })
+        if (!rpcErr && available === false) {
+          setError(L.errUserTaken)   // reste sur l'onglet create → l'user change son pseudo
           return
         }
 
+        // Le pseudo voyage dans user_metadata → réutilisé à l'onboarding
+        // (SetupProfileScreen) pour renseigner profiles.username.
+        const { data, error: e } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: { username: normalized },
+            emailRedirectTo: `${window.location.origin}/auth`,
+          },
+        })
+
+        // Email déjà associé à un compte (422, ou user "fantôme" identities=[]
+        // quand la confirmation email est ON) → on oriente vers la connexion.
+        const identities = data?.user?.identities
+        const ghost = !!data?.user && (!identities || identities.length === 0)
+        const dup = ghost || (e && /already (registered|been registered)|user_already_exists/i.test(e.message || ''))
+        if (dup) { setError(L.errEmailTaken); setTab('login'); setPassword(''); return }
+
         if (e) { setError(mapError(e.message)); return }
 
-        // mailer_autoconfirm=true → une session est renvoyée directement →
-        // onAuthStateChange (AuthContext) redirige vers /onboarding.
+        // Confirmation email OFF → session immédiate → redirection onboarding.
+        // Confirmation email ON → pas de session → on invite à confirmer.
         if (!data?.session) setNotice(L.checkEmail)
       } else {
         const { error: e } = await supabase.auth.signInWithPassword({
-          email: authEmail,
+          email: cleanEmail,
           password,
         })
         if (e) { setError(mapError(e.message)); return }
@@ -249,8 +251,25 @@ export default function AuthScreen() {
     }
   }
 
-  // NB : plus de « mot de passe oublié » — l'auth par pseudo n'a pas d'email réel,
-  // donc aucune réinitialisation par email n'est possible (choix assumé).
+  // « Mot de passe oublié » — envoie un lien de réinitialisation à l'email saisi.
+  // (Nécessite un SMTP configuré côté Supabase pour que l'email parte vraiment.)
+  const handleForgot = async () => {
+    setError(''); setNotice('')
+    if (!emailValid) { setError(L.resetAsk); return }
+    setLoading(true)
+    try {
+      const { error: e } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: `${window.location.origin}/auth` }
+      )
+      // Message neutre (ne révèle pas si l'email existe) — anti-énumération.
+      if (e) setError(mapError(e.message)); else setNotice(L.resetSent)
+    } catch (e) {
+      setError(mapError(e?.message))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Définit le nouveau mot de passe après clic sur le lien de récupération
   const handleResetPassword = async () => {
@@ -272,7 +291,11 @@ export default function AuthScreen() {
   }
 
   const handleGoogle = async () => {
-    try { await signInWithGoogle() } catch (e) { console.error(e) }
+    try { await signInWithGoogle() } catch (e) { console.error(e); setError(mapError(e?.message)) }
+  }
+
+  const handleApple = async () => {
+    try { await signInWithApple() } catch (e) { console.error(e); setError(mapError(e?.message)) }
   }
 
   const handleGuest = () => {
@@ -433,7 +456,35 @@ export default function AuthScreen() {
           ))}
         </div>
 
-        {/* ── Champ Nom d'utilisateur ── */}
+        {/* ── Champ Email (identifiant de connexion) ── */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{
+            fontFamily: 'Mulish', fontSize: 9.5, color: stone,
+            letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
+          }}>{L.email}</div>
+          <input
+            type="email" value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={onKey}
+            placeholder={L.emailPh}
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="email"
+            style={{
+              width: '100%', padding: '14px 16px', borderRadius: 12,
+              background: card, border: `0.5px solid ${border}`,
+              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
+              fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 16, color: ink, outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        {/* ── Champ Nom d'utilisateur (pseudo public — création seulement) ── */}
+        {tab === 'create' && (
         <div style={{ marginBottom: 12 }}>
           <div style={{
             fontFamily: 'Mulish', fontSize: 9.5, color: stone,
@@ -457,13 +508,12 @@ export default function AuthScreen() {
               boxSizing: 'border-box',
             }}
           />
-          {tab === 'create' && (
-            <div style={{
-              fontFamily: 'Mulish', fontSize: 10.5, color: stone,
-              marginTop: 5, marginLeft: 2,
-            }}>{L.usernameHint}</div>
-          )}
+          <div style={{
+            fontFamily: 'Mulish', fontSize: 10.5, color: stone,
+            marginTop: 5, marginLeft: 2,
+          }}>{L.usernameHint}</div>
         </div>
+        )}
 
         {/* ── Champ Mot de passe ── */}
         <div style={{ marginBottom: 4 }}>
@@ -532,7 +582,16 @@ export default function AuthScreen() {
           </div>
         )}
 
-        {tab === 'login' && <div style={{ height: 10 }} />}
+        {tab === 'login' && (
+          <div style={{ textAlign: rtl ? 'left' : 'right', marginTop: 10 }}>
+            <button type="button" onClick={handleForgot} disabled={loading} style={{
+              background: 'none', border: 'none', cursor: loading ? 'default' : 'pointer', padding: 0,
+              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
+              fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 13, color: stone, textDecoration: 'underline', textUnderlineOffset: 3,
+            }}>{L.forgot}</button>
+          </div>
+        )}
 
         {/* ── Message (erreur ou info) ── */}
         {error ? (
@@ -600,6 +659,27 @@ export default function AuthScreen() {
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 17, color: ink,
           }}>{L.google}</span>
+        </button>
+
+        {/* ── Apple ── */}
+        <button onClick={handleApple} style={{
+          marginTop: 12, width: '100%', padding: '15px', borderRadius: 14,
+          background: dark ? '#ffffff' : '#000000', border: `0.5px solid ${dark ? '#ffffff' : '#000000'}`,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+          cursor: 'pointer', transition: 'all 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.25)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.07)'; }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={dark ? '#000000' : '#ffffff'}>
+            <path d="M17.05 12.04c-.03-2.85 2.33-4.22 2.44-4.28-1.33-1.95-3.4-2.21-4.13-2.24-1.76-.18-3.43 1.03-4.32 1.03-.89 0-2.26-1.01-3.71-.98-1.91.03-3.67 1.11-4.65 2.82-1.98 3.44-.51 8.53 1.42 11.32.94 1.37 2.07 2.9 3.55 2.85 1.42-.06 1.96-.92 3.68-.92 1.72 0 2.21.92 3.72.89 1.53-.03 2.5-1.4 3.44-2.77 1.08-1.59 1.53-3.13 1.55-3.21-.03-.02-2.98-1.15-3.01-4.55zM14.2 4.38c.79-.96 1.32-2.29 1.18-3.61-1.14.05-2.51.76-3.32 1.71-.73.85-1.37 2.2-1.2 3.5 1.27.1 2.56-.64 3.34-1.6z"/>
+          </svg>
+          <span style={{
+            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
+            fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 17, color: dark ? '#000000' : '#ffffff',
+          }}>{L.apple}</span>
         </button>
 
         {/* ── Invité ── */}

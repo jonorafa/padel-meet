@@ -142,6 +142,16 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }
 
+  /** Connexion Apple OAuth — redirige vers Apple puis revient sur /auth.
+   *  Nécessite le provider Apple activé côté Supabase (Service ID + clé). */
+  const signInWithApple = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/auth` },
+    })
+    if (error) throw error
+  }
+
   /** Mode invité — aucun compte, accès lecture seule */
   const enterAsGuest = () => {
     sessionStorage.setItem('padel-guest', 'true')
@@ -211,7 +221,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, profile, photos, loading, isOnboarding, isGuest, recovery,
-      signInWithGoogle, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest, endRecovery,
+      signInWithGoogle, signInWithApple, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest, endRecovery,
     }}>
       {children}
     </AuthContext.Provider>
