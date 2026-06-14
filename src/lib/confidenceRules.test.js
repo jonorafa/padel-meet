@@ -1,5 +1,5 @@
 /**
- * Tests unitaires — confidenceRules.js (modèle 50/50, monotone)
+ * Tests unitaires — confidenceRules.js (modèle 75/25 play/peer, monotone)
  * Exécuter avec : node src/lib/confidenceRules.test.js
  */
 import {
