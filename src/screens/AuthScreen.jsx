@@ -36,6 +36,7 @@ const LABELS = {
     errInvalid:"Nom d'utilisateur ou mot de passe incorrect.",
     errNotConf:'Confirme ton email avant de te connecter (vérifie ta boîte mail).',
     errTaken:  'Ce nom d’utilisateur est déjà pris. Connecte-toi.',
+    errTakenWrongPw:'Ce pseudo existe déjà et le mot de passe ne correspond pas. Si c’est ton compte, vérifie ton mot de passe ci-dessous.',
     checkEmail:'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.',
     resetSent: "Si un compte existe, un lien de réinitialisation vient d'être envoyé.",
     resetAsk:  'Entre ton email puis reclique sur « Mot de passe oublié ».',
@@ -76,6 +77,7 @@ const LABELS = {
     errInvalid:'Incorrect username or password.',
     errNotConf:'Confirm your email before signing in (check your inbox).',
     errTaken:  'This username is already taken. Sign in instead.',
+    errTakenWrongPw:'This username already exists and the password doesn’t match. If it’s your account, check your password below.',
     checkEmail:'Account created! Check your inbox to confirm your address, then sign in.',
     resetSent: 'If an account exists, a reset link has just been sent.',
     resetAsk:  'Enter your email then click "Forgot password" again.',
@@ -116,6 +118,7 @@ const LABELS = {
     errInvalid:'שם משתמש או סיסמה שגויים.',
     errNotConf:'אשר את האימייל שלך לפני ההתחברות (בדוק את תיבת הדואר).',
     errTaken:  'שם המשתמש הזה כבר תפוס. התחבר במקום.',
+    errTakenWrongPw:'שם המשתמש כבר קיים והסיסמה אינה תואמת. אם זה החשבון שלך, בדוק את הסיסמה למטה.',
     checkEmail:'החשבון נוצר! בדוק את תיבת הדואר כדי לאשר את הכתובת, ואז התחבר.',
     resetSent: 'אם קיים חשבון, נשלח כעת קישור לאיפוס.',
     resetAsk:  'הזן את האימייל שלך ולחץ שוב על "שכחת סיסמה".',
@@ -190,39 +193,44 @@ export default function AuthScreen() {
     setLoading(true)
     try {
       if (tab === 'create') {
-        // Pré-vérif d'unicité contre profiles.username. Indispensable car les
-        // comptes Google existants ont un pseudo SANS email technique
-        // correspondant : on ne peut pas se fier uniquement à l'unicité de
-        // l'email Supabase. (La contrainte UNIQUE DB reste le garde-fou final.)
-        const { data: available, error: rpcErr } = await supabase
-          .rpc('username_available', { p_username: normalized })
-        if (!rpcErr && available === false) {
-          setError(L.errUserTaken); setTab('login'); setPassword('')
-          return
-        }
-
+        // On tente directement la création. Le pseudo voyage dans user_metadata
+        // → réutilisé tel quel à l'onboarding (SetupProfileScreen) pour
+        // renseigner profiles.username.
         const { data, error: e } = await supabase.auth.signUp({
           email: authEmail,
           password,
-          // Le pseudo voyage dans user_metadata → réutilisé tel quel à l'onboarding
-          // (SetupProfileScreen) pour renseigner profiles.username.
           options: { data: { username: normalized } },
         })
-        if (e) {
-          const friendly = mapError(e.message)
-          setError(friendly)
-          if (friendly === L.errTaken) { setTab('login'); setPassword('') }
-          return
-        }
-        // Pseudo déjà pris (email technique existant) : Supabase renvoie un user
-        // "fantôme" dont la liste d'identités est VIDE. Aucune écriture DB : le
-        // compte existant n'est JAMAIS écrasé.
+
+        // ── Cas « pseudo déjà pris au niveau AUTH » ─────────────────────────
+        // Deux formes selon la config Supabase :
+        //  • confirmation email OFF (notre cas) → erreur 422 "User already
+        //    registered".
+        //  • confirmation email ON → user "fantôme" avec identities = [].
+        // IMPORTANT : ça arrive même quand le pré-check profiles.username dirait
+        // « libre », car un compte auth dont l'onboarding n'a JAMAIS été terminé
+        // n'a pas de ligne profiles (compte « orphelin »). C'était la cause du
+        // verrouillage : message « déjà pris » sans moyen d'entrer.
         const identities = data?.user?.identities
-        const alreadyRegistered = !!data?.user && (!identities || identities.length === 0)
-        if (alreadyRegistered) {
-          setError(L.errTaken); setTab('login'); setPassword('')
+        const ghost = !!data?.user && (!identities || identities.length === 0)
+        const dup = ghost || (e && /already (registered|been registered)|user_already_exists/i.test(e.message || ''))
+
+        if (dup) {
+          // Le pseudo t'appartient peut-être (tentative précédente non finie, ou
+          // tu avais déjà un compte). On te connecte AVEC LE MOT DE PASSE que tu
+          // viens de saisir : si c'est le bon, tu entres directement ; sinon, on
+          // te le dit clairement. (Aucun risque : on n'entre que si le mot de
+          // passe correspond vraiment — vérifié par la base.)
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: authEmail, password,
+          })
+          if (!signInErr) return  // ✓ connecté → onAuthStateChange redirige
+          setError(L.errTakenWrongPw); setTab('login')
           return
         }
+
+        if (e) { setError(mapError(e.message)); return }
+
         // mailer_autoconfirm=true → une session est renvoyée directement →
         // onAuthStateChange (AuthContext) redirige vers /onboarding.
         if (!data?.session) setNotice(L.checkEmail)
