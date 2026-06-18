@@ -16,19 +16,34 @@ import { useAuth } from '../context/AuthContext'
 export function useBlocks() {
   const { user } = useAuth()
   const [blockedIds, setBlockedIds] = useState(() => new Set())
+  const [blockedProfiles, setBlockedProfiles] = useState([])
 
   const refresh = useCallback(async () => {
-    if (!user?.id) { setBlockedIds(new Set()); return }
-    const { data, error } = await supabase
+    if (!user?.id) { setBlockedIds(new Set()); setBlockedProfiles([]); return }
+    const { data: blockData, error } = await supabase
       .from('blocks')
       .select('blocker_id, blocked_id')
-      .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`)
-    if (error || !data) return
+      .eq('blocker_id', user.id)  // Seulement les MIENS (que JE ai bloqués)
+    if (error || !blockData) { setBlockedProfiles([]); return }
+
     const ids = new Set()
-    for (const b of data) {
-      ids.add(b.blocker_id === user.id ? b.blocked_id : b.blocker_id)
+    const blockedIds_arr = []
+    for (const b of blockData) {
+      ids.add(b.blocked_id)
+      blockedIds_arr.push(b.blocked_id)
     }
     setBlockedIds(ids)
+
+    // Récupère les profils complets des bloqués
+    if (blockedIds_arr.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, photo_url, level, city, region')
+        .in('id', blockedIds_arr)
+      setBlockedProfiles(profiles || [])
+    } else {
+      setBlockedProfiles([])
+    }
   }, [user?.id])
 
   useEffect(() => { refresh() }, [refresh])
@@ -55,5 +70,5 @@ export function useBlocks() {
     })
   }, [user?.id])
 
-  return { blockedIds, refresh, blockUser, unblockUser, reportUser }
+  return { blockedIds, blockedProfiles, refresh, blockUser, unblockUser, reportUser }
 }

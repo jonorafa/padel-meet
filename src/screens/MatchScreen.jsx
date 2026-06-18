@@ -2647,9 +2647,12 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
   const [showMenuEvalQuiz, setShowMenuEvalQuiz] = useState(false);
   const [menuEvalSending,  setMenuEvalSending]  = useState(false);
   const [menuEvalDone,     setMenuEvalDone]     = useState(false);
+  const [showBlockedPlayers, setShowBlockedPlayers] = useState(false);
+  const [unblockingId, setUnblockingId] = useState(null);
 
   // ── Fetch partenaires pour l'évaluation depuis le menu ─────────────────────
   const { matches: evalMatches } = useUserMatches();
+  const { blockedProfiles, unblockUser } = useBlocks();
 
   const sendMenuEval = async (computedLevel) => {
     if (!evalTarget) return;
@@ -3394,6 +3397,12 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 action: () => { setShowMenu(false); setShowLangPicker(true); },
               },
               {
+                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>,
+                label: lang === 'fr' ? 'Joueurs bloqués' : lang === 'en' ? 'Blocked players' : 'שחקנים חסומים',
+                sub: blockedProfiles.length > 0 ? `${blockedProfiles.length} ${lang === 'fr' ? 'bloqué(s)' : lang === 'en' ? 'blocked' : 'חסומים'}` : (lang === 'fr' ? 'Aucun' : lang === 'en' ? 'None' : 'אף אחד'),
+                action: () => { setShowMenu(false); setShowBlockedPlayers(true); },
+              },
+              {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
                 label: lang === 'fr' ? 'Nous contacter' : lang === 'en' ? 'Contact us' : 'צור קשר',
                 sub: 'Feedback · Bug report · Help',
@@ -3434,6 +3443,64 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           dark={dark} lang={lang}
           onClose={() => setShowContact(false)}
         />
+      )}
+
+      {/* BottomSheet : Liste des joueurs bloqués */}
+      {showBlockedPlayers && (
+        <BottomSheet
+          onClose={() => setShowBlockedPlayers(false)}
+          title={lang === 'fr' ? 'Joueurs bloqués' : lang === 'en' ? 'Blocked players' : 'שחקנים חסומים'}
+          dark={dark}
+        >
+          <div style={{ padding: '4px 20px 32px' }}>
+            {(!blockedProfiles || blockedProfiles.length === 0) ? (
+              <p style={{ fontFamily: 'Mulish', fontSize: 14, color: stone, textAlign: 'center', padding: '20px 0' }}>
+                {lang === 'fr' ? 'Aucun joueur bloqué.' : lang === 'en' ? 'No blocked players.' : 'אין שחקנים חסומים.'}
+              </p>
+            ) : blockedProfiles.map((bp, i) => (
+              <div
+                key={bp.id}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '13px 0',
+                  borderBottom: i < blockedProfiles.length - 1 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
+                }}
+              >
+                <img
+                  src={bp.photo_url || 'https://via.placeholder.com/48'}
+                  alt={bp.name}
+                  style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontSize: 15, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{bp.name}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>
+                    {bp.level ? `Niveau ${bp.level}` : 'Niveau non défini'} · {bp.region || bp.city || '—'}
+                  </div>
+                </div>
+                <button
+                  disabled={unblockingId === bp.id}
+                  onClick={async () => {
+                    setUnblockingId(bp.id);
+                    await unblockUser(bp.id);
+                    setUnblockingId(null);
+                  }}
+                  style={{
+                    padding: '8px 14px', borderRadius: 10,
+                    background: dark ? COURT.darkCard : `${COURT.green}15`,
+                    border: `0.5px solid ${COURT.green}50`,
+                    color: COURT.green,
+                    fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
+                    cursor: unblockingId === bp.id ? 'default' : 'pointer',
+                    opacity: unblockingId === bp.id ? 0.6 : 1,
+                    flexShrink: 0,
+                  }}
+                >
+                  {unblockingId === bp.id ? '…' : lang === 'fr' ? 'Débloquer' : lang === 'en' ? 'Unblock' : 'בטל חסימה'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </BottomSheet>
       )}
 
       {/* BottomSheet : Sélection du joueur à évaluer */}
