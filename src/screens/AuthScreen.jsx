@@ -24,7 +24,6 @@ const LABELS = {
     forgot:    'Mot de passe oublié ?',
     or:        'ou',
     google:    'Continuer avec Google',
-    apple:     'Continuer avec Apple',
     guest:     "Continuer en tant qu'invité",
     errEmail:  'Adresse email invalide',
     errUser:   "Choisis un nom d'utilisateur (3 à 20 caractères : lettres, chiffres, _).",
@@ -67,7 +66,6 @@ const LABELS = {
     forgot:    'Forgot password?',
     or:        'or',
     google:    'Continue with Google',
-    apple:     'Continue with Apple',
     guest:     'Continue as guest',
     errEmail:  'Invalid email address',
     errUser:   'Choose a username (3 to 20 characters: letters, numbers, _).',
@@ -110,7 +108,6 @@ const LABELS = {
     forgot:    'שכחת סיסמה?',
     or:        'או',
     google:    'המשך עם Google',
-    apple:     'המשך עם Apple',
     guest:     'המשך כאורח',
     errEmail:  'כתובת אימייל לא תקינה',
     errUser:   'בחר שם משתמש (3 עד 20 תווים: אותיות, ספרות, _).',
@@ -139,7 +136,7 @@ const LABELS = {
 }
 
 export default function AuthScreen() {
-  const { user, loading: authLoading, isOnboarding, signInWithGoogle, signInWithApple, enterAsGuest, recovery, endRecovery } = useAuth()
+  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest, recovery, endRecovery } = useAuth()
   const { lang, dark } = usePrefs()
   const navigate = useNavigate()
   const L = LABELS[lang] || LABELS.fr
@@ -294,9 +291,6 @@ export default function AuthScreen() {
     try { await signInWithGoogle() } catch (e) { console.error(e); setError(mapError(e?.message)) }
   }
 
-  const handleApple = async () => {
-    try { await signInWithApple() } catch (e) { console.error(e); setError(mapError(e?.message)) }
-  }
 
   const handleGuest = () => {
     enterAsGuest()
@@ -659,27 +653,6 @@ export default function AuthScreen() {
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 17, color: ink,
           }}>{L.google}</span>
-        </button>
-
-        {/* ── Apple ── */}
-        <button onClick={handleApple} style={{
-          marginTop: 12, width: '100%', padding: '15px', borderRadius: 14,
-          background: dark ? '#ffffff' : '#000000', border: `0.5px solid ${dark ? '#ffffff' : '#000000'}`,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          cursor: 'pointer', transition: 'all 0.2s',
-        }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.25)'; }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.07)'; }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill={dark ? '#000000' : '#ffffff'}>
-            <path d="M17.05 12.04c-.03-2.85 2.33-4.22 2.44-4.28-1.33-1.95-3.4-2.21-4.13-2.24-1.76-.18-3.43 1.03-4.32 1.03-.89 0-2.26-1.01-3.71-.98-1.91.03-3.67 1.11-4.65 2.82-1.98 3.44-.51 8.53 1.42 11.32.94 1.37 2.07 2.9 3.55 2.85 1.42-.06 1.96-.92 3.68-.92 1.72 0 2.21.92 3.72.89 1.53-.03 2.5-1.4 3.44-2.77 1.08-1.59 1.53-3.13 1.55-3.21-.03-.02-2.98-1.15-3.01-4.55zM14.2 4.38c.79-.96 1.32-2.29 1.18-3.61-1.14.05-2.51.76-3.32 1.71-.73.85-1.37 2.2-1.2 3.5 1.27.1 2.56-.64 3.34-1.6z"/>
-          </svg>
-          <span style={{
-            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-            fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 17, color: dark ? '#000000' : '#ffffff',
-          }}>{L.apple}</span>
         </button>
 
         {/* ── Invité ── */}
