@@ -1,27 +1,26 @@
 /**
  * Règles déterministes du système de confidence_rate (indice de confiance).
  *
- * Modèle 75/25 (play/peer), MONOTONE (ne baisse JAMAIS).
- * La vraie logique est côté serveur (migrations 014 + 016, SECURITY DEFINER) ;
+ * Modèle 50/50 (play/peer), MONOTONE (ne baisse JAMAIS).
+ * La vraie logique est côté serveur (migrations 014 + 018, SECURITY DEFINER) ;
  * ce fichier sert d'aperçu / documentation et ne peut pas être manipulé côté client.
  *
- *   confidence_rate = 50 + min(12.5, Σ canal « peer ») + min(37.5, Σ canal « play »)
+ *   confidence_rate = 50 + min(25, Σ canal « peer ») + min(25, Σ canal « play »)
  *
  *   • Base 50 pour tout nouveau profil, borné [50, 100].
- *   • Canal « peer » (max +12.5, 25 % du gain) : accord des évaluations de pairs
+ *   • Canal « peer » (max +25, 50 % du gain) : accord des évaluations de pairs
  *     avec le niveau déclaré. Proche → crédit positif, loin → 0 (stagne).
- *   • Canal « play » (max +37.5, 75 % du gain) : matchs confirmés contre un
+ *   • Canal « play » (max +25, 50 % du gain) : matchs confirmés contre un
  *     adversaire de niveau similaire (écart ≤ 0.5).
  *
- * Décision produit (migration 016) : le jeu réel avec des partenaires proches
- * pèse 3× plus que l'évaluation subjective de pairs.
+ * Historique : la migration 016 avait tenté un modèle 75/25 (play 3× peer) ;
+ * la migration 018 est revenue au 50/50 à parts égales (décision produit).
  */
 
 export const CONFIDENCE_BASE  = 50;    // valeur de départ
-export const PEER_CAP         = 12.5;  // plafond canal peer  (25 % × 50)
-export const PLAY_CAP         = 37.5;  // plafond canal play  (75 % × 50)
-/** @deprecated — remplacé par PEER_CAP / PLAY_CAP (modèle 75/25). Ne pas utiliser. */
-export const CHANNEL_CAP      = 25;    // ancien cap symétrique 50/50 (migration 014)
+export const CHANNEL_CAP      = 25;    // plafond par canal (50 % × 50) — peer ET play
+export const PEER_CAP         = 25;    // plafond canal peer  (alias de CHANNEL_CAP)
+export const PLAY_CAP         = 25;    // plafond canal play  (alias de CHANNEL_CAP)
 export const PLAY_CREDIT     = 5;    // crédit par match de niveau similaire
 export const SIMILAR_GAP     = 0.5;  // écart de niveau « similaire »
 
