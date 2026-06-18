@@ -1,155 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { COURT, FloatingBalls, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
-import { supabase } from '../lib/supabase'
-import { normalizeUsername, validateUsername } from '../lib/username'
 
 const LABELS = {
   fr: {
-    tagline:   'Trouve ton partenaire idéal',
-    create:    'Créer un compte',
-    login:     'Se connecter',
-    email:     'Email',
-    username:  "Nom d'utilisateur",
-    password:  'Mot de passe',
-    emailPh:   'ton@email.com',
-    usernamePh:'Ex: jonathan',
-    usernameHint:'3 à 20 caractères : lettres, chiffres et _',
-    pwPh:      'Ex: Padel2024',
-    loginPwPh: '••••••••',
-    cta_create:'Créer mon compte',
-    cta_login: 'Se connecter',
-    forgot:    'Mot de passe oublié ?',
-    or:        'ou',
-    google:    'Continuer avec Google',
-    guest:     "Continuer en tant qu'invité",
-    errEmail:  'Adresse email invalide',
-    errUser:   "Choisis un nom d'utilisateur (3 à 20 caractères : lettres, chiffres, _).",
-    errUserTaken:'Ce nom d’utilisateur est déjà pris. Choisis-en un autre.',
-    errPw:     'Le mot de passe doit contenir 8 caractères min., dont des lettres et des chiffres.',
-    errPwLen:  '8 caractères minimum',
-    errPwLet:  'Au moins une lettre',
-    errPwNum:  'Au moins un chiffre',
-    errGen:    'Une erreur est survenue',
-    errInvalid:"Nom d'utilisateur ou mot de passe incorrect.",
-    errNotConf:'Confirme ton email avant de te connecter (vérifie ta boîte mail).',
-    errTaken:  'Ce nom d’utilisateur est déjà pris. Connecte-toi.',
-    errTakenWrongPw:'Ce pseudo existe déjà et le mot de passe ne correspond pas. Si c’est ton compte, vérifie ton mot de passe ci-dessous.',
-    errEmailTaken:'Cet email a déjà un compte. Connecte-toi.',
-    checkEmail:'Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.',
-    resetSent: "Si un compte existe, un lien de réinitialisation vient d'être envoyé.",
-    resetAsk:  'Entre ton email puis reclique sur « Mot de passe oublié ».',
-    ruleLen:   '8 caractères min.',
-    ruleLet:   'Au moins une lettre',
-    ruleNum:   'Au moins un chiffre',
-    recTitle:  'Nouveau mot de passe',
-    recSub:    'Choisis un nouveau mot de passe pour ton compte.',
-    recCta:    'Mettre à jour',
-    recDone:   'Mot de passe mis à jour ! Connexion en cours…',
+    tagline: 'Trouve ton partenaire idéal',
+    google:  'Continuer avec Google',
+    guest:   "Continuer en tant qu'invité",
+    errGen:  'Une erreur est survenue',
   },
   en: {
-    tagline:   'Find your ideal padel partner',
-    create:    'Create account',
-    login:     'Sign in',
-    email:     'Email',
-    username:  'Username',
-    password:  'Password',
-    emailPh:   'you@email.com',
-    usernamePh:'e.g. jonathan',
-    usernameHint:'3 to 20 characters: letters, numbers and _',
-    pwPh:      'e.g. Padel2024',
-    loginPwPh: '••••••••',
-    cta_create:'Create my account',
-    cta_login: 'Sign in',
-    forgot:    'Forgot password?',
-    or:        'or',
-    google:    'Continue with Google',
-    guest:     'Continue as guest',
-    errEmail:  'Invalid email address',
-    errUser:   'Choose a username (3 to 20 characters: letters, numbers, _).',
-    errUserTaken:'This username is already taken. Pick another one.',
-    errPw:     'Password must be at least 8 characters and include letters and numbers.',
-    errPwLen:  'At least 8 characters',
-    errPwLet:  'At least one letter',
-    errPwNum:  'At least one number',
-    errGen:    'An error occurred',
-    errInvalid:'Incorrect username or password.',
-    errNotConf:'Confirm your email before signing in (check your inbox).',
-    errTaken:  'This username is already taken. Sign in instead.',
-    errTakenWrongPw:'This username already exists and the password doesn’t match. If it’s your account, check your password below.',
-    errEmailTaken:'This email already has an account. Sign in instead.',
-    checkEmail:'Account created! Check your inbox to confirm your address, then sign in.',
-    resetSent: 'If an account exists, a reset link has just been sent.',
-    resetAsk:  'Enter your email then click "Forgot password" again.',
-    ruleLen:   '8 characters min.',
-    ruleLet:   'At least one letter',
-    ruleNum:   'At least one number',
-    recTitle:  'New password',
-    recSub:    'Choose a new password for your account.',
-    recCta:    'Update',
-    recDone:   'Password updated! Signing you in…',
+    tagline: 'Find your ideal padel partner',
+    google:  'Continue with Google',
+    guest:   'Continue as guest',
+    errGen:  'An error occurred',
   },
   he: {
-    tagline:   'מצא את שותף הפאדל האידיאלי',
-    create:    'צור חשבון',
-    login:     'התחבר',
-    email:     'אימייל',
-    username:  'שם משתמש',
-    password:  'סיסמה',
-    emailPh:   'you@email.com',
-    usernamePh:'לדוג׳ jonathan',
-    usernameHint:'3 עד 20 תווים: אותיות, ספרות ו־_',
-    pwPh:      'לדוג׳ Padel2024',
-    loginPwPh: '••••••••',
-    cta_create:'צור חשבון',
-    cta_login: 'התחבר',
-    forgot:    'שכחת סיסמה?',
-    or:        'או',
-    google:    'המשך עם Google',
-    guest:     'המשך כאורח',
-    errEmail:  'כתובת אימייל לא תקינה',
-    errUser:   'בחר שם משתמש (3 עד 20 תווים: אותיות, ספרות, _).',
-    errUserTaken:'שם המשתמש הזה כבר תפוס. בחר אחר.',
-    errPw:     'הסיסמה חייבת להכיל לפחות 8 תווים, אותיות וספרות.',
-    errPwLen:  'לפחות 8 תווים',
-    errPwLet:  'לפחות אות אחת',
-    errPwNum:  'לפחות ספרה אחת',
-    errGen:    'שגיאה',
-    errInvalid:'שם משתמש או סיסמה שגויים.',
-    errNotConf:'אשר את האימייל שלך לפני ההתחברות (בדוק את תיבת הדואר).',
-    errTaken:  'שם המשתמש הזה כבר תפוס. התחבר במקום.',
-    errTakenWrongPw:'שם המשתמש כבר קיים והסיסמה אינה תואמת. אם זה החשבון שלך, בדוק את הסיסמה למטה.',
-    errEmailTaken:'לאימייל הזה כבר יש חשבון. התחבר במקום.',
-    checkEmail:'החשבון נוצר! בדוק את תיבת הדואר כדי לאשר את הכתובת, ואז התחבר.',
-    resetSent: 'אם קיים חשבון, נשלח כעת קישור לאיפוס.',
-    resetAsk:  'הזן את האימייל שלך ולחץ שוב על "שכחת סיסמה".',
-    ruleLen:   'לפחות 8 תווים',
-    ruleLet:   'לפחות אות אחת',
-    ruleNum:   'לפחות ספרה אחת',
-    recTitle:  'סיסמה חדשה',
-    recSub:    'בחר סיסמה חדשה לחשבון שלך.',
-    recCta:    'עדכן',
-    recDone:   'הסיסמה עודכנה! מתחבר…',
+    tagline: 'מצא את שותף הפאדל האידיאלי',
+    google:  'המשך עם Google',
+    guest:   'המשך כאורח',
+    errGen:  'שגיאה',
   },
 }
 
 export default function AuthScreen() {
-  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest, recovery, endRecovery } = useAuth()
+  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest } = useAuth()
   const { lang, dark } = usePrefs()
   const navigate = useNavigate()
   const L = LABELS[lang] || LABELS.fr
   const rtl = lang === 'he'
 
-  const [tab, setTab]           = useState('create') // 'create' | 'login'
-  const [email, setEmail]       = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPw, setShowPw]     = useState(false)
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
-  const [notice, setNotice]     = useState('') // message positif (vérifie ta boîte mail, etc.)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const bg     = dark ? COURT.darkBg     : COURT.cream
   const card   = dark ? COURT.darkCard   : '#ffffff'
@@ -157,148 +41,27 @@ export default function AuthScreen() {
   const stone  = dark ? COURT.darkMuted  : COURT.stone
   const border = dark ? COURT.darkBorder : COURT.green + '25'
 
-  useEffect(() => {
-    if (authLoading) return
-    if (recovery) return // pendant la récupération, on reste sur l'écran « nouveau mot de passe »
-    if (user) navigate(isOnboarding ? '/onboarding' : '/app', { replace: true })
-  }, [user, authLoading, isOnboarding, navigate, recovery])
-
-  // Règles de validation du mot de passe (live)
-  const pwRules = {
-    len: password.length >= 8,
-    let: /[a-zA-Z]/.test(password),
-    num: /[0-9]/.test(password),
-  }
-  const pwValid   = pwRules.len && pwRules.let && pwRules.num
-  // Pseudo valide = format OK (3–20 car. [a-z0-9_] après normalisation)
-  const usernameValid = validateUsername(username) === null
-  // Email valide = format basique a@b.c
-  const emailValid    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-
-  // Traduit les messages d'erreur Supabase (anglais) en message convivial localisé
-  const mapError = (msg = '') => {
-    const m = msg.toLowerCase()
-    if (m.includes('invalid login credentials'))        return L.errInvalid
-    if (m.includes('email not confirmed'))              return L.errNotConf
-    if (m.includes('already registered') ||
-        m.includes('already been registered') ||
-        m.includes('user_already_exists'))              return L.errEmailTaken
-    if (m.includes('password') && m.includes('least')) return L.errPw
-    return msg || L.errGen
-  }
-
-  const handleSubmit = async () => {
-    setError(''); setNotice('')
-    // Identifiant de connexion = EMAIL réel (récupérable). Le pseudo n'est qu'un
-    // nom d'affichage public, collecté à l'inscription et écrit dans profiles.
-    if (!emailValid)                          return setError(L.errEmail)
-    if (tab === 'create' && !usernameValid)   return setError(L.errUser)
-    if (tab === 'create' && !pwValid)         return setError(L.errPw)
-    if (tab === 'login' && password.length < 1) return setError(L.errPw)
-
-    const cleanEmail = email.trim().toLowerCase()
-    const normalized = normalizeUsername(username)
-    setLoading(true)
-    try {
-      if (tab === 'create') {
-        // Pré-vérif du pseudo d'affichage (unicité profiles.username). Feedback
-        // précoce ; la contrainte UNIQUE DB reste le garde-fou final à l'onboarding.
-        const { data: available, error: rpcErr } = await supabase
-          .rpc('username_available', { p_username: normalized })
-        if (!rpcErr && available === false) {
-          setError(L.errUserTaken)   // reste sur l'onglet create → l'user change son pseudo
-          return
-        }
-
-        // Le pseudo voyage dans user_metadata → réutilisé à l'onboarding
-        // (SetupProfileScreen) pour renseigner profiles.username.
-        const { data, error: e } = await supabase.auth.signUp({
-          email: cleanEmail,
-          password,
-          options: {
-            data: { username: normalized },
-            emailRedirectTo: `${window.location.origin}/auth`,
-          },
-        })
-
-        // Email déjà associé à un compte (422, ou user "fantôme" identities=[]
-        // quand la confirmation email est ON) → on oriente vers la connexion.
-        const identities = data?.user?.identities
-        const ghost = !!data?.user && (!identities || identities.length === 0)
-        const dup = ghost || (e && /already (registered|been registered)|user_already_exists/i.test(e.message || ''))
-        if (dup) { setError(L.errEmailTaken); setTab('login'); setPassword(''); return }
-
-        if (e) { setError(mapError(e.message)); return }
-
-        // Confirmation email OFF → session immédiate → redirection onboarding.
-        // Confirmation email ON → pas de session → on invite à confirmer.
-        if (!data?.session) setNotice(L.checkEmail)
-      } else {
-        const { error: e } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password,
-        })
-        if (e) { setError(mapError(e.message)); return }
-        // Succès : onAuthStateChange gère la redirection
-      }
-    } catch (e) {
-      setError(mapError(e?.message))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // « Mot de passe oublié » — envoie un lien de réinitialisation à l'email saisi.
-  // (Nécessite un SMTP configuré côté Supabase pour que l'email parte vraiment.)
-  const handleForgot = async () => {
-    setError(''); setNotice('')
-    if (!emailValid) { setError(L.resetAsk); return }
-    setLoading(true)
-    try {
-      const { error: e } = await supabase.auth.resetPasswordForEmail(
-        email.trim().toLowerCase(),
-        { redirectTo: `${window.location.origin}/auth` }
-      )
-      // Message neutre (ne révèle pas si l'email existe) — anti-énumération.
-      if (e) setError(mapError(e.message)); else setNotice(L.resetSent)
-    } catch (e) {
-      setError(mapError(e?.message))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Définit le nouveau mot de passe après clic sur le lien de récupération
-  const handleResetPassword = async () => {
-    setError(''); setNotice('')
-    if (!pwValid) return setError(L.errPw)
-    setLoading(true)
-    try {
-      const { error: e } = await supabase.auth.updateUser({ password })
-      if (e) { setError(mapError(e.message)); return }
-      setNotice(L.recDone)
-      setPassword('')
-      // Sort du mode récupération → l'effet de redirection envoie vers /app ou /onboarding
-      endRecovery()
-    } catch (e) {
-      setError(mapError(e?.message))
-    } finally {
-      setLoading(false)
-    }
+  if (authLoading) return null
+  if (user) {
+    navigate(isOnboarding ? '/onboarding' : '/app', { replace: true })
+    return null
   }
 
   const handleGoogle = async () => {
-    try { await signInWithGoogle() } catch (e) { console.error(e); setError(mapError(e?.message)) }
+    setLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (e) {
+      console.error(e)
+      setError(L.errGen)
+      setLoading(false)
+    }
   }
-
 
   const handleGuest = () => {
     enterAsGuest()
     navigate('/app', { replace: true })
   }
-
-  const switchTab = (id) => { setTab(id); setError(''); setNotice('') }
-  const onKey = (e) => { if (e.key === 'Enter' && !loading) handleSubmit() }
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
@@ -335,311 +98,20 @@ export default function AuthScreen() {
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 15, color: stone, marginTop: 7, letterSpacing: '0.02em',
           }}>
-            {recovery ? L.recSub : L.tagline}
+            {L.tagline}
           </div>
-        </div>
-
-        {recovery ? (
-        <>
-          {/* ── Récupération : nouveau mot de passe ── */}
-          <div style={{
-            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-            fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 22, color: ink, textAlign: 'center', marginBottom: 18,
-          }}>{L.recTitle}</div>
-
-          <div style={{ marginBottom: 4 }}>
-            <div style={{
-              fontFamily: 'Mulish', fontSize: 9.5, color: stone,
-              letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
-            }}>{L.password}</div>
-            <div style={{ position: 'relative' }}>
-              <input
-                type={showPw ? 'text' : 'password'} value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !loading) handleResetPassword() }}
-                placeholder={L.pwPh}
-                autoComplete="new-password"
-                style={{
-                  width: '100%', padding: '14px 44px 14px 16px', borderRadius: 12,
-                  background: card, border: `0.5px solid ${border}`,
-                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-                  fontStyle: rtl ? 'normal' : 'italic',
-                  fontSize: 16, color: ink, outline: 'none', boxSizing: 'border-box',
-                }}
-              />
-              <button type="button" onClick={() => setShowPw(v => !v)} style={{
-                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke={stone} strokeWidth="1.5" strokeLinecap="round">
-                  {showPw
-                    ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></>
-                    : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>
-                  }
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {password.length > 0 && (
-            <div style={{ display: 'flex', gap: 14, marginTop: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-              {[[pwRules.len, L.ruleLen], [pwRules.let, L.ruleLet], [pwRules.num, L.ruleNum]].map(([ok, label]) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{
-                    width: 14, height: 14, borderRadius: 7, flexShrink: 0,
-                    background: ok ? COURT.green : 'transparent',
-                    border: `1.5px solid ${ok ? COURT.green : stone}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
-                  }}>
-                    {ok && <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-                      <polyline points="2,5 4,7.5 8,2.5" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>}
-                  </div>
-                  <span style={{ fontFamily: 'Mulish', fontSize: 11, color: ok ? COURT.green : stone, transition: 'color 0.2s' }}>{label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {error ? (
-            <div style={{
-              margin: '10px 0', padding: '10px 14px', borderRadius: 10,
-              background: `${COURT.red || '#e74c3c'}10`, border: `0.5px solid ${COURT.red || '#e74c3c'}30`,
-              fontFamily: 'Mulish', fontSize: 12, color: COURT.red || '#e74c3c',
-            }}>{error}</div>
-          ) : notice ? (
-            <div style={{
-              margin: '10px 0', padding: '10px 14px', borderRadius: 10,
-              background: `${COURT.green}12`, border: `0.5px solid ${COURT.green}33`,
-              fontFamily: 'Mulish', fontSize: 12, color: COURT.green,
-            }}>{notice}</div>
-          ) : <div style={{ height: 16 }} />}
-
-          <button onClick={handleResetPassword} disabled={loading} style={{
-            width: '100%', padding: '16px', borderRadius: 14,
-            background: loading ? `${COURT.green}80` : COURT.green,
-            color: COURT.cream, border: `0.5px solid ${COURT.gold}`,
-            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-            fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 18, cursor: loading ? 'default' : 'pointer', transition: 'all 0.2s',
-          }}>
-            {loading ? '…' : L.recCta}
-          </button>
-        </>
-        ) : (
-        <>
-
-        {/* ── Onglets ── */}
-        <div style={{
-          display: 'flex', background: dark ? COURT.darkCard : '#EBE7DE',
-          borderRadius: 12, padding: 4, marginBottom: 20,
-        }}>
-          {[['create', L.create], ['login', L.login]].map(([id, label]) => (
-            <button key={id} onClick={() => switchTab(id)} style={{
-              flex: 1, padding: '11px', borderRadius: 9, border: 'none', cursor: 'pointer',
-              background: tab === id ? COURT.green : 'transparent',
-              color: tab === id ? COURT.cream : stone,
-              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-              fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 15, transition: 'all 0.25s',
-            }}>
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Champ Email (identifiant de connexion) ── */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{
-            fontFamily: 'Mulish', fontSize: 9.5, color: stone,
-            letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
-          }}>{L.email}</div>
-          <input
-            type="email" value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={onKey}
-            placeholder={L.emailPh}
-            autoComplete="email"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            inputMode="email"
-            style={{
-              width: '100%', padding: '14px 16px', borderRadius: 12,
-              background: card, border: `0.5px solid ${border}`,
-              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-              fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 16, color: ink, outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        {/* ── Champ Nom d'utilisateur (pseudo public — création seulement) ── */}
-        {tab === 'create' && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{
-            fontFamily: 'Mulish', fontSize: 9.5, color: stone,
-            letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
-          }}>{L.username}</div>
-          <input
-            type="text" value={username}
-            onChange={e => setUsername(e.target.value)}
-            onKeyDown={onKey}
-            placeholder={L.usernamePh}
-            autoComplete="username"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            style={{
-              width: '100%', padding: '14px 16px', borderRadius: 12,
-              background: card, border: `0.5px solid ${border}`,
-              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-              fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 16, color: ink, outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-          <div style={{
-            fontFamily: 'Mulish', fontSize: 10.5, color: stone,
-            marginTop: 5, marginLeft: 2,
-          }}>{L.usernameHint}</div>
-        </div>
-        )}
-
-        {/* ── Champ Mot de passe ── */}
-        <div style={{ marginBottom: 4 }}>
-          <div style={{
-            fontFamily: 'Mulish', fontSize: 9.5, color: stone,
-            letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 7,
-          }}>{L.password}</div>
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showPw ? 'text' : 'password'} value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={onKey}
-              placeholder={tab === 'create' ? L.pwPh : L.loginPwPh}
-              autoComplete={tab === 'create' ? 'new-password' : 'current-password'}
-              style={{
-                width: '100%', padding: '14px 44px 14px 16px', borderRadius: 12,
-                background: card, border: `0.5px solid ${border}`,
-                fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-                fontStyle: rtl ? 'normal' : 'italic',
-                fontSize: 16, color: ink, outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-            <button type="button" onClick={() => setShowPw(v => !v)} style={{
-              position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-            }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke={stone} strokeWidth="1.5" strokeLinecap="round">
-                {showPw
-                  ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></>
-                  : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>
-                }
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* ── Règles du mot de passe (create seulement, live) ── */}
-        {tab === 'create' && password.length > 0 && (
-          <div style={{ display: 'flex', gap: 14, marginTop: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-            {[
-              [pwRules.len, L.ruleLen],
-              [pwRules.let, L.ruleLet],
-              [pwRules.num, L.ruleNum],
-            ].map(([ok, label]) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <div style={{
-                  width: 14, height: 14, borderRadius: 7, flexShrink: 0,
-                  background: ok ? COURT.green : 'transparent',
-                  border: `1.5px solid ${ok ? COURT.green : stone}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.2s',
-                }}>
-                  {ok && <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-                    <polyline points="2,5 4,7.5 8,2.5" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>}
-                </div>
-                <span style={{
-                  fontFamily: 'Mulish', fontSize: 11,
-                  color: ok ? COURT.green : stone,
-                  transition: 'color 0.2s',
-                }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === 'login' && (
-          <div style={{ textAlign: rtl ? 'left' : 'right', marginTop: 10 }}>
-            <button type="button" onClick={handleForgot} disabled={loading} style={{
-              background: 'none', border: 'none', cursor: loading ? 'default' : 'pointer', padding: 0,
-              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-              fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 13, color: stone, textDecoration: 'underline', textUnderlineOffset: 3,
-            }}>{L.forgot}</button>
-          </div>
-        )}
-
-        {/* ── Message (erreur ou info) ── */}
-        {error ? (
-          <div style={{
-            margin: '10px 0', padding: '10px 14px', borderRadius: 10,
-            background: `${COURT.red || '#e74c3c'}10`,
-            border: `0.5px solid ${COURT.red || '#e74c3c'}30`,
-            fontFamily: 'Mulish', fontSize: 12, color: COURT.red || '#e74c3c',
-          }}>
-            {error}
-          </div>
-        ) : notice ? (
-          <div style={{
-            margin: '10px 0', padding: '10px 14px', borderRadius: 10,
-            background: `${COURT.green}12`,
-            border: `0.5px solid ${COURT.green}33`,
-            fontFamily: 'Mulish', fontSize: 12, color: COURT.green,
-          }}>
-            {notice}
-          </div>
-        ) : <div style={{ height: 16 }} />}
-
-        {/* ── Bouton principal ── */}
-        <button onClick={handleSubmit} disabled={loading} style={{
-          width: '100%', padding: '16px', borderRadius: 14,
-          background: loading ? `${COURT.green}80` : COURT.green,
-          color: COURT.cream, border: `0.5px solid ${COURT.gold}`,
-          fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-          fontStyle: rtl ? 'normal' : 'italic',
-          fontSize: 18, cursor: loading ? 'default' : 'pointer',
-          transition: 'all 0.2s', marginBottom: 0,
-        }}>
-          {loading ? '…' : (tab === 'create' ? L.cta_create : L.cta_login)}
-        </button>
-
-        {/* ── Séparateur ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '18px 0' }}>
-          <div style={{ flex: 1, height: 0.5, background: `${COURT.green}25` }} />
-          <span style={{
-            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-            fontStyle: 'italic', fontSize: 14, color: stone,
-          }}>{L.or}</span>
-          <div style={{ flex: 1, height: 0.5, background: `${COURT.green}25` }} />
         </div>
 
         {/* ── Google ── */}
-        <button onClick={handleGoogle} style={{
+        <button onClick={handleGoogle} disabled={loading} style={{
           width: '100%', padding: '15px', borderRadius: 14,
           background: card, border: `0.5px solid ${border}`,
           boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          cursor: 'pointer', transition: 'all 0.2s',
+          cursor: loading ? 'default' : 'pointer', transition: 'all 0.2s',
+          opacity: loading ? 0.7 : 1,
         }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 18px rgba(15,61,41,0.14)'; e.currentTarget.style.borderColor = COURT.green; }}
+          onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 4px 18px rgba(15,61,41,0.14)'; e.currentTarget.style.borderColor = COURT.green; } }}
           onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.07)'; e.currentTarget.style.borderColor = border; }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
@@ -652,13 +124,14 @@ export default function AuthScreen() {
             fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
             fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 17, color: ink,
-          }}>{L.google}</span>
+          }}>{loading ? '…' : L.google}</span>
         </button>
 
         {/* ── Invité ── */}
-        <button onClick={handleGuest} style={{
+        <button onClick={handleGuest} disabled={loading} style={{
           marginTop: 20, width: '100%', background: 'none',
-          border: 'none', cursor: 'pointer', textAlign: 'center',
+          border: 'none', cursor: loading ? 'default' : 'pointer', textAlign: 'center',
+          opacity: loading ? 0.5 : 1,
         }}>
           <span style={{
             fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
@@ -670,8 +143,21 @@ export default function AuthScreen() {
           </span>
         </button>
 
+        {/* ── Erreur ── */}
+        {error && (
+          <div style={{
+            marginTop: 16, padding: '12px 14px', borderRadius: 10,
+            background: `${COURT.red || '#e74c3c'}10`,
+            border: `0.5px solid ${COURT.red || '#e74c3c'}30`,
+            fontFamily: 'Mulish', fontSize: 12, color: COURT.red || '#e74c3c',
+            textAlign: 'center',
+          }}>
+            {error}
+          </div>
+        )}
+
         {/* ── Consentement CGU / Confidentialité ── */}
-        <div style={{ marginTop: 18, textAlign: 'center', fontFamily: 'Mulish', fontSize: 11.5, lineHeight: 1.6, color: stone }}>
+        <div style={{ marginTop: 24, textAlign: 'center', fontFamily: 'Mulish', fontSize: 11.5, lineHeight: 1.6, color: stone }}>
           {lang === 'en' ? 'By continuing, you agree to our ' : lang === 'he' ? 'בהמשך, אתה מסכים ל' : 'En continuant, tu acceptes nos '}
           <span onClick={() => navigate('/terms')} style={{ textDecoration: 'underline', cursor: 'pointer', color: COURT.green }}>
             {lang === 'en' ? 'Terms' : lang === 'he' ? 'תנאי השימוש' : 'CGU'}
@@ -681,8 +167,6 @@ export default function AuthScreen() {
             {lang === 'en' ? 'Privacy Policy' : lang === 'he' ? 'מדיניות הפרטיות' : 'Politique de confidentialité'}
           </span>.
         </div>
-        </>
-        )}
 
       </div>
     </div>
