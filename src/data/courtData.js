@@ -62,7 +62,7 @@ export const I18N = {
     yourLevel: 'Votre niveau initial',
     levelExplain: '',
     enterClub: 'Entrer au club',
-    home: 'Accueil', search: 'Trouver', learn: 'Apprendre', matches: 'Matchs', profile: 'Profil',
+    home: 'Accueil', search: 'Trouver', learn: 'Conseil', matches: 'Matchs', profile: 'Profil',
     greeting: 'Bonsoir,', currentLevel: 'Niveau actuel', outOf: 'sur',
     confidence: 'Indice de confiance', compatibility: 'Compatibilité', validated: 'Validé par 14 adversaires',
     evaluate: 'Évaluer', myLevel: 'mon niveau',
@@ -236,7 +236,7 @@ export const I18N = {
     yourLevel: 'Your initial level',
     levelExplain: '',
     enterClub: 'Enter the club',
-    home: 'Home', search: 'Find', learn: 'Learn', matches: 'Matches', profile: 'Profile',
+    home: 'Home', search: 'Find', learn: 'Tip', matches: 'Matches', profile: 'Profile',
     greeting: 'Good evening,', currentLevel: 'Current level', outOf: 'out of',
     confidence: 'Confidence index', compatibility: 'Compatibility', validated: 'Validated by 14 opponents',
     evaluate: 'Rate', myLevel: 'my level',
@@ -245,7 +245,7 @@ export const I18N = {
     atClub: 'At the club', partners: 'Partners', available: 'available',
     yes: "I'm in", no: 'Another time',
     filters: 'Preferences', applyFilters: 'Apply',
-    side: 'Side', forehand: 'Forehand', backhand: 'Backhand', anySide: 'Any',
+    side: 'Side', forehand: 'Right', backhand: 'Left', anySide: 'Any',
     playerStyle: 'Style', aggressive: 'Offensive', defensive: 'Defensive', allcourt: 'All-court', anyStyle: 'Any',
     motivation: 'Motivation', fun: 'For fun', improve: 'Improve', compete: 'Compete', anyMot: 'Any',
     region: 'Region', frequency: 'Frequency', availability: 'Availability',
@@ -410,7 +410,7 @@ export const I18N = {
     yourLevel: 'הרמה ההתחלתית שלך',
     levelExplain: '',
     enterClub: 'כניסה למועדון',
-    home: 'בית', search: 'מצא', learn: 'ללמוד', matches: 'משחקים', profile: 'פרופיל',
+    home: 'בית', search: 'מצא', learn: 'טיפ', matches: 'משחקים', profile: 'פרופיל',
     greeting: 'ערב טוב,', currentLevel: 'רמה נוכחית', outOf: 'מתוך',
     confidence: 'מדד אמינות', compatibility: 'תאימות', validated: 'אומת על ידי 14 יריבים',
     evaluate: 'הערך', myLevel: 'את הרמה שלי',
@@ -419,7 +419,7 @@ export const I18N = {
     atClub: 'במועדון', partners: 'שותפים', available: 'זמינים',
     yes: 'אני בפנים', no: 'פעם אחרת',
     filters: 'העדפות', applyFilters: 'החל',
-    side: 'צד', forehand: 'דרייב', backhand: 'גב יד', anySide: 'לא משנה',
+    side: 'צד', forehand: 'ימין', backhand: 'שמאל', anySide: 'לא משנה',
     playerStyle: 'סגנון', aggressive: 'התקפי', defensive: 'הגנתי', allcourt: 'מאוזן', anyStyle: 'לא משנה',
     motivation: 'מוטיבציה', fun: 'הנאה', improve: 'שיפור', compete: 'תחרות', anyMot: 'לא משנה',
     region: 'אזור', frequency: 'תדירות', availability: 'זמינות',
@@ -574,6 +574,53 @@ export const I18N = {
     errorTitle: 'אירעה שגיאה', errorHint: 'טען מחדש את הדף.', reload: 'טען מחדש',
   },
 };
+
+// ─── CONSEILS DU JOUR ────────────────────────────────────────────────────────
+// Rotation déterministe : index = floor(timestamp_ms / 86400000) % total
+// → même conseil toute la journée, change à minuit UTC.
+// Chaque conseil a une version FR / EN / HE.
+export const DAILY_TIPS = [
+  {
+    fr: "En défense, mieux vaut un lob haut que de tenter le coup gagnant.",
+    en: "On defense, a high lob is better than going for a risky winner.",
+    he: "בהגנה, עדיף לוב גבוה מאשר לנסות מכת ניצחון מסוכנת.",
+  },
+  {
+    fr: "Lisez les épaules de l'adversaire pour anticiper la direction de sa frappe.",
+    en: "Read your opponent's shoulders to anticipate the direction of their shot.",
+    he: "קראו את כתפי היריב כדי לחזות את כיוון המכה שלו.",
+  },
+  {
+    fr: "Le saviez-vous ? 80 % des points se gagnent au filet.",
+    en: "Did you know? 80% of points are won at the net.",
+    he: "הידעתם? 80% מהנקודות מוכרעות ברשת.",
+  },
+  {
+    fr: "En défense, lobez l'adversaire puis remontez au filet avec votre partenaire.",
+    en: "On defense, lob your opponent then move up to the net with your partner.",
+    he: "בהגנה, בצעו לוב על היריב ואז עלו לרשת יחד עם השותף שלכם.",
+  },
+  {
+    fr: "Montez et descendez toujours en même temps que votre partenaire.",
+    en: "Always move up and back at the same time as your partner.",
+    he: "עלו וירדו תמיד יחד עם השותף שלכם.",
+  },
+  {
+    fr: "Joueur de gauche : si la balle arrive au centre, privilégiez la vibora ; si elle arrive à gauche, la bandeja.",
+    en: "Left-side player: if the ball comes to the middle, favor the vibora; if it comes to the left, the bandeja.",
+    he: "שחקן צד שמאל: אם הכדור מגיע למרכז — העדיפו ויבורה; אם הוא מגיע לשמאל — בנדחה.",
+  },
+  {
+    fr: "Le saviez-vous ? Il existe 3 formes de raquette : ronde, goutte d'eau et diamant.",
+    en: "Did you know? There are 3 racket shapes: round, teardrop and diamond.",
+    he: "הידעתם? קיימות שלוש צורות מחבט: עגול, טיפה ויהלום.",
+  },
+  {
+    fr: "Les raquettes en diamant ont un sweet spot plus petit : idéales pour les joueurs intermédiaires / avancés.",
+    en: "Diamond rackets have a smaller sweet spot — ideal for intermediate / advanced players.",
+    he: "מחבטי יהלום בעלי נקודת פגיעה (sweet spot) קטנה יותר — אידיאליים לשחקנים בינוניים / מתקדמים.",
+  },
+];
 
 /**
  * QUIZ D'ÉVALUATION DU NIVEAU
@@ -823,9 +870,9 @@ export const GLOSSARY = [
  *   même échelle 0.5–7 ; `weight` par défaut = 1).
  *     Score = Σ(value × weight) / Σ(weight) → arrondi 1 déc. → clamp [0.5, 7.0]
  *
- * VÉRIFICATIONS
- *   Peer-éval : 10 tech × 7   / 10        = 7.0  ✓ (ancres absentes)
- *   Auto MAX  : (10×7 + 6.5×2 + 5.5×1 + 6.5×2) / 15 ≈ 6.8  ✓ (réaliste)
+ * VÉRIFICATIONS (poids : 10 tech ×1 + ancres ancienneté ×2, fréquence ×1, niveau ×2 = 15)
+ *   Peer-éval : 10 tech × 7   / 10                   = 7.0   ✓ (ancres absentes)
+ *   Auto MAX  : (10×7 + 7×2 + 6.5×1 + 7×2) / 15 ≈ 6.97 → 7.0 ✓
  *   Débutant honnête : tech 1 + ancres bas → ~1.2  ✓
  *
  * CAS SKIP : retourne null — ne jamais inventer de valeur par défaut.
