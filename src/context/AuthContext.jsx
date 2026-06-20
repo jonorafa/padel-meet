@@ -131,13 +131,27 @@ export function AuthProvider({ children }) {
   }
 
   /** Connexion Google OAuth — redirige vers Google puis revient sur /auth */
+  /**
+   * Connexion via Google Identity Services (One Tap / bouton overlay).
+   * Le token id est validé directement par Supabase → aucun redirect vers
+   * `…supabase.co`, donc l'écran Google n'affiche QUE « Padel Meet » + le domaine.
+   * @param {string} token  l'ID token JWT renvoyé par Google
+   * @param {string} nonce  le nonce BRUT (Google a reçu sa version hashée)
+   */
+  const signInWithGoogleIdToken = async (token, nonce) => {
+    const { error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token,
+      nonce,
+    })
+    if (error) throw error
+  }
+
+  /** Fallback : redirect OAuth classique (si GIS ne charge pas / est bloqué). */
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth`,
-        queryParams: { access_type: 'offline', prompt: 'consent' },
-      },
+      options: { redirectTo: `${window.location.origin}/auth` },
     })
     if (error) throw error
   }
@@ -211,7 +225,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, profile, photos, loading, isOnboarding, isGuest, recovery,
-      signInWithGoogle, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest, endRecovery,
+      signInWithGoogle, signInWithGoogleIdToken, signOut, saveProfile, refreshProfile, enterAsGuest, exitGuest, endRecovery,
     }}>
       {children}
     </AuthContext.Provider>

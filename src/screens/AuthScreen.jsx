@@ -1,8 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { COURT, FloatingBalls, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
+
+// Nonce anti-rejeu : version BRUTE pour Supabase + version SHA-256 hex pour Google.
+// (Google embarque la version hashée dans le JWT ; Supabase re-hashe la brute pour comparer.)
+async function generateNonce() {
+  const raw = crypto.randomUUID()
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw))
+  const hashed = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+  return { raw, hashed }
+}
 
 const LABELS = {
   fr: {
@@ -26,7 +37,7 @@ const LABELS = {
 }
 
 export default function AuthScreen() {
-  const { user, loading: authLoading, isOnboarding, signInWithGoogle, enterAsGuest } = useAuth()
+  const { user, loading: authLoading, isOnboarding, signInWithGoogle, signInWithGoogleIdToken, enterAsGuest } = useAuth()
   const { lang, dark } = usePrefs()
   const navigate = useNavigate()
   const L = LABELS[lang] || LABELS.fr
@@ -34,6 +45,63 @@ export default function AuthScreen() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // ── Google Identity Services (overlay) ──────────────────────────────────────
+  const googleWrapRef = useRef(null)   // conteneur relatif (mesure la largeur)
+  const googleBtnRef  = useRef(null)   // vrai bouton Google, transparent, par-dessus
+  const rawNonceRef   = useRef(null)
+  const [gisReady, setGisReady] = useState(false)
+
+  useEffect(() => {
+    if (user) return
+    let cancelled = false
+    let interval = null
+
+    async function init() {
+      const gis = window.google?.accounts?.id
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+      if (!gis || !clientId || cancelled) return
+
+      const { raw, hashed } = await generateNonce()
+      if (cancelled) return
+      rawNonceRef.current = raw
+
+      gis.initialize({
+        client_id: clientId,
+        nonce: hashed,                 // version HASHÉE → Google
+        use_fedcm_for_prompt: true,
+        callback: async ({ credential }) => {
+          setLoading(true); setError('')
+          try {
+            await signInWithGoogleIdToken(credential, rawNonceRef.current) // nonce BRUT → Supabase
+            // La session déclenche onAuthStateChange (AuthContext) → redirection auto.
+          } catch (e) {
+            console.error(e); setError(L.errGen); setLoading(false)
+          }
+        },
+      })
+
+      // Vrai bouton Google rendu dans l'overlay invisible (capte le clic → popup).
+      if (googleBtnRef.current) {
+        googleBtnRef.current.innerHTML = ''
+        const w = Math.min(400, Math.round(googleWrapRef.current?.offsetWidth || 360))
+        gis.renderButton(googleBtnRef.current, {
+          type: 'standard', theme: 'outline', size: 'large',
+          text: 'continue_with', shape: 'pill', width: w,
+          locale: lang === 'he' ? 'iw' : lang,
+        })
+      }
+      if (!cancelled) setGisReady(true)
+    }
+
+    // Le script GIS est `async` dans index.html → on attend qu'il soit dispo.
+    interval = setInterval(() => {
+      if (window.google?.accounts?.id) { clearInterval(interval); init() }
+    }, 100)
+    const stop = setTimeout(() => interval && clearInterval(interval), 8000)
+
+    return () => { cancelled = true; if (interval) clearInterval(interval); clearTimeout(stop) }
+  }, [user, lang])
 
   const bg     = dark ? COURT.darkBg     : COURT.cream
   const card   = dark ? COURT.darkCard   : '#ffffff'
@@ -48,6 +116,13 @@ export default function AuthScreen() {
   }
 
   const handleGoogle = async () => {
+    // Si GIS est prêt, ce clic ne survient qu'en dehors du bouton Google invisible
+    // (fine bande de bord) → on déclenche One Tap.
+    if (gisReady && window.google?.accounts?.id) {
+      window.google.accounts.id.prompt()
+      return
+    }
+    // GIS indisponible (script bloqué) → fallback redirect OAuth classique.
     setLoading(true)
     try {
       await signInWithGoogle()
@@ -102,30 +177,46 @@ export default function AuthScreen() {
           </div>
         </div>
 
-        {/* ── Google ── */}
-        <button onClick={handleGoogle} disabled={loading} style={{
-          width: '100%', padding: '15px', borderRadius: 14,
-          background: card, border: `0.5px solid ${border}`,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          cursor: loading ? 'default' : 'pointer', transition: 'all 0.2s',
-          opacity: loading ? 0.7 : 1,
-        }}
-          onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 4px 18px rgba(15,61,41,0.14)'; e.currentTarget.style.borderColor = COURT.green; } }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.07)'; e.currentTarget.style.borderColor = border; }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          <span style={{
-            fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
-            fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 17, color: ink,
-          }}>{loading ? '…' : L.google}</span>
-        </button>
+        {/* ── Google (bouton Court visible + vrai bouton Google transparent par-dessus) ── */}
+        <div ref={googleWrapRef} style={{ position: 'relative', width: '100%' }}>
+          <button onClick={handleGoogle} disabled={loading} style={{
+            width: '100%', padding: '15px', borderRadius: 14,
+            background: card, border: `0.5px solid ${border}`,
+            boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+            cursor: loading ? 'default' : 'pointer', transition: 'all 0.2s',
+            opacity: loading ? 0.7 : 1,
+          }}
+            onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 4px 18px rgba(15,61,41,0.14)'; e.currentTarget.style.borderColor = COURT.green; } }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.07)'; e.currentTarget.style.borderColor = border; }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span style={{
+              fontFamily: rtl ? 'Mulish' : 'Spectral, serif',
+              fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: 17, color: ink,
+            }}>{loading ? '…' : L.google}</span>
+          </button>
+          {/* Vrai bouton Google : transparent, par-dessus, capte le clic → popup Google.
+              (clic sur les fines bandes de bord → onClick → One Tap via handleGoogle) */}
+          <div
+            ref={googleBtnRef}
+            onClick={handleGoogle}
+            aria-hidden="true"
+            style={{
+              position: 'absolute', inset: 0, zIndex: 2,
+              opacity: 0, overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              pointerEvents: gisReady && !loading ? 'auto' : 'none',
+              cursor: 'pointer',
+            }}
+          />
+        </div>
 
         {/* ── Invité ── */}
         <button onClick={handleGuest} disabled={loading} style={{
