@@ -82,11 +82,16 @@ function TipOfTheDay({ lang, dark }) {
       {/* Sous-note : renouvellement */}
       <p style={{
         fontFamily: 'Mulish', fontSize: 11, color: stone,
-        margin: '10px 0 0', lineHeight: 1.4,
+        margin: '10px 0 0', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        {lang === 'he' ? '⏱ מתחדש כל 24 שעות'
-          : lang === 'en' ? '⏱ Refreshes every 24 hours'
-          : '⏱ Se renouvelle toutes les 24 h'}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+        </svg>
+        <span>
+          {lang === 'he' ? 'חזור מדי יום לעצות חדשות'
+            : lang === 'en' ? 'Come back daily for new tips'
+            : 'Reviens chaque jour pour de nouveaux conseils'}
+        </span>
       </p>
     </div>
   )
