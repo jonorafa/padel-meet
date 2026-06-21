@@ -40,9 +40,31 @@
 
     <!-- Google Search Console verification -->
     <meta name="google-site-verification" content="Y0iKL4BwX8R5Mi1CQgknALMs4nu86hxYeQN1Bw6R0Ds" />
+  <!-- Données structurées pour Google (OAuth brand verification + SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Padel Meet",
+    "description": "L'application pour trouver des partenaires de padel selon ton niveau réel, près de chez toi. Matchmaking intelligent basé sur ton niveau, ton club et tes disponibilités.",
+    "applicationCategory": "SportsApplication",
+    "operatingSystem": "Web",
+    "url": "https://padel-meet.vercel.app",
+    "inLanguage": "fr",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Visible avant que React charge — crawlers Google + écran de chargement -->
+      <div id="app-preload" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F7F3EC;font-family:sans-serif;text-align:center;padding:24px">
+        <div style="color:#1F5C3F;font-size:32px;font-weight:700;margin-bottom:8px">Padel Meet</div>
+        <p style="color:#6B7A6B;font-size:16px;max-width:320px;line-height:1.5;margin:0">
+          L'app pour trouver des partenaires de padel selon ton niveau réel,<br>près de chez toi.
+        </p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
 
     <!-- Register Service Worker pour PWA -->
