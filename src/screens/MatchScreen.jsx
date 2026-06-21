@@ -2840,7 +2840,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 24px 16px' }}>
         <div>
           {/* Salutation selon l'heure : Bonjour (4h–17h) / Bonsoir (17h–4h) */}
           <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>{getGreeting(lang)}</div>
