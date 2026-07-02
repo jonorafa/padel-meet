@@ -1,13 +1,18 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import LanguageScreen from './screens/LanguageScreen'
-import AuthScreen     from './screens/AuthScreen'
-import OnboardingFlow from './screens/OnboardingFlow'
-import MainApp        from './screens/MatchScreen'
-import LegalScreen    from './screens/LegalScreen'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { usePrefs }   from './context/PrefsContext'
 import './index.css'
+
+// Code-splitting : chaque écran lourd devient son propre chunk, chargé à la
+// demande — le bundle initial ne contient que le shell + l'écran de langue.
+const AuthScreen     = lazy(() => import('./screens/AuthScreen'))
+const OnboardingFlow = lazy(() => import('./screens/OnboardingFlow'))
+const MainApp        = lazy(() => import('./screens/MatchScreen'))
+const LegalScreen    = lazy(() => import('./screens/LegalScreen'))
+const AdminScreen    = lazy(() => import('./screens/AdminScreen'))
 
 // Conteneur centré façon « mobile app »
 // Toutes les routes sont rendues à l'intérieur de ce shell
@@ -26,7 +31,9 @@ function MobileShell() {
         overflow: 'hidden',
         background: dark ? '#121A15' : '#f5f0e8',
       }}>
-        <Outlet />
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   )
@@ -50,6 +57,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/app"   element={<MainApp />} />
             <Route path="/app/*" element={<MainApp />} />
+            <Route path="/admin" element={<AdminScreen />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

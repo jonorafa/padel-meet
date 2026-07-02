@@ -175,7 +175,6 @@ export function PadelRacket({ size = 80, frame = COURT.green, grip = COURT.ink, 
 }
 
 export function FloatingBalls({ count = 6 }) {
-  const color = _darkMode ? COURT.greenLight : COURT.green;
   const balls = Array.from({ length: count }, (_, i) => {
     const seed = i * 137.5;
     return {
@@ -292,7 +291,7 @@ export function SkeletonCard() {
 }
 
 // ─── Match Flash (It's a match!) ───
-export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSlot, dark }) {
+export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSlot }) {
   const rtl = lang === 'he';
 
   // Infos de jeu (ton sportif, pas dating)
@@ -571,17 +570,17 @@ export function BottomSheet({ children, onClose, title, dark }) {
 
 // ─── Nav icons ───
 const NAV_ICONS = {
-  home: (active, dark) => (
+  home: (active) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z" />
     </svg>
   ),
-  search: (active, dark) => (
+  search: (active) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
     </svg>
   ),
-  learn: (active, dark) => (
+  learn: (active) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -589,26 +588,26 @@ const NAV_ICONS = {
       <line x1="9" y1="11" x2="13" y2="11" />
     </svg>
   ),
-  trophy: (active, dark) => (
+  trophy: (active) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 4h12v4a6 6 0 0 1-12 0V4z" />
       <path d="M6 6H3v2a3 3 0 0 0 3 3M18 6h3v2a3 3 0 0 1-3 3" />
       <path d="M10 14h4v3l1 3H9l1-3z" />
     </svg>
   ),
-  chat: (active, dark) => (
+  chat: (active) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
-  user: (active, dark) => (
+  user: (active) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
     </svg>
   ),
 };
 
-export function BottomNav({ active, onChange, t, notifCount, chatCount, dark }) {
+export function BottomNav({ active, onChange, t, chatCount, dark }) {
   const bg = dark ? COURT.darkCard : COURT.cream;
   const border = dark ? COURT.darkBorder : `${COURT.green}40`;
   const activeColor = dark ? COURT.greenLight : COURT.green;

@@ -9,7 +9,7 @@ const langs = [
 ]
 
 export default function LanguageScreen() {
-  const { lang: current, dark, setLang } = usePrefs()
+  const { dark, setLang } = usePrefs()
   const navigate = useNavigate()
   const bg   = dark ? COURT.darkBg   : COURT.cream
   const ink  = dark ? COURT.darkText : COURT.ink

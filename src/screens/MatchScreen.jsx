@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } fro
 import { useNavigate } from 'react-router-dom';
 import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
-  SectionHeading, ThinButton, HeritageTag, BottomNav,
-  SkeletonCard, MatchFlash, NotifBadge, OnlineDot, BottomSheet,
-  setDarkMode, isDark, initialsAvatar, Achievements, CompatRing,
+  ThinButton, HeritageTag, BottomNav,
+  SkeletonCard, MatchFlash, BottomSheet,
+  isDark, initialsAvatar, Achievements, CompatRing,
 } from '../components/CourtUI';
 import { compatScore } from '../lib/compatibility';
-import { REGIONS, computeELODelta, I18N, regionToCountry, getGreeting } from '../data/courtData';
+import { I18N, regionToCountry, getGreeting } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
 import { usePrefs }         from '../context/PrefsContext';
@@ -92,14 +92,6 @@ async function compressImage(file, maxDim = 1200, quality = 0.82) {
   });
 }
 
-function formatLastSeen(ts) {
-  if (!ts) return '?';
-  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-  if (diff < 60)    return `${diff}s`;
-  if (diff < 3600)  return `${Math.floor(diff / 60)}min`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return `${Math.floor(diff / 86400)}j`;
-}
 
 // ─── Preferences Chips ─────────────────────────────────────────────────────
 function Chips({ value, onChange, options, dark }) {
@@ -234,7 +226,7 @@ function PrefGroup({ label, children, dark }) {
 }
 
 // ─── Preferences (Bottom Sheet) ────────────────────────────────────────────
-function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
+function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
   const [side, setSide]             = useState(initial.side || 'any');
   const [style, setStyle]           = useState(initial.style || 'any');
   const [motivation, setMotivation] = useState(initial.motivation || 'any');
@@ -245,9 +237,6 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
   const [frequency, setFrequency]   = useState(initial.frequency ?? 0);
 
   const reset = () => { setSide('any'); setStyle('any'); setMotivation('any'); setHand('any'); setRegion('any'); setLevelMin(1); setLevelMax(7); setFrequency(0); };
-  const rtl = lang === 'he';
-  const ink = dark ? COURT.darkText : COURT.ink;
-  const selectBg = dark ? COURT.darkCard : COURT.cream;
 
   return (
     <BottomSheet onClose={onClose} title={t.setProfile} dark={dark}>
@@ -331,38 +320,6 @@ function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
 }
 
 // ─── Player Card ────────────────────────────────────────────────────────────
-// Mini info bloc (icône + label + valeur) pour la grille 2x2 de la PlayerCard
-function InfoChip({ icon, label, value, color, dark }) {
-  const ink   = dark ? COURT.darkText : COURT.ink;
-  const stone = dark ? COURT.darkMuted : COURT.stone;
-  const bgChip = dark ? COURT.darkBg : `${COURT.green}08`;
-  const border = dark ? COURT.darkBorder : `${COURT.green}25`;
-  return (
-    <div style={{
-      flex: 1, minWidth: 0,
-      padding: '8px 10px',
-      background: bgChip, border: `0.5px solid ${border}`,
-      borderRadius: 8,
-      display: 'flex', alignItems: 'center', gap: 8,
-    }}>
-      <div style={{
-        width: 24, height: 24, borderRadius: 12,
-        background: `${color}18`, color,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, fontSize: 12,
-      }}>{icon}</div>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-          {label}
-        </div>
-        <div style={{ fontFamily: 'Spectral, serif', fontSize: 13, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {value || '—'}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const { profile: me } = useAuth();
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
@@ -547,12 +504,6 @@ function CircBtn({ children, onClick, color, large, dark }) {
   );
 }
 
-const CITY_REGION = {
-  'Tel Aviv': 'Centre', 'Herzliya': 'Centre', 'Ramat Gan': 'Centre',
-  'Kfar Saba': 'Centre', 'Netanya': 'Centre', 'Haifa': 'Nord',
-  'Jerusalem': 'Sud', 'Ashdod': 'Sud', 'Eilat': 'Eilat',
-};
-
 function applyFilters(players, f) {
   return players.filter(p => {
     if (f.side !== 'any' && p.side !== f.side) return false;
@@ -581,7 +532,7 @@ function EmptyStack({ t, lang, onReset, dark }) {
 }
 
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
-function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
+function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   // ── Données réelles ──
   const { profile: me } = useAuth();
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
@@ -709,7 +660,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, userLevel,
     }
     // Geste horizontal confirmé → capturer le pointer pour swipe fluide
     if (Math.abs(dx) > 8 && !startRef.current.captured) {
-      try { startRef.current.target?.setPointerCapture?.(startRef.current.pointerId); } catch (_) {}
+      try { startRef.current.target?.setPointerCapture?.(startRef.current.pointerId); } catch { /* pointer déjà relâché — best-effort */ }
       startRef.current.captured = true;
     }
     setDrag({ x: dx, y: dy, active: true });
@@ -1907,7 +1858,6 @@ function ReadReceipt({ read }) {
 function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0, onStartMatch }) {
   const { matches, loading: matchesLoading } = useUserMatches();
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
-  const rtl   = lang === 'he';
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
   const ink   = dark ? COURT.darkText : COURT.ink;
@@ -2135,7 +2085,6 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
   useEffect(() => {
     if (statsSignal > 0) setTab('stats');
   }, [statsSignal]);
-  const [trophyTip, setTrophyTip] = useState(null);
   const [showAllOpponents, setShowAllOpponents] = useState(false);
   const rtl   = lang === 'he';
   const ff_serif  = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
@@ -2148,10 +2097,6 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
 
   const wins        = history.filter(m => m.result === 'win').length;
   const userMatches = stats?.matchesPlayed ?? profile?.matches_played ?? 0;
-  const userWins    = stats?.wins ?? profile?.wins ?? 0;
-  // null si aucun match — jamais de faux %
-  const userWinrate = userMatches > 0 ? Math.round((userWins / userMatches) * 100) : null;
-  const streak      = stats?.streak ?? 0;
 
   // ─── Trophées ─────────────────────────────────────────────────────
   let longestStreak = 0, _runStreak = 0;
@@ -2409,7 +2354,6 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
   const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
   const ink   = dark ? COURT.darkText  : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
-  const card  = dark ? COURT.darkCard  : COURT.cream;
   const border= dark ? COURT.darkBorder: `${COURT.green}30`;
 
   useEffect(() => {
@@ -2513,7 +2457,7 @@ function ContactSheet({ dark, lang, onClose }) {
       }).catch(() => {});
 
       setSent(true);
-    } catch (err) {
+    } catch {
       setError(
         lang === 'fr' ? 'Erreur lors de l\'envoi. Réessaie.'
           : lang === 'en' ? 'Failed to send. Please try again.'
@@ -2622,9 +2566,9 @@ function ContactSheet({ dark, lang, onClose }) {
 }
 
 // ─── Profile Screen ──────────────────────────────────────────────────────────
-function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {}, onOpenStats = () => {} }) {
+function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {}, onOpenStats = () => {} }) {
   const { user, profile, signOut, saveProfile }      = useAuth();
-  const { lang, dark, level, confidence, setLang, toggleDark, setLevel, setConfidence } = usePrefs();
+  const { lang, dark, level, confidence, setLang, toggleDark, setLevel } = usePrefs();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
@@ -2782,26 +2726,6 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
     }
   };
 
-  function SettingRow({ icon, label, sub, right, onClick }) {
-    return (
-      <button onClick={onClick} style={{
-        width: '100%', marginTop: 10, padding: '14px 16px',
-        background: card, border: `0.5px solid ${border}`, borderRadius: 10,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500, cursor: 'pointer',
-      }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: icon ? 12 : 0 }}>
-          {icon ? <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span> : null}
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-            <span>{label}</span>
-            {sub && <span style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, fontStyle: 'normal', fontWeight: 400, letterSpacing: '0.05em' }}>{sub}</span>}
-          </span>
-        </span>
-        <span style={{ color: COURT.green }}>{right || (rtl ? '←' : '→')}</span>
-      </button>
-    );
-  }
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/', { replace: true });
@@ -2821,22 +2745,6 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
       setShowDeleteConfirm(false);
     }
   };
-
-  // ─── Trophées (profil propre) ────────────────────────────────────────────
-  const { stats: myStats } = usePlayerStats();
-  const myHistory = useMatchHistory();
-  const myMatches = myStats?.matchesPlayed ?? profile?.matches_played ?? 0;
-  let myLongestStreak = 0, _s = 0;
-  for (const m of myHistory) {
-    if (m.result === 'win') { _s += 1; myLongestStreak = Math.max(myLongestStreak, _s); }
-    else _s = 0;
-  }
-  const profileTrophies = [
-    { key: 'first',  icon: '🎾', label: t.trophyFirstMatch || 'Premier match', unlocked: myMatches >= 1 },
-    { key: 'streak', icon: '🔥', label: t.trophyStreak5    || 'Série de 5',    unlocked: myLongestStreak >= 5 },
-    { key: 'ten',    icon: '⭐', label: t.trophyTenMatches || '10 matchs',     unlocked: myMatches >= 10 },
-    { key: 'level5', icon: '👑', label: t.trophyLevel5     || 'Niveau 5',      unlocked: level != null && level >= 5 },
-  ];
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
@@ -3087,7 +2995,7 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
           <div
             onClick={evalBlocked ? undefined : () => setShowReEvalConfirm(true)}
             style={{
-              display:'flex', alignItems:'center', gap:14, padding:'14px 16px',
+              display:'flex', gap:14, padding:'14px 16px',
               cursor: evalBlocked ? 'default' : 'pointer',
               opacity: evalBlocked ? 0.4 : 1,
               transition: 'opacity 0.3s',
@@ -3415,8 +3323,8 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   padding: '14px 0',
+                  background: 'transparent', border: 'none',
                   borderBottom: i < 7 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
-                  background: 'transparent', border: 'none', borderBottom: i < 7 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
                   cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
                   animation: `cardIn 0.3s ease ${i * 0.05}s both`,
                 }}
@@ -3526,7 +3434,6 @@ function ProfileScreen({ t, showEditProfile, setShowEditProfile, onOpenDetail, o
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   padding: '13px 0',
-                  borderBottom: i < evalMatches.length - 1 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
                   background: 'transparent', border: 'none',
                   borderBottom: i < evalMatches.length - 1 ? `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '18'}` : 'none',
                   cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
@@ -4069,7 +3976,6 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
 
 // ─── Notifications Panel ─────────────────────────────────────────────────────
 function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark }) {
-  const bg    = dark ? COURT.darkCard : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
@@ -4079,7 +3985,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
     <BottomSheet onClose={onClose} title={t.notifications} dark={dark}>
       {notifications.length === 0 ? (
         <div style={{ padding: '32px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noNotifs}</div>
-      ) : notifications.map((n, i) => {
+      ) : notifications.map((n) => {
         const from = n.fromPlayer;
         return (
           <div key={n.id} onClick={() => onMarkRead(n.id)} style={{
@@ -4109,7 +4015,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
 
 // ─── Schedule Match Sheet ────────────────────────────────────────────────────
 // Remplace le Live Score Tracker : choisir partenaire + date → proposition envoyée
-function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPartnerId }) {
+function ScheduleMatchSheet({ lang, dark, onClose, onProposalSent, initialPartnerId }) {
   const { user } = useAuth();
   const { partners: userMatches } = useMatchPartnersQuick();  // ⚡ Quick load sans messages
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -4128,7 +4034,6 @@ function ScheduleMatchSheet({ t, lang, dark, onClose, onProposalSent, initialPar
 
   const rtl      = lang === 'he';
   const bg       = dark ? COURT.darkBg    : COURT.cream;
-  const card     = dark ? COURT.darkCard  : '#F0EDE5';
   const border   = dark ? COURT.darkBorder : `${COURT.green}25`;
   const ink      = dark ? COURT.darkText  : COURT.ink;
   const stone    = dark ? COURT.darkMuted : COURT.stone;
@@ -4393,9 +4298,6 @@ export default function MainApp() {
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} statsSignal={statsSignal} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} onOpenStats={() => { setStatsSignal(s => s + 1); setTab('trophy'); }} {...bellProps} />,
   };
-
-  const bg    = darkMode ? COURT.darkBg : COURT.cream;
-  const border= darkMode ? COURT.darkBorder : `${COURT.green}40`;
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>

@@ -23,7 +23,6 @@ const UploadIcon = ({ color }) => (
 export function PhotoUploadField({
   onUpload = () => {},
   disabled = false,
-  multiple = false,
   dark = false,
 }) {
   const [isDragActive, setIsDragActive] = useState(false)

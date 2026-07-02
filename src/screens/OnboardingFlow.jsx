@@ -21,7 +21,7 @@ export default function OnboardingFlow() {
   const [phase,      setPhase]      = useState('welcome')
   const [level,      setLocalLevel] = useState(null)
   const [quizAnswers, setQuizAnswers] = useState({})
-  const [confidence, setLocalConf]  = useState(50)  // toujours 50 — évolue via peer eval
+  const [confidence] = useState(50)  // toujours 50 — évolue via peer eval
 
   const t = I18N[lang] || I18N.fr
 

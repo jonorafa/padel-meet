@@ -162,7 +162,6 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
   const card = dark ? COURT.darkCard : COURT.cream
   const border = dark ? COURT.darkBorder : `${COURT.green}30`
   const ff_serif = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
-  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
 
   return (
     <div style={{

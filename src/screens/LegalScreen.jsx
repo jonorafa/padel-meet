@@ -6,13 +6,11 @@ import { COURT } from '../components/CourtUI'
 // Pages légales — Politique de confidentialité & CGU (EULA).
 // Publiques (accessibles sans compte) : /privacy et /terms.
 //
-// ⚠️ À PERSONNALISER avant publication :
-//   • CONTACT_EMAIL : mets une vraie adresse de contact
-//   • Raison sociale / éditeur, adresse, et droit applicable si besoin
-//   • Les CGU incluent la clause « tolérance zéro » exigée par l'App Store (1.2)
+// Les CGU incluent la clause « tolérance zéro » exigée par l'App Store (1.2).
 // ─────────────────────────────────────────────────────────────────────────────
-const CONTACT_EMAIL = 'contact@padelmeet.app'   // TODO: remplacer par ta vraie adresse
-const UPDATED = '13 juin 2026'
+const CONTACT_EMAIL = 'jonathanbens10@gmail.com'
+const CONTROLLER = 'Jonathan Bensimon'          // responsable de traitement (Art. 13 RGPD)
+const UPDATED = '2 juillet 2026'
 
 export default function LegalScreen({ doc = 'privacy' }) {
   const { dark } = usePrefs()
@@ -39,23 +37,34 @@ export default function LegalScreen({ doc = 'privacy' }) {
         quelles données nous collectons, pourquoi, et tes droits sur ces données.
       </p>
 
+      <h2 style={h2}>Responsable de traitement</h2>
+      <p style={p}>
+        Le responsable de traitement est <b>{CONTROLLER}</b>, exploitant l'application à titre
+        individuel. Contact : <b>{CONTACT_EMAIL}</b>.
+      </p>
+
       <h2 style={h2}>Données que nous collectons</h2>
       <p style={li}>• <b>Compte</b> : adresse e-mail, nom, âge, photos de profil.</p>
       <p style={li}>• <b>Profil de jeu</b> : niveau, main forte, côté, style, motivation, région/ville, préférences de partenaire.</p>
       <p style={li}>• <b>Activité</b> : matchs enregistrés, évaluations entre joueurs, séries (streak), messages échangés dans l'app.</p>
       <p style={li}>• <b>Technique</b> : données de connexion et de diagnostic (pour la stabilité et la sécurité).</p>
 
-      <h2 style={h2}>Pourquoi (finalités)</h2>
+      <h2 style={h2}>Pourquoi (finalités) & bases légales</h2>
       <p style={p}>
         Te proposer des partenaires pertinents (niveau, région, disponibilités), permettre la messagerie,
         afficher tes statistiques, et assurer la sécurité et la modération du service.
       </p>
+      <p style={li}>• <b>Exécution du contrat</b> (art. 6.1.b RGPD) : fournir le service de mise en relation, la messagerie et les statistiques.</p>
+      <p style={li}>• <b>Intérêt légitime</b> (art. 6.1.f) : sécurité, prévention des abus et modération.</p>
+      <p style={li}>• <b>Consentement</b> (art. 6.1.a) : photos de profil et données facultatives. Tu peux le retirer à tout moment en les supprimant de ton profil.</p>
 
       <h2 style={h2}>Hébergement & partage</h2>
       <p style={p}>
         Les données sont hébergées chez notre prestataire d'infrastructure (Supabase) sur des serveurs
-        situés dans l'Union européenne. Nous utilisons un outil de suivi des erreurs (Sentry) pour la
-        stabilité. Nous <b>ne vendons pas</b> tes données et ne les partageons pas à des fins publicitaires.
+        situés dans l'Union européenne. Nous utilisons un outil de suivi des erreurs (Sentry, États-Unis) pour la
+        stabilité : ce transfert hors UE est encadré par les <b>clauses contractuelles types</b> de la
+        Commission européenne et le Data Privacy Framework. Nous <b>ne vendons pas</b> tes données et ne
+        les partageons pas à des fins publicitaires.
       </p>
 
       <h2 style={h2}>Conservation</h2>
@@ -66,8 +75,14 @@ export default function LegalScreen({ doc = 'privacy' }) {
 
       <h2 style={h2}>Tes droits</h2>
       <p style={p}>
-        Conformément au RGPD : accès, rectification, suppression et portabilité de tes données. Tu peux
+        Conformément au RGPD, tu disposes des droits d'<b>accès</b>, de <b>rectification</b>, de{' '}
+        <b>suppression</b>, de <b>portabilité</b>, d'<b>opposition</b> et de <b>limitation</b> du
+        traitement, ainsi que du droit de <b>retirer ton consentement</b> à tout moment. Tu peux
         <b> supprimer ton compte directement dans l'application</b> (Profil → Réglages), ou nous écrire à {CONTACT_EMAIL}.
+      </p>
+      <p style={p}>
+        Tu as également le droit d'introduire une <b>réclamation auprès d'une autorité de contrôle</b>,
+        par exemple la CNIL en France (<b>cnil.fr</b>) ou l'autorité de protection des données de ton pays.
       </p>
 
       <h2 style={h2}>Stockage local</h2>

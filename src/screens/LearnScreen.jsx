@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { COURT, Ornament } from '../components/CourtUI'
-import { useAuth } from '../context/AuthContext'
+import { COURT } from '../components/CourtUI'
 import { QUIZ_CHAPTERS } from '../data/quizData'
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -94,7 +93,6 @@ function Mascot({ size = 80, anim = 'bob', style: extraStyle = {}, src: srcProp 
 
 // ─── Écran principal ─────────────────────────────────────────────────────────
 export default function LearnScreen({ lang = 'fr', dark = false }) {
-  const { profile } = useAuth()
   const L   = LABELS[lang] || LABELS.fr
   const rtl = lang === 'he'
   const tr  = (obj) => (obj && (obj[lang] ?? obj.fr)) || ''
@@ -357,7 +355,7 @@ function Node({ icon, state, pulse, dark, onClick }) {
 }
 
 // ─── Moteur de quizz ────────────────────────────────────────────────────────
-function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
+function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
   const questions = chapter.questions
   const [qIndex,       setQIndex]       = useState(0)
   const [selected,     setSelected]     = useState(null)

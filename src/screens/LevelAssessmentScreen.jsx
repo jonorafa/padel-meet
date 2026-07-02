@@ -9,7 +9,6 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
   }, []);
   const rtl = lang === 'he';
   const bg = dark ? COURT.darkBg : COURT.cream;
-  const ink = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
 
   return (

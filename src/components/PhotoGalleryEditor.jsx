@@ -16,7 +16,6 @@ import { COURT } from './CourtUI'
 export function PhotoGalleryEditor({
   photos = [],
   onDelete = () => {},
-  onSetPrimary = () => {},
   onReorder = () => {},
   onAdd = null,
   dark = false,

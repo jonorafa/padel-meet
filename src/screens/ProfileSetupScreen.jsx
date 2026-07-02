@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { COURT, PadelBall, FloatingBalls } from '../components/CourtUI';
 import { levelToTopPercent, generateLevelSummary } from '../data/courtData';
 
-export default function ResultScreen({ t, lang, level, answers, onContinue, dark }) {
+export default function ResultScreen({ t, lang, level, answers, onContinue }) {
   const [s, setS] = useState(0);
   useEffect(() => {
     const t1 = setTimeout(() => setS(1), 500);
@@ -17,11 +17,6 @@ export default function ResultScreen({ t, lang, level, answers, onContinue, dark
   const topPct  = level != null ? levelToTopPercent(level) : null;
   const summary = level != null && answers ? generateLevelSummary(answers, lang) : null;
 
-  const topLabel = lang === 'en'
-    ? `Top ${topPct}% of players`
-    : lang === 'he'
-    ? `טופ ${topPct}% מהשחקנים`
-    : `Top ${topPct}% des joueurs`;
 
   const regionLabel = lang === 'en' ? 'in your region'
     : lang === 'he' ? 'באזור שלך'

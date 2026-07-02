@@ -53,7 +53,7 @@ export function PresenceProvider({ children }) {
       })
 
     return () => {
-      try { channel.untrack() } catch {}
+      try { channel.untrack() } catch { /* canal déjà fermé — best-effort */ }
       supabase.removeChannel(channel)
     }
   }, [user?.id])

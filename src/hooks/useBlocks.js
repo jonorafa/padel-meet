@@ -20,17 +20,23 @@ export function useBlocks() {
 
   const refresh = useCallback(async () => {
     if (!user?.id) { setBlockedIds(new Set()); setBlockedProfiles([]); return }
+    // Les DEUX sens (la policy RLS ne renvoie que les blocages qui me concernent) :
+    // ceux que J'AI bloqués + ceux qui M'ONT bloqué → invisibilité mutuelle.
     const { data: blockData, error } = await supabase
       .from('blocks')
       .select('blocker_id, blocked_id')
-      .eq('blocker_id', user.id)  // Seulement les MIENS (que JE ai bloqués)
+      .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`)
     if (error || !blockData) { setBlockedProfiles([]); return }
 
     const ids = new Set()
-    const blockedIds_arr = []
+    const blockedIds_arr = []   // seulement les MIENS — pour la liste "joueurs bloqués"
     for (const b of blockData) {
-      ids.add(b.blocked_id)
-      blockedIds_arr.push(b.blocked_id)
+      if (b.blocker_id === user.id) {
+        ids.add(b.blocked_id)
+        blockedIds_arr.push(b.blocked_id)
+      } else {
+        ids.add(b.blocker_id)   // il m'a bloqué → je ne le vois plus non plus
+      }
     }
     setBlockedIds(ids)
 

@@ -6,7 +6,7 @@ import { useBlocks } from './useBlocks'
 import { initialsAvatar } from '../components/CourtUI'
 import { regionToCountry } from '../data/courtData'
 
-function transformDBProfile(p, onlineIds) {
+function transformDBProfile(p) {
   const matchesPlayed = p.matches_played || 0
   return {
     id: p.id,                   // UUID string

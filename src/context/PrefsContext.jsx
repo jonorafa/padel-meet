@@ -41,7 +41,7 @@ function cleanupOldUserData() {
     if (currentUserId) {
       localStorage.setItem('padel_user_id', currentUserId)
     }
-  } catch (e) {
+  } catch {
     // Ignore les erreurs de storage
   }
 }
@@ -81,7 +81,7 @@ export function PrefsProvider({ children }) {
       const last = prev[prev.length - 1]
       if (last && Math.abs(last.level - l) < 0.001) return prev
       const next = [...prev, { level: l, date: new Date().toISOString() }]
-      try { localStorage.setItem('padel_level_history', JSON.stringify(next)) } catch {}
+      try { localStorage.setItem('padel_level_history', JSON.stringify(next)) } catch { /* stockage plein/privé — best-effort */ }
       return next
     })
   }
@@ -97,7 +97,7 @@ export function PrefsProvider({ children }) {
   const resetLevelHistory = (seed = null) => {
     const next = Array.isArray(seed) ? seed : []
     _setLevelHistory(next)
-    try { localStorage.setItem('padel_level_history', JSON.stringify(next)) } catch {}
+    try { localStorage.setItem('padel_level_history', JSON.stringify(next)) } catch { /* stockage plein/privé — best-effort */ }
   }
 
   const toggleDark = () => setDark(!dark)

@@ -1,3 +1,4 @@
+/* global process */
 /**
  * Tests unitaires — confidenceRules.js (modèle 50/50 play/peer, monotone)
  * Exécuter avec : node src/lib/confidenceRules.test.js

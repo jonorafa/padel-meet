@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { COURT } from './CourtUI'
-import { useProfilePhotos } from '../hooks/useProfilePhotos'
-import { useMatchHistoryWithPlayer } from '../hooks/useMatchHistoryWithPlayer'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { useBlocks } from '../hooks/useBlocks'
 import { I18N } from '../data/courtData'
-import { PhotoGallery } from './PhotoGallery'
 
 // ── Libellés modération (signaler / bloquer) ──────────────────────────────────
 const MOD_L = {
@@ -60,8 +57,6 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   const { user } = useAuth()
   const { lang } = usePrefs()
   const t = I18N[lang] || I18N.fr
-  const { photos: playerPhotos } = useProfilePhotos(playerId)
-  const { matches: matchHistory, loading: historyLoading } = useMatchHistoryWithPlayer(user?.id, playerId)
   const { blockUser, reportUser } = useBlocks()
 
   const [player, setPlayer] = useState(null)
@@ -166,28 +161,17 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   const winrate = stats?.matches_played > 0
     ? Math.round((stats.wins / stats.matches_played) * 100)
     : null
-  const bio = player[`bio_${lang}`] || player.bio_fr || ''
 
   const labelFor = (key) => key ? (t[key] || key) : '—'
   const handLabel  = player.dominant_hand === 'left' ? (t.leftHand || 'Gaucher') : (t.rightHand || 'Droitier')
   const sideLabel  = player.preferred_side === 'forehand' ? (t.forehand || 'Drive')
                    : player.preferred_side === 'backhand' ? (t.backhand || 'Revers')
                    : labelFor(player.preferred_side)
-  const styleLabel = labelFor(player.play_style)
   const motivMap   = { fun: t.fun || 'Le plaisir', improve: t.improve || 'Progresser', compete: t.compete || 'Compétition' }
-  const motivLabel = player.motivation ? (motivMap[player.motivation] || player.motivation) : '—'
 
   // ── Ce que ce joueur recherche (partenaire idéal) ───────────────
   const styleMap = { aggressive: t.aggressive || 'Offensif', defensive: t.defensive || 'Défensif', 'all-court': t.allcourt || 'Polyvalent' }
   const prefs = player.partner_prefs || {}
-  const prefHand   = prefs.hand  && prefs.hand  !== 'any' ? (prefs.hand === 'left' ? (t.leftHand || 'Gaucher') : (t.rightHand || 'Droitier')) : null
-  const prefSide   = prefs.side  && prefs.side  !== 'any' ? (prefs.side === 'forehand' ? (t.forehand || 'Drive') : (t.backhand || 'Revers')) : null
-  const prefStyle  = prefs.style && prefs.style !== 'any' ? (styleMap[prefs.style] || prefs.style) : null
-  const prefRegion = prefs.region && prefs.region !== 'any' ? prefs.region : null
-  const prefMotiv  = prefs.motivation && prefs.motivation !== 'any' ? (motivMap[prefs.motivation] || prefs.motivation) : null
-  const prefLevel  = (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
-    ? `${prefs.levelMin}–${prefs.levelMax}` : null
-  const hasPrefs   = prefHand || prefSide || prefStyle || prefRegion || prefMotiv || prefLevel
 
   // ── Tableau hairline Mon jeu / Je recherche ────────────────────
   const myGameLabel   = lang === 'en' ? 'His game'   : lang === 'he' ? 'המשחק שלו' : 'Son jeu'
@@ -234,11 +218,6 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
       seeks: prefs.motivation && prefs.motivation !== 'any' ? (motivMap[prefs.motivation] || prefs.motivation) : null,
     },
   ]
-
-  const fallbackPhotos = (!playerPhotos || playerPhotos.length === 0) && player.photo_url
-    ? [{ id: 'fallback', url: player.photo_url, is_primary: true }]
-    : null
-  const photosToShow = playerPhotos && playerPhotos.length > 0 ? playerPhotos : fallbackPhotos
 
   const rtl = lang === 'he'
 

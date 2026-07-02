@@ -1,8 +1,7 @@
 import { Suspense, lazy } from 'react'
-import { COURT, SectionHeading } from '../components/CourtUI'
-import { usePrefs }  from '../context/PrefsContext'
+import { COURT } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
-import { DAILY_TIPS, I18N } from '../data/courtData'
+import { DAILY_TIPS } from '../data/courtData'
 
 const StatsSection = lazy(() => import('../components/StatsSection'))
 
@@ -20,7 +19,6 @@ function BookIcon({ color }) {
 
 // ── Conseil du jour — rotation déterministe sur 24h (minuit UTC) ──────────────
 function TipOfTheDay({ lang, dark }) {
-  const t     = I18N[lang] || I18N.fr
   const rtl   = lang === 'he'
   const bg    = dark ? COURT.darkCard : '#F7F3EA'
   const ink   = dark ? COURT.darkText : COURT.ink
@@ -112,12 +110,9 @@ function StatsSkeleton({ dark }) {
 // ── Écran principal ───────────────────────────────────────────────────────────
 export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0 }) {
   const { profile }  = useAuth()
-  const { level }    = usePrefs()
-  const t            = I18N[lang] || I18N.fr
   const rtl          = lang === 'he'
   const bg           = dark ? COURT.darkBg : COURT.cream
   const ink          = dark ? COURT.darkText : COURT.ink
-  const stone        = dark ? COURT.darkMuted : COURT.stone
   const border       = dark ? COURT.darkBorder : `${COURT.green}40`
   const ff           = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
 
