@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Anti-pause Supabase (plan gratuit) : le projet est mis en pause après ~7 jours
+# sans activité → ce workflow fait une vraie requête REST chaque jour pour
+# maintenir le compteur à zéro. Découvert le 2026-07-02 : projet INACTIVE,
+# prod down, restauration manuelle nécessaire.
+#
+# La clé utilisée est la clé publishable (anon) — déjà publique dans le bundle
+# JS de l'app, aucun secret ici.
+#
+# ⚠️ GitHub désactive les workflows planifiés après 60 jours sans commit sur le
+# repo (email d'avertissement avant). Tant que le projet est développé
+# activement, aucun souci.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # tous les jours à 05:17 UTC (heure creuse)
+  workflow_dispatch: {}     # déclenchable à la main pour tester
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST (reset du compteur d'inactivité)
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -m 30 \
+            "https://gcphtjyjcrmcyxkosswo.supabase.co/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: sb_publishable_wDHMKLUBocwATfoHyhlnYQ_YValgoH7")
+          echo "Supabase REST → HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Supabase ne répond pas correctement (HTTP $code) — projet en pause ?"
+            exit 1
+          fi
