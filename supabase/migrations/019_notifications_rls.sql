@@ -23,6 +23,9 @@
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Anyone can insert notifications" ON public.notifications;
+-- Policy héritée créée en live (hors migrations) — WITH CHECK (auth.uid() = from_id)
+-- seul : trop permissif (usurpation de type système, spam vers n'importe qui).
+DROP POLICY IF EXISTS users_can_create_notifs_for_others ON public.notifications;
 DROP POLICY IF EXISTS notifications_insert_sender      ON public.notifications;
 
 CREATE POLICY notifications_insert_sender ON public.notifications
