@@ -31,7 +31,10 @@ function transformDBProfile(p) {
     // Présence : calculée en aval via PresenceContext (Realtime Supabase)
     online: false,
     lastSeen: p.last_seen,      // ISO string — formaté côté UI
-    isRealUser: true,
+    // Profil de démonstration : personne derrière. Était codé en dur à
+    // `isRealUser: true` (et jamais lu), donc rien ne distinguait un faux profil
+    // d'un vrai — un utilisateur pouvait matcher et écrire dans le vide.
+    isDemo: p.is_demo === true,
     // Chantier 4 : préférences partenaire (ce qu'il/elle cherche)
     partnerPrefs: p.partner_prefs || {},
   }

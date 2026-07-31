@@ -389,6 +389,22 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           </div>
         )}
 
+        {/* Badge « profil de démonstration » — honnêteté vis-à-vis de l'utilisateur :
+            ces profils n'ont personne derrière, un message n'y recevra jamais de
+            réponse. Placé sous le badge « en ligne » pour ne pas se chevaucher. */}
+        {p.isDemo && (
+          <div style={{
+            position: 'absolute', top: playerIsOnline ? 44 : 12, left: 12,
+            background: 'rgba(0,0,0,0.55)', padding: '4px 9px', borderRadius: 20,
+            display: 'flex', alignItems: 'center', gap: 5,
+            fontFamily: 'Mulish', fontSize: 10, color: COURT.gold,
+            letterSpacing: '0.16em', textTransform: 'uppercase',
+            opacity: 1 - Math.max(yesOp, noOp),
+          }}>
+            {lang === 'he' ? 'פרופיל לדוגמה' : lang === 'en' ? 'Demo profile' : 'Profil démo'}
+          </div>
+        )}
+
         {/* Badge niveau (haut droite) */}
         <div style={{
           position: 'absolute', top: 14, right: 14,
