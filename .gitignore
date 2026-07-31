@@ -30,3 +30,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Cache local du CLI Supabase (change à chaque version installée)
+supabase/.temp/
