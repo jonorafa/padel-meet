@@ -66,16 +66,8 @@
       </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
-
-    <!-- Register Service Worker pour PWA -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then((reg) => console.log('✅ Service Worker enregistré', reg))
-            .catch((err) => console.error('❌ Service Worker erreur:', err));
-        });
-      }
-    </script>
+    <!-- Le service worker est enregistré depuis src/main.jsx : garder ce script
+         inline ici obligerait la CSP à autoriser 'unsafe-inline' sur script-src,
+         ce qui reviendrait à désactiver sa principale protection (XSS). -->
   </body>
 </html>

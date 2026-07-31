@@ -10,6 +10,16 @@ import { PresenceProvider } from './context/PresenceContext.jsx'
 // Initialise Sentry avant le premier render (no-op si VITE_SENTRY_DSN absent)
 initSentry();
 
+// Service worker (PWA). Déplacé depuis un <script> inline d'index.html : la CSP
+// aurait sinon eu besoin de 'unsafe-inline' sur script-src, ce qui annule sa
+// protection contre les XSS. Le comportement est identique (attente du load).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .catch((err) => Sentry.captureException(err));
+  });
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* ErrorBoundary Sentry : capture les crashs React et les envoie à Sentry */}
