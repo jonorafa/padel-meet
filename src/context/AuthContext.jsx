@@ -194,6 +194,12 @@ export function AuthProvider({ children }) {
       email: user.email,
       // Normalise le username en minuscules
       ...(profileData.username ? { username: profileData.username.toLowerCase().trim() } : {}),
+      // RGPD : le texte « En continuant, tu acceptes nos CGU » est affiché sur
+      // l'écran de connexion, mais l'acceptation n'était jamais enregistrée —
+      // impossible donc de prouver quand un utilisateur a consenti. On horodate
+      // au premier enregistrement du profil, et JAMAIS ensuite : la date de
+      // consentement d'origine ne doit pas être réécrite à chaque sauvegarde.
+      accepted_terms_at: profile?.accepted_terms_at ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
     const { data, error } = await supabase
