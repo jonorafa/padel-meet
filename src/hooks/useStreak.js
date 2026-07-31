@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth }  from '../context/AuthContext'
+import { Sentry }   from '../sentry'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Streak logic — "série de jours"
@@ -100,7 +101,9 @@ export function useStreak() {
   useEffect(() => {
     if (!user?.id || hasRun.current) return
     hasRun.current = true
-    tickStreak(user.id).then(setData).catch(() => {})
+    // Échec silencieux auparavant : l'utilisateur perdait sa série sans que
+    // personne (ni lui, ni le monitoring) ne puisse le savoir.
+    tickStreak(user.id).then(setData).catch(err => Sentry.captureException(err))
   }, [user?.id])
 
   return data ?? {

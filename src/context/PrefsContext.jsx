@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { setDarkMode } from '../components/CourtUI'
+import { Sentry } from '../sentry'
 
 const PrefsContext = createContext({})
 
@@ -13,7 +14,10 @@ function loadLevelHistory() {
     const raw = localStorage.getItem('padel_level_history')
     const arr = raw ? JSON.parse(raw) : null
     if (Array.isArray(arr) && arr.length > 0) return arr
-  } catch { /* ignore JSON cassé */ }
+  } catch (err) {
+    // JSON cassé → la courbe d'évolution du niveau repart de zéro pour le user.
+    Sentry.captureException(err)
+  }
   // Amorçage : si un niveau existe déjà mais aucun historique, on démarre la
   // série avec ce niveau (sinon la courbe n'aurait aucun point de référence).
   const lvl = parseFloat(localStorage.getItem('padel_level'))
@@ -41,8 +45,11 @@ function cleanupOldUserData() {
     if (currentUserId) {
       localStorage.setItem('padel_user_id', currentUserId)
     }
-  } catch {
-    // Ignore les erreurs de storage
+  } catch (err) {
+    // Ne pas bloquer l'app, mais ne pas ignorer non plus : si ce nettoyage
+    // échoue lors d'un changement de compte, les données (niveau, historique)
+    // du user précédent restent visibles pour le nouveau.
+    Sentry.captureException(err)
   }
 }
 
@@ -81,7 +88,8 @@ export function PrefsProvider({ children }) {
       const last = prev[prev.length - 1]
       if (last && Math.abs(last.level - l) < 0.001) return prev
       const next = [...prev, { level: l, date: new Date().toISOString() }]
-      try { localStorage.setItem('padel_level_history', JSON.stringify(next)) } catch { /* stockage plein/privé — best-effort */ }
+      try { localStorage.setItem('padel_level_history', JSON.stringify(next)) }
+      catch (err) { Sentry.captureException(err) }  // stockage plein/privé → point d'historique perdu
       return next
     })
   }
@@ -97,7 +105,8 @@ export function PrefsProvider({ children }) {
   const resetLevelHistory = (seed = null) => {
     const next = Array.isArray(seed) ? seed : []
     _setLevelHistory(next)
-    try { localStorage.setItem('padel_level_history', JSON.stringify(next)) } catch { /* stockage plein/privé — best-effort */ }
+    try { localStorage.setItem('padel_level_history', JSON.stringify(next)) }
+    catch (err) { Sentry.captureException(err) }  // stockage plein/privé — best-effort
   }
 
   const toggleDark = () => setDark(!dark)

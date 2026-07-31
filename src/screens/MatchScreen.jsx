@@ -2453,10 +2453,13 @@ function ContactSheet({ dark, lang, onClose }) {
         });
       if (dbErr) throw dbErr;
 
-      // 2. Notification email via Edge Function (best-effort, n'échoue pas si l'email rate)
+      // 2. Notification email via Edge Function (best-effort : le message est déjà
+      // enregistré en base, l'utilisateur n'a pas à voir d'erreur si l'email rate).
+      // On remonte quand même à Sentry — sinon un email cassé en permanence
+      // signifierait des demandes de support jamais notifiées, sans aucun signal.
       supabase.functions.invoke('notify-support', {
         body: { name: name.trim(), email: email.trim(), type, message: message.trim() },
-      }).catch(() => {});
+      }).catch(err => Sentry.captureException(err));
 
       setSent(true);
     } catch {
@@ -4274,7 +4277,7 @@ export default function MainApp() {
     _streakTicked.current = true;
     tickStreak(profile.id)
       .then(() => refreshProfile())   // rafraîchit profile.streak_current en mémoire
-      .catch(() => {});
+      .catch(err => Sentry.captureException(err));
   }, [profile?.id]);
 
   // Sync le niveau depuis la DB vers le state React (ex: connexion depuis un nouvel appareil)

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { COURT } from '../components/CourtUI'
 import { QUIZ_CHAPTERS } from '../data/quizData'
+import { Sentry } from '../sentry'
 
 // ───────────────────────────────────────────────────────────────────────────
 // Module « Apprendre » — quizz pédagogique gamifié (style Duolingo).
@@ -12,12 +13,23 @@ const MASCOT_SRC  = '/mascot.png'
 const MASCOT2_SRC = '/mascot2.png'   // casquette "Padel Meet" — déco du chemin
 const MASCOT3_SRC = '/mascot3.png'   // casquette "Padel Meet" avec main (quiz)
 
+// Les deux accès au localStorage échouent silencieusement du point de vue de
+// l'utilisateur (on ne va pas lui montrer une erreur), mais une progression qui
+// disparaît est un incident réel : on le remonte à Sentry pour pouvoir le voir.
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { stars: {} } }
-  catch { return { stars: {} } }
+  catch (err) {
+    // JSON corrompu → la progression d'apprentissage apparaît remise à zéro.
+    Sentry.captureException(err)
+    return { stars: {} }
+  }
 }
 function saveProgress(p) {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(p)) } catch { /* quota */ }
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(p)) }
+  catch (err) {
+    // Quota dépassé / mode privé → la progression n'est pas sauvegardée.
+    Sentry.captureException(err)
+  }
 }
 
 function starsFromScore(correct, total) {
