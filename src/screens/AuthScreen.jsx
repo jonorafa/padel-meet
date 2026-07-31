@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { COURT, FloatingBalls, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
+import { Sentry } from '../sentry'
 
 // Nonce anti-rejeu : version BRUTE pour Supabase + version SHA-256 hex pour Google.
 // (Google embarque la version hashée dans le JWT ; Supabase re-hashe la brute pour comparer.)
@@ -76,7 +77,7 @@ export default function AuthScreen() {
             await signInWithGoogleIdToken(credential, rawNonceRef.current) // nonce BRUT → Supabase
             // La session déclenche onAuthStateChange (AuthContext) → redirection auto.
           } catch (e) {
-            console.error(e); setError(L.errGen); setLoading(false)
+            console.error(e); Sentry.captureException(e); setError(L.errGen); setLoading(false)
           }
         },
       })
@@ -128,6 +129,7 @@ export default function AuthScreen() {
       await signInWithGoogle()
     } catch (e) {
       console.error(e)
+      Sentry.captureException(e)
       setError(L.errGen)
       setLoading(false)
     }

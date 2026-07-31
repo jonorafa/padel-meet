@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { COURT } from './CourtUI'
+import { Sentry } from '../sentry'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { useBlocks } from '../hooks/useBlocks'
@@ -100,6 +101,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         }
       } catch (err) {
         console.error('Error fetching player data:', err)
+        Sentry.captureException(err)
       } finally {
         setLoading(false)
       }

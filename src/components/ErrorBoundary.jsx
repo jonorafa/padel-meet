@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { COURT } from './CourtUI'
+import { Sentry } from '../sentry'
 
 /**
  * ErrorBoundary — attrape les erreurs React non gérées et affiche
@@ -22,6 +23,7 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error('[ErrorBoundary]', error, info)
+    Sentry.captureException(error, { contexts: { react: { componentStack: info?.componentStack } } })
     this.setState({ errorInfo: info })
   }
 

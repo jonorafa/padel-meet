@@ -27,6 +27,7 @@ import { PendingMatchesPanel } from '../components/PendingMatchesPanel';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
+import { Sentry }           from '../sentry';
 import StreakScreen          from './StreakScreen';
 import { tickStreak }        from '../hooks/useStreak';
 const StatsSection = lazy(() => import('../components/StatsSection'));
@@ -1052,6 +1053,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     setRespondingId(null);
     if (error) {
       console.error('Error responding to proposal:', error);
+      Sentry.captureException(error);
     }
     // Pas besoin de refetch — le UPDATE postgres_changes met à jour le state
   };
@@ -2719,6 +2721,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
       }
     } catch (err) {
       console.error('[upload photo]', err);
+      Sentry.captureException(err);
       setUploadError(err.message || 'Échec de l\'upload');
     } finally {
       setUploading(false);
@@ -2741,6 +2744,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
       navigate('/', { replace: true });
     } catch (err) {
       console.error('Delete account error:', err);
+      Sentry.captureException(err);
       setDeleting(false);
       setShowDeleteConfirm(false);
     }

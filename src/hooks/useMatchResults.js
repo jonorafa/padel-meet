@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { Sentry } from '../sentry'
 
 /**
  * Hook pour gérer la soumission et confirmation des scores de match
@@ -83,6 +84,7 @@ export function useMatchResults() {
       }
     } catch (err) {
       console.error('Error fetching pending results:', err)
+      Sentry.captureException(err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -139,6 +141,7 @@ export function useMatchResults() {
       return { success: true, pendingId: data }
     } catch (err) {
       console.error('Error submitting result:', err)
+      Sentry.captureException(err)
       const msg = err.message || 'Failed to submit result'
       setError(msg)
       return { success: false, error: msg }
@@ -165,6 +168,7 @@ export function useMatchResults() {
       return { success: true }
     } catch (err) {
       console.error('Error confirming result:', err)
+      Sentry.captureException(err)
       const msg = err.message || 'Failed to confirm result'
       setError(msg)
       return { success: false, error: msg }
@@ -191,6 +195,7 @@ export function useMatchResults() {
       return { success: true }
     } catch (err) {
       console.error('Error rejecting result:', err)
+      Sentry.captureException(err)
       const msg = err.message || 'Failed to reject result'
       setError(msg)
       return { success: false, error: msg }

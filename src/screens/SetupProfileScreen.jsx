@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { COURT, PadelBall, Ornament } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
+import { Sentry }    from '../sentry'
 import { SUB_REGIONS } from '../data/courtData'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
@@ -287,6 +288,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       setAvatarPath(storagePath)
     } catch (err) {
       console.error('Avatar upload failed:', err)
+      Sentry.captureException(err)
       setUploadError(err?.message ? `${t.uploadError} (${err.message})` : t.uploadError)
     } finally {
       setUploading(false)

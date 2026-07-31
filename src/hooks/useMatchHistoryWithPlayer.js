@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { Sentry } from '../sentry'
 
 /**
  * Fetch match history between current user and a specific player
@@ -48,6 +49,7 @@ export function useMatchHistoryWithPlayer(userId, targetPlayerId) {
         setMatches(transformed)
       } catch (err) {
         console.error('Error fetching match history:', err)
+        Sentry.captureException(err)
         setError(err.message)
       } finally {
         setLoading(false)

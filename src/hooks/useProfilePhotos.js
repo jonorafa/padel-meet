@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { Sentry } from '../sentry'
 
 /**
  * Hook for managing user profile photos
@@ -57,6 +58,7 @@ export function useProfilePhotos(userId) {
       }
     } catch (err) {
       console.error('Error fetching photos:', err)
+      Sentry.captureException(err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -221,6 +223,7 @@ export function useProfilePhotos(userId) {
       return photoRecord
     } catch (err) {
       console.error('Error uploading photo:', err)
+      Sentry.captureException(err)
       setError(err.message)
       return null
     } finally {
@@ -272,6 +275,7 @@ export function useProfilePhotos(userId) {
       await syncPrimaryToProfile()
     } catch (err) {
       console.error('Error deleting photo:', err)
+      Sentry.captureException(err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -303,6 +307,7 @@ export function useProfilePhotos(userId) {
       await syncPrimaryToProfile()
     } catch (err) {
       console.error('Error setting primary photo:', err)
+      Sentry.captureException(err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -339,6 +344,7 @@ export function useProfilePhotos(userId) {
       setPhotos(reorderedPhotos)
     } catch (err) {
       console.error('Error reordering photos:', err)
+      Sentry.captureException(err)
       setError(err.message)
     } finally {
       setLoading(false)
