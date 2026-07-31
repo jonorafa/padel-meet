@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI — vérifie chaque push et chaque PR sur main.
+#
+# Pourquoi : `src/lib/confidenceRules.test.js` existait depuis des mois et
+# passait 14/14, mais RIEN ne le lançait jamais — ni script npm, ni CI. Un test
+# que personne n'exécute ne protège de rien. Ce workflow le rend effectif.
+#
+# Les 3 étapes correspondent à ce qui a réellement cassé par le passé :
+#   • lint  — la dette ESLint remontait à 134 erreurs sans qu'on s'en aperçoive
+#   • test  — la logique de l'indice de confiance est le cœur du produit
+#   • build — `vite build` est ce que Vercel exécute ; le dev server ne le
+#             couvre PAS (un bump de Vite peut casser la prod sans toucher au dev)
+# ─────────────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # `npm ci` installe exactement le lockfile — c'est aussi ce qui garantit
+      # que les versions corrigées par npm audit fix sont bien celles utilisées.
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Lint (0 erreur exigée)
+        run: npm run lint
+
+      - name: Tests unitaires
+        run: npm test
+
+      - name: Build de production
+        run: npm run build
