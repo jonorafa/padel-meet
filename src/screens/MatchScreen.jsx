@@ -3806,24 +3806,14 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   );
 }
 
-// ─── PartnerPrefs Sheet (Chantier 4) ─────────────────────────────────────────
-function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
-  const rtl   = lang === 'he';
-  const ink   = dark ? COURT.darkText : COURT.ink;
-  const stone = dark ? COURT.darkMuted : COURT.stone;
+// Rangée de chips — définie au niveau module (et non dans le render de
+// PartnerPrefsSheet) : un composant recréé à chaque rendu est vu par React comme
+// un TYPE différent, ce qui démonte/remonte les <button> à chaque frappe.
+function ChipRow({ label, value, options, onChange, dark, rtl }) {
+  const ink       = dark ? COURT.darkText  : COURT.ink;
+  const stone     = dark ? COURT.darkMuted : COURT.stone;
   const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
-  const [prefs, setPrefs] = useState({
-    hand:   initial.hand   || 'any',
-    side:   initial.side   || 'any',
-    style:  initial.style  || 'any',
-    motivation: initial.motivation || 'any',
-    region: initial.region || 'any',
-    levelMin: initial.levelMin ?? 1,
-    levelMax: initial.levelMax ?? 7,
-  });
-  const [saving, setSaving] = useState(false);
-
-  const ChipRow = ({ label, value, options, onChange }) => (
+  return (
     <div style={{ marginBottom: 16 }}>
       <div style={{
         fontFamily: 'Mulish', fontSize: 11, color: stone,
@@ -3852,6 +3842,23 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
       </div>
     </div>
   );
+}
+
+// ─── PartnerPrefs Sheet (Chantier 4) ─────────────────────────────────────────
+function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
+  const rtl   = lang === 'he';
+  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const ff_italic = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+  const [prefs, setPrefs] = useState({
+    hand:   initial.hand   || 'any',
+    side:   initial.side   || 'any',
+    style:  initial.style  || 'any',
+    motivation: initial.motivation || 'any',
+    region: initial.region || 'any',
+    levelMin: initial.levelMin ?? 1,
+    levelMax: initial.levelMax ?? 7,
+  });
+  const [saving, setSaving] = useState(false);
 
   const submit = async () => {
     setSaving(true);
@@ -3871,6 +3878,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         </p>
 
         <ChipRow
+          dark={dark} rtl={rtl}
           label={t.hand || 'Main'} value={prefs.hand}
           onChange={(v) => setPrefs(p => ({ ...p, hand: v }))}
           options={[
@@ -3881,6 +3889,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         />
 
         <ChipRow
+          dark={dark} rtl={rtl}
           label={t.side || 'Côté'} value={prefs.side}
           onChange={(v) => setPrefs(p => ({ ...p, side: v }))}
           options={[
@@ -3891,6 +3900,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         />
 
         <ChipRow
+          dark={dark} rtl={rtl}
           label={t.playerStyle || 'Style'} value={prefs.style}
           onChange={(v) => setPrefs(p => ({ ...p, style: v }))}
           options={[
@@ -3902,6 +3912,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         />
 
         <ChipRow
+          dark={dark} rtl={rtl}
           label={t.motivation || 'Motivation'} value={prefs.motivation}
           onChange={(v) => setPrefs(p => ({ ...p, motivation: v }))}
           options={[
@@ -3913,6 +3924,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
         />
 
         <ChipRow
+          dark={dark} rtl={rtl}
           label={t.region || 'Région'} value={prefs.region}
           onChange={(v) => setPrefs(p => ({ ...p, region: v }))}
           options={[

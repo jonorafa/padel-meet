@@ -19,6 +19,29 @@ const XIcon = () => (
   </svg>
 )
 
+// ── Chip button helper ────────────────────────────────────────────────────────
+// Défini au niveau module (et non dans le render) : un composant recréé à chaque
+// rendu est vu par React comme un TYPE différent, ce qui démonte/remonte le
+// <button> — le focus clavier est perdu à chaque frappe dans le formulaire.
+const Chip = ({ active, onClick, children, dark }) => {
+  const card   = dark ? COURT.darkCard   : COURT.creamDark
+  const ink    = dark ? COURT.darkText   : COURT.ink
+  const border = dark ? COURT.darkBorder : `${COURT.green}28`
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+        fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+        background: active ? COURT.green : card,
+        color:      active ? COURT.cream : ink,
+        border: `0.5px solid ${active ? COURT.green : border}`,
+        transition: 'background 0.15s, color 0.15s',
+      }}
+    >{children}</button>
+  )
+}
+
 /**
  * Full-screen profile editing — COURT design system
  * Sections: photos, bio (FR/EN/HE), preference tags
@@ -134,35 +157,17 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
   const currentBio = formData[bioKey] || ''
 
-  // ── Chip button helper ──────────────────────────────────────────
-  const Chip = ({ active, onClick, children }) => (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1, padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-        fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
-        background: active ? COURT.green : card,
-        color:      active ? COURT.cream : ink,
-        border: `0.5px solid ${active ? COURT.green : border}`,
-        transition: 'background 0.15s, color 0.15s',
-      }}
-    >{children}</button>
-  )
-
-  // ── Section heading helper ──────────────────────────────────────
-  const SectionTitle = ({ children }) => (
-    <h2 style={{
-      fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
-      color: ink, margin: '0 0 12px',
-    }}>{children}</h2>
-  )
-
-  const FieldLabel = ({ children }) => (
-    <label style={{
-      display: 'block', fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
-      color: muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px',
-    }}>{children}</label>
-  )
+  // ── Styles des libellés ─────────────────────────────────────────
+  // Simples objets de style (et non des composants définis dans le render) :
+  // le <h2>/<label> reste alors le même nœud DOM d'un rendu à l'autre.
+  const sectionTitleStyle = {
+    fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
+    color: ink, margin: '0 0 12px',
+  }
+  const fieldLabelStyle = {
+    display: 'block', fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
+    color: muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px',
+  }
 
   return (
     <div style={{
@@ -256,7 +261,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
           {/* ── Nom complet ───────────────────────────────────── */}
           <section>
-            <SectionTitle>{lang === 'he' ? 'שם מלא' : lang === 'en' ? 'Full name' : 'Nom complet'}</SectionTitle>
+            <h2 style={sectionTitleStyle}>{lang === 'he' ? 'שם מלא' : lang === 'en' ? 'Full name' : 'Nom complet'}</h2>
             <input
               value={formData.name}
               onChange={e => handleInputChange('name', e.target.value)}
@@ -302,7 +307,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
           {/* ── Bio ───────────────────────────────────────────── */}
           <section>
-            <SectionTitle>{t.bio}</SectionTitle>
+            <h2 style={sectionTitleStyle}>{t.bio}</h2>
 
             {/* Textarea */}
             <div style={{ position: 'relative' }}>
@@ -332,14 +337,14 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
           {/* ── Preferences ───────────────────────────────────── */}
           <section>
-            <SectionTitle>{t.preferences || 'Préférences'}</SectionTitle>
+            <h2 style={sectionTitleStyle}>{t.preferences || 'Préférences'}</h2>
 
             {/* Dominant Hand */}
             <div style={{ marginBottom: 16 }}>
-              <FieldLabel>{t.dominantHand || 'Main dominante'}</FieldLabel>
+              <label style={fieldLabelStyle}>{t.dominantHand || 'Main dominante'}</label>
               <div style={{ display: 'flex', gap: 8 }}>
                 {['left', 'right'].map(hand => (
-                  <Chip key={hand} active={formData.dominant_hand === hand} onClick={() => handleInputChange('dominant_hand', hand)}>
+                  <Chip dark={dark} key={hand} active={formData.dominant_hand === hand} onClick={() => handleInputChange('dominant_hand', hand)}>
                     {t[hand] || hand}
                   </Chip>
                 ))}
@@ -348,13 +353,13 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
             {/* Preferred Side */}
             <div style={{ marginBottom: 16 }}>
-              <FieldLabel>{t.preferredSide || 'Côté préféré'}</FieldLabel>
+              <label style={fieldLabelStyle}>{t.preferredSide || 'Côté préféré'}</label>
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
                   { v: 'forehand', label: lang === 'he' ? 'שמאל' : lang === 'en' ? 'Left' : 'Gauche' },
                   { v: 'backhand', label: lang === 'he' ? 'ימין' : lang === 'en' ? 'Right' : 'Droite' },
                 ].map(({ v, label }) => (
-                  <Chip key={v} active={formData.preferred_side === v} onClick={() => handleInputChange('preferred_side', v)}>
+                  <Chip dark={dark} key={v} active={formData.preferred_side === v} onClick={() => handleInputChange('preferred_side', v)}>
                     {label}
                   </Chip>
                 ))}
@@ -363,10 +368,10 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
             {/* Play Style */}
             <div style={{ marginBottom: 16 }}>
-              <FieldLabel>{t.playStyle || 'Style de jeu'}</FieldLabel>
+              <label style={fieldLabelStyle}>{t.playStyle || 'Style de jeu'}</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {['aggressive', 'defensive', 'all-court'].map(style => (
-                  <Chip key={style} active={formData.play_style === style} onClick={() => handleInputChange('play_style', style)}>
+                  <Chip dark={dark} key={style} active={formData.play_style === style} onClick={() => handleInputChange('play_style', style)}>
                     {t[style] || style}
                   </Chip>
                 ))}
@@ -375,10 +380,10 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
             {/* Motivation */}
             <div style={{ marginBottom: 16 }}>
-              <FieldLabel>{t.motivation || 'Motivation'}</FieldLabel>
+              <label style={fieldLabelStyle}>{t.motivation || 'Motivation'}</label>
               <div style={{ display: 'flex', gap: 8 }}>
                 {['fun', 'improve', 'compete'].map(mot => (
-                  <Chip key={mot} active={formData.motivation === mot} onClick={() => handleInputChange('motivation', mot)}>
+                  <Chip dark={dark} key={mot} active={formData.motivation === mot} onClick={() => handleInputChange('motivation', mot)}>
                     {t[mot] || mot}
                   </Chip>
                 ))}
@@ -387,9 +392,9 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
             {/* Frequency */}
             <div style={{ marginBottom: 4 }}>
-              <FieldLabel>
+              <label style={fieldLabelStyle}>
                 {t.playFrequency || 'Fréquence de jeu'} : {formData.frequency}× / {lang === 'he' ? 'שבוע' : lang === 'en' ? 'week' : 'sem.'}
-              </FieldLabel>
+              </label>
               <PadelSlider
                 min={0} max={7} step={1}
                 value={formData.frequency}

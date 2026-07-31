@@ -25,7 +25,10 @@ export default function LegalScreen({ doc = 'privacy' }) {
   const p  = { fontFamily: 'Mulish', fontSize: 14, lineHeight: 1.65, color: ink, margin: '0 0 10px' }
   const li = { ...p, margin: '0 0 6px' }
 
-  const Privacy = () => (
+  // Contenu statique (aucun state, aucun hook) : on garde des ÉLÉMENTS JSX et
+  // non des composants définis dans le render — sinon React recrée un type de
+  // composant à chaque rendu et remonte l'arbre (react-hooks/static-components).
+  const privacy = (
     <>
       <h1 style={{ fontFamily: 'Spectral, serif', fontSize: 26, fontWeight: 800, color: ink, margin: '0 0 4px' }}>
         Politique de confidentialité
@@ -96,7 +99,7 @@ export default function LegalScreen({ doc = 'privacy' }) {
     </>
   )
 
-  const Terms = () => (
+  const terms = (
     <>
       <h1 style={{ fontFamily: 'Spectral, serif', fontSize: 26, fontWeight: 800, color: ink, margin: '0 0 4px' }}>
         Conditions Générales d'Utilisation
@@ -198,7 +201,7 @@ export default function LegalScreen({ doc = 'privacy' }) {
         flex: 1, overflowY: 'auto', padding: '20px 20px 40px',
         WebkitOverflowScrolling: 'touch',
       }}>
-        {doc === 'terms' ? <Terms /> : <Privacy />}
+        {doc === 'terms' ? terms : privacy}
       </div>
     </div>
   )
