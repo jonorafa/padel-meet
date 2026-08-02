@@ -184,6 +184,13 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
   // Texte de la question pour la langue courante
   const questionText = txt(q.q);
 
+  // Les énoncés vont de ~40 à ~200 caractères (ceux qui décrivent un geste en
+  // langage simple sont longs). À taille fixe, sur un écran court type iPhone SE,
+  // le bloc question repoussait la 4e option sous la ligne de flottaison — or
+  // c'est l'option la plus haute : si elle passe inaperçue, les joueurs se
+  // sous-évaluent et le niveau calculé dérive vers le bas.
+  const qFontSize = questionText.length > 140 ? 19 : questionText.length > 80 ? 22 : 26;
+
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
       position: 'absolute', inset: 0, background: bg,
@@ -218,7 +225,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
         {/* Question avec termes cliquables */}
         <div style={{
           fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-          fontSize: 26, fontWeight: 500, color: ink, lineHeight: 1.3, marginBottom: 6,
+          fontSize: qFontSize, fontWeight: 500, color: ink, lineHeight: 1.3, marginBottom: 6,
         }}>
           {renderWithGlossary(questionText, lang, openGlossary)}
         </div>

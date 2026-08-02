@@ -639,8 +639,8 @@ export const DAILY_TIPS = [
 export const QUIZ_QUESTIONS = [
   // ── Q1 · Technique : Bandeja ──────────────────────────────────────────────
   { id: 1, type: 'tech',
-    q:     { fr: "À quelle fréquence réussis-tu une bandeja contrôlée ?", en: "How often do you land a controlled bandeja?", he: "באיזו תדירות אתה מבצע בנדחה מבוקרת?" },
-    qEval: { fr: "À quelle fréquence {name} réussit une bandeja contrôlée ?", en: "How often does {name} land a controlled bandeja?", he: "באיזו תדירות {name} מבצע בנדחה מבוקרת?" },
+    q:     { fr: "Un smash au-dessus de la tête, frappé en douceur et sans grande puissance, juste pour garder ta position au filet — ce coup s'appelle la bandeja. À quelle fréquence le réussis-tu ?", en: "An overhead smash hit softly, without much power, just to keep your position at the net — this shot is called the bandeja. How often do you land it?", he: "סמאש מעל הראש, מוכה בעדינות וללא כוח רב, רק כדי לשמור על המיקום שלך ברשת — המכה הזו נקראת בנדחה. באיזו תדירות אתה מצליח אותה?" },
+    qEval: { fr: "{name} arrive-t-il à frapper un smash au-dessus de la tête, en douceur et sans grande puissance, pour garder sa position au filet — la bandeja ?", en: "Can {name} hit an overhead smash softly, without much power, to keep their position at the net — the bandeja?", he: "האם {name} מצליח להכות סמאש מעל הראש, בעדינות וללא כוח רב, כדי לשמור על מיקומו ברשת — הבנדחה?" },
     options: [
       { fr: 'Rarement',              en: 'Rarely',                 he: 'לעיתים רחוקות', subFr: "Je découvre encore le geste.",                  subEn: "Still learning the shot.",                    subHe: 'עדיין לומד את התנועה.',             value: 1   },
       { fr: 'Occasionnellement',     en: 'Occasionally',           he: 'מדי פעם',       subFr: "Réussite une fois sur trois.",                  subEn: "About one in three.",                         subHe: 'הצלחה בכ-שליש מהמקרים.',           value: 3   },
@@ -650,8 +650,8 @@ export const QUIZ_QUESTIONS = [
 
   // ── Q2 · Technique : Sorties de vitre ────────────────────────────────────
   { id: 2, type: 'tech',
-    q:     { fr: "Maîtrises-tu les sorties de vitre (fond et côté) ?", en: "Do you handle back-wall and side-glass exits?", he: 'אתה שולט ביציאות מהקירות?' },
-    qEval: { fr: "{name} maîtrise les sorties de vitre (fond et côté) ?", en: "Does {name} handle back-wall and side-glass exits?", he: '{name} שולט ביציאות מהקירות?' },
+    q:     { fr: "Quand la balle passe au-dessus de toi et rebondit sur la vitre de ton camp, arrives-tu à la laisser revenir puis à la renvoyer proprement — ce qu'on appelle une sortie de vitre ?", en: "When the ball goes over you and bounces off the glass on your side, can you let it come back and return it cleanly — what's called a glass exit?", he: 'כשהכדור עובר מעליך ומקפץ מהזכוכית בצד שלך, אתה מצליח לתת לו לחזור ואז להחזיר אותו נקי — מה שנקרא יציאה מהקיר?' },
+    qEval: { fr: "Quand la balle rebondit sur la vitre de son camp, {name} arrive à la laisser revenir et à la renvoyer proprement (sortie de vitre) ?", en: "When the ball bounces off the glass on their side, can {name} let it come back and return it cleanly (glass exit)?", he: 'כשהכדור מקפץ מהזכוכית בצד שלו, האם {name} מצליח לתת לו לחזור ולהחזיר אותו נקי (יציאה מהקיר)?' },
     options: [
       { fr: 'Pas encore',         en: 'Not yet',           he: 'עוד לא',         subFr: "Le mur me surprend.",                          subEn: "The wall catches me off-guard.",       subHe: 'הקיר מפתיע אותי.',                value: 1 },
       { fr: 'Lecture correcte',   en: 'Decent read',       he: 'קריאה סבירה',    subFr: "Je récupère la balle, sans précision.",        subEn: "I recover, without precision.",        subHe: 'מציל את הכדור, בלי דיוק.',        value: 3 },
@@ -659,21 +659,21 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Double vitre maîtrisée', en: 'Double-glass mastered', he: 'שליטה בכפל קיר', subFr: "Je transforme double vitre en attaque — niveau compétition.", subEn: "I turn double-glass into attack — competition level.", subHe: 'הופך כפל קיר להתקפה — רמת תחרות.', value: 7 },
     ]},
 
-  // ── Q3 · Technique : Régularité ──────────────────────────────────────────
+  // ── Q3 · Technique : Fautes directes en échange de fond ──────────────────
   { id: 3, type: 'tech',
-    q:     { fr: "Comment décris-tu ta régularité en match ?", en: "How would you describe your consistency in a match?", he: 'כיצד תתאר את העקביות שלך במשחק?' },
-    qEval: { fr: "Comment {name} gère sa régularité en match ?", en: "How would you describe {name}'s consistency in a match?", he: 'כיצד תתאר את העקביות של {name} במשחק?' },
+    q:     { fr: "Sur un échange de fond de court (5 frappes ou plus), à quelle fréquence perds-tu le point sur une faute directe, hors sortie de vitre ?", en: "In a baseline rally (5 shots or more), how often do you lose the point on a direct error, glass exits aside?", he: 'בחילוף מקו הבסיס (5 מכות או יותר), באיזו תדירות אתה מאבד את הנקודה בשגיאה ישירה, מלבד יציאות מהקיר?' },
+    qEval: { fr: "Sur un échange de fond de court (5 frappes ou plus), à quelle fréquence {name} perd le point sur une faute directe, hors sortie de vitre ?", en: "In a baseline rally (5 shots or more), how often does {name} lose the point on a direct error, glass exits aside?", he: 'בחילוף מקו הבסיס (5 מכות או יותר), באיזו תדירות {name} מאבד את הנקודה בשגיאה ישירה, מלבד יציאות מהקיר?' },
     options: [
-      { fr: "Je fais souvent des fautes directes, surtout sous pression",  en: "I often make direct errors, especially under pressure",      he: 'אני עושה הרבה שגיאות ישירות, בעיקר תחת לחץ',        subFr: "Le point m'échappe avant de le construire.",     subEn: "The point is lost before I build it.",            subHe: 'הנקודה אובדת לפני שאני בונה אותה.',          value: 1   },
-      { fr: "Je tiens des échanges courts mais je me précipite souvent",   en: "I hold short rallies but often rush",                        he: 'אני מחזיק חילופים קצרים אבל ממהר לעיתים',          subFr: "Correct à froid, mais la pression me déséquilibre.", subEn: "Solid when fresh, pressure throws me off.",     subHe: 'בסדר כשרגוע, לחץ מפיל אותי.',               value: 3   },
-      { fr: "Je construis le point sans fautes inutiles",                  en: "I build the point without unnecessary errors",              he: 'אני בונה את הנקודה ללא שגיאות מיותרות',            subFr: "Régularité fiable, même en match serré.",        subEn: "Reliable consistency, even in close matches.",    subHe: 'עקביות אמינה, גם במשחקים קרובים.',           value: 5.5 },
-      { fr: "Je maintiens ma régularité en fin de match, sous pression",   en: "I stay consistent late in the match, under pressure",      he: 'שומר על עקביות בסוף המשחק, תחת לחץ',              subFr: "Niveau compétition — la fatigue et le score ne m'affectent pas.", subEn: "Competition level — fatigue and score don't affect me.", subHe: 'רמת תחרות — עייפות ותוצאה לא משפיעות עלי.', value: 7   },
+      { fr: "Souvent — l'échange se termine vite par ma faute",              en: "Often — the rally ends quickly on my error",                 he: 'לעיתים קרובות — החילוף נגמר מהר בשגיאה שלי',       subFr: "Le point m'échappe avant de le construire.",     subEn: "The point is lost before I build it.",            subHe: 'הנקודה אובדת לפני שאני בונה אותה.',          value: 1   },
+      { fr: "De temps en temps, surtout si l'échange se prolonge",           en: "Now and then, especially in longer rallies",                 he: 'מדי פעם, בעיקר כשהחילוף מתארך',                   subFr: "Je tiens 4-5 frappes, puis je craque.",          subEn: "I hold 4-5 shots, then I crack.",                 subHe: 'אני מחזיק 4-5 מכות, ואז נשבר.',              value: 3   },
+      { fr: "Rarement — je tiens l'échange jusqu'à créer une occasion",      en: "Rarely — I hold the rally until I create an opening",        he: 'לעיתים רחוקות — אני מחזיק עד שאני יוצר הזדמנות',   subFr: "Régularité fiable, même en match serré.",        subEn: "Reliable consistency, even in close matches.",    subHe: 'עקביות אמינה, גם במשחקים קרובים.',           value: 5.5 },
+      { fr: "Quasiment jamais, même en fin de match sous pression",          en: "Almost never, even late in the match under pressure",        he: 'כמעט אף פעם, גם בסוף המשחק תחת לחץ',              subFr: "Niveau compétition — la fatigue et le score ne m'affectent pas.", subEn: "Competition level — fatigue and score don't affect me.", subHe: 'רמת תחרות — עייפות ותוצאה לא משפיעות עלי.', value: 7   },
     ]},
 
   // ── Q4 · Technique : Vibora ───────────────────────────────────────────────
   { id: 4, type: 'tech',
-    q:     { fr: "Maîtrises-tu la vibora ?", en: "How well do you master the vibora?", he: 'עד כמה אתה שולט בויברה?' },
-    qEval: { fr: "{name} maîtrise la vibora ?", en: "How well does {name} master the vibora?", he: 'עד כמה {name} שולט בויברה?' },
+    q:     { fr: "Un smash frappé de côté, avec un effet coupé qui fait rebondir la balle bas et vite chez l'adversaire, presque impossible à rattraper — ce coup s'appelle la vibora. À quelle fréquence le réussis-tu ?", en: "A smash hit from the side, with a slice that makes the ball bounce low and fast on the opponent's side, nearly impossible to retrieve — this shot is called the vibora. How often do you land it?", he: 'סמאש מוכה מהצד, עם אפקט חתוך שגורם לכדור לקפוץ נמוך ומהר אצל היריב, כמעט בלתי אפשרי להחזרה — המכה הזו נקראת ויברה. באיזו תדירות אתה מצליח אותה?' },
+    qEval: { fr: "{name} arrive-t-il à frapper un smash de côté avec un effet coupé qui fait rebondir la balle bas et vite chez l'adversaire — la vibora ?", en: "Can {name} hit a smash from the side with a slice that makes the ball bounce low and fast on the opponent's side — the vibora?", he: 'האם {name} מצליח להכות סמאש מהצד עם אפקט חתוך שגורם לכדור לקפוץ נמוך ומהר אצל היריב — הויברה?' },
     options: [
       { fr: 'Je ne la connais pas encore', en: "I don't know it yet",    he: 'עוד לא מכיר את המכה', subFr: "Coup découvert récemment.",                    subEn: "Just discovered the shot.",                  subHe: 'גיליתי את המכה לאחרונה.',             value: 1   },
       { fr: 'En apprentissage',            en: 'Still learning',          he: 'בשלב הלמידה',         subFr: "Résultat aléatoire, timing inconsistant.",    subEn: "Inconsistent timing, random results.",       subHe: 'תזמון לא עקבי, תוצאות אקראיות.',     value: 3   },
@@ -681,65 +681,65 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Maîtrise totale',             en: 'Total mastery',           he: 'שליטה מלאה',          subFr: "Vibora croisée ou à la ligne — au choix selon la situation.", subEn: "Cross or line vibora — chosen based on situation.", subHe: 'ויברה אלכסונית או קווית — לפי המצב.', value: 7 },
     ]},
 
-  // ── Q5 · Technique : Puissance ───────────────────────────────────────────
+  // ── Q5 · Technique : Accélération liftée ─────────────────────────────────
   { id: 5, type: 'tech',
-    q:     { fr: "Comment utilises-tu la puissance dans ton jeu ?", en: "How do you use power in your game?", he: 'כיצד אתה משתמש בכוח במשחקך?' },
-    qEval: { fr: "Comment {name} utilise la puissance dans son jeu ?", en: "How does {name} use power in their game?", he: 'כיצד {name} משתמש בכוח במשחק שלו?' },
+    q:     { fr: "Quand l'occasion se présente, arrives-tu à accélérer une balle liftée (coup droit ou revers) sans la mettre dehors ou dans le filet ?", en: "When the chance comes, can you accelerate a topspin ball (forehand or backhand) without sending it out or into the net?", he: 'כשההזדמנות מגיעה, אתה מצליח להאיץ כדור עם טופספין (יד ימין או גב) בלי להוציא אותו או לתקוע אותו ברשת?' },
+    qEval: { fr: "Quand l'occasion se présente, {name} arrive à accélérer une balle liftée (coup droit ou revers) sans la mettre dehors ou dans le filet ?", en: "When the chance comes, can {name} accelerate a topspin ball (forehand or backhand) without sending it out or into the net?", he: 'כשההזדמנות מגיעה, האם {name} מצליח להאיץ כדור עם טופספין (יד ימין או גב) בלי להוציא אותו או לתקוע אותו ברשת?' },
     options: [
-      { fr: "Je joue principalement en placement, pas de coup fort",       en: "I play mainly placement, no real powerful shot",            he: 'אני משחק בעיקר מיקום, אין לי מכה חזקה',            subFr: "La puissance n'est pas encore une arme.",        subEn: "Power is not yet a weapon.",                      subHe: 'כוח עדיין אינו נשק.',                        value: 1   },
-      { fr: "J'ai quelques coups forts mais peu fiables",                  en: "I have some powerful shots but they're unreliable",         he: 'יש לי כמה מכות חזקות אבל לא אמינות',               subFr: "Ça part fort une fois sur deux, sans intention.", subEn: "Fires hard about half the time, no real intent.", subHe: 'יוצא חזק פעם בשתיים, ללא כוונה.',            value: 3   },
-      { fr: "Je peux accélérer régulièrement avec effet et direction",     en: "I can accelerate consistently with spin and direction",     he: 'אני יכול להאיץ באופן קבוע עם ספין וכיוון',         subFr: "Je choisis quand frapper fort.",                  subEn: "I choose when to hit hard.",                      subHe: 'אני בוחר מתי להכות חזק.',                    value: 5.5 },
-      { fr: "J'impose le rythme par ma puissance de manière constante",    en: "I dictate the pace through power consistently",             he: 'אני מכתיב את הקצב בכוח באופן קבוע',                subFr: "Puissance + précision + constance — niveau tournoi.", subEn: "Power + precision + consistency — tournament level.", subHe: 'כוח + דיוק + עקביות — רמת טורניר.',         value: 7   },
+      { fr: "Rarement — la balle part souvent dehors ou dans le filet",     en: "Rarely — the ball often goes out or into the net",          he: 'לעיתים רחוקות — הכדור לרוב יוצא או נתקע ברשת',     subFr: "La puissance n'est pas encore une arme.",        subEn: "Power is not yet a weapon.",                      subHe: 'כוח עדיין אינו נשק.',                        value: 1   },
+      { fr: "Une fois sur deux, sans grande intention",                    en: "About half the time, without much intent",                  he: 'פעם בשתיים, ללא כוונה ברורה',                      subFr: "Ça part fort, mais sans contrôle du résultat.",   subEn: "It fires hard, but I don't control the outcome.", subHe: 'יוצא חזק, אבל בלי שליטה בתוצאה.',           value: 3   },
+      { fr: "Régulièrement, avec effet et direction maîtrisés",            en: "Regularly, with spin and direction under control",          he: 'באופן קבוע, עם שליטה בספין ובכיוון',              subFr: "Je choisis quand accélérer.",                     subEn: "I choose when to accelerate.",                    subHe: 'אני בוחר מתי להאיץ.',                        value: 5.5 },
+      { fr: "Presque systématiquement, avec puissance et précision",       en: "Almost every time, with power and precision",               he: 'כמעט תמיד, עם כוח ודיוק',                          subFr: "Puissance + précision + constance — niveau tournoi.", subEn: "Power + precision + consistency — tournament level.", subHe: 'כוח + דיוק + עקביות — רמת טורניר.',         value: 7   },
     ]},
 
-  // ── Q6 · Technique : Lecture tactique ────────────────────────────────────
+  // ── Q6 · Technique : Anticipation du coup adverse ────────────────────────
   { id: 6, type: 'tech',
-    q:     { fr: "Comment lis-tu le jeu adverse ?", en: "How do you read your opponents?", he: 'איך אתה קורא את המשחק?' },
-    qEval: { fr: "Comment {name} lit le jeu adverse ?", en: "How does {name} read opponents?", he: 'איך {name} קורא את המשחק?' },
+    q:     { fr: "Quand l'adversaire s'apprête à jouer depuis le fond (lob, contre-attaque, ou frappe faible), arrives-tu à anticiper lequel avant qu'il ne frappe, pour ajuster ta position ?", en: "When an opponent is about to play from the back (lob, counter-attack, or weak shot), can you read which one before they hit, so you can adjust your position?", he: 'כשהיריב עומד לשחק מהאחור (לוב, התקפת נגד, או מכה חלשה), אתה מצליח לצפות מה יבוא לפני המכה, כדי להתאים את המיקום שלך?' },
+    qEval: { fr: "Quand l'adversaire s'apprête à jouer depuis le fond, {name} arrive à anticiper le coup avant la frappe, pour ajuster sa position ?", en: "When an opponent is about to play from the back, can {name} read the shot before it's hit, to adjust their position?", he: 'כשהיריב עומד לשחק מהאחור, האם {name} מצליח לצפות את המכה לפני הביצוע, כדי להתאים את מיקומו?' },
     options: [
-      { fr: 'Je réagis tard',        en: 'I react late',           he: 'מאחר להגיב',     subFr: "Le coup est déjà parti quand je bouge.",       subEn: "The shot is already gone when I move.",  subHe: 'המכה כבר יצאה כשאני זז.',          value: 1 },
-      { fr: 'Anticipation correcte', en: 'Decent anticipation',    he: 'ציפייה סבירה',   subFr: "Je devine la zone, pas toujours la direction.", subEn: "I guess the zone, not always direction.", subHe: 'מנחש את האזור, לא תמיד הכיוון.',    value: 3 },
-      { fr: 'Bonne lecture',         en: 'Good read',              he: 'קריאה טובה',     subFr: "Intention + zone + déplacement anticipé.",     subEn: "Intent + zone + early movement.",         subHe: 'כוונה + אזור + תנועה מוקדמת.',      value: 5.5 },
-      { fr: 'Lecture experte',       en: 'Expert read',            he: 'קריאה מומחית',   subFr: "Je lis mon partenaire ET les adversaires — anticipation double, niveau tournoi.", subEn: "I read partner AND opponents — double anticipation, tournament level.", subHe: 'קורא שותף ויריבים — ציפייה כפולה, רמת טורניר.', value: 7 },
+      { fr: "Rarement — je réagis seulement après avoir vu le coup",        en: "Rarely — I react only after seeing the shot",               he: 'לעיתים רחוקות — אני מגיב רק אחרי שראיתי את המכה',   subFr: "Le coup est déjà parti quand je bouge.",         subEn: "The shot is already gone when I move.",           subHe: 'המכה כבר יצאה כשאני זז.',                    value: 1   },
+      { fr: "Je devine parfois la zone, rarement le type de coup",          en: "I sometimes guess the zone, rarely the type of shot",       he: 'לפעמים מנחש את האזור, רק לעיתים את סוג המכה',      subFr: "Anticipation partielle, souvent en retard.",     subEn: "Partial anticipation, often too late.",           subHe: 'ציפייה חלקית, לרוב מאוחרת.',                 value: 3   },
+      { fr: "Je lis correctement l'intention et j'ajuste ma position à temps", en: "I read the intent correctly and adjust my position in time", he: 'אני קורא נכון את הכוונה ומתאים את מיקומי בזמן',   subFr: "Bonne lecture, positionnement anticipé.",        subEn: "Good read, early positioning.",                   subHe: 'קריאה טובה, מיקום מוקדם.',                   value: 5.5 },
+      { fr: "Je lis mon adversaire ET couvre mon partenaire en même temps", en: "I read my opponent AND cover my partner at the same time",  he: 'אני קורא את היריב וגם מכסה את השותף שלי בו-זמנית',  subFr: "Anticipation double — niveau tournoi.",          subEn: "Double anticipation — tournament level.",         subHe: 'ציפייה כפולה — רמת טורניר.',                 value: 7   },
     ]},
 
-  // ── Q7 · Technique : Placement ───────────────────────────────────────────
+  // ── Q7 · Technique : Reprendre le filet après une défense ────────────────
   { id: 7, type: 'tech',
-    q:     { fr: "Comment décris-tu ton placement sur le court ?", en: "How would you describe your court positioning?", he: 'כיצד תתאר את המיקום שלך במגרש?' },
-    qEval: { fr: "Comment {name} se place sur le court ?", en: "How would you describe {name}'s court positioning?", he: 'כיצד {name} ממוקם במגרש?' },
+    q:     { fr: "Après avoir défendu un coup adverse (lob ou balle repoussée au fond), arrives-tu à reprendre ta place au filet plutôt que de rester bloqué au fond ?", en: "After defending an opponent's shot (a lob or a ball pushing you to the back), can you get back to the net rather than staying stuck at the back?", he: 'אחרי שהתגוננת ממכה של היריב (לוב או כדור שדחף אותך לאחור), אתה מצליח לחזור למקומך ברשת במקום להישאר תקוע מאחור?' },
+    qEval: { fr: "Après avoir défendu un coup adverse, {name} arrive à reprendre sa place au filet plutôt que de rester bloqué au fond ?", en: "After defending an opponent's shot, can {name} get back to the net rather than staying stuck at the back?", he: 'אחרי שהתגונן ממכה של היריב, האם {name} מצליח לחזור למקומו ברשת במקום להישאר תקוע מאחור?' },
     options: [
-      { fr: 'Je me replace rarement au bon endroit',          en: 'I rarely get in the right position',          he: 'אני לעיתים רחוקות ממוקם נכון',          subFr: "Réactif, sans lecture de jeu.",                     subEn: "Reactive, no court vision.",                        subHe: 'מגיב, ללא ראיית מגרש.',                       value: 1   },
-      { fr: 'Placement correct, améliorable',                 en: 'Decent positioning, can improve',             he: 'מיקום סביר, יש מקום לשיפור',            subFr: "Je couvre ma zone mais je tarde à switcher.",       subEn: "I cover my zone but slow to switch.",               subHe: 'מכסה את האזור שלי אבל איטי להחליף.',          value: 3   },
-      { fr: 'Je me place avec intention et anticipation',     en: 'I position with intent and anticipation',     he: 'אני ממוקם עם כוונה וציפייה',            subFr: "Je contrôle ma moitié du court.",                   subEn: "I control my half of the court.",                   subHe: 'שולט בחצי המגרש שלי.',                        value: 5.5 },
-      { fr: 'Placement chirurgical — je pilote l\'espace',   en: 'Surgical placement — I control the space',    he: 'מיקום כירורגי — שולט במרחב',            subFr: "Je déplace les adversaires par mon positionnement seul.", subEn: "I move opponents by positioning alone — tournament level.", subHe: 'מזיז יריבים רק על ידי המיקום — רמת טורניר.', value: 7   },
+      { fr: "Rarement — une fois repoussé au fond, j'y reste presque tout l'échange", en: "Rarely — once pushed back, I stay there most of the rally", he: 'לעיתים רחוקות — ברגע שנדחפתי לאחור, אני נשאר שם רוב החילוף', subFr: "Je me contente de renvoyer, sans chercher à remonter.", subEn: "I just return the ball, without trying to move up.", subHe: 'אני רק מחזיר, בלי לנסות להתקדם.',            value: 1   },
+      { fr: "Parfois, si l'occasion est évidente",                          en: "Sometimes, when the opening is obvious",                     he: 'לפעמים, כשההזדמנות ברורה',                        subFr: "Je remonte quand la balle est facile, sinon je reste en retrait.", subEn: "I move up on easy balls, otherwise I hang back.", subHe: 'מתקדם בכדור קל, אחרת נשאר מאחור.',      value: 3   },
+      { fr: "Régulièrement, dès que je récupère un coup jouable",           en: "Regularly, as soon as I get a playable ball",                he: 'באופן קבוע, ברגע שאני משיג כדור בר-משחק',          subFr: "Je cherche activement à reprendre le filet après avoir défendu.", subEn: "I actively look to retake the net after defending.", subHe: 'אני מחפש באופן פעיל לחזור לרשת אחרי הגנה.', value: 5.5 },
+      { fr: "Presque systématiquement, même après une défense difficile",   en: "Almost every time, even after a tough defensive shot",       he: 'כמעט תמיד, גם אחרי הגנה קשה',                     subFr: "Transition défense-attaque maîtrisée — niveau tournoi.", subEn: "Defence-to-attack transition mastered — tournament level.", subHe: 'מעבר מהגנה להתקפה בשליטה — רמת טורניר.', value: 7   },
     ]},
 
-  // ── Q8 · Technique : Mental ───────────────────────────────────────────────
+  // ── Q8 · Technique : Service sur point d'or ──────────────────────────────
   { id: 8, type: 'tech',
-    q:     { fr: "Comment gères-tu la pression en match ?", en: "How do you handle pressure in a match?", he: 'איך אתה מתמודד עם לחץ במשחק?' },
-    qEval: { fr: "Comment {name} gère la pression en match ?", en: "How does {name} handle pressure in a match?", he: 'איך {name} מתמודד עם לחץ במשחק?' },
+    q:     { fr: "Sur un point d'or (40-40) ou une balle de match, que se passe-t-il sur ton service ?", en: "On a golden point (40-40) or a match point, what happens to your serve?", he: 'בנקודת זהב (40-40) או בנקודת משחק, מה קורה להגשה שלך?' },
+    qEval: { fr: "Sur un point d'or (40-40) ou une balle de match, que se passe-t-il sur le service de {name} ?", en: "On a golden point (40-40) or a match point, what happens to {name}'s serve?", he: 'בנקודת זהב (40-40) או בנקודת משחק, מה קורה להגשה של {name}?' },
     options: [
-      { fr: 'Je perds mes moyens sous la pression',           en: 'I fall apart under pressure',                he: 'אני מתפרק תחת לחץ',                     subFr: "Erreurs directes quand le score est serré.",        subEn: "Direct errors when the score is tight.",            subHe: 'שגיאות ישירות כשהתוצאה קרובה.',               value: 1   },
-      { fr: 'Le score et la pression m\'affectent',           en: 'Score and pressure affect my game',           he: 'התוצאה והלחץ משפיעים עלי',              subFr: "Je tiens à froid, moins bien dans les moments chauds.", subEn: "Solid when calm, shakier at key moments.",      subHe: 'בסדר כשרגוע, פחות יציב ברגעים מכריעים.',     value: 3   },
-      { fr: 'Je gère bien les moments décisifs',              en: 'I handle decisive moments well',              he: 'אני מתמודד טוב עם רגעים מכריעים',       subFr: "Sang-froid en match serré, pas de panique.",        subEn: "Composed in tight matches, no panic.",              subHe: 'קור רוח במשחקים קרובים, ללא פאניקה.',         value: 5.5 },
-      { fr: 'Je joue encore mieux sous la pression',          en: 'I play better under pressure',                he: 'אני משחק טוב יותר תחת לחץ',             subFr: "Les points importants font ressortir le meilleur de moi — niveau compétition.", subEn: "Big points bring out my best — competition level.", subHe: 'נקודות גדולות מוציאות ממני את הטוב ביותר — רמת תחרות.', value: 7   },
+      { fr: "Je rate souvent mon service (dans le filet ou hors carré)",    en: "I often miss my serve (into the net or outside the box)",    he: 'אני לרוב מפספס את ההגשה (ברשת או מחוץ למשבצת)',    subFr: "La pression fait sortir le mauvais geste.",      subEn: "Pressure brings out the wrong motion.",           subHe: 'הלחץ מוציא את התנועה הלא נכונה.',            value: 1   },
+      { fr: "Je sers, mais plus faible et plus prévisible que d'habitude", en: "I get it in, but weaker and more predictable than usual",    he: 'אני מגיש, אבל חלש וצפוי יותר מהרגיל',             subFr: "Je sécurise trop, l'adversaire l'attend.",       subEn: "I play it too safe, the opponent expects it.",    subHe: 'אני משחק בטוח מדי, היריב מצפה לזה.',        value: 3   },
+      { fr: "Je garde mon service habituel, sans changement",              en: "I keep my usual serve, no change",                          he: 'אני שומר על ההגשה הרגילה שלי, ללא שינוי',         subFr: "Sang-froid, pas de panique sur le geste.",       subEn: "Composed, no panic in the motion.",               subHe: 'קור רוח, ללא פאניקה בתנועה.',                value: 5.5 },
+      { fr: "Je sers encore plus précisément que d'habitude",              en: "I serve even more precisely than usual",                    he: 'אני מגיש בדיוק גדול אף יותר מהרגיל',              subFr: "Les points importants font ressortir le meilleur de moi — niveau compétition.", subEn: "Big points bring out my best — competition level.", subHe: 'נקודות גדולות מוציאות ממני את הטוב ביותר — רמת תחרות.', value: 7   },
     ]},
 
-  // ── Q9 · Général : Précision de balle ────────────────────────────────────
+  // ── Q9 · Technique : Chiquita ────────────────────────────────────────────
   { id: 9, type: 'tech',
-    q:     { fr: "Arrives-tu à placer la balle là où tu le souhaites ?", en: "Can you place the ball where you want it?", he: 'האם אתה מצליח למקם את הכדור איפה שאתה רוצה?' },
-    qEval: { fr: "{name} arrive à placer la balle là où il le souhaite ?", en: "Can {name} place the ball where they want it?", he: '{name} מצליח למקם את הכדור איפה שהוא רוצה?' },
+    q:     { fr: "Arrives-tu à jouer une balle lente et basse qui plonge dans les pieds de l'adversaire au filet, pour l'empêcher de smasher — ce coup s'appelle la chiquita ?", en: "Can you play a slow, low ball that drops at the feet of the opponent at the net, to stop them smashing — this shot is called the chiquita?", he: 'אתה מצליח לשחק כדור איטי ונמוך שצונח לרגלי היריב ברשת, כדי למנוע ממנו לסמש — המכה הזו נקראת צ׳יקיטה?' },
+    qEval: { fr: "{name} arrive à jouer une balle lente et basse dans les pieds de l'adversaire au filet (la chiquita) pour l'empêcher de smasher ?", en: "Can {name} play a slow, low ball at the feet of the opponent at the net (the chiquita) to stop them smashing?", he: 'האם {name} מצליח לשחק כדור איטי ונמוך לרגלי היריב ברשת (הצ׳יקיטה) כדי למנוע ממנו לסמש?' },
     options: [
-      { fr: 'Rarement — la direction est souvent aléatoire',  en: 'Rarely — direction is often random',          he: 'לעיתים רחוקות — הכיוון לרוב אקראי',     subFr: "Je frappe sans cible précise.",                    subEn: "I hit without a specific target.",                  subHe: 'אני מכה ללא מטרה ספציפית.',           value: 1   },
-      { fr: 'Parfois — je vise une zone, pas un point précis', en: 'Sometimes — I aim for a zone, not a spot',   he: 'לפעמים — אני מכוון לאזור, לא לנקודה',   subFr: "Correct en coup construit, imprécis sous pression.", subEn: "OK when rally is calm, imprecise under pressure.",  subHe: 'בסדר בחילוף רגוע, לא מדויק תחת לחץ.', value: 3   },
-      { fr: 'Régulièrement — je place avec intention',        en: 'Regularly — I place with intent',             he: 'באופן קבוע — אני ממקם בכוונה',          subFr: "Je choisis la zone et j'y arrive en coup construit.", subEn: "I choose the zone and hit it in built rallies.", subHe: 'אני בוחר אזור ומגיע אליו בחילוף בנוי.', value: 5.5 },
-      { fr: 'Précision chirurgicale — direction et profondeur maîtrisées', en: 'Surgical precision — direction and depth mastered', he: 'דיוק כירורגי — כיוון ועומק נשלטים', subFr: "Je place même sous pression et en déplacement.", subEn: "I place even under pressure and on the move.", subHe: 'ממקם גם תחת לחץ ובמהלך תנועה.', value: 7   },
+      { fr: "Rarement — ma balle reste souvent haute, facile à smasher",    en: "Rarely — my ball often stays high, easy to smash",          he: 'לעיתים רחוקות — הכדור שלי לרוב נשאר גבוה, קל לסמש', subFr: "Je ne connais pas encore ce coup.",             subEn: "I don't know this shot yet.",                     subHe: 'אני עדיין לא מכיר את המכה הזו.',             value: 1   },
+      { fr: "Parfois, mais sans grande précision sur les pieds",           en: "Sometimes, but without much precision at the feet",         he: 'לפעמים, אבל ללא דיוק רב אל הרגליים',              subFr: "L'intention est là, l'exécution manque de régularité.", subEn: "The intent is there, the execution isn't consistent.", subHe: 'הכוונה קיימת, הביצוע לא עקבי.',        value: 3   },
+      { fr: "Régulièrement, ça oblige l'adversaire à remonter la balle",   en: "Regularly, it forces the opponent to lift the ball",        he: 'באופן קבוע, זה מאלץ את היריב להרים את הכדור',      subFr: "Coup tactique fiable.",                          subEn: "Reliable tactical shot.",                         subHe: 'מכה טקטית אמינה.',                           value: 5.5 },
+      { fr: "Presque à volonté, même sous pression",                       en: "Almost at will, even under pressure",                       he: 'כמעט כרצוני, גם תחת לחץ',                         subFr: "Coup tactique maîtrisé — niveau tournoi.",       subEn: "Tactical shot mastered — tournament level.",      subHe: 'מכה טקטית בשליטה — רמת טורניר.',            value: 7   },
     ]},
 
   // ── Q10 · Général : Smash par 3 / par 4 ─────────────────────────────────
   { id: 10, type: 'tech',
-    q:     { fr: "Arrives-tu à smacher et faire sortir la balle du terrain ?", en: "Can you smash and make the ball exit the court?", he: 'האם אתה מצליח לסמש ולהוציא את הכדור מהמגרש?' },
-    qEval: { fr: "{name} arrive à smacher et faire sortir la balle du terrain ?", en: "Can {name} smash and make the ball exit the court?", he: '{name} מצליח לסמש ולהוציא את הכדור מהמגרש?' },
+    q:     { fr: "Arrives-tu à smasher assez fort pour que la balle rebondisse et sorte du terrain, par-dessus le grillage du côté (on appelle ça un par 3) ou par-dessus la vitre du fond (un par 4) ?", en: "Can you smash hard enough for the ball to bounce and exit the court, over the side fence (called a par 3) or over the back glass (a par 4)?", he: 'אתה מצליח לסמש חזק מספיק כדי שהכדור יקפוץ ויצא מהמגרש, מעל הגדר בצד (נקרא פר 3) או מעל הזכוכית מאחור (פר 4)?' },
+    qEval: { fr: "{name} arrive à smasher assez fort pour faire sortir la balle du terrain, par le côté (par 3) ou par le fond (par 4) ?", en: "Can {name} smash hard enough to make the ball exit the court, by the side (par 3) or the back (par 4)?", he: 'האם {name} מצליח לסמש חזק מספיק כדי להוציא את הכדור מהמגרש, מהצד (פר 3) או מאחור (פר 4)?' },
     options: [
       { fr: 'Je ne smache pas encore',                        en: "I can't smash yet",                           he: 'עדיין לא מבצע סמאש',                    subFr: "Le smash est encore difficile à exécuter.",        subEn: "The smash is still difficult to execute.",          subHe: 'הסמאש עדיין קשה לביצוע.',             value: 1   },
       { fr: 'Parfois la balle sort du fond',                  en: 'Sometimes the ball exits at the back',        he: 'לפעמים הכדור יוצא מהאחור',              subFr: "La balle sort du terrain, mais sans intention.",   subEn: "The ball exits, but without real intention.",       subHe: 'הכדור יוצא מהמגרש, אך ללא כוונה.',    value: 3   },
@@ -936,12 +936,12 @@ export function generateLevelSummary(answers, lang) {
       5.5: { fr: "tu relances proprement depuis les vitres avec intention",                  en: "you cleanly replay from the walls with intent",                         he: "אתה מחזיר נקי מהקירות עם כוונה" },
       7:   { fr: "tu transformes les doubles vitres en situations d'attaque",                en: "you turn double-wall shots into attacking opportunities",                he: "אתה הופך כפל-קיר להזדמנויות התקפה" },
     },
-    // Q3 — Régularité
+    // Q3 — Fautes directes en échange de fond
     3: {
-      1:   { fr: "tu perds encore des points par des fautes directes sous pression",         en: "you still lose points from direct errors under pressure",               he: "אתה עדיין מאבד נקודות משגיאות ישירות תחת לחץ" },
-      3:   { fr: "ta régularité tient à froid mais se fragilise dans les moments chauds",    en: "your consistency holds when calm but wavers at key moments",            he: "העקביות שלך מחזיקה בשלווה אך נחלשת ברגעים מכריעים" },
-      5.5: { fr: "ta régularité est fiable même dans les matchs serrés",                     en: "your consistency holds even in tight matches",                          he: "העקביות שלך אמינה גם במשחקים קרובים" },
-      7:   { fr: "la fatigue et le score ne t'affectent jamais — régularité de compétition", en: "fatigue and score never affect you — competition-level consistency",   he: "עייפות ותוצאה לא משפיעות עליך — עקביות תחרותית" },
+      1:   { fr: "tes échanges de fond se terminent encore vite sur une faute directe",     en: "your baseline rallies still end quickly on a direct error",             he: "החילופים שלך מהאחור עדיין נגמרים מהר בשגיאה ישירה" },
+      3:   { fr: "tu tiens quatre à cinq frappes avant de craquer sur les échanges longs",  en: "you hold four or five shots before cracking in longer rallies",         he: "אתה מחזיק ארבע-חמש מכות לפני שנשבר בחילופים ארוכים" },
+      5.5: { fr: "tu tiens l'échange de fond jusqu'à créer ton occasion",                    en: "you hold the baseline rally until you create your opening",             he: "אתה מחזיק את החילוף מהאחור עד שאתה יוצר הזדמנות" },
+      7:   { fr: "tu ne cèdes quasiment jamais sur une faute directe, même en fin de match", en: "you almost never give away a direct error, even late in the match",     he: "אתה כמעט אף פעם לא מוסר שגיאה ישירה, גם בסוף המשחק" },
     },
     // Q4 — Vibora
     4: {
@@ -950,40 +950,40 @@ export function generateLevelSummary(answers, lang) {
       5.5: { fr: "tu places ta vibora avec intention — exécution et direction maîtrisées",    en: "you place your vibora with intent — execution and direction mastered",  he: "אתה ממקם את הויברה בכוונה — ביצוע וכיוון נשלטים" },
       7:   { fr: "ta vibora — croisée ou à la ligne — est une vraie arme offensive",          en: "your vibora — cross or line — is a genuine offensive weapon",          he: "הויברה שלך — אלכסונית או קווית — היא נשק התקפי אמיתי" },
     },
-    // Q5 — Puissance
+    // Q5 — Accélération liftée
     5: {
-      1:   { fr: "ton jeu repose sur le placement plutôt que la puissance",                   en: "your game relies on placement rather than power",                      he: "המשחק שלך מסתמך על מיקום יותר מכוח" },
-      3:   { fr: "ta puissance est encore irrégulière, parfois sans intention",               en: "your power is still inconsistent, sometimes without purpose",          he: "הכוח שלך עדיין לא עקבי, לפעמים ללא כוונה" },
-      5.5: { fr: "tu choisis quand accélérer — puissance avec effet et direction",            en: "you choose when to accelerate — power with spin and direction",        he: "אתה בוחר מתי להאיץ — כוח עם ספין וכיוון" },
-      7:   { fr: "tu imposes le rythme par ta puissance constante et précise",                en: "you dictate the pace with consistent, precise power",                  he: "אתה מכתיב את הקצב בכוחך העקבי והמדויק" },
+      1:   { fr: "tes accélérations liftées partent encore souvent dehors ou dans le filet",  en: "your topspin drives still often go out or into the net",               he: "ההאצות שלך עם טופספין עדיין לרוב יוצאות או נתקעות ברשת" },
+      3:   { fr: "tu accélères une fois sur deux, sans contrôler le résultat",                 en: "you accelerate about half the time, without controlling the outcome",  he: "אתה מאיץ פעם בשתיים, בלי לשלוט בתוצאה" },
+      5.5: { fr: "tu choisis quand accélérer — effet et direction maîtrisés",                  en: "you choose when to accelerate — spin and direction under control",     he: "אתה בוחר מתי להאיץ — שליטה בספין ובכיוון" },
+      7:   { fr: "tu accélères presque à volonté, avec puissance et précision",                en: "you accelerate almost at will, with power and precision",              he: "אתה מאיץ כמעט כרצונך, עם כוח ודיוק" },
     },
-    // Q6 — Lecture tactique
+    // Q6 — Anticipation du coup adverse
     6: {
-      1:   { fr: "tu réagis encore en retard sur les frappes adverses",                       en: "you still react too late to opponents' shots",                         he: "אתה עדיין מגיב באיחור למכות היריבים" },
-      3:   { fr: "tu devines la zone adverse sans toujours anticiper la direction",            en: "you guess the opponent's zone without always reading the direction",   he: "אתה מנחש את אזור היריב מבלי תמיד לקרוא את הכיוון" },
-      5.5: { fr: "tu anticipes les intentions et les zones adverses avec précision",           en: "you anticipate opponents' intentions and zones with accuracy",         he: "אתה מצפה לכוונות ואזורי היריב בדיוק" },
-      7:   { fr: "tu lis simultanément ton partenaire et les deux adversaires — niveau tournoi", en: "you read your partner and both opponents simultaneously — tournament level", he: "אתה קורא שותף ושני יריבים בו-זמנית — רמת טורניר" },
+      1:   { fr: "tu ne réagis encore qu'une fois le coup adverse parti",                     en: "you still react only once the opponent's shot is gone",                he: "אתה עדיין מגיב רק אחרי שהמכה של היריב יצאה" },
+      3:   { fr: "tu devines parfois la zone, rarement le type de coup adverse",               en: "you sometimes guess the zone, rarely the type of shot",                he: "אתה לפעמים מנחש את האזור, רק לעיתים את סוג המכה" },
+      5.5: { fr: "tu lis l'intention adverse et ajustes ta position à temps",                  en: "you read the opponent's intent and adjust your position in time",      he: "אתה קורא את כוונת היריב ומתאים את מיקומך בזמן" },
+      7:   { fr: "tu lis l'adversaire tout en couvrant ton partenaire — niveau tournoi",       en: "you read the opponent while covering your partner — tournament level", he: "אתה קורא את היריב תוך כדי כיסוי השותף — רמת טורניר" },
     },
-    // Q7 — Placement
+    // Q7 — Reprendre le filet après une défense
     7: {
-      1:   { fr: "ton replacement sur le court reste encore réactif et sans lecture",         en: "your court positioning is still reactive with no court vision",        he: "המיקום שלך במגרש עדיין תגובתי ללא ראיית מגרש" },
-      3:   { fr: "tu couvres bien ta zone mais tardes parfois à te replacer",                 en: "you cover your zone well but are sometimes slow to reposition",        he: "אתה מכסה את אזורך טוב אבל לפעמים איטי להתמקם מחדש" },
-      5.5: { fr: "tu contrôles ta moitié de court avec intention et anticipation",            en: "you control your half of the court with intent and anticipation",      he: "אתה שולט בחצי המגרש שלך עם כוונה וציפייה" },
-      7:   { fr: "ton placement seul suffit à déplacer tes adversaires — niveau compétition", en: "your positioning alone moves opponents — competition level",           he: "המיקום שלך לבדו מזיז את היריבים — רמת תחרות" },
+      1:   { fr: "une fois repoussé au fond, tu y restes presque tout l'échange",             en: "once pushed to the back, you stay there for most of the rally",        he: "ברגע שנדחפת לאחור, אתה נשאר שם רוב החילוף" },
+      3:   { fr: "tu remontes au filet quand la balle est facile, sinon tu restes en retrait", en: "you move up to the net on easy balls, otherwise you hang back",       he: "אתה מתקדם לרשת בכדור קל, אחרת נשאר מאחור" },
+      5.5: { fr: "tu cherches activement à reprendre le filet après avoir défendu",           en: "you actively look to retake the net after defending",                  he: "אתה מחפש באופן פעיל לחזור לרשת אחרי הגנה" },
+      7:   { fr: "ta transition défense-attaque est maîtrisée — niveau tournoi",              en: "your defence-to-attack transition is mastered — tournament level",     he: "המעבר שלך מהגנה להתקפה בשליטה — רמת טורניר" },
     },
-    // Q8 — Mental / Pression
+    // Q8 — Service sur point d'or
     8: {
-      1:   { fr: "la pression provoque encore des fautes directes sur les points importants", en: "pressure still causes direct errors on important points",              he: "לחץ עדיין גורם לשגיאות ישירות בנקודות חשובות" },
-      3:   { fr: "les moments décisifs affectent encore la qualité de ton jeu",               en: "decisive moments still affect the quality of your game",               he: "רגעים מכריעים עדיין משפיעים על איכות המשחק שלך" },
-      5.5: { fr: "tu gardes ton sang-froid dans les matchs serrés sans paniquer",             en: "you stay composed in tight matches without panicking",                  he: "אתה שומר על קור רוח במשחקים קרובים ללא פאניקה" },
-      7:   { fr: "les points importants révèlent le meilleur de ton jeu — mental de compétition", en: "big points bring out your best — competition mindset",           he: "נקודות גדולות מוציאות ממך את הטוב ביותר — מנטלות תחרותית" },
+      1:   { fr: "ton service lâche encore sur les points d'or et les balles de match",       en: "your serve still breaks down on golden points and match points",       he: "ההגשה שלך עדיין נשברת בנקודות זהב ובנקודות משחק" },
+      3:   { fr: "tu sécurises ton service sur les points importants, au prix de l'agressivité", en: "you play your serve safe on big points, at the cost of aggression",  he: "אתה משחק בטוח בהגשה בנקודות גדולות, על חשבון האגרסיביות" },
+      5.5: { fr: "tu gardes ton service habituel sur les points décisifs",                     en: "you keep your usual serve on decisive points",                        he: "אתה שומר על ההגשה הרגילה שלך בנקודות מכריעות" },
+      7:   { fr: "ton service devient encore plus précis sur les points d'or — niveau compétition", en: "your serve gets even sharper on golden points — competition level", he: "ההגשה שלך נעשית מדויקת אף יותר בנקודות זהב — רמת תחרות" },
     },
-    // Q9 — Précision
+    // Q9 — Chiquita
     9: {
-      1:   { fr: "la direction de ta balle est encore souvent aléatoire",                     en: "your ball direction is still often random",                             he: "כיוון הכדור שלך עדיין לרוב אקראי" },
-      3:   { fr: "tu vises des zones larges, la précision reste à affiner",                   en: "you aim for broad zones, precision still needs work",                  he: "אתה מכוון לאזורים רחבים, הדיוק עדיין דורש עבודה" },
-      5.5: { fr: "tu places régulièrement la balle là où tu le souhaites",                    en: "you regularly place the ball where you want it",                       he: "אתה ממקם את הכדור באופן קבוע איפה שאתה רוצה" },
-      7:   { fr: "ta précision est chirurgicale — direction et profondeur maîtrisées",        en: "your precision is surgical — direction and depth fully mastered",       he: "הדיוק שלך כירורגי — כיוון ועומק נשלטים לחלוטין" },
+      1:   { fr: "ta balle reste encore haute au filet, facile à smasher pour l'adversaire",  en: "your ball still sits high at the net, easy for the opponent to smash", he: "הכדור שלך עדיין נשאר גבוה ברשת, קל ליריב לסמש" },
+      3:   { fr: "ta chiquita part avec la bonne intention, sans encore trouver les pieds",   en: "your chiquita has the right intent, but doesn't find the feet yet",    he: "לצ׳יקיטה שלך יש את הכוונה הנכונה, אך היא עדיין לא מוצאת את הרגליים" },
+      5.5: { fr: "ta chiquita oblige régulièrement l'adversaire à remonter la balle",         en: "your chiquita regularly forces the opponent to lift the ball",         he: "הצ׳יקיטה שלך מאלצת באופן קבוע את היריב להרים את הכדור" },
+      7:   { fr: "tu sors ta chiquita presque à volonté, même sous pression — niveau tournoi", en: "you produce your chiquita almost at will, even under pressure — tournament level", he: "אתה מוציא את הצ׳יקיטה שלך כמעט כרצונך, גם תחת לחץ — רמת טורניר" },
     },
     // Q10 — Smash
     10: {
