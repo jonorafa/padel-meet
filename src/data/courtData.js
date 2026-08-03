@@ -822,9 +822,9 @@ export const GLOSSARY = [
     key: 'bandeja',
     term: { fr: 'bandeja', en: 'bandeja', he: 'בנדחה' },
     def: {
-      fr: "Coup en hauteur joué depuis le côté, avec effet lifté. La balle retombe profonde dans le terrain adverse. L'un des coups signatures du padel, entre smash et lob.",
-      en: "An overhead shot played from the side with topspin. The ball lands deep in the opponent's court — one of padel's signature shots, between a smash and a lob.",
-      he: "מכה גבוהה מהצד עם ספין. הכדור נוחת עמוק בשדה היריב — אחד המהלכים האופייניים לפאדל.",
+      fr: "Coup aérien joué en réponse à un lob adverse, avec un effet coupé et peu de puissance. Son but n'est pas de gagner le point mais de garder la position au filet, souvent visé dans les pieds de l'adversaire.",
+      en: "An overhead shot played in response to an opponent's lob, with a slice and little power. Its goal isn't to win the point but to keep the net position — usually aimed at the opponent's feet.",
+      he: "מכה גבוהה המבוצעת בתגובה ללוב של היריב, עם אפקט חתוך וכוח מועט. מטרתה אינה לזכות בנקודה אלא לשמור על עמדת הרשת, ומכוונת לרוב לרגלי היריב.",
     },
   },
   {
