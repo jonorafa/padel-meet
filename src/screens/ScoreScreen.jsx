@@ -31,57 +31,58 @@ function ScaleInput({ q, lang, dark, onSubmit }) {
   );
 }
 
-// ─── Questions bonus : grille 2×2 façon jeu télévisé ─────────────────────────
-// Grille droite plutôt que le losange en rotation du format TV : sur ~375px de
-// large, un losange écraserait le texte des options (jusqu'à ~50 caractères).
-// Les 4 pastilles A/B/C/D portent l'information autant que la couleur — un
-// daltonien distingue quand même les cases.
+// ─── Questions bonus : grille 2×2 (cartes crème, sélection vert + pastille or) ─
+// Cartes unifiées : fond blanc/crème + pastille verte par défaut, et au clic la
+// carte choisie passe en vert plein avec pastille or — le reste garde son état
+// neutre. Petit délai avant d'avancer (comme le mockup) pour que l'utilisateur
+// voie sa sélection avant la transition vers la question suivante.
 // Définie au niveau module : un composant recréé à chaque rendu est vu par
 // React comme un TYPE différent et remonte le sous-arbre à chaque frappe.
-const BONUS_TILES = [
-  { label: 'A', bg: COURT.green,      fg: COURT.cream },
-  { label: 'B', bg: COURT.purple,     fg: COURT.cream },
-  { label: 'C', bg: COURT.gold,       fg: COURT.ink   },
-  { label: 'D', bg: COURT.greenLight, fg: COURT.cream },
-];
+function BonusGrid({ q, lang, dark, onPick }) {
+  const [selected, setSelected] = useState(null);
+  const card  = dark ? COURT.darkCard   : '#ffffff';
+  const ink   = dark ? COURT.darkText   : COURT.ink;
+  const cream = dark ? COURT.darkBg     : COURT.cream;
+  const border = dark ? COURT.darkBorder : 'rgba(31,92,63,0.2)';
 
-function BonusGrid({ q, lang, rtl, onPick }) {
+  const pick = (i, val) => {
+    if (selected != null) return; // évite un double-clic pendant la transition
+    setSelected(i);
+    // Bonne réponse → 7 ; mauvaise → undefined, ce qui laisse la question hors
+    // de `answers` (aucun effet sur le niveau).
+    setTimeout(() => onPick(val), 260);
+  };
+
   return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, overflow: 'auto',
-    }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, overflow: 'auto' }}>
       {q.options.map((opt, i) => {
-        const tile = BONUS_TILES[i] || BONUS_TILES[0];
+        const isSel = selected === i;
         return (
           <button
             key={i}
-            // Bonne réponse → 7 ; mauvaise → undefined, ce qui laisse la
-            // question hors de `answers` (aucun effet sur le niveau).
-            onClick={() => onPick(opt.correct ? 7 : undefined)}
+            onClick={() => pick(i, opt.correct ? 7 : undefined)}
             style={{
-              // minHeight plutôt qu'aspectRatio strict : les options les plus
-              // longues (~50 caractères) doivent pouvoir tenir sans être coupées.
-              minHeight: 108,
+              borderRadius: 18, padding: '22px 14px', minHeight: 140,
               display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 8,
-              padding: '14px 10px',
-              background: tile.bg, color: tile.fg,
-              border: 'none', borderRadius: 12, cursor: 'pointer',
-              transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+              alignItems: 'center', justifyContent: 'center', gap: 14,
+              cursor: 'pointer', textAlign: 'center',
+              background: isSel ? COURT.green : card,
+              border: isSel ? 'none' : `0.5px solid ${border}`,
+              transition: 'background 0.2s ease',
               animation: `cardIn 0.4s ease ${i * 0.06}s both`,
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.18)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
             <span style={{
-              width: 22, height: 22, borderRadius: 11, flexShrink: 0,
-              background: `${tile.fg}2E`,
+              width: 30, height: 30, borderRadius: 15, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Mulish', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-            }}>{tile.label}</span>
+              fontFamily: 'Mulish', fontSize: 13, fontWeight: 700,
+              background: isSel ? COURT.gold : COURT.green,
+              color:      isSel ? COURT.greenDeep : cream,
+            }}>{'ABCD'[i]}</span>
             <span style={{
-              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-              fontSize: 13.5, lineHeight: 1.3, textAlign: 'center', fontWeight: 500,
+              fontFamily: 'Mulish, sans-serif', fontWeight: 600,
+              fontSize: 16.5, lineHeight: 1.35,
+              color: isSel ? COURT.cream : ink,
             }}>
               {opt[lang] || opt.en || opt.fr}
             </span>
@@ -356,7 +357,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
         {q.inputType === 'scale' ? (
           <ScaleInput key={q.id} q={q} lang={lang} dark={dark} onSubmit={advance} />
         ) : q.type === 'bonus' ? (
-          <BonusGrid q={q} lang={lang} rtl={rtl} onPick={advance} />
+          <BonusGrid key={q.id} q={q} lang={lang} dark={dark} onPick={advance} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
             {q.options.map((opt, i) => (
