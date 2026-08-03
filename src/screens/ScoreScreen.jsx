@@ -7,7 +7,7 @@ import { QUIZ_QUESTIONS, GLOSSARY, computeLevel, scaleToLevel } from '../data/co
 // composant à chaque nouvelle question réinitialise `val` naturellement (pas
 // besoin d'un useEffect pour resynchroniser un state gardé au niveau parent).
 function ScaleInput({ q, lang, dark, onSubmit }) {
-  const [val, setVal] = useState(Math.round((q.scaleMin + q.scaleMax) / 2));
+  const [val, setVal] = useState(Math.floor((q.scaleMin + q.scaleMax) / 2));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 8 }}>
       <PadelSlider
