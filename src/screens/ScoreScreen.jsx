@@ -40,10 +40,13 @@ function ScaleInput({ q, lang, dark, onSubmit }) {
 // React comme un TYPE différent et remonte le sous-arbre à chaque frappe.
 function BonusGrid({ q, lang, dark, onPick }) {
   const [selected, setSelected] = useState(null);
-  const card  = dark ? COURT.darkCard   : '#ffffff';
-  const ink   = dark ? COURT.darkText   : COURT.ink;
-  const cream = dark ? COURT.darkBg     : COURT.cream;
-  const border = dark ? COURT.darkBorder : 'rgba(31,92,63,0.2)';
+  // Contours hairline seuls, aucune couleur de fond tant que rien n'est
+  // choisi : la carte reste crème/blanche dans les deux états, seule la
+  // pastille + le contour changent à la sélection (contour or, pastille
+  // remplie or au lieu du cercle vert vide).
+  const card       = dark ? COURT.darkCard   : '#ffffff';
+  const ink        = dark ? COURT.darkText   : COURT.ink;
+  const border     = dark ? COURT.darkBorder : 'rgba(31,92,63,0.2)';
 
   const pick = (i, val) => {
     if (selected != null) return; // évite un double-clic pendant la transition
@@ -66,9 +69,9 @@ function BonusGrid({ q, lang, dark, onPick }) {
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 14,
               cursor: 'pointer', textAlign: 'center',
-              background: isSel ? COURT.green : card,
-              border: isSel ? 'none' : `0.5px solid ${border}`,
-              transition: 'background 0.2s ease',
+              background: card,
+              border: `${isSel ? 1.5 : 0.5}px solid ${isSel ? COURT.gold : border}`,
+              transition: 'border-color 0.2s ease, border-width 0.2s ease',
               animation: `cardIn 0.4s ease ${i * 0.06}s both`,
             }}
           >
@@ -76,13 +79,14 @@ function BonusGrid({ q, lang, dark, onPick }) {
               width: 30, height: 30, borderRadius: 15, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'Mulish', fontSize: 13, fontWeight: 700,
-              background: isSel ? COURT.gold : COURT.green,
-              color:      isSel ? COURT.greenDeep : cream,
+              background: isSel ? COURT.gold : 'transparent',
+              border: isSel ? 'none' : `1.5px solid ${COURT.green}`,
+              color:  isSel ? COURT.greenDeep : COURT.green,
             }}>{'ABCD'[i]}</span>
             <span style={{
               fontFamily: 'Mulish, sans-serif', fontWeight: 600,
               fontSize: 16.5, lineHeight: 1.35,
-              color: isSel ? COURT.cream : ink,
+              color: ink,
             }}>
               {opt[lang] || opt.en || opt.fr}
             </span>
