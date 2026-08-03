@@ -703,9 +703,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "{name} renvoie-t-il facilement une balle qui rebondit sur sa vitre ?", en: "Does {name} easily return a ball off their glass?", he: "האם {name} מחזיר בקלות כדור שמקפץ מהזכוכית שלו?" },
     options: [
       { fr: 'Rarement, le rebond me surprend',                 en: 'Rarely, the bounce catches me off guard',    he: 'לעיתים רחוקות, הקפיצה מפתיעה אותי',     value: 1   },
-      { fr: 'Je récupère la balle, sans précision',            en: 'I recover the ball, without precision',      he: 'אני מציל את הכדור, בלי דיוק',           value: 2   },
-      { fr: 'Je renvoie proprement, avec intention',           en: 'I return cleanly, with intent',              he: 'אני מחזיר נקי, בכוונה',                 value: 3.5 },
-      { fr: 'Je transforme le rebond en attaque',              en: 'I turn the bounce into an attack',           he: 'אני הופך את הקפיצה להתקפה',             value: 7   },
+      { fr: 'Je récupère la balle, mais loin du filet',        en: 'I get the ball back, but far from the net',  he: 'אני מחזיר את הכדור, אבל רחוק מהרשת',    value: 2   },
+      { fr: "Je renvoie assez fort pour empêcher l'attaque",   en: 'I return hard enough to stop their attack',  he: 'אני מחזיר חזק מספיק כדי למנוע התקפה',   value: 3.5 },
+      { fr: 'Je place le renvoi pour créer une ouverture',     en: 'I place the return to create an opening',    he: 'אני ממקם את ההחזרה כדי ליצור פתח',      value: 7   },
     ]},
 
   { id: 7, type: 'tech',
@@ -713,9 +713,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "{name} arrive-t-il à renvoyer une balle qui touche les deux vitres du coin ?", en: "Can {name} return a ball hitting both corner glasses?", he: "האם {name} מצליח להחזיר כדור שנוגע בשתי הזכוכיות בפינה?" },
     options: [
       { fr: 'Non, je perds le point',                          en: 'No, I lose the point',                       he: 'לא, אני מפסיד את הנקודה',               value: 1   },
-      { fr: 'Parfois, en urgence, sans précision',             en: 'Sometimes, rushed, without precision',       he: 'לפעמים, בלחץ, בלי דיוק',                value: 2   },
-      { fr: 'Oui, je la renvoie proprement',                   en: 'Yes, I return it cleanly',                   he: 'כן, אני מחזיר אותו נקי',                value: 3.5 },
-      { fr: 'Je la transforme en attaque, niveau tournoi',     en: 'I turn it into an attack, tournament level', he: 'אני הופך אותו להתקפה, רמת טורניר',      value: 7   },
+      { fr: 'Je la renvoie, mais trop haute',                  en: 'I get it back, but too high',                he: 'אני מחזיר אותו, אבל גבוה מדי',          value: 2   },
+      { fr: 'Je la renvoie basse, difficile à attaquer',       en: 'I return it low, hard to attack',            he: 'אני מחזיר אותו נמוך, קשה לתקוף',        value: 3.5 },
+      { fr: 'Je transforme la double vitre en point gagnant',  en: 'I turn the corner double-glass into a winner', he: 'אני הופך את כפל הקיר לנקודה מנצחת',   value: 7   },
     ]},
 
   { id: 8, type: 'tech',
@@ -723,9 +723,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "Un smash puissant rebondit sur la vitre de {name} et retombe court : le renvoie-t-il ?", en: "A hard smash bounces off {name}'s glass and lands short: do they return it?", he: "סמאש חזק מקפץ מהזכוכית של {name} ונופל קרוב: האם הוא מחזיר?" },
     options: [
       { fr: 'Je le rate souvent, trop puissant',               en: 'I often miss it, too powerful',              he: 'אני לרוב מפספס, חזק מדי',               value: 1   },
-      { fr: 'Je le renvoie, sans contrôle',                    en: 'I return it, without control',               he: 'אני מחזיר אותו, בלי שליטה',             value: 2   },
-      { fr: 'Je le renvoie proprement, en sécurité',           en: 'I return it cleanly and safely',             he: 'אני מחזיר אותו נקי, בבטחה',             value: 3.5 },
-      { fr: 'Je le transforme en contre-attaque',              en: 'I turn it into a counter-attack',            he: 'אני הופך אותו להתקפת נגד',              value: 7   },
+      { fr: 'Je le renvoie, mais la balle reste haute',        en: 'I return it, but the ball stays high',       he: 'אני מחזיר אותו, אבל הכדור נשאר גבוה',   value: 2   },
+      { fr: "Je le renvoie bas, l'adversaire doit relancer",   en: 'I return it low, forcing them to lift',      he: 'אני מחזיר נמוך, היריב חייב להרים',      value: 3.5 },
+      { fr: 'Je contre-attaque directement dessus',            en: 'I counter-attack straight off it',           he: 'אני יוצא להתקפת נגד ישירות',            value: 7   },
     ]},
 
   { id: 9, type: 'tech',
@@ -733,9 +733,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "{name} frappe sur sa vitre arrière et la balle retombe loin, côté adverse ?", en: "Does {name} hit their back glass and land the ball deep on the other side?", he: "{name} מכה בזכוכית האחורית והכדור נופל עמוק בצד היריב?" },
     options: [
       { fr: 'Rarement, la balle reste courte',                 en: 'Rarely, the ball stays short',               he: 'לעיתים רחוקות, הכדור נשאר קצר',         value: 1   },
-      { fr: 'Parfois, sans grande profondeur',                 en: 'Sometimes, without much depth',              he: 'לפעמים, בלי עומק רב',                   value: 2   },
-      { fr: 'Régulièrement, avec profondeur',                  en: 'Regularly, with depth',                      he: 'באופן קבוע, עם עומק',                   value: 3.5 },
-      { fr: 'Presque à volonté, niveau tournoi',                en: 'Almost at will, tournament level',           he: 'כמעט כרצוני, רמת טורניר',               value: 7   },
+      { fr: 'Parfois profond, mais sans direction précise',    en: 'Sometimes deep, but without precise direction', he: 'לפעמים עמוק, אבל בלי כיוון מדויק',   value: 2   },
+      { fr: "Profond et placé, ça complique son jeu",          en: 'Deep and placed, it complicates their game', he: 'עמוק וממוקם, זה מסבך את המשחק שלו',     value: 3.5 },
+      { fr: 'Je choisis systématiquement où ça retombe',       en: 'I consistently choose where it lands',       he: 'אני בוחר באופן עקבי איפה הוא נוחת',     value: 7   },
     ]},
 
   // ═══════════════════ GROUPE 4 · Smash ══════════════════════════════════════
@@ -744,9 +744,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "Le smash de {name} fait-il sortir la balle par le côté (par 3) ?", en: "Does {name}'s smash send the ball out the side (par 3)?", he: "האם הסמאש של {name} מוציא את הכדור מהצד (פר 3)?" },
     options: [
       { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מבצע סמאש',                value: 1   },
-      { fr: 'Parfois, sans intention',                         en: 'Sometimes, without intent',                  he: 'לפעמים, בלי כוונה',                     value: 2   },
-      { fr: 'Régulièrement, par 3 contrôlé',                   en: 'Regularly, a controlled par 3',              he: 'באופן קבוע, פר 3 מבוקר',                value: 3.5 },
-      { fr: 'Par 3 au choix, niveau tournoi',                  en: 'Par 3 at will, tournament level',            he: 'פר 3 לפי בחירה, רמת טורניר',            value: 7   },
+      { fr: 'Ça sort parfois par le côté, sans le vouloir',    en: 'It sometimes exits the side, unintentionally', he: 'לפעמים יוצא מהצד, בלי כוונה',          value: 2   },
+      { fr: 'Je vise le par 3 et je le réussis souvent',       en: 'I aim for the par 3 and often land it',      he: 'אני מכוון לפר 3 ולרוב מצליח',           value: 3.5 },
+      { fr: 'Je choisis le par 3 selon la situation',          en: 'I choose the par 3 based on the situation',  he: 'אני בוחר פר 3 לפי המצב',                value: 7   },
     ]},
 
   { id: 11, type: 'tech',
@@ -754,9 +754,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "Le smash de {name} fait-il sortir la balle par le fond (par 4) ?", en: "Does {name}'s smash send the ball out the back (par 4)?", he: "האם הסמאש של {name} מוציא את הכדור מאחור (פר 4)?" },
     options: [
       { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מבצע סמאש',                value: 1   },
-      { fr: 'Parfois, sans intention',                         en: 'Sometimes, without intent',                  he: 'לפעמים, בלי כוונה',                     value: 2   },
-      { fr: 'Régulièrement, par 4 contrôlé',                   en: 'Regularly, a controlled par 4',              he: 'באופן קבוע, פר 4 מבוקר',                value: 3.5 },
-      { fr: 'Par 3 et par 4 au choix, niveau tournoi',         en: 'Par 3 or par 4 at will, tournament level',   he: 'פר 3 ופר 4 לפי בחירה, רמת טורניר',      value: 7   },
+      { fr: 'Ça sort parfois par le fond, sans le vouloir',    en: 'It sometimes exits the back, unintentionally', he: 'לפעמים יוצא מאחור, בלי כוונה',         value: 2   },
+      { fr: 'Je vise le par 4 et je le réussis souvent',       en: 'I aim for the par 4 and often land it',      he: 'אני מכוון לפר 4 ולרוב מצליח',           value: 3.5 },
+      { fr: 'Je choisis le par 4 selon la situation',          en: 'I choose the par 4 based on the situation',  he: 'אני בוחר פר 4 לפי המצב',                value: 7   },
     ]},
 
   // ═══════════════════ GROUPE 5 · Tactique ═══════════════════════════════════
@@ -765,9 +765,9 @@ export const QUIZ_QUESTIONS = [
     qEval: { fr: "{name} arrive-t-il à lire le jeu de l'adversaire à l'avance ?", en: "Can {name} read the opponent's game in advance?", he: "האם {name} מצליח לקרוא את משחק היריב מראש?" },
     options: [
       { fr: 'Rarement, je réagis en retard',                   en: 'Rarely, I react too late',                   he: 'לעיתים רחוקות, אני מגיב מאוחר',         value: 1   },
-      { fr: 'Je devine parfois la zone',                       en: 'I sometimes guess the zone',                 he: 'לפעמים אני מנחש את האזור',              value: 2   },
-      { fr: "Bonne lecture, j'anticipe",                       en: 'Good read, I anticipate',                    he: 'קריאה טובה, אני צופה מראש',             value: 3.5 },
-      { fr: 'Lecture experte, niveau tournoi',                 en: 'Expert read, tournament level',              he: 'קריאה מומחית, רמת טורניר',              value: 7   },
+      { fr: 'Je devine parfois la zone, pas le coup',          en: 'I sometimes guess the zone, not the shot',   he: 'לפעמים מנחש את האזור, לא את המכה',      value: 2   },
+      { fr: "J'anticipe le coup et j'ajuste ma position",      en: 'I read the shot and adjust my position',     he: 'אני צופה את המכה ומתאים את מיקומי',     value: 3.5 },
+      { fr: "J'anticipe l'adversaire ET je couvre mon partenaire", en: 'I read the opponent AND cover my partner', he: 'אני צופה את היריב וגם מכסה את השותף', value: 7   },
     ]},
 
   { id: 13, type: 'tech',
@@ -776,8 +776,8 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, direction aléatoire',                   en: 'Rarely, random direction',                    he: 'לעיתים רחוקות, כיוון אקראי',            value: 1   },
       { fr: 'Je vise une zone, pas un point précis',           en: 'I aim for a zone, not a precise spot',       he: 'אני מכוון לאזור, לא לנקודה מדויקת',     value: 2   },
-      { fr: 'Je place avec intention',                         en: 'I place with intent',                        he: 'אני ממקם בכוונה',                       value: 3.5 },
-      { fr: 'Précision chirurgicale, niveau tournoi',          en: 'Surgical precision, tournament level',       he: 'דיוק כירורגי, רמת טורניר',              value: 7   },
+      { fr: "Je place la balle loin de l'adversaire",          en: 'I place the ball away from the opponent',    he: 'אני ממקם את הכדור רחוק מהיריב',         value: 3.5 },
+      { fr: 'Je vise directement ses pieds ou un point faible', en: 'I aim straight at their feet or a weak spot', he: 'אני מכוון ישר לרגליו או לנקודה חלשה',  value: 7   },
     ]},
 
   { id: 14, type: 'tech',
@@ -787,7 +787,7 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Rarement, je reste bloqué au fond',               en: 'Rarely, I stay stuck at the back',           he: 'לעיתים רחוקות, נשאר תקוע מאחור',        value: 1   },
       { fr: "Parfois, si l'occasion est facile",               en: "Sometimes, when it's an easy chance",       he: 'לפעמים, כשההזדמנות קלה',                value: 2   },
       { fr: 'Régulièrement, je remonte activement',            en: 'Regularly, I actively move up',              he: 'באופן קבוע, אני מתקדם באופן פעיל',      value: 3.5 },
-      { fr: 'Presque systématiquement, niveau tournoi',        en: 'Almost every time, tournament level',        he: 'כמעט תמיד, רמת טורניר',                 value: 7   },
+      { fr: 'Je remonte même après une défense difficile',     en: 'I move up even after a tough defensive shot', he: 'אני מתקדם גם אחרי הגנה קשה',            value: 7   },
     ]},
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -805,8 +805,8 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Moins de 3 mois',   en: 'Less than 3 months', he: 'פחות מ-3 חודשים',   subFr: "Je découvre le padel.",     subEn: "Just discovering padel.",     subHe: 'רק מגלה את הפאדל.',    value: 1 },
       { fr: "Moins d'1 an",      en: 'Less than 1 year',   he: 'פחות משנה',         subFr: "Je construis mes bases.",   subEn: "Building my foundations.",    subHe: 'בונה את הבסיס.',       value: 2 },
-      { fr: '2 ans',             en: '2 years',            he: 'שנתיים',            subFr: "Pratique installée.",       subEn: "Well-established practice.",  subHe: 'תרגול מבוסס.',         value: 3.5 },
-      { fr: '2 ans et plus',     en: '2+ years',           he: 'שנתיים ומעלה',      subFr: "Joueur de longue date.",    subEn: "Long-time player.",           subHe: 'שחקן ותיק.',           value: 7 },
+      { fr: '1 à 2 ans',         en: '1 to 2 years',       he: 'שנה עד שנתיים',     subFr: "Pratique installée.",       subEn: "Well-established practice.",  subHe: 'תרגול מבוסס.',         value: 3.5 },
+      { fr: 'Plus de 2 ans',     en: 'Over 2 years',       he: 'יותר משנתיים',      subFr: "Joueur de longue date.",    subEn: "Long-time player.",           subHe: 'שחקן ותיק.',           value: 7 },
     ]},
 
   // ── Q16 · Ancre : Niveau / compétition ────────────────────────────────────
@@ -1074,58 +1074,58 @@ export function generateLevelSummary(answers, lang) {
     // Q6 — Renvoi simple (une vitre)
     6: {
       1:   { fr: "les rebonds de vitre te surprennent encore",                                en: "wall rebounds still catch you off guard",                              he: "ניתוזי הקיר עדיין מפתיעים אותך" },
-      2:   { fr: "tu récupères les balles de vitre sans grande précision",                    en: "you retrieve wall balls without much precision",                       he: "אתה מציל כדורי קיר בלי דיוק רב" },
-      3.5: { fr: "tu relances proprement depuis la vitre",                                    en: "you cleanly replay from the glass",                                    he: "אתה מחזיר נקי מהזכוכית" },
-      7:   { fr: "tu transformes le rebond en attaque",                                       en: "you turn the rebound into an attack",                                  he: "אתה הופך את הקפיצה להתקפה" },
+      2:   { fr: "tu récupères la balle de vitre, mais loin du filet",                    en: "you get the wall ball back, but far from the net",                       he: "אתה מחזיר את כדור הקיר, אבל רחוק מהרשת" },
+      3.5: { fr: "tu renvoies assez fort pour empêcher l'attaque adverse",                                    en: "you return hard enough to stop their attack",                                    he: "אתה מחזיר חזק מספיק כדי למנוע את התקפת היריב" },
+      7:   { fr: "tu places ton renvoi de vitre pour créer une ouverture",                                       en: "you place your wall return to create an opening",                                  he: "אתה ממקם את החזרת הקיר כדי ליצור פתח" },
     },
     // Q7 — Double vitre du coin
     7: {
       1:   { fr: "la double vitre du coin te fait encore perdre le point",                    en: "the corner double-glass still costs you the point",                   he: "כפל הקיר בפינה עדיין עולה לך בנקודה" },
-      2:   { fr: "tu renvoies la double vitre en urgence, sans précision",                    en: "you return the corner double-glass rushed, imprecisely",              he: "אתה מחזיר את כפל הקיר בלחץ, בלי דיוק" },
-      3.5: { fr: "tu renvoies proprement la double vitre du coin",                            en: "you cleanly return the corner double-glass",                          he: "אתה מחזיר נקי את כפל הקיר בפינה" },
-      7:   { fr: "tu transformes la double vitre du coin en attaque",                         en: "you turn the corner double-glass into an attack",                     he: "אתה הופך את כפל הקיר בפינה להתקפה" },
+      2:   { fr: "tu renvoies la double vitre, mais trop haute",                    en: "you get the corner double-glass back, but too high",              he: "אתה מחזיר את כפל הקיר, אבל גבוה מדי" },
+      3.5: { fr: "tu renvoies la double vitre basse, difficile à attaquer",                            en: "you return the corner double-glass low, hard to attack",                          he: "אתה מחזיר את כפל הקיר נמוך, קשה לתקוף" },
+      7:   { fr: "tu transformes la double vitre du coin en point gagnant",                         en: "you turn the corner double-glass into a winner",                     he: "אתה הופך את כפל הקיר בפינה לנקודה מנצחת" },
     },
     // Q8 — Défense sur smash adverse puissant
     8: {
       1:   { fr: "les smashs puissants sur ta vitre te posent encore problème",               en: "powerful smashes off your glass still trouble you",                   he: "סמאשים חזקים על הזכוכית שלך עדיין מקשים עליך" },
-      2:   { fr: "tu renvoies les smashs puissants sans grand contrôle",                      en: "you return powerful smashes without much control",                    he: "אתה מחזיר סמאשים חזקים בלי שליטה רבה" },
-      3.5: { fr: "tu renvoies les smashs puissants proprement, en sécurité",                  en: "you return powerful smashes cleanly and safely",                       he: "אתה מחזיר סמאשים חזקים נקי ובבטחה" },
+      2:   { fr: "tu renvoies les smashs puissants, mais la balle reste haute",                      en: "you return powerful smashes, but the ball stays high",                    he: "אתה מחזיר סמאשים חזקים, אבל הכדור נשאר גבוה" },
+      3.5: { fr: "tu renvoies bas sur les smashs puissants, l'adversaire doit relancer",                  en: "you return powerful smashes low, forcing them to lift",                       he: "אתה מחזיר נמוך על סמאשים חזקים, היריב חייב להרים" },
       7:   { fr: "tu transformes les smashs puissants en contre-attaque",                     en: "you turn powerful smashes into a counter-attack",                      he: "אתה הופך סמאשים חזקים להתקפת נגד" },
     },
     // Q9 — Renvoi offensif profond via vitre arrière
     9: {
       1:   { fr: "tes renvois depuis la vitre arrière restent encore courts",                 en: "your back-glass returns still stay short",                            he: "ההחזרות שלך מהזכוכית האחורית עדיין קצרות" },
-      2:   { fr: "tes renvois depuis la vitre arrière manquent de profondeur",                en: "your back-glass returns lack depth",                                   he: "ההחזרות שלך מהזכוכית האחורית חסרות עומק" },
-      3.5: { fr: "tes renvois depuis la vitre arrière sont réguliers et profonds",            en: "your back-glass returns are regular and deep",                        he: "ההחזרות שלך מהזכוכית האחורית סדירות ועמוקות" },
-      7:   { fr: "tu renvoies la vitre arrière presque à volonté",                            en: "you play the back-glass return almost at will",                       he: "אתה מחזיר מהזכוכית האחורית כמעט כרצונך" },
+      2:   { fr: "tes renvois de vitre arrière sont parfois profonds, sans direction précise",                en: "your back-glass returns are sometimes deep, without precise direction",                                   he: "ההחזרות שלך מהזכוכית האחורית לפעמים עמוקות, בלי כיוון מדויק" },
+      3.5: { fr: "tes renvois de vitre arrière sont profonds et placés, ça complique son jeu",            en: "your back-glass returns are deep and placed, complicating their game",                        he: "ההחזרות שלך מהזכוכית האחורית עמוקות וממוקמות, זה מסבך את משחקו" },
+      7:   { fr: "tu choisis systématiquement où retombe ton renvoi de vitre arrière",                            en: "you consistently choose where your back-glass return lands",                       he: "אתה בוחר באופן עקבי איפה נוחתת החזרת הקיר האחורי שלך" },
     },
     // Q10 — Par 3
     10: {
       1:   { fr: "le smash est encore difficile à exécuter pour toi",                         en: "the smash is still difficult for you to execute",                     he: "הסמאש עדיין קשה לביצוע עבורך" },
       2:   { fr: "ton smash sort parfois du terrain, sans intention",                         en: "your smash sometimes exits, without real intent",                     he: "הסמאש שלך יוצא לפעמים, בלי כוונה אמיתית" },
-      3.5: { fr: "ton par 3 sort régulièrement — smash latéral contrôlé",                     en: "your par 3 lands consistently — a controlled side smash",             he: "הפר 3 שלך יוצא בהתמדה — סמאש צידי מבוקר" },
+      3.5: { fr: "tu vises le par 3 et tu le réussis souvent",                     en: "you aim for the par 3 and often land it",             he: "אתה מכוון לפר 3 ולרוב מצליח" },
       7:   { fr: "tu choisis ton par 3 selon la situation",                                   en: "you choose your par 3 based on the situation",                        he: "אתה בוחר את הפר 3 שלך לפי המצב" },
     },
     // Q11 — Par 4
     11: {
       1:   { fr: "le smash est encore difficile à exécuter pour toi",                         en: "the smash is still difficult for you to execute",                     he: "הסמאש עדיין קשה לביצוע עבורך" },
       2:   { fr: "ton smash sort parfois du terrain, sans intention",                         en: "your smash sometimes exits, without real intent",                     he: "הסמאש שלך יוצא לפעמים, בלי כוונה אמיתית" },
-      3.5: { fr: "ton par 4 sort régulièrement — smash de fond contrôlé",                     en: "your par 4 lands consistently — a controlled back smash",             he: "הפר 4 שלך יוצא בהתמדה — סמאש אחורי מבוקר" },
-      7:   { fr: "tu choisis entre par 3 et par 4 selon la situation",                        en: "you choose between par 3 and par 4 based on the situation",           he: "אתה בוחר בין פר 3 לפר 4 לפי המצב" },
+      3.5: { fr: "tu vises le par 4 et tu le réussis souvent",                     en: "you aim for the par 4 and often land it",             he: "אתה מכוון לפר 4 ולרוב מצליח" },
+      7:   { fr: "tu choisis ton par 4 selon la situation",                        en: "you choose your par 4 based on the situation",           he: "אתה בוחר את הפר 4 שלך לפי המצב" },
     },
     // Q12 — Lire le jeu adverse
     12: {
       1:   { fr: "tu réagis encore en retard sur le jeu adverse",                             en: "you still react too late to your opponent's game",                    he: "אתה עדיין מגיב באיחור למשחק היריב" },
-      2:   { fr: "tu devines parfois la zone de jeu adverse",                                 en: "you sometimes guess your opponent's zone",                            he: "אתה לפעמים מנחש את אזור היריב" },
-      3.5: { fr: "tu anticipes bien le jeu adverse",                                          en: "you anticipate your opponent's game well",                            he: "אתה צופה טוב את משחק היריב" },
-      7:   { fr: "tu lis le jeu adverse en expert, niveau tournoi",                           en: "you read the opponent's game like an expert — tournament level",      he: "אתה קורא את משחק היריב כמומחה — רמת טורניר" },
+      2:   { fr: "tu devines parfois la zone adverse, pas le coup",                                 en: "you sometimes guess the opponent's zone, not the shot",                            he: "אתה לפעמים מנחש את אזור היריב, לא את המכה" },
+      3.5: { fr: "tu anticipes le coup adverse et tu ajustes ta position",                                          en: "you read the opponent's shot and adjust your position",                            he: "אתה צופה את מכת היריב ומתאים את מיקומך" },
+      7:   { fr: "tu anticipes l'adversaire tout en couvrant ton partenaire",                           en: "you read the opponent while covering your partner",      he: "אתה צופה את היריב תוך כדי כיסוי השותף" },
     },
     // Q13 — Placer la balle où je veux
     13: {
       1:   { fr: "la direction de ta balle reste encore aléatoire",                           en: "your ball direction is still random",                                  he: "כיוון הכדור שלך עדיין אקראי" },
       2:   { fr: "tu vises des zones larges, la précision reste à affiner",                   en: "you aim for broad zones, precision still needs work",                 he: "אתה מכוון לאזורים רחבים, הדיוק דורש עבודה" },
-      3.5: { fr: "tu places régulièrement la balle où tu le souhaites",                       en: "you regularly place the ball where you want it",                      he: "אתה ממקם באופן קבוע את הכדור איפה שאתה רוצה" },
-      7:   { fr: "ta précision est chirurgicale, niveau tournoi",                             en: "your precision is surgical — tournament level",                       he: "הדיוק שלך כירורגי — רמת טורניר" },
+      3.5: { fr: "tu places la balle loin de l'adversaire",                       en: "you place the ball away from the opponent",                      he: "אתה ממקם את הכדור רחוק מהיריב" },
+      7:   { fr: "tu vises directement ses pieds ou son point faible",                             en: "you aim straight at their feet or their weak spot",                       he: "אתה מכוון ישר לרגליו או לנקודה החלשה שלו" },
     },
     // Q14 — Lob défensif pour reprendre le filet
     14: {
