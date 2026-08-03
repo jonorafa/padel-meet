@@ -810,6 +810,50 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Intermédiaire',  en: 'Intermediate', he: 'בינוני',  subFr: "Bases solides, je progresse régulièrement.",    subEn: "Solid basics, progressing steadily.",    subHe: 'בסיס מוצק, מתקדם בהתמדה.',       value: 5 },
       { fr: 'Avancé',         en: 'Advanced',     he: 'מתקדם',   subFr: "Niveau compétiteur.",                           subEn: "Competitor level.",                      subHe: 'רמת מתחרה.',                    value: 7 },
     ]},
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BONUS TACTIQUE (auto-évaluation uniquement — `selfOnly`).
+  // Questions de CONNAISSANCE, pas de compétence exécutée : on ne peut donc pas
+  // les juger en observant quelqu'un jouer → exclues du mode « évaluer un
+  // partenaire », comme les ancres.
+  //
+  // Mécanisme « ne peut que gagner » : les options portent `correct` au lieu de
+  // `value`. Bonne réponse → 7 est écrit dans `answers` (poids 0.3, faible) ;
+  // mauvaise réponse → la clé n'est PAS écrite, donc computeLevel ignore la
+  // question entièrement (ni numérateur ni dénominateur) et le niveau est
+  // rigoureusement identique à celui d'un joueur qui n'aurait jamais vu ces
+  // questions. Se tromper ne pénalise donc jamais.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // ── Q17 · Bonus : lob et montée synchronisée ──────────────────────────────
+  { id: 17, type: 'bonus', weight: 0.3, selfOnly: true,
+    q: { fr: "Tu lobes l'adversaire, qui doit reculer en défense. Que fais-tu ?", en: "You lob your opponent, forcing them back on defence. What do you do?", he: "אתה מבצע לוב ליריב, שנאלץ לסגת להגנה. מה אתה עושה?" },
+    options: [
+      { fr: 'Je reste au fond du court',                    en: 'I stay at the back of the court',            he: 'אני נשאר בעומק המגרש',                 correct: false },
+      { fr: 'Mon partenaire monte, moi je défends',         en: 'My partner moves up, I stay back',           he: 'השותף שלי עולה, אני מגן',              correct: false },
+      { fr: 'On monte tous les deux au filet',              en: 'We both move up to the net',                 he: 'שנינו עולים לרשת',                     correct: true  },
+      { fr: 'On smashe immédiatement, sans changer de position', en: 'We smash right away, without moving',   he: 'סומשים מיד, בלי לשנות מיקום',          correct: false },
+    ]},
+
+  // ── Q18 · Bonus : balle au centre ─────────────────────────────────────────
+  { id: 18, type: 'bonus', weight: 0.3, selfOnly: true,
+    q: { fr: "Balle au centre, vous êtes 2 droitiers au filet. Qui la prend en priorité ?", en: "Ball down the middle, two right-handers at the net. Who takes it?", he: "כדור במרכז, שניכם ימניים ברשת. מי לוקח אותו?" },
+    options: [
+      { fr: 'Le joueur de droite (revers)',                 en: 'The player on the right (backhand)',         he: 'השחקן מימין (בקהנד)',                  correct: false },
+      { fr: 'Le joueur de gauche (coup droit)',             en: 'The player on the left (forehand)',          he: 'השחקן משמאל (פורהנד)',                 correct: true  },
+      { fr: 'Le plus proche du filet',                      en: 'Whoever is closest to the net',              he: 'מי שקרוב יותר לרשת',                   correct: false },
+      { fr: 'On la laisse rebondir',                        en: 'We let it bounce',                           he: 'נותנים לו לקפוץ',                      correct: false },
+    ]},
+
+  // ── Q19 · Bonus : recul synchronisé ───────────────────────────────────────
+  { id: 19, type: 'bonus', weight: 0.3, selfOnly: true,
+    q: { fr: "Vous êtes 2 au filet, un lob adverse profond arrive au-dessus de vous. Que faites-vous ?", en: "Both at the net, a deep lob comes over your heads. What do you do?", he: "שניכם ברשת, לוב עמוק מגיע מעל ראשיכם. מה אתם עושים?" },
+    options: [
+      { fr: "Un seul recule, l'autre reste au filet",       en: 'One drops back, the other stays at the net', he: 'אחד נסוג, השני נשאר ברשת',             correct: false },
+      { fr: 'On recule tous les deux ensemble',             en: 'We both drop back together',                 he: 'שנינו נסוגים יחד',                     correct: true  },
+      { fr: 'On smashe quand même',                         en: 'We smash anyway',                            he: 'סומשים בכל זאת',                       correct: false },
+      { fr: 'On reste immobile',                            en: 'We stay put',                                he: 'נשארים במקום',                         correct: false },
+    ]},
 ];
 
 /**
@@ -867,9 +911,9 @@ export const GLOSSARY = [
     key: 'par 4',
     term: { fr: 'par 4', en: 'par 4', he: 'פר 4' },
     def: {
-      fr: "Smash plat et puissant où la balle sort par le fond du terrain, au-dessus de la vitre arrière (4 m). Le coup le plus difficile et le plus spectaculaire du padel.",
-      en: "A flat, powerful smash where the ball exits through the back glass (4 m). The hardest and most spectacular shot in padel.",
-      he: "סמאש שטוח ועוצמתי שבו הכדור יוצא דרך הזכוכית האחורית (4 מ'). המכה הקשה והמרשימה ביותר בפאדל.",
+      fr: "Smash plat et puissant où la balle sort par le fond du terrain, au-dessus de la vitre arrière (4 m). La puissance vient du transfert de poids et de l'accélération du poignet au moment de l'impact.",
+      en: "A flat, powerful smash where the ball exits through the back glass (4 m). The power comes from the weight transfer and the wrist acceleration at the moment of impact.",
+      he: "סמאש שטוח ועוצמתי שבו הכדור יוצא דרך הזכוכית האחורית (4 מ'). הכוח מגיע מהעברת המשקל ומהאצת שורש כף היד ברגע הפגיעה.",
     },
   },
 ];
@@ -894,20 +938,33 @@ export const GLOSSARY = [
  *     AUTO-évaluation ; en peer-éval seules les 14 tech comptent. (La
  *     fréquence de jeu actuelle a été retirée : elle ne reflète pas un
  *     niveau de padel — un joueur de haut niveau peut jouer rarement.)
+ *   • 3 BONUS TACTIQUES (type:'bonus', selfOnly, id 17-19, poids 0.3) —
+ *     questions de connaissance. Une bonne réponse écrit 7 dans `answers` ;
+ *     une mauvaise n'écrit RIEN, donc computeLevel ignore la question comme
+ *     si elle n'existait pas. Se tromper ne pénalise jamais.
  *
  * FORMULE : moyenne PONDÉRÉE des réponses (chaque option a une `value` sur la
  *   même échelle 0.5–7 ; `weight` par défaut = 1).
  *     Score = Σ(value × weight) / Σ(weight) → arrondi 1 déc. → clamp [0.5, 7.0]
  *
- * VÉRIFICATIONS (poids : 14 tech ×1 + ancres ancienneté ×2, niveau ×2 = 18)
- *   Peer-éval max : 14 tech × 7 / 14                  = 7.0   ✓ (ancres absentes)
- *   Auto MAX      : (14×7 + 7×2 + 7×2) / 18           = 7.0   ✓
- *   Auto MIN      : (11×1 + 3×0.5 + 1×2 + 1×2) / 18 ≈ 0.917 → 0.9   ✓
+ * VÉRIFICATIONS (poids : 14 tech ×1 + ancres ancienneté ×2, niveau ×2 = 18,
+ *                + jusqu'à 3 bonus ×0.3 = 0.9 si toutes correctes)
+ *   Peer-éval max  : 14 tech × 7 / 14                      = 7.0   ✓
+ *                    (ancres ET bonus sont selfOnly → absents en peer-éval)
+ *   Auto MAX       : (14×7 + 7×2 + 7×2) / 18               = 7.0   ✓
+ *   Auto MAX+bonus : (126 + 3×7×0.3) / (18 + 0.9) = 132.3/18.9 = 7.0   ✓
+ *                    (le plafond ne bouge pas : les bonus valent 7, comme le
+ *                     reste au maximum — ils ne peuvent pas dépasser 7)
+ *   Auto MIN       : (11×1 + 3×0.5 + 1×2 + 1×2) / 18 ≈ 0.917 → 0.9   ✓
  *     (11 questions standard à leur pire valeur 1, les 3 curseurs à leur pire
  *      valeur convertie scaleToLevel(1) = 0.5, puis les 2 ancres à leur pire
  *      valeur 1 — « Je débute » vaut désormais 1, aligné sur l'échelle 1/3/5/7
  *      commune à toutes les autres questions, d'où un plancher à 0.9 plutôt
  *      que 1.0)
+ *   Auto MIN, bonus TOUS FAUX : identique à Auto MIN (0.9) — les 3 clés sont
+ *      absentes de `answers`, le calcul est bit-à-bit le même.
+ *   Auto MIN, bonus TOUS JUSTES : (16.5 + 6.3) / 18.9 ≈ 1.206 → 1.2
+ *      (un débutant qui connaît la tactique gagne 0.3, il ne perd jamais rien)
  *
  * CAS SKIP : retourne null — ne jamais inventer de valeur par défaut.
  */

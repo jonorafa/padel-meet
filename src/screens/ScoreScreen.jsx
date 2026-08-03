@@ -31,6 +31,67 @@ function ScaleInput({ q, lang, dark, onSubmit }) {
   );
 }
 
+// ─── Questions bonus : grille 2×2 façon jeu télévisé ─────────────────────────
+// Grille droite plutôt que le losange en rotation du format TV : sur ~375px de
+// large, un losange écraserait le texte des options (jusqu'à ~50 caractères).
+// Les 4 pastilles A/B/C/D portent l'information autant que la couleur — un
+// daltonien distingue quand même les cases.
+// Définie au niveau module : un composant recréé à chaque rendu est vu par
+// React comme un TYPE différent et remonte le sous-arbre à chaque frappe.
+const BONUS_TILES = [
+  { label: 'A', bg: COURT.green,      fg: COURT.cream },
+  { label: 'B', bg: COURT.purple,     fg: COURT.cream },
+  { label: 'C', bg: COURT.gold,       fg: COURT.ink   },
+  { label: 'D', bg: COURT.greenLight, fg: COURT.cream },
+];
+
+function BonusGrid({ q, lang, rtl, onPick }) {
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, overflow: 'auto',
+    }}>
+      {q.options.map((opt, i) => {
+        const tile = BONUS_TILES[i] || BONUS_TILES[0];
+        return (
+          <button
+            key={i}
+            // Bonne réponse → 7 ; mauvaise → undefined, ce qui laisse la
+            // question hors de `answers` (aucun effet sur le niveau).
+            onClick={() => onPick(opt.correct ? 7 : undefined)}
+            style={{
+              // minHeight plutôt qu'aspectRatio strict : les options les plus
+              // longues (~50 caractères) doivent pouvoir tenir sans être coupées.
+              minHeight: 108,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 8,
+              padding: '14px 10px',
+              background: tile.bg, color: tile.fg,
+              border: 'none', borderRadius: 12, cursor: 'pointer',
+              transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+              animation: `cardIn 0.4s ease ${i * 0.06}s both`,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.18)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            <span style={{
+              width: 22, height: 22, borderRadius: 11, flexShrink: 0,
+              background: `${tile.fg}2E`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'Mulish', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+            }}>{tile.label}</span>
+            <span style={{
+              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+              fontSize: 13.5, lineHeight: 1.3, textAlign: 'center', fontWeight: 500,
+            }}>
+              {opt[lang] || opt.en || opt.fr}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Rendu de texte avec termes du glossaire cliquables ──────────────────────
 // Parcourt le texte, détecte les termes du glossaire (pour la langue courante)
 // et les entoure d'un <span> vert/souligné cliquable.
@@ -189,8 +250,16 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
   const stone  = dark ? COURT.darkMuted : COURT.stone;
   const border = dark ? COURT.darkBorder: `${COURT.green}50`;
 
+  // `val === undefined` → on laisse la question HORS de `answers`. computeLevel
+  // l'ignore alors totalement (ni au numérateur ni au dénominateur), exactement
+  // comme une question jamais répondue. C'est le mécanisme des bonus ratés :
+  // se tromper doit être strictement neutre, pas pénalisant.
+  // Le `delete` compte : sans lui, revenir en arrière sur un bonus réussi puis
+  // répondre faux laisserait le 7 précédent en place.
   const advance = (val) => {
-    const newAnswers = { ...answers, [q.id]: val };
+    const newAnswers = { ...answers };
+    if (val === undefined) delete newAnswers[q.id];
+    else newAnswers[q.id] = val;
     setAnswers(newAnswers);
     setAnimDir('out');
     setTimeout(() => {
@@ -286,6 +355,8 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
         {/* Réponses */}
         {q.inputType === 'scale' ? (
           <ScaleInput key={q.id} q={q} lang={lang} dark={dark} onSubmit={advance} />
+        ) : q.type === 'bonus' ? (
+          <BonusGrid q={q} lang={lang} rtl={rtl} onPick={advance} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
             {q.options.map((opt, i) => (
