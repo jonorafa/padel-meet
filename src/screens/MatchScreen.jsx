@@ -2642,10 +2642,15 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   };
 
   // ─── Cooldown mensuel réévaluation ──────────────────────────────────────────
+  // ⚠️ TEMPORAIREMENT DÉSACTIVÉ pour permettre des tests internes répétés sans
+  // attendre le mois suivant. Rien n'est supprimé — repasser à `false` (ou
+  // retirer le `!EVAL_COOLDOWN_TESTING_DISABLED &&` ci-dessous) réactive le
+  // cooldown exactement comme avant.
+  const EVAL_COOLDOWN_TESTING_DISABLED = true;
   const lastEvalRaw  = profile?.last_self_eval_date;
   const lastEvalDate = lastEvalRaw ? new Date(lastEvalRaw) : null;
   const today        = new Date();
-  const evalBlocked  = lastEvalDate != null
+  const evalBlocked  = !EVAL_COOLDOWN_TESTING_DISABLED && lastEvalDate != null
     && lastEvalDate.getFullYear() === today.getFullYear()
     && lastEvalDate.getMonth()    === today.getMonth();
   // 1er du mois suivant
