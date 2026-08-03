@@ -17,7 +17,7 @@ import { Sentry } from '../sentry'
  *   - loading, error : états de chargement
  */
 export function useMatchResults() {
-  const { user } = useAuth()
+  const { user, refreshProfile } = useAuth()
   const [pendingResults, setPendingResults] = useState([])
   const [matchStatuses,  setMatchStatuses]  = useState({}) // matchId → { attempts, locked }
   const [loading, setLoading] = useState(false)
@@ -164,6 +164,12 @@ export function useMatchResults() {
 
       // Recharge la liste
       await fetchPendingResults()
+      // confirm_match_result vient d'appliquer le crédit "play" aux DEUX joueurs
+      // si les niveaux sont proches. Le soumetteur reçoit une notification qui
+      // déclenche son propre refresh (useNotifications) ; nous, le confirmateur,
+      // n'en recevons aucune pour notre propre action — sans cet appel explicite,
+      // notre indice de confiance resterait figé à l'écran jusqu'au prochain login.
+      refreshProfile?.()
 
       return { success: true }
     } catch (err) {
@@ -175,7 +181,7 @@ export function useMatchResults() {
     } finally {
       setLoading(false)
     }
-  }, [fetchPendingResults])
+  }, [fetchPendingResults, refreshProfile])
 
   // Rejeter un score reçu
   const rejectResult = useCallback(async (pendingId) => {

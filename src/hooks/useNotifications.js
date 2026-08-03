@@ -18,8 +18,15 @@ function relativeTime(ts) {
  * Écoute en temps réel les nouvelles notifications.
  * Aucun fallback statique — état vide honnête si aucune notification.
  */
+// Types de notification qui signalent un changement de confidence_rate côté
+// serveur pour LE DESTINATAIRE (peer eval reçue, ou score confirmé par
+// l'adversaire). Sans ce refresh, le pourcentage affiché reste celui du
+// dernier login — correct en base, mais figé à l'écran tant que la session
+// reste ouverte.
+const CONFIDENCE_AFFECTING_TYPES = new Set(['eval', 'match_result_confirmed'])
+
 export function useNotifications() {
-  const { user } = useAuth()
+  const { user, refreshProfile } = useAuth()
   const [notifications, setNotifications] = useState([])
 
   const normalize = useCallback((n, fromProfile = null) => ({
@@ -70,11 +77,14 @@ export function useNotifications() {
           fromProfile = fp
         }
         setNotifications(prev => [normalize(n, fromProfile), ...prev])
+        // L'indice de confiance vient de changer côté serveur pour ce joueur —
+        // sans ce refresh, il resterait figé à l'écran jusqu'au prochain login.
+        if (CONFIDENCE_AFFECTING_TYPES.has(n.type)) refreshProfile?.()
       })
       .subscribe()
 
     return () => supabase.removeChannel(channel)
-  }, [user?.id, normalize])
+  }, [user?.id, normalize, refreshProfile])
 
   const markRead = useCallback(async (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))

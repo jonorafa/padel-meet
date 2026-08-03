@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -218,9 +218,13 @@ export function AuthProvider({ children }) {
     return { data, error: null }
   }
 
-  const refreshProfile = () => {
+  // Mémoïsé : useNotifications() en fait une dépendance de useEffect (pour
+  // rafraîchir l'indice de confiance à la réception d'une notif d'éval/score).
+  // Sans useCallback, une nouvelle référence à chaque rendu du provider aurait
+  // fait réabonner le canal realtime des notifications à chaque re-render.
+  const refreshProfile = useCallback(() => {
     if (user) loadProfile(user.id)
-  }
+  }, [user])
 
   /** true si l'user est connecté mais n'a pas encore de profil complet (pseudo obligatoire) */
   const isOnboarding = !!user && !loading && (!profile || !profile.username)
