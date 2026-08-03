@@ -785,38 +785,30 @@ export const QUIZ_QUESTIONS = [
   // ══════════════════════════════════════════════════════════════════════════
   // ANCRES OBJECTIVES (auto-évaluation uniquement — `selfOnly`).
   // Exclues du mode « évaluer un partenaire » (on ne connaît pas l'ancienneté
-  // ni la fréquence de quelqu'un d'autre). Pondérées plus fort que la technique
-  // car ce sont des faits, plus difficiles à sur-estimer que l'auto-jugement.
+  // de quelqu'un d'autre). Pondérées plus fort que la technique car ce sont
+  // des faits, plus difficiles à sur-estimer que l'auto-jugement.
+  // (La fréquence de jeu actuelle a été retirée : ce n'est pas un indicateur
+  // de niveau — un joueur de haut niveau peut très bien jouer rarement.)
   // ══════════════════════════════════════════════════════════════════════════
 
   // ── Q15 · Ancre : Ancienneté ──────────────────────────────────────────────
   { id: 15, type: 'anchor', selfOnly: true, weight: 2,
     q: { fr: "Depuis combien de temps joues-tu au padel ?", en: "How long have you been playing padel?", he: "כמה זמן אתה משחק פאדל?" },
     options: [
-      { fr: 'Moins de 6 mois',            en: 'Less than 6 months',     he: 'פחות מ-6 חודשים',  subFr: "Je débute.",                          subEn: "I'm just starting.",                  subHe: 'אני רק מתחיל.',                  value: 1   },
-      { fr: '6 mois à 2 ans',             en: '6 months to 2 years',    he: '6 חודשים עד שנתיים', subFr: "Je construis mes bases.",             subEn: "Building my foundations.",            subHe: 'בונה את הבסיס.',                 value: 3   },
-      { fr: '2 à 5 ans',                  en: '2 to 5 years',           he: '2 עד 5 שנים',       subFr: "Pratique installée.",                 subEn: "Well-established practice.",          subHe: 'תרגול מבוסס.',                   value: 5   },
-      { fr: 'Plus de 5 ans, régulièrement', en: 'Over 5 years, regularly', he: 'מעל 5 שנים, באופן קבוע', subFr: "Joueur de longue date.",          subEn: "Long-time player.",                   subHe: 'שחקן ותיק.',                     value: 7   },
+      { fr: 'Moins de 3 mois',   en: 'Less than 3 months', he: 'פחות מ-3 חודשים',   subFr: "Je découvre le padel.",     subEn: "Just discovering padel.",     subHe: 'רק מגלה את הפאדל.',    value: 1 },
+      { fr: "Moins d'1 an",      en: 'Less than 1 year',   he: 'פחות משנה',         subFr: "Je construis mes bases.",   subEn: "Building my foundations.",    subHe: 'בונה את הבסיס.',       value: 3 },
+      { fr: '2 ans',             en: '2 years',            he: 'שנתיים',            subFr: "Pratique installée.",       subEn: "Well-established practice.",  subHe: 'תרגול מבוסס.',         value: 5 },
+      { fr: '2 ans et plus',     en: '2+ years',           he: 'שנתיים ומעלה',      subFr: "Joueur de longue date.",    subEn: "Long-time player.",           subHe: 'שחקן ותיק.',           value: 7 },
     ]},
 
-  // ── Q16 · Ancre : Fréquence de jeu ────────────────────────────────────────
-  { id: 16, type: 'anchor', selfOnly: true, weight: 1,
-    q: { fr: "À quelle fréquence joues-tu en ce moment ?", en: "How often do you play right now?", he: "באיזו תדירות אתה משחק כעת?" },
-    options: [
-      { fr: 'Rarement (quelques fois par an)', en: 'Rarely (a few times a year)', he: 'לעיתים רחוקות (כמה פעמים בשנה)', subFr: "Jeu occasionnel.",            subEn: "Occasional play.",            subHe: 'משחק מזדמן.',          value: 1.5 },
-      { fr: '1 fois par semaine ou moins',     en: 'Once a week or less',          he: 'פעם בשבוע או פחות',           subFr: "Rythme léger.",               subEn: "Light pace.",                 subHe: 'קצב קל.',              value: 3   },
-      { fr: '2 à 3 fois par semaine',          en: '2 to 3 times a week',          he: '2 עד 3 פעמים בשבוע',          subFr: "Joueur régulier.",            subEn: "Regular player.",             subHe: 'שחקן קבוע.',           value: 4.5 },
-      { fr: '4 fois ou plus par semaine',      en: '4+ times a week',              he: '4 פעמים או יותר בשבוע',       subFr: "Pratique intensive.",         subEn: "Intensive practice.",         subHe: 'תרגול אינטנסיבי.',     value: 6.5 },
-    ]},
-
-  // ── Q17 · Ancre : Niveau / compétition ────────────────────────────────────
-  { id: 17, type: 'anchor', selfOnly: true, weight: 2,
+  // ── Q16 · Ancre : Niveau / compétition ────────────────────────────────────
+  { id: 16, type: 'anchor', selfOnly: true, weight: 2,
     q: { fr: "À quel niveau de jeu te situes-tu ?", en: "Where do you place your level of play?", he: "באיזו רמת משחק אתה ממקם את עצמך?" },
     options: [
-      { fr: 'Je débute, je joue pour apprendre',          en: "Beginner, I play to learn",                 he: 'מתחיל, משחק כדי ללמוד',         subFr: "Phase d'apprentissage.",            subEn: "Learning phase.",                  subHe: 'שלב למידה.',                value: 1.5 },
-      { fr: 'Loisir : je joue entre amis, sans compétition', en: "Casual: friendly games, no competition", he: 'פנאי: משחק עם חברים, ללא תחרות', subFr: "Bon niveau loisir.",               subEn: "Solid casual level.",              subHe: 'רמת פנאי טובה.',            value: 3.5 },
-      { fr: 'Je gagne souvent en loisir / petits tournois', en: "I often win casual / small tournaments",  he: 'מנצח לעיתים קרובות בפנאי / טורנירים קטנים', subFr: "Au-dessus du loisir moyen.", subEn: "Above average casual.",        subHe: 'מעל ממוצע הפנאי.',         value: 5   },
-      { fr: 'Je joue en compétition officielle (tournois classés)', en: "I play official competition (ranked tournaments)", he: 'משחק בתחרות רשמית (טורנירים מדורגים)', subFr: "Niveau compétiteur.",  subEn: "Competitor level.",            subHe: 'רמת מתחרה.',               value: 7   },
+      { fr: 'Je débute',      en: 'Beginner',     he: 'מתחיל',   subFr: "Phase d'apprentissage.",                        subEn: "Learning phase.",                        subHe: 'שלב למידה.',                    value: 1 },
+      { fr: 'Amateur',        en: 'Amateur',      he: 'חובבן',   subFr: "Je joue pour le plaisir, niveau loisir.",       subEn: "I play for fun, casual level.",          subHe: 'משחק בשביל הכיף, רמת פנאי.',     value: 3 },
+      { fr: 'Intermédiaire',  en: 'Intermediate', he: 'בינוני',  subFr: "Bases solides, je progresse régulièrement.",    subEn: "Solid basics, progressing steadily.",    subHe: 'בסיס מוצק, מתקדם בהתמדה.',       value: 5 },
+      { fr: 'Avancé',         en: 'Advanced',     he: 'מתקדם',   subFr: "Niveau compétiteur.",                           subEn: "Competitor level.",                      subHe: 'רמת מתחרה.',                    value: 7 },
     ]},
 ];
 
@@ -897,20 +889,25 @@ export const GLOSSARY = [
  *     Les 3 premières (id 1-3, « ressenti ») sont des curseurs 1-10 convertis
  *     via scaleToLevel() AVANT d'entrer dans `answers` — computeLevel ne voit
  *     que la valeur déjà sur l'échelle 0.5-7, comme n'importe quelle option.
- *   • 3 ANCRES OBJECTIVES (type:'anchor', selfOnly, id 15-17) — ancienneté
- *     (poids 2), fréquence (poids 1), niveau/compétition (poids 2). Présentes
- *     uniquement en AUTO-évaluation ; en peer-éval seules les 14 tech comptent.
+ *   • 2 ANCRES OBJECTIVES (type:'anchor', selfOnly, id 15-16) — ancienneté
+ *     (poids 2), niveau/compétition (poids 2). Présentes uniquement en
+ *     AUTO-évaluation ; en peer-éval seules les 14 tech comptent. (La
+ *     fréquence de jeu actuelle a été retirée : elle ne reflète pas un
+ *     niveau de padel — un joueur de haut niveau peut jouer rarement.)
  *
  * FORMULE : moyenne PONDÉRÉE des réponses (chaque option a une `value` sur la
  *   même échelle 0.5–7 ; `weight` par défaut = 1).
  *     Score = Σ(value × weight) / Σ(weight) → arrondi 1 déc. → clamp [0.5, 7.0]
  *
- * VÉRIFICATIONS (poids : 14 tech ×1 + ancres ancienneté ×2, fréquence ×1, niveau ×2 = 19)
- *   Peer-éval max : 14 tech × 7 / 14                          = 7.0   ✓ (ancres absentes)
- *   Auto MAX      : (14×7 + 7×2 + 6.5×1 + 7×2) / 19 ≈ 6.97 → 7.0      ✓
- *   Auto MIN      : (11×1 + 3×0.5 + 1×2 + 1.5×1 + 1.5×2) / 19 = 1.0   ✓
+ * VÉRIFICATIONS (poids : 14 tech ×1 + ancres ancienneté ×2, niveau ×2 = 18)
+ *   Peer-éval max : 14 tech × 7 / 14                  = 7.0   ✓ (ancres absentes)
+ *   Auto MAX      : (14×7 + 7×2 + 7×2) / 18           = 7.0   ✓
+ *   Auto MIN      : (11×1 + 3×0.5 + 1×2 + 1×2) / 18 ≈ 0.917 → 0.9   ✓
  *     (11 questions standard à leur pire valeur 1, les 3 curseurs à leur pire
- *      valeur convertie scaleToLevel(1) = 0.5, puis les 3 ancres au plancher)
+ *      valeur convertie scaleToLevel(1) = 0.5, puis les 2 ancres à leur pire
+ *      valeur 1 — « Je débute » vaut désormais 1, aligné sur l'échelle 1/3/5/7
+ *      commune à toutes les autres questions, d'où un plancher à 0.9 plutôt
+ *      que 1.0)
  *
  * CAS SKIP : retourne null — ne jamais inventer de valeur par défaut.
  */
@@ -1101,8 +1098,8 @@ export function generateLevelSummary(answers, lang) {
   };
 
   // Collect answered questions with their values.
-  // Restreint aux questions ayant une PHRASE descriptive (technique 1–10) :
-  // les ancres objectives (ancienneté, fréquence, niveau) ne décrivent pas un
+  // Restreint aux questions ayant une PHRASE descriptive (technique 1–14) :
+  // les ancres objectives (ancienneté, niveau) ne décrivent pas un
   // « point fort/faible » de jeu et n'ont pas de phrase.
   const answered = QUIZ_QUESTIONS
     .filter(q => answers[q.id] != null && PHRASES[q.id])

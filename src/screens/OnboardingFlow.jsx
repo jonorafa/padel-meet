@@ -95,6 +95,7 @@ export default function OnboardingFlow() {
     <PartnerPrefsScreen
       lang={lang} dark={dark}
       onDone={handlePartnerDone}
+      onBack={() => setPhase('setup')}
     />
   )
 

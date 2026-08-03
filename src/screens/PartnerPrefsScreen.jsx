@@ -170,7 +170,7 @@ function ChipRow({ label, value, options, onChange, stone, dark }) {
 }
 
 // ─── PartnerPrefsScreen ───────────────────────────────────────────────────────
-export default function PartnerPrefsScreen({ lang, dark, onDone }) {
+export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
   const { saveProfile } = useAuth()
   const rtl   = lang === 'he'
   const t     = L[lang] || L.fr
@@ -200,6 +200,20 @@ export default function PartnerPrefsScreen({ lang, dark, onDone }) {
       position: 'absolute', inset: 0, background: bg,
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
+      {/* Bouton retour — vers l'étape précédente (création du profil) */}
+      {onBack && (
+        <button onClick={onBack} aria-label={lang === 'he' ? 'חזור' : lang === 'en' ? 'Back' : 'Retour'} style={{
+          position: 'absolute', top: 18, [rtl ? 'right' : 'left']: 18,
+          width: 36, height: 36, borderRadius: 18,
+          background: bg, border: `0.5px solid ${border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', color: COURT.green, zIndex: 5,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: rtl ? 'scaleX(-1)' : 'none' }}>
+            <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
 
       {/* ── Header ── */}
       <div style={{ padding: '32px 24px 12px', textAlign: 'center', flexShrink: 0 }}>
