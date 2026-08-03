@@ -1,6 +1,35 @@
 import { useState, useCallback, useMemo } from 'react';
-import { COURT, Ornament } from '../components/CourtUI';
-import { QUIZ_QUESTIONS, GLOSSARY, computeLevel } from '../data/courtData';
+import { COURT, Ornament, PadelSlider } from '../components/CourtUI';
+import { QUIZ_QUESTIONS, GLOSSARY, computeLevel, scaleToLevel } from '../data/courtData';
+
+// ─── Groupe 1 « ressenti » : curseur 1-10 ────────────────────────────────────
+// Composant à part, monté avec `key={q.id}` par l'appelant : remonter le
+// composant à chaque nouvelle question réinitialise `val` naturellement (pas
+// besoin d'un useEffect pour resynchroniser un state gardé au niveau parent).
+function ScaleInput({ q, lang, dark, onSubmit }) {
+  const [val, setVal] = useState(Math.round((q.scaleMin + q.scaleMax) / 2));
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22, marginTop: 8 }}>
+      <PadelSlider
+        min={q.scaleMin} max={q.scaleMax} step={1}
+        value={val}
+        onChange={setVal}
+        dark={dark}
+        bigValue
+        suffix={`/${q.scaleMax}`}
+        leftLabel={q.scaleMinLabel?.[lang] || q.scaleMinLabel?.fr}
+        rightLabel={q.scaleMaxLabel?.[lang] || q.scaleMaxLabel?.fr}
+      />
+      <button onClick={() => onSubmit(scaleToLevel(val))} style={{
+        padding: '15px 0', width: '100%', borderRadius: 999,
+        background: COURT.green, color: COURT.cream, border: 'none', cursor: 'pointer',
+        fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 17,
+      }}>
+        {lang === 'he' ? 'המשך' : lang === 'en' ? 'Continue' : 'Continuer'}
+      </button>
+    </div>
+  );
+}
 
 // ─── Rendu de texte avec termes du glossaire cliquables ──────────────────────
 // Parcourt le texte, détecte les termes du glossaire (pour la langue courante)
@@ -255,25 +284,29 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
         <Ornament width={50} style={{ marginBottom: 20 }} />
 
         {/* Réponses */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
-          {q.options.map((opt, i) => (
-            <button key={i} onClick={() => advance(opt.value)} style={{
-              textAlign: rtl ? 'right' : 'left', padding: '14px 16px',
-              background: dark ? COURT.darkCard : COURT.cream,
-              border: `0.5px solid ${border}`, borderRadius: 10, cursor: 'pointer',
-              transition: 'all 0.25s ease', animation: `cardIn 0.4s ease ${i * 0.06}s both`,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = COURT.green; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.transform = 'translateY(0)'; }}>
-              <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
-                {opt[lang] || opt.en || opt.fr}
-              </div>
-              <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 2 }}>
-                {subTxt(opt)}
-              </div>
-            </button>
-          ))}
-        </div>
+        {q.inputType === 'scale' ? (
+          <ScaleInput key={q.id} q={q} lang={lang} dark={dark} onSubmit={advance} />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
+            {q.options.map((opt, i) => (
+              <button key={i} onClick={() => advance(opt.value)} style={{
+                textAlign: rtl ? 'right' : 'left', padding: '14px 16px',
+                background: dark ? COURT.darkCard : COURT.cream,
+                border: `0.5px solid ${border}`, borderRadius: 10, cursor: 'pointer',
+                transition: 'all 0.25s ease', animation: `cardIn 0.4s ease ${i * 0.06}s both`,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = COURT.green; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 17, color: ink, fontWeight: 500 }}>
+                  {opt[lang] || opt.en || opt.fr}
+                </div>
+                <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 2 }}>
+                  {subTxt(opt)}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Carte glossaire (bottom sheet) */}
