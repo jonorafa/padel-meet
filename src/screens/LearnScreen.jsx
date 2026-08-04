@@ -104,7 +104,7 @@ function Mascot({ size = 80, anim = 'bob', style: extraStyle = {}, src: srcProp 
 }
 
 // ─── Écran principal ─────────────────────────────────────────────────────────
-export default function LearnScreen({ lang = 'fr', dark = false }) {
+export default function LearnScreen({ lang = 'fr', dark = false, onClose }) {
   const L   = LABELS[lang] || LABELS.fr
   const rtl = lang === 'he'
   const tr  = (obj) => (obj && (obj[lang] ?? obj.fr)) || ''
@@ -181,6 +181,17 @@ export default function LearnScreen({ lang = 'fr', dark = false }) {
         position: 'sticky', top: 0, zIndex: 10, background: bg,
         padding: '18px 20px 12px', borderBottom: `0.5px solid ${border}`,
       }}>
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label={lang === 'he' ? 'חזור' : lang === 'en' ? 'Back' : 'Retour'}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', color: stone,
+              fontSize: 24, lineHeight: 1, transform: rtl ? 'scaleX(-1)' : 'none',
+              padding: 0, marginBottom: 8,
+            }}
+          >‹</button>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{

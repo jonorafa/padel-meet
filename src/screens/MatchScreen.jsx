@@ -29,6 +29,7 @@ import { useMatchResults } from '../hooks/useMatchResults';
 import { supabase }         from '../lib/supabase';
 import { Sentry }           from '../sentry';
 import StreakScreen          from './StreakScreen';
+import LearnScreen           from './LearnScreen';
 import { tickStreak }        from '../hooks/useStreak';
 const StatsSection = lazy(() => import('../components/StatsSection'));
 import QuizScreen           from './ScoreScreen';
@@ -4269,6 +4270,11 @@ export default function MainApp() {
   const [detailPlayerId, setDetailPlayerId] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showStreak,      setShowStreak]      = useState(false);
+  // LearnScreen (module d'apprentissage) était construit — 646 lignes, leçons/
+  // quiz/étoiles — mais jamais importé ni accessible nulle part dans l'app.
+  // Ouvert en overlay depuis l'écran "Conseil" (onglet `learn`, qui affiche en
+  // réalité HomeScreen), au même titre que showStreak.
+  const [showLearn,       setShowLearn]       = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
   // Signal pour ouvrir directement les stats (depuis le menu "Mes statistiques")
   const [statsSignal, setStatsSignal] = useState(0);
@@ -4333,7 +4339,7 @@ export default function MainApp() {
 
   const screens = {
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
-    learn:   <HomeScreen    lang={lang} dark={darkMode} {...bellProps} />,
+    learn:   <HomeScreen    lang={lang} dark={darkMode} onOpenLearn={() => setShowLearn(true)} {...bellProps} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onStartMatch={() => setShowSchedule(true)} {...bellProps} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} statsSignal={statsSignal} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} onOpenStats={() => { setStatsSignal(s => s + 1); setTab('trophy'); }} {...bellProps} />,
@@ -4392,6 +4398,10 @@ export default function MainApp() {
 
       {showStreak && (
         <StreakScreen onClose={() => setShowStreak(false)} />
+      )}
+
+      {showLearn && (
+        <LearnScreen lang={lang} dark={darkMode} onClose={() => setShowLearn(false)} />
       )}
 
       {showEditProfile && (

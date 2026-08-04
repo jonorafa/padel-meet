@@ -108,7 +108,48 @@ function StatsSkeleton({ dark }) {
 }
 
 // ── Écran principal ───────────────────────────────────────────────────────────
-export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0 }) {
+// ── Carte d'accès au module d'apprentissage ──────────────────────────────────
+// LearnScreen (leçons/quiz/étoiles) existait déjà mais n'était accessible nulle
+// part dans l'app — ni onglet, ni bouton. Même gabarit de carte que TipOfTheDay
+// pour rester cohérent visuellement sur cet écran.
+function LearnEntryCard({ lang, dark, onOpen }) {
+  const rtl    = lang === 'he'
+  const bg     = dark ? COURT.darkCard : '#F7F3EA'
+  const ink    = dark ? COURT.darkText : COURT.ink
+  const stone  = dark ? COURT.darkMuted : COURT.stone
+  const border = dark ? COURT.darkBorder : `${COURT.green}25`
+  const ff     = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+
+  const L = {
+    fr: { title: 'Apprendre', sub: 'Leçons et quiz sur les coups et la tactique' },
+    en: { title: 'Learn',     sub: 'Lessons and quizzes on shots and tactics' },
+    he: { title: 'ללמוד',     sub: 'שיעורים וחידונים על מכות וטקטיקה' },
+  }[lang] ?? { title: 'Apprendre', sub: 'Leçons et quiz sur les coups et la tactique' }
+
+  return (
+    <button onClick={onOpen} dir={rtl ? 'rtl' : 'ltr'} style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      width: 'calc(100% - 40px)', margin: '0 20px 4px',
+      background: bg, border: `0.5px solid ${border}`, borderLeft: `3px solid ${COURT.gold}`,
+      borderRadius: 16, padding: '16px 18px', cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
+    }}>
+      <div>
+        <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 17, color: ink, fontWeight: 500 }}>
+          {L.title}
+        </div>
+        <div style={{ fontFamily: 'Mulish', fontSize: 12, color: stone, marginTop: 2 }}>
+          {L.sub}
+        </div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.6"
+        strokeLinecap="round" strokeLinejoin="round" style={{ transform: rtl ? 'scaleX(-1)' : 'none', flexShrink: 0 }}>
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+  )
+}
+
+export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0, onOpenLearn }) {
   const { profile }  = useAuth()
   const rtl          = lang === 'he'
   const bg           = dark ? COURT.darkBg : COURT.cream
@@ -167,6 +208,13 @@ export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0 })
       <div style={{ padding: '20px 0 4px' }}>
         <TipOfTheDay lang={lang} dark={dark} />
       </div>
+
+      {/* ── Accès au module d'apprentissage ── */}
+      {onOpenLearn && (
+        <div style={{ padding: '12px 0 4px' }}>
+          <LearnEntryCard lang={lang} dark={dark} onOpen={onOpenLearn} />
+        </div>
+      )}
 
       {/* ── Stats & évolution ── */}
       <div style={{ marginTop: 12 }}>
