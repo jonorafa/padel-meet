@@ -2915,7 +2915,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                   { label: t.confidence,    value: `${confidence}%` },
                 ].map((s, i) => (
                   <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                    <div style={{ fontFamily: 'Mulish', fontSize: 8, fontWeight: 700, color: stone, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.label}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: lang === 'he' ? 11 : 8, fontWeight: 700, color: stone, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.label}</div>
                     <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
                   </div>
                 ))}
@@ -2930,7 +2930,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 { label: t.confidence,    value: `${confidence}%` },
               ].map((s, i) => (
                 <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 8, fontWeight: 700, color: stone, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: lang === 'he' ? 11 : 8, fontWeight: 700, color: stone, letterSpacing: '0.09em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{s.label}</div>
                   <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
                 </div>
               ))}
