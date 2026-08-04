@@ -6,7 +6,7 @@ import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, HeritageTag, BottomNav,
   SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, CompatRing, BadgeRow,
+  isDark, initialsAvatar, Achievements, CompatRing, BadgeRow, BADGE_LABEL_KEY,
 } from '../components/CourtUI';
 import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
@@ -580,6 +580,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
   const [lastDir,     setLastDir]   = useState(null); // direction du dernier swipe
   const stackInitialized = useRef(false);             // évite le flash blanc après swipe
   const dragStartRef = useRef(0);
+  const dragMovedRef = useRef(false);
   const rtl   = lang === 'he';
   const bg    = dark ? COURT.darkBg : COURT.cream;
   const ink   = dark ? COURT.darkText : COURT.ink;
@@ -661,24 +662,23 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
   // Drag géré par motion/react (drag="x" sur la carte top) : Motion capture le
   // geste horizontal nativement et laisse le scroll vertical natif passer grâce
   // à touchAction: 'pan-y'. On garde juste le suivi de position (pour l'overlay
-  // LIKE/NOPE de PlayerCard) et la détection tap vs swipe.
-  const handleDragStart = () => { dragStartRef.current = Date.now(); };
+  // LIKE/NOPE de PlayerCard).
+  const handleDragStart = () => { dragStartRef.current = Date.now(); dragMovedRef.current = true; };
   const handleDrag = (event, info) => {
     setDrag({ x: info.offset.x, y: info.offset.y, active: true });
   };
   const handleDragEnd = (event, info) => {
-    const totalMove = Math.abs(info.offset.x) + Math.abs(info.offset.y);
-    const elapsed = Date.now() - (dragStartRef.current || 0);
-    // Tap = peu de mouvement et durée courte ⇒ ouvrir le profil détaillé.
-    // Seuils relâchés (25 px / 600 ms) pour matcher la réalité d'un doigt humain.
-    if (totalMove < 25 && elapsed < 600) {
-      setDrag({ x: 0, y: 0, active: false });
-      if (top && onOpenDetail) onOpenDetail(top.id);
-      return;
-    }
     if (info.offset.x > 90) decide('right');
     else if (info.offset.x < -90) decide('left');
     else setDrag({ x: 0, y: 0, active: false });
+  };
+  // Tap → ouvre le profil détaillé. Ne peut PAS vivre dans handleDragEnd :
+  // Motion ne démarre une session de pan qu'au-delà de ~3px, donc un tap
+  // immobile ne déclenche jamais onDragStart/onDragEnd. On passe par le clic
+  // natif, en ignorant celui qui suit un vrai drag (dragMovedRef).
+  const handleCardClick = () => {
+    if (dragMovedRef.current) { dragMovedRef.current = false; return; }
+    if (top && onOpenDetail) onOpenDetail(top.id);
   };
 
   return (
@@ -787,6 +787,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
               onDragStart={handleDragStart}
               onDrag={handleDrag}
               onDragEnd={handleDragEnd}
+              onClick={handleCardClick}
               animate={animate}
               transition={transition}
               style={{
@@ -2683,8 +2684,13 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
     else _runStreak = 0;
   }
   const badgeResults = computeBadges({ matchesPlayed: userMatches, streakMax: longestStreak, level: level ?? 0 });
-  const unlockedBadgeCount = badgeResults.filter(b => b.unlocked).length;
-  const badgeCountLabel = lang === 'he' ? `תגים ${unlockedBadgeCount}` : lang === 'en' ? `${unlockedBadgeCount} badges` : `${unlockedBadgeCount} trophées`;
+  // Noms des trophées débloqués, plutôt qu'un compteur générique ("1 trophées")
+  // qui n'apprenait rien sur ce qui a été gagné.
+  const badgeNamesLabel = badgeResults
+    .filter(b => b.unlocked)
+    .map(b => t[BADGE_LABEL_KEY[b.key]])
+    .filter(Boolean)
+    .join(' · ');
 
   // ─── Upload photo de profil ──────────────────────────────────────────────
   // Sync à la fois `profile.photo_url` (legacy / avatar) et `profile_photos` (galerie
@@ -2896,11 +2902,20 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             }}>{uploadError}</div>
           )}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginTop: 10, marginBottom: 14 }}>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{userName}</div>
               <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>{userCity} · 2026</div>
+              {/* Noms des trophées : sous le nom et sur toute la largeur, pour ne
+                  pas comprimer le nom quand plusieurs sont débloqués. */}
+              {badgeNamesLabel && (
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.35 }}>
+                  {badgeNamesLabel}
+                </div>
+              )}
             </div>
-            <BadgeRow badges={badgeResults} dark={dark} label={badgeCountLabel} t={t} />
+            <div style={{ flexShrink: 0 }}>
+              <BadgeRow badges={badgeResults} dark={dark} t={t} align="end" />
+            </div>
           </div>
           <Ornament width={50} color={COURT.gold} />
           {level == null ? (

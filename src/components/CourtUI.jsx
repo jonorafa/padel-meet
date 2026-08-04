@@ -770,14 +770,14 @@ export function Achievements({ badges, dark }) {
 // Fait le lien entre la clé retournée par computeBadges() (src/lib/badges.js)
 // et les libellés déjà traduits (t.trophyXxx), partagés avec la vue complète
 // Achievements de l'onglet Matchs.
-const BADGE_LABEL_KEY = {
+export const BADGE_LABEL_KEY = {
   first_match: 'trophyFirstMatch',
   streak_5:    'trophyStreak5',
   matches_10:  'trophyTenMatches',
   level_5:     'trophyLevel5',
 };
 
-export function BadgeRow({ badges, size = 18, label, dark, t }) {
+export function BadgeRow({ badges, size = 18, label, dark, t, align = 'start' }) {
   const [open, setOpen] = useState(null);
   const unlocked = badges.filter(b => b.unlocked);
   if (unlocked.length === 0) return null;
@@ -786,8 +786,8 @@ export function BadgeRow({ badges, size = 18, label, dark, t }) {
   const border   = dark ? COURT.darkBorder : `${COURT.gold}60`;
   const circleSize = size + 16;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: align === 'end' ? 'flex-end' : 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: align === 'end' ? 'flex-end' : 'flex-start' }}>
         {unlocked.map(b => {
           const badgeLabel = t?.[BADGE_LABEL_KEY[b.key]] || b.key;
           return (
@@ -820,7 +820,10 @@ export function BadgeRow({ badges, size = 18, label, dark, t }) {
         })}
       </div>
       {label && (
-        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em' }}>
+        <div style={{
+          fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em',
+          textAlign: align === 'end' ? 'right' : 'left', lineHeight: 1.35,
+        }}>
           {label}
         </div>
       )}
