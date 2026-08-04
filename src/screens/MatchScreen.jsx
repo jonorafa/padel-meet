@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, HeritageTag, BottomNav,
@@ -575,7 +576,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
   const [lastCard,    setLastCard]  = useState(null);
   const [lastDir,     setLastDir]   = useState(null); // direction du dernier swipe
   const stackInitialized = useRef(false);             // évite le flash blanc après swipe
-  const startRef = useRef({ x: 0, y: 0 });
+  const dragStartRef = useRef(0);
   const rtl   = lang === 'he';
   const bg    = dark ? COURT.darkBg : COURT.cream;
   const ink   = dark ? COURT.darkText : COURT.ink;
@@ -654,42 +655,17 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
     setLastDir(null);
   };
 
-  const onDown = (e) => {
-    // On commence le suivi depuis n'importe où sur la carte.
-    // La capture du pointer n'est faite qu'une fois le geste horizontal confirmé
-    // (dans onMove), ce qui permet au navigateur de gérer le scroll vertical
-    // dans la zone .card-scroll tant que la direction n'est pas décidée.
-    startRef.current = {
-      x: e.clientX, y: e.clientY, t: Date.now(),
-      ignore: false, captured: false,
-      pointerId: e.pointerId, target: e.currentTarget,
-    };
-    setDrag({ x: 0, y: 0, active: true });
+  // Drag géré par motion/react (drag="x" sur la carte top) : Motion capture le
+  // geste horizontal nativement et laisse le scroll vertical natif passer grâce
+  // à touchAction: 'pan-y'. On garde juste le suivi de position (pour l'overlay
+  // LIKE/NOPE de PlayerCard) et la détection tap vs swipe.
+  const handleDragStart = () => { dragStartRef.current = Date.now(); };
+  const handleDrag = (event, info) => {
+    setDrag({ x: info.offset.x, y: info.offset.y, active: true });
   };
-  const onMove = (e) => {
-    if (!drag.active || startRef.current.ignore) return;
-    const dx = e.clientX - startRef.current.x;
-    const dy = e.clientY - startRef.current.y;
-    // Geste nettement vertical → scroll natif, abandon du swipe
-    if (Math.abs(dy) > Math.abs(dx) * 1.5 && Math.abs(dy) > 12) {
-      setDrag({ x: 0, y: 0, active: false });
-      startRef.current.ignore = true;
-      return;
-    }
-    // Geste horizontal confirmé → capturer le pointer pour swipe fluide
-    if (Math.abs(dx) > 8 && !startRef.current.captured) {
-      try { startRef.current.target?.setPointerCapture?.(startRef.current.pointerId); } catch { /* pointer déjà relâché — best-effort */ }
-      startRef.current.captured = true;
-    }
-    setDrag({ x: dx, y: dy, active: true });
-  };
-  const onUp   = () => {
-    if (!drag.active || startRef.current.ignore) {
-      setDrag({ x: 0, y: 0, active: false });
-      return;
-    }
-    const totalMove = Math.abs(drag.x) + Math.abs(drag.y);
-    const elapsed = Date.now() - (startRef.current.t || 0);
+  const handleDragEnd = (event, info) => {
+    const totalMove = Math.abs(info.offset.x) + Math.abs(info.offset.y);
+    const elapsed = Date.now() - (dragStartRef.current || 0);
     // Tap = peu de mouvement et durée courte ⇒ ouvrir le profil détaillé.
     // Seuils relâchés (25 px / 600 ms) pour matcher la réalité d'un doigt humain.
     if (totalMove < 25 && elapsed < 600) {
@@ -697,8 +673,8 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
       if (top && onOpenDetail) onOpenDetail(top.id);
       return;
     }
-    if (drag.x > 90) decide('right');
-    else if (drag.x < -90) decide('left');
+    if (info.offset.x > 90) decide('right');
+    else if (info.offset.x < -90) decide('left');
     else setDrag({ x: 0, y: 0, active: false });
   };
 
@@ -776,33 +752,50 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
           <EmptyStack t={t} lang={lang} onReset={() => { setStack(matched.length ? matched : allPlayers || []); setLastCard(null); setSearchQuery(''); }} dark={dark} />
         ) : displayStack.slice(0, 3).map((p, i) => {
           const isTop = i === 0;
-          let transform  = `translateY(${i * 6}px) scale(${1 - i * 0.03})`;
-          let opacity    = 1 - i * 0.18;
-          let transition = 'transform 0.4s ease, opacity 0.4s ease';
-          if (isTop && decision && decision.id === p.id) {
-            const x = decision.dir === 'right' ? 600 : -600;
-            transform  = `translate(${x}px, ${decision.dir === 'right' ? -30 : 30}px) rotate(${decision.dir === 'right' ? 22 : -22}deg)`;
-            transition = 'transform 0.45s cubic-bezier(.4,0,.2,1), opacity 0.45s';
-            opacity    = 0;
-          } else if (isTop && drag.active) {
-            transform  = `translate(${drag.x}px, ${drag.y * 0.4}px) rotate(${drag.x * 0.06}deg)`;
-            transition = 'none';
-          }
-          return (
-            <div key={p.id}
-              onPointerDown={isTop ? onDown : undefined}
-              onPointerMove={isTop ? onMove : undefined}
-              onPointerUp={isTop ? onUp : undefined}
-              style={{
-                position: 'absolute', inset: 0, transform, opacity, transition,
+          if (!isTop) {
+            return (
+              <div key={p.id} style={{
+                position: 'absolute', inset: 0,
+                transform: `translateY(${i * 6}px) scale(${1 - i * 0.03})`,
+                opacity: 1 - i * 0.18,
+                transition: 'transform 0.4s ease, opacity 0.4s ease',
                 zIndex: 10 - i,
-                // pan-y autorise le scroll vertical natif ; nous prenons en charge
-                // le geste horizontal manuellement (swipe gauche/droite).
-                touchAction: isTop ? 'pan-y' : 'none',
-                cursor: isTop ? 'grab' : 'default',
+                touchAction: 'none',
               }}>
-              <PlayerCard p={p} dragX={isTop ? drag.x : 0} t={t} lang={lang} dark={dark} />
-            </div>
+                <PlayerCard p={p} dragX={0} t={t} lang={lang} dark={dark} />
+              </div>
+            );
+          }
+          const isDeciding = decision && decision.id === p.id;
+          const animate = isDeciding
+            ? { x: decision.dir === 'right' ? 600 : -600, y: decision.dir === 'right' ? -30 : 30, rotate: decision.dir === 'right' ? 22 : -22, opacity: 0 }
+            : drag.active
+              ? { x: drag.x, y: drag.y * 0.4, rotate: drag.x * 0.06, opacity: 1 }
+              : { x: 0, y: 0, rotate: 0, opacity: 1 };
+          const transition = isDeciding
+            ? { duration: 0.45, ease: [0.4, 0, 0.2, 1] }
+            : drag.active
+              ? { duration: 0 }
+              : { type: 'spring', stiffness: 500, damping: 30 };
+          return (
+            <motion.div key={p.id}
+              drag="x"
+              dragMomentum={false}
+              onDragStart={handleDragStart}
+              onDrag={handleDrag}
+              onDragEnd={handleDragEnd}
+              animate={animate}
+              transition={transition}
+              style={{
+                position: 'absolute', inset: 0,
+                zIndex: 10,
+                // pan-y autorise le scroll vertical natif ; motion capture le
+                // geste horizontal (swipe gauche/droite).
+                touchAction: 'pan-y',
+                cursor: 'grab',
+              }}>
+              <PlayerCard p={p} dragX={drag.active ? drag.x : 0} t={t} lang={lang} dark={dark} />
+            </motion.div>
           );
         }).reverse()}
       </div>
