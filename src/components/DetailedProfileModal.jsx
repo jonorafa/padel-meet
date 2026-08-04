@@ -262,7 +262,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             }}>
               {player.name || player.username || 'Joueur'}
             </h2>
-            <BadgeRow badges={badgeResults} dark={dark} />
+            <BadgeRow badges={badgeResults} dark={dark} t={t} />
           </div>
           <p style={{ fontFamily: 'Mulish', fontSize: 14, color: muted, margin: 0, whiteSpace: 'nowrap', fontWeight: 500 }}>
             {player.age ? `${player.age} ans` : ''}

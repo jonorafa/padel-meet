@@ -767,7 +767,18 @@ export function Achievements({ badges, dark }) {
 // progression) — pour les vues où l'on affiche le profil d'un tiers : carte
 // de recherche, fiche détaillée. La vue complète avec progression reste
 // `Achievements`, réservée à l'onglet Matchs de l'utilisateur connecté.
-export function BadgeRow({ badges, size = 18, label, dark }) {
+// Fait le lien entre la clé retournée par computeBadges() (src/lib/badges.js)
+// et les libellés déjà traduits (t.trophyXxx), partagés avec la vue complète
+// Achievements de l'onglet Matchs.
+const BADGE_LABEL_KEY = {
+  first_match: 'trophyFirstMatch',
+  streak_5:    'trophyStreak5',
+  matches_10:  'trophyTenMatches',
+  level_5:     'trophyLevel5',
+};
+
+export function BadgeRow({ badges, size = 18, label, dark, t }) {
+  const [open, setOpen] = useState(null);
   const unlocked = badges.filter(b => b.unlocked);
   if (unlocked.length === 0) return null;
   const stone   = dark ? COURT.darkMuted : COURT.stone;
@@ -777,15 +788,36 @@ export function BadgeRow({ badges, size = 18, label, dark }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{ display: 'flex', gap: 6 }}>
-        {unlocked.map(b => (
-          <div key={b.key} style={{
-            width: circleSize, height: circleSize, borderRadius: circleSize / 2,
-            background: circleBg, border: `1px solid ${border}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: size, lineHeight: 1, flexShrink: 0,
-            boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(15,61,41,0.12)',
-          }}>{b.icon}</div>
-        ))}
+        {unlocked.map(b => {
+          const badgeLabel = t?.[BADGE_LABEL_KEY[b.key]] || b.key;
+          return (
+            <div key={b.key} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setOpen(prev => prev === b.key ? null : b.key)}
+                title={badgeLabel}
+                aria-label={badgeLabel}
+                style={{
+                  width: circleSize, height: circleSize, borderRadius: circleSize / 2,
+                  background: circleBg, border: `1px solid ${border}`, padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: size, lineHeight: 1, flexShrink: 0, cursor: 'pointer',
+                  boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(15,61,41,0.12)',
+                }}
+              >{b.icon}</button>
+              {open === b.key && (
+                <div style={{
+                  position: 'absolute', top: '100%', marginTop: 6, left: '50%',
+                  transform: 'translateX(-50%)', zIndex: 20, whiteSpace: 'nowrap',
+                  background: COURT.greenDeep, color: COURT.cream,
+                  padding: '5px 10px', borderRadius: 8,
+                  fontFamily: 'Mulish', fontSize: 11,
+                  boxShadow: '0 4px 12px rgba(15,61,41,0.25)',
+                }}>{badgeLabel}</div>
+              )}
+            </div>
+          );
+        })}
       </div>
       {label && (
         <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em' }}>

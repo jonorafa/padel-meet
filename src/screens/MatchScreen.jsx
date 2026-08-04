@@ -455,7 +455,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
 
         {/* Trophées débloqués */}
         <div style={{ marginTop: 10 }}>
-          <BadgeRow badges={badges} dark={dark} />
+          <BadgeRow badges={badges} dark={dark} t={t} />
         </div>
 
         {/* Bio */}
@@ -2900,7 +2900,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{userName}</div>
               <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>{userCity} · 2026</div>
             </div>
-            <BadgeRow badges={badgeResults} dark={dark} label={badgeCountLabel} />
+            <BadgeRow badges={badgeResults} dark={dark} label={badgeCountLabel} t={t} />
           </div>
           <Ornament width={50} color={COURT.gold} />
           {level == null ? (
