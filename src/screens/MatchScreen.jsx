@@ -347,13 +347,13 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const seekMotivMap = { fun: t.fun, improve: t.improve, compete: t.compete };
   const seekChips = [];
   if (prefs.levelMin != null && prefs.levelMax != null && (prefs.levelMin > 1 || prefs.levelMax < 7))
-    seekChips.push({ icon: '✦', label: `${prefs.levelMin}–${prefs.levelMax}`, color: COURT.purple });
+    seekChips.push({ icon: '✦', label: `${prefs.levelMin}–${prefs.levelMax}`, color: COURT.rust });
   if (prefs.hand && prefs.hand !== 'any')
     seekChips.push({ icon: '🤚', label: prefs.hand === 'left' ? t.leftHand : t.rightHand, color: COURT.green });
   if (prefs.side && prefs.side !== 'any')
     seekChips.push({ icon: '🎾', label: prefs.side === 'forehand' ? t.forehand : t.backhand, color: COURT.green });
   if (prefs.style && prefs.style !== 'any')
-    seekChips.push({ icon: '⚡', label: seekStyleMap[prefs.style] || prefs.style, color: COURT.purple });
+    seekChips.push({ icon: '⚡', label: seekStyleMap[prefs.style] || prefs.style, color: COURT.rust });
   if (prefs.motivation && prefs.motivation !== 'any')
     seekChips.push({ icon: '◎', label: seekMotivMap[prefs.motivation] || prefs.motivation, color: COURT.gold });
   if (prefs.region && prefs.region !== 'any')
@@ -452,7 +452,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 12 }}>
           <HeritageTag color={COURT.green}>{handLabel}</HeritageTag>
           <HeritageTag color={COURT.green}>{sideLabel}</HeritageTag>
-          <HeritageTag color={COURT.purple}>{styleLabel}</HeritageTag>
+          <HeritageTag color={COURT.rust}>{styleLabel}</HeritageTag>
           <HeritageTag color={COURT.gold}>{motivLabel}</HeritageTag>
         </div>
 
@@ -496,7 +496,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       <div style={{ position: 'absolute', inset: 0, opacity: yesOp, pointerEvents: 'none', background: `${COURT.green}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ transform: `scale(${0.5 + yesOp * 0.5})` }}><PadelBall size={90} /></div>
       </div>
-      <div style={{ position: 'absolute', inset: 0, opacity: noOp, pointerEvents: 'none', background: `${COURT.purple}55`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+      <div style={{ position: 'absolute', inset: 0, opacity: noOp, pointerEvents: 'none', background: `${COURT.rust}55`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
         <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -821,7 +821,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
         )}
         {top && stack !== null && (
           <>
-            <CircBtn onClick={() => decide('left')} color={COURT.purple} dark={dark}>
+            <CircBtn onClick={() => decide('left')} color={COURT.rust} dark={dark}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -1218,7 +1218,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
     if (!pending) return null;
     const isTeammate = pending.submitterResult === 'teammate';
     const isWin      = isTeammate || pending.myResult === 'win';
-    const color      = isTeammate ? COURT.gold : (isWin ? COURT.green : COURT.purple);
+    const color      = isTeammate ? COURT.gold : (isWin ? COURT.green : COURT.rust);
     const label      = isTeammate ? (lang === 'en' ? '🤝 Teammates' : lang === 'he' ? '🤝 שותפים' : '🤝 Coéquipiers')
                      : isWin      ? (lang === 'en' ? 'Victory'      : lang === 'he' ? 'ניצחון'    : 'Victoire')
                                   : (lang === 'en' ? 'Defeat'       : lang === 'he' ? 'הפסד'      : 'Défaite');
@@ -1261,8 +1261,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 disabled={rejectingId === pending.id || confirmingId === pending.id}
                 style={{
                   flex: 1, padding: '11px', borderRadius: 8,
-                  background: COURT.purple + '15', border: `0.5px solid ${COURT.purple}`,
-                  color: COURT.purple, fontFamily: 'Mulish', fontSize: 13,
+                  background: COURT.rust + '15', border: `0.5px solid ${COURT.rust}`,
+                  color: COURT.rust, fontFamily: 'Mulish', fontSize: 13,
                   cursor: rejectingId === pending.id ? 'not-allowed' : 'pointer',
                   opacity: (rejectingId === pending.id || confirmingId === pending.id) ? 0.5 : 1,
                 }}>
@@ -1270,7 +1270,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </button>
             </div>
             {actionError && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple, textAlign: 'center', marginBottom: 4 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust, textAlign: 'center', marginBottom: 4 }}>
                 ⚠️ {actionError}
               </div>
             )}
@@ -1280,7 +1280,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </div>
             )}
             {remaining === 1 && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple, textAlign: 'center', fontWeight: 500 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust, textAlign: 'center', fontWeight: 500 }}>
                 ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : lang === 'he' ? 'ניסיון אחרון — דחייה = המשחק לא יירשם' : 'Dernière tentative — refus = match inenregistrable'}
               </div>
             )}
@@ -1292,9 +1292,9 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
   // ── Carte "match verrouillé" ────────────────────────────────────────────────
   const renderLockedCard = () => (
-    <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.purple}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
+    <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.rust}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
       <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
-      <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: COURT.purple, fontStyle: 'italic', marginBottom: 4 }}>
+      <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: COURT.rust, fontStyle: 'italic', marginBottom: 4 }}>
         {lang === 'en' ? 'Match unrecordable' : lang === 'he' ? 'לא ניתן לרשום את המשחק' : 'Match inenregistrable'}
       </div>
       <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
@@ -1569,8 +1569,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                     onChange={e => setSets(prev => prev.map((x, j) => j === i ? { ...x, me: e.target.value } : x))}
                     style={{
                       width: 54, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
-                      border: `0.5px solid ${setWon ? COURT.green : setLost ? COURT.purple : border}`,
-                      background: setWon ? `${COURT.green}15` : setLost ? `${COURT.purple}12` : bg,
+                      border: `0.5px solid ${setWon ? COURT.green : setLost ? COURT.rust : border}`,
+                      background: setWon ? `${COURT.green}15` : setLost ? `${COURT.rust}12` : bg,
                       color: ink, fontFamily: 'Spectral, serif', fontSize: 16,
                       outline: 'none', letterSpacing: '0.04em',
                     }}
@@ -1584,8 +1584,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                     onChange={e => setSets(prev => prev.map((x, j) => j === i ? { ...x, them: e.target.value } : x))}
                     style={{
                       width: 54, padding: '8px 6px', borderRadius: 8, textAlign: 'center',
-                      border: `0.5px solid ${setLost ? COURT.purple : setWon ? COURT.green : border}`,
-                      background: setLost ? `${COURT.purple}12` : setWon ? `${COURT.green}15` : bg,
+                      border: `0.5px solid ${setLost ? COURT.rust : setWon ? COURT.green : border}`,
+                      background: setLost ? `${COURT.rust}12` : setWon ? `${COURT.green}15` : bg,
                       color: ink, fontFamily: 'Spectral, serif', fontSize: 16,
                       outline: 'none', letterSpacing: '0.04em',
                     }}
@@ -1618,7 +1618,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </button>
             )}
           </div>
-          {scoreError && <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple }}>{scoreError}</div>}
+          {scoreError && <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust }}>{scoreError}</div>}
           <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
             {lang === 'en' ? `${player?.name} will need to confirm the score.` : lang === 'he' ? `${player?.name} יצטרך לאשר את התוצאה.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
           </div>
@@ -1647,7 +1647,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 const isMine     = m.from === 'me';
                 const canRespond = !isMine && !status;          // l'autre joueur, pas encore répondu
                 const accentColor = status === 'accepted' ? COURT.green
-                                  : status === 'declined' ? COURT.purple
+                                  : status === 'declined' ? COURT.rust
                                   : COURT.gold;
                 return (
                   <div style={{
@@ -1685,8 +1685,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                           disabled={respondingId === m._id}
                           style={{
                             flex: 1, padding: '8px', borderRadius: 8,
-                            background: 'transparent', color: COURT.purple,
-                            border: `0.5px solid ${COURT.purple}`,
+                            background: 'transparent', color: COURT.rust,
+                            border: `0.5px solid ${COURT.rust}`,
                             fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
                             opacity: respondingId === m._id ? 0.5 : 1,
                           }}>
@@ -1709,8 +1709,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                     {status === 'declined' && (
                       <div style={{
                         marginTop: 10, padding: '6px 10px',
-                        background: `${COURT.purple}15`, borderRadius: 8,
-                        fontFamily: 'Mulish', fontSize: 11, color: COURT.purple,
+                        background: `${COURT.rust}15`, borderRadius: 8,
+                        fontFamily: 'Mulish', fontSize: 11, color: COURT.rust,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       }}>
                         ✗ {lang === 'en' ? 'Match declined' : lang === 'he' ? 'משחק נדחה' : 'Match refusé'}
@@ -1748,7 +1748,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       {/* Pincée au-dessus de l'input pour être toujours tappable sur mobile.   */}
       {/* Carte verrouillée (3 rejets) */}
       {scoreLocked && (
-        <div style={{ borderTop: `0.5px solid ${COURT.purple}30`, background: card, padding: '8px 14px' }}>
+        <div style={{ borderTop: `0.5px solid ${COURT.rust}30`, background: card, padding: '8px 14px' }}>
           {renderLockedCard()}
         </div>
       )}
@@ -2186,7 +2186,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 display: 'flex', alignItems: 'center', gap: 14,
                 animation: `cardIn 0.4s ease ${i * 0.06}s both`,
               }}>
-                <div style={{ width: 5, height: 44, borderRadius: 3, background: m.result === 'win' ? COURT.green : COURT.purple, flexShrink: 0 }} />
+                <div style={{ width: 5, height: 44, borderRadius: 3, background: m.result === 'win' ? COURT.green : COURT.rust, flexShrink: 0 }} />
                 {p?.photo && <div style={{ width: 40, height: 40, borderRadius: 20, background: `url(${p.photo}) center/cover`, flexShrink: 0 }} />}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500 }}>{p?.name || 'Adversaire'}</div>
@@ -2204,9 +2204,9 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                           <span key={si} style={{
                             fontFamily: 'Spectral, serif', fontSize: 13,
                             padding: '2px 7px', borderRadius: 5,
-                            background: won ? `${COURT.green}20` : lost ? `${COURT.purple}18` : `${COURT.stone}15`,
-                            color: won ? COURT.green : lost ? COURT.purple : stone,
-                            border: `0.5px solid ${won ? COURT.green + '50' : lost ? COURT.purple + '50' : stone + '30'}`,
+                            background: won ? `${COURT.green}20` : lost ? `${COURT.rust}18` : `${COURT.stone}15`,
+                            color: won ? COURT.green : lost ? COURT.rust : stone,
+                            border: `0.5px solid ${won ? COURT.green + '50' : lost ? COURT.rust + '50' : stone + '30'}`,
                           }}>{setStr}</span>
                         );
                       })}
@@ -2222,12 +2222,12 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
             <div style={{ borderTop: `0.5px solid ${border}`, paddingTop: 20, marginTop: 8 }}>
               <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 1 }}>
                 {history.map((m, i) => (
-                  <div key={i} style={{ flex: 1, background: m.result === 'win' ? COURT.green : COURT.purple, borderRadius: 2 }} />
+                  <div key={i} style={{ flex: 1, background: m.result === 'win' ? COURT.green : COURT.rust, borderRadius: 2 }} />
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
                 <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.purple }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
               </div>
             </div>
           )}
@@ -2884,7 +2884,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           {uploadError && (
             <div style={{
               marginTop: 6, fontFamily: ff_italic, fontStyle: 'italic',
-              fontSize: 11, color: COURT.purple,
+              fontSize: 11, color: COURT.rust,
             }}>{uploadError}</div>
           )}
           <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', marginTop: 10 }}>{userName}</div>

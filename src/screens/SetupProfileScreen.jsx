@@ -409,7 +409,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           ) : !avatar && (
             <div style={{
               marginTop: 4, fontFamily: 'Mulish', fontSize: 11,
-              color: COURT.purple, fontStyle: 'italic',
+              color: COURT.rust, fontStyle: 'italic',
             }}>
               {L[lang]?.photoRequired || 'Ajoutez une photo'}
             </div>

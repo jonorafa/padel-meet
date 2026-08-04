@@ -44,7 +44,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
 
   const isWin = pending.myResult === 'win'
   const isLoss = pending.myResult === 'loss'
-  const resultColor = isWin ? COURT.green : (isLoss ? COURT.purple : COURT.gold)
+  const resultColor = isWin ? COURT.green : (isLoss ? COURT.rust : COURT.gold)
   const resultLabel = isWin ? t.youWon : (isLoss ? t.youLost : t.draw)
   const awaitingRejectConfirm = rejectConfirmId === pending.id
 
@@ -95,8 +95,8 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
       {/* Action buttons */}
       {awaitingRejectConfirm ? (
         /* Confirmation inline du rejet — remplace le confirm() natif */
-        <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: `${COURT.purple}10`, border: `0.5px solid ${COURT.purple}40` }}>
-          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: COURT.purple, marginBottom: 8, textAlign: 'center' }}>
+        <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: `${COURT.rust}10`, border: `0.5px solid ${COURT.rust}40` }}>
+          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: COURT.rust, marginBottom: 8, textAlign: 'center' }}>
             {lang === 'en' ? 'Confirm rejection?' : lang === 'he' ? 'אשר דחייה?' : 'Confirmer le refus ?'}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -109,7 +109,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
             </button>
             <button onClick={() => onReject(pending.id)} disabled={busy} style={{
               flex: 2, padding: '8px', borderRadius: 8,
-              background: COURT.purple, border: 'none', color: COURT.cream,
+              background: COURT.rust, border: 'none', color: COURT.cream,
               fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
               cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
             }}>
@@ -125,7 +125,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
             style={{
               flex: 1, padding: '10px 12px',
               background: dark ? COURT.darkBg : 'transparent',
-              color: COURT.purple, border: `0.5px solid ${COURT.purple}60`,
+              color: COURT.rust, border: `0.5px solid ${COURT.rust}60`,
               borderRadius: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 13, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
             }}
@@ -297,8 +297,8 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             {panelError && (
               <div style={{
                 padding: '8px 12px', borderRadius: 8, marginBottom: 10,
-                background: `${COURT.purple}12`, border: `0.5px solid ${COURT.purple}40`,
-                fontFamily: 'Mulish', fontSize: 12, color: COURT.purple,
+                background: `${COURT.rust}12`, border: `0.5px solid ${COURT.rust}40`,
+                fontFamily: 'Mulish', fontSize: 12, color: COURT.rust,
               }}>
                 ⚠️ {panelError}
               </div>
@@ -367,11 +367,11 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         {error && (
           <div style={{
             padding: '12px 14px', marginTop: 10,
-            background: `${COURT.purple}15`,
-            border: `0.5px solid ${COURT.purple}60`,
+            background: `${COURT.rust}15`,
+            border: `0.5px solid ${COURT.rust}60`,
             borderRadius: 8,
             fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 13, color: COURT.purple,
+            fontSize: 13, color: COURT.rust,
           }}>
             {error}
           </div>

@@ -5,7 +5,10 @@ export const COURT = {
   green: '#1F5C3F',
   greenDeep: '#0F3D29',
   greenLight: '#2A7A52',
-  purple: '#C05050',
+  // Rouille/corail (ex-"purple" — le nom ne décrivait pas la vraie teinte,
+  // renommé sans changer la valeur). Sert au concept "défaite/négatif" dans
+  // un match, distinct de `red` qui reste réservé à "erreur/danger".
+  rust: '#C05050',
   cream: '#F5F1E8',
   creamDark: '#EBE4D2',
   gold: '#C9A961',

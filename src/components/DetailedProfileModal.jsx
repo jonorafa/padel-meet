@@ -329,7 +329,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               </div>
               <div style={{
                 fontFamily: 'Mulish', fontSize: 11, fontWeight: 700,
-                color: COURT.purple, letterSpacing: '0.22em', textTransform: 'uppercase',
+                color: COURT.rust, letterSpacing: '0.22em', textTransform: 'uppercase',
               }}>
                 {seekingLabel}
               </div>
@@ -365,7 +365,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   <div style={{
                     fontFamily: 'Spectral, serif', fontStyle: 'italic',
                     fontSize: 16, fontWeight: seeks == null ? 400 : 600,
-                    color: seeks == null ? muted : COURT.purple,
+                    color: seeks == null ? muted : COURT.rust,
                   }}>
                     {seeks ?? '—'}
                   </div>
