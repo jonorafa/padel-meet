@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { COURT } from './CourtUI'
+import { COURT, BadgeRow } from './CourtUI'
+import { PhotoLightbox } from './PhotoLightbox'
 import { Sentry } from '../sentry'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { useBlocks } from '../hooks/useBlocks'
 import { I18N } from '../data/courtData'
+import { computeBadges } from '../lib/badges'
 
 // ── Libellés modération (signaler / bloquer) ──────────────────────────────────
 const MOD_L = {
@@ -69,6 +71,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   const canModerate = !!user?.id && user.id !== playerId
   const [modSheet, setModSheet] = useState(null)  // null|'block'|'report'|'blocked'|'reported'
   const [modBusy, setModBusy] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   const doBlock = async () => {
     setModBusy(true)
@@ -222,6 +225,9 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   ]
 
   const rtl = lang === 'he'
+  // streakMax volontairement omis : la "série de 5 victoires" n'est calculable
+  // aujourd'hui que pour l'utilisateur connecté (cf src/lib/badges.js).
+  const badgeResults = computeBadges({ matchesPlayed: player.matches_played ?? 0, level: player.level ?? 0 })
 
   return (
     <div style={{
@@ -234,23 +240,30 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         display: 'flex', alignItems: 'flex-start', gap: 20,
         position: 'relative',
       }}>
-        {/* Photo grande à gauche */}
-        <div style={{
-          width: 110, height: 110, minWidth: 110, borderRadius: 16, flexShrink: 0,
-          background: player.photo_url
-            ? `url(${player.photo_url}) center/cover`
-            : card,
-          border: `1.5px solid ${border}`,
-        }} />
+        {/* Photo grande à gauche — cliquable pour l'agrandir */}
+        <div
+          onClick={() => player.photo_url && setLightboxOpen(true)}
+          style={{
+            width: 110, height: 110, minWidth: 110, borderRadius: 16, flexShrink: 0,
+            background: player.photo_url
+              ? `url(${player.photo_url}) center/cover`
+              : card,
+            border: `1.5px solid ${border}`,
+            cursor: player.photo_url ? 'pointer' : 'default',
+          }}
+        />
 
         {/* Infos à droite : nom + age + région + niveau */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <h2 style={{
-            fontFamily: 'Spectral, serif', fontSize: 28, fontWeight: 800,
-            color: ink, margin: 0, lineHeight: 1,
-          }}>
-            {player.name || player.username || 'Joueur'}
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+            <h2 style={{
+              fontFamily: 'Spectral, serif', fontSize: 28, fontWeight: 800,
+              color: ink, margin: 0, lineHeight: 1,
+            }}>
+              {player.name || player.username || 'Joueur'}
+            </h2>
+            <BadgeRow badges={badgeResults} dark={dark} />
+          </div>
           <p style={{ fontFamily: 'Mulish', fontSize: 14, color: muted, margin: 0, whiteSpace: 'nowrap', fontWeight: 500 }}>
             {player.age ? `${player.age} ans` : ''}
             {player.age && (player.region || player.city) ? ' · ' : ''}
@@ -405,6 +418,8 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
           </div>
         )}
       </div>
+
+      <PhotoLightbox src={lightboxOpen ? player.photo_url : null} onClose={() => setLightboxOpen(false)} />
 
       {/* ─── ACTION SHEET MODÉRATION ─── */}
       {modSheet && (

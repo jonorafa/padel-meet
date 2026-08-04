@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { computeBadges } from '../lib/badges';
 import {
   COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, HeritageTag, BottomNav,
   SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, CompatRing,
+  isDark, initialsAvatar, Achievements, CompatRing, BadgeRow,
 } from '../components/CourtUI';
 import { compatScore } from '../lib/compatibility';
+import { PhotoLightbox } from '../components/PhotoLightbox';
 import { I18N, regionToCountry, getGreeting } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
@@ -323,8 +325,12 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
 }
 
 // ─── Player Card ────────────────────────────────────────────────────────────
+// Recherche par niveau/fiabilité, pas par photo : la photo reste une petite
+// vignette identifiante (haut gauche), l'essentiel de l'espace va aux
+// données (niveau, compatibilité, confiance, badges).
 function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const { profile: me } = useAuth();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
@@ -341,6 +347,10 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const handLabel  = p.hand === 'left' ? t.leftHand : t.rightHand;
   const bio = lang === 'he' ? p.bioHe : (lang === 'en' ? (p.bioEn || p.bioFr) : p.bioFr);
   const compat = me ? compatScore(me, p) : (p.confidenceRate ?? 90);
+  // streakMax omis : la "série de 5 victoires" n'est calculable aujourd'hui
+  // que pour l'utilisateur connecté (cf src/lib/badges.js) — le badge 🔥 ne
+  // s'affichera donc pas ici, c'est attendu.
+  const badges = computeBadges({ matchesPlayed: p.matches ?? 0, level: p.level ?? 0 });
 
   // Partenaire idéal — réutilise le JSON partner_prefs existant
   const prefs = p.partnerPrefs || {};
@@ -367,86 +377,72 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       boxShadow: dark ? '0 12px 32px rgba(0,0,0,0.4)' : '0 12px 32px rgba(15,61,41,0.14)',
       display: 'flex', flexDirection: 'column',
     }}>
-      {/* ─── Portrait (flexible, remplit l'espace restant) ───────────── */}
-      <div style={{
-        flex: 1, minHeight: 130,
-        background: `url(${p.photo}) center 20%/cover`,
-        position: 'relative',
-      }}>
-        {/* Dégradé bas */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.52) 100%)' }} />
-
-        {/* Badge en ligne (haut gauche) */}
-        {playerIsOnline && (
-          <div style={{
-            position: 'absolute', top: 12, left: 12,
-            background: 'rgba(0,0,0,0.45)', padding: '4px 8px', borderRadius: 20,
-            display: 'flex', alignItems: 'center', gap: 5,
-            fontFamily: 'Mulish', fontSize: 11, color: '#7ED957',
-            letterSpacing: '0.14em', textTransform: 'uppercase',
-            opacity: 1 - Math.max(yesOp, noOp),
-          }}>
-            <div style={{ width: 6, height: 6, borderRadius: 3, background: '#7ED957' }} />
-            {t.online}
+      <div style={{ padding: '18px 20px 16px', flex: 1, overflow: 'auto' }}>
+        {/* ─── En-tête : vignette + nom/âge/ville ──────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+          <div
+            onClick={(e) => { e.stopPropagation(); setLightboxOpen(true); }}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              width: 68, height: 68, borderRadius: 18, flexShrink: 0,
+              background: `url(${p.photo}) center/cover`,
+              border: `0.5px solid ${border}`, cursor: 'pointer', position: 'relative',
+            }}
+          >
+            {/* Pastille en ligne — coin de la vignette */}
+            {playerIsOnline && (
+              <div style={{
+                position: 'absolute', bottom: -1, right: -1,
+                width: 14, height: 14, borderRadius: 7,
+                background: '#7ED957', border: `2px solid ${bg}`,
+              }} />
+            )}
           </div>
-        )}
 
-        {/* Badge « profil de démonstration » — honnêteté vis-à-vis de l'utilisateur :
-            ces profils n'ont personne derrière, un message n'y recevra jamais de
-            réponse. Placé sous le badge « en ligne » pour ne pas se chevaucher. */}
-        {p.isDemo && (
-          <div style={{
-            position: 'absolute', top: playerIsOnline ? 44 : 12, left: 12,
-            background: 'rgba(0,0,0,0.55)', padding: '4px 9px', borderRadius: 20,
-            display: 'flex', alignItems: 'center', gap: 5,
-            fontFamily: 'Mulish', fontSize: 10, color: COURT.gold,
-            letterSpacing: '0.16em', textTransform: 'uppercase',
-            opacity: 1 - Math.max(yesOp, noOp),
-          }}>
-            {lang === 'he' ? 'פרופיל לדוגמה' : lang === 'en' ? 'Demo profile' : 'Profil démo'}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: ff_serif, fontSize: 22, color: ink, fontWeight: 500, lineHeight: 1.1 }}>
+              {p.name.split(' ')[0]}{' '}
+              <span style={{ fontStyle: lang === 'he' ? 'normal' : 'italic', color: COURT.green }}>
+                {p.name.split(' ').slice(1).join(' ')}
+              </span>
+              <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13, color: stone }}> · {p.age}</span>
+            </div>
+            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.05em', marginTop: 4 }}>
+              📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
+            </div>
+            {p.isDemo && (
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', marginTop: 5,
+                fontFamily: 'Mulish', fontSize: 10, color: COURT.gold,
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+                border: `0.5px solid ${COURT.gold}50`, borderRadius: 20, padding: '2px 8px',
+              }}>
+                {lang === 'he' ? 'פרופיל לדוגמה' : lang === 'en' ? 'Demo profile' : 'Profil démo'}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Badge niveau (haut droite) */}
+        {/* ─── Niveau + compatibilité — bloc unique ────────────────────── */}
         <div style={{
-          position: 'absolute', top: 14, right: 14,
-          background: `${COURT.green}E8`, border: `0.5px solid ${COURT.gold}`,
-          borderRadius: 10, padding: '7px 12px 5px', textAlign: 'center',
-          opacity: 1 - Math.max(yesOp, noOp),
+          display: 'flex', alignItems: 'center', gap: 10,
+          background: COURT.green, borderRadius: 14, padding: '10px 16px',
+          marginTop: 14,
         }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.22em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
-          <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.cream, lineHeight: 1 }}>
-            {p.level != null ? p.level.toFixed(1) : '—'}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: COURT.gold, letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t.currentLevel}</div>
+            <div style={{ fontFamily: 'Spectral, serif', fontSize: 26, color: COURT.cream, lineHeight: 1.15 }}>
+              {p.level != null ? p.level.toFixed(1) : '—'}
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* ─── Infos ───────────────────────────────────────────────────── */}
-      <div style={{ padding: '14px 20px 16px', flexShrink: 0, position: 'relative' }}>
-        {/* Anneau compat flottant — chevauche le portrait */}
-        <div style={{
-          position: 'absolute', right: 16, top: -36,
-          width: 80, height: 80, borderRadius: 40, background: bg,
-          border: `0.5px solid ${border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.14)',
-        }}>
-          <CompatRing size={70} value={compat} txt={dark ? COURT.cream : COURT.green}
-            label={t.compatibility || t.confidence} rtl={lang === 'he'} />
+          <div style={{ width: 0.5, alignSelf: 'stretch', background: `${COURT.cream}30` }} />
+          <CompatRing size={58} value={compat} stroke={COURT.gold} txt={COURT.cream}
+            track={`${COURT.cream}25`} label={t.compatibility || t.confidence} rtl={lang === 'he'} />
         </div>
 
-        {/* Nom · âge */}
-        <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, lineHeight: 1, paddingRight: 72 }}>
-          {p.name.split(' ')[0]}{' '}
-          <span style={{ fontStyle: lang === 'he' ? 'normal' : 'italic', color: COURT.green }}>
-            {p.name.split(' ').slice(1).join(' ')}
-          </span>
-          <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 14, color: stone }}> · {p.age}</span>
-        </div>
-
-        {/* Ville · matchs · winrate */}
-        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.05em', marginTop: 5, paddingRight: 72 }}>
-          📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
+        {/* Taux de confiance */}
+        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 8 }}>
+          ✓ {t.confidence} {Math.round(p.confidenceRate ?? 90)}%
         </div>
 
         {/* Tags */}
@@ -455,6 +451,11 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           <HeritageTag color={COURT.green}>{sideLabel}</HeritageTag>
           <HeritageTag color={COURT.rust}>{styleLabel}</HeritageTag>
           <HeritageTag color={COURT.gold}>{motivLabel}</HeritageTag>
+        </div>
+
+        {/* Trophées débloqués */}
+        <div style={{ marginTop: 10 }}>
+          <BadgeRow badges={badges} dark={dark} />
         </div>
 
         {/* Bio */}
@@ -505,6 +506,8 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           Passer
         </div>
       </div>
+
+      <PhotoLightbox src={lightboxOpen ? p.photo : null} onClose={() => setLightboxOpen(false)} />
     </div>
   );
 }
@@ -2116,12 +2119,12 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
     if (m.result === 'win') { _runStreak += 1; longestStreak = Math.max(longestStreak, _runStreak); }
     else _runStreak = 0;
   }
-  const hasLevel = level != null;
+  const badgeResults = computeBadges({ matchesPlayed: userMatches, streakMax: longestStreak, level: level ?? 0 });
   const trophies = [
-    { key: 'first',  label: t.trophyFirstMatch, unlocked: userMatches >= 1 },
-    { key: 'streak', label: t.trophyStreak5,     unlocked: longestStreak >= 5 },
-    { key: 'ten',    label: t.trophyTenMatches,  unlocked: userMatches >= 10 },
-    { key: 'level5', label: t.trophyLevel5,      unlocked: hasLevel && level >= 5 },
+    { key: 'first',  label: t.trophyFirstMatch, unlocked: badgeResults[0].unlocked },
+    { key: 'streak', label: t.trophyStreak5,     unlocked: badgeResults[1].unlocked },
+    { key: 'ten',    label: t.trophyTenMatches,  unlocked: badgeResults[2].unlocked },
+    { key: 'level5', label: t.trophyLevel5,      unlocked: badgeResults[3].unlocked },
   ];
 
   const tabs = [
@@ -2585,9 +2588,11 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const { user, profile, signOut, saveProfile }      = useAuth();
   const { lang, dark, level, confidence, setLang, toggleDark, setLevel } = usePrefs();
   const navigate = useNavigate();
+  const matchHistory = useMatchHistory();
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showPartnerPrefs, setShowPartnerPrefs] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
   const [showReEval, setShowReEval] = useState(false);
@@ -2670,6 +2675,16 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const userCity   = profile?.region   || profile?.city || '';
   const userPhoto  = profile?.photo_url || '';
   const userMatches= profile?.matches_played ?? 0;
+
+  // ─── Trophées (mêmes règles que MatchesScreen, cf src/lib/badges.js) ────
+  let longestStreak = 0, _runStreak = 0;
+  for (const m of matchHistory) {
+    if (m.result === 'win') { _runStreak += 1; longestStreak = Math.max(longestStreak, _runStreak); }
+    else _runStreak = 0;
+  }
+  const badgeResults = computeBadges({ matchesPlayed: userMatches, streakMax: longestStreak, level: level ?? 0 });
+  const unlockedBadgeCount = badgeResults.filter(b => b.unlocked).length;
+  const badgeCountLabel = lang === 'he' ? `תגים ${unlockedBadgeCount}` : lang === 'en' ? `${unlockedBadgeCount} badges` : `${unlockedBadgeCount} trophées`;
 
   // ─── Upload photo de profil ──────────────────────────────────────────────
   // Sync à la fois `profile.photo_url` (legacy / avatar) et `profile_photos` (galerie
@@ -2836,15 +2851,15 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </div>
         </div>
         <div style={{ padding: '0 22px 22px', marginTop: -36, position: 'relative' }}>
-          {/* Avatar tappable pour changer la photo */}
+          {/* Avatar tappable pour l'agrandir — le bouton 📷 séparé sert à la changer */}
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <div
-              onClick={() => !uploading && fileInputRef.current?.click()}
+              onClick={() => !uploading && userPhoto && setLightboxOpen(true)}
               style={{
                 width: 72, height: 72, borderRadius: 36,
                 background: userPhoto ? `url(${userPhoto}) center/cover` : `${COURT.green}30`,
                 border: `2.5px solid ${bg}`, boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-                cursor: uploading ? 'wait' : 'pointer',
+                cursor: uploading ? 'wait' : (userPhoto ? 'pointer' : 'default'),
                 opacity: uploading ? 0.6 : 1,
                 transition: 'opacity 0.2s',
               }}
@@ -2880,8 +2895,13 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               fontSize: 11, color: COURT.rust,
             }}>{uploadError}</div>
           )}
-          <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', marginTop: 10 }}>{userName}</div>
-          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginBottom: 14 }}>{userCity} · 2026</div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginTop: 10, marginBottom: 14 }}>
+            <div>
+              <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{userName}</div>
+              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>{userCity} · 2026</div>
+            </div>
+            <BadgeRow badges={badgeResults} dark={dark} label={badgeCountLabel} />
+          </div>
           <Ornament width={50} color={COURT.gold} />
           {level == null ? (
             /* ── Niveau non évalué — CTA ── */
@@ -3820,6 +3840,8 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           )}
         </div>
       )}
+
+      <PhotoLightbox src={lightboxOpen ? userPhoto : null} onClose={() => setLightboxOpen(false)} />
     </div>
   );
 }

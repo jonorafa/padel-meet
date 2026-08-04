@@ -763,6 +763,30 @@ export function Achievements({ badges, dark }) {
   );
 }
 
+// ─── Rangée de badges compacte (icônes débloquées uniquement, sans barre de
+// progression) — pour les vues où l'on affiche le profil d'un tiers : carte
+// de recherche, fiche détaillée. La vue complète avec progression reste
+// `Achievements`, réservée à l'onglet Matchs de l'utilisateur connecté.
+export function BadgeRow({ badges, size = 18, label, dark }) {
+  const unlocked = badges.filter(b => b.unlocked);
+  if (unlocked.length === 0) return null;
+  const stone = dark ? COURT.darkMuted : COURT.stone;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {unlocked.map(b => (
+          <span key={b.key} style={{ fontSize: size, lineHeight: 1 }}>{b.icon}</span>
+        ))}
+      </div>
+      {label && (
+        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em' }}>
+          {label}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Anneau de compatibilité ───
 export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = COURT.green, track = `${COURT.green}20`, label, rtl = false }) {
   const r = size / 2 - 5, c = 2 * Math.PI * r;
