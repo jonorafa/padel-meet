@@ -770,12 +770,21 @@ export function Achievements({ badges, dark }) {
 export function BadgeRow({ badges, size = 18, label, dark }) {
   const unlocked = badges.filter(b => b.unlocked);
   if (unlocked.length === 0) return null;
-  const stone = dark ? COURT.darkMuted : COURT.stone;
+  const stone   = dark ? COURT.darkMuted : COURT.stone;
+  const circleBg = dark ? COURT.darkCard : COURT.cream;
+  const border   = dark ? COURT.darkBorder : `${COURT.gold}60`;
+  const circleSize = size + 16;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{ display: 'flex', gap: 6 }}>
         {unlocked.map(b => (
-          <span key={b.key} style={{ fontSize: size, lineHeight: 1 }}>{b.icon}</span>
+          <div key={b.key} style={{
+            width: circleSize, height: circleSize, borderRadius: circleSize / 2,
+            background: circleBg, border: `1px solid ${border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: size, lineHeight: 1, flexShrink: 0,
+            boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(15,61,41,0.12)',
+          }}>{b.icon}</div>
         ))}
       </div>
       {label && (
