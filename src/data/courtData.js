@@ -667,8 +667,8 @@ export const QUIZ_QUESTIONS = [
   { id: 2, type: 'tech', inputType: 'scale', scaleMin: 1, scaleMax: 10,
     scaleMinLabel: { fr: 'Pas confiant du tout', en: 'Not confident at all', he: 'לא בטוח בכלל' },
     scaleMaxLabel: { fr: 'Totalement confiant',  en: 'Fully confident',      he: 'בטוח לחלוטין' },
-    q:     { fr: "Sur une échelle de 1 à 10, à quel point es-tu confiant avec ton revers slicé ?", en: "On a scale of 1 to 10, how confident are you with your backhand slice?", he: "בסולם של 1 עד 10, כמה אתה בטוח בבקהנד החתוך שלך?" },
-    qEval: { fr: "{name} est-il confiant avec son revers slicé (1 à 10) ?", en: "How confident is {name} with their backhand slice (1-10)?", he: "כמה {name} בטוח בבקהנד החתוך שלו (1 עד 10)?" } },
+    q:     { fr: "Sur une échelle de 1 à 10, à quel point es-tu confiant avec ton revers slicé ?", en: "On a scale of 1 to 10, how confident are you with your backhand slice?", he: "בסולם של 1 עד 10, כמה אתה בטוח בבקהנד הסלייס שלך?" },
+    qEval: { fr: "{name} est-il confiant avec son revers slicé (1 à 10) ?", en: "How confident is {name} with their backhand slice (1-10)?", he: "כמה {name} בטוח בבקהנד הסלייס שלו (1 עד 10)?" } },
 
   { id: 3, type: 'tech', inputType: 'scale', scaleMin: 1, scaleMax: 10,
     scaleMinLabel: { fr: 'Pas confiant du tout', en: 'Not confident at all', he: 'לא בטוח בכלל' },
@@ -678,8 +678,8 @@ export const QUIZ_QUESTIONS = [
 
   // ═══════════════════ GROUPE 2 · Coups nommés ═══════════════════════════════
   { id: 4, type: 'tech',
-    q:     { fr: "Tu réussis souvent une bandeja (smash tout en douceur au filet) ?", en: "Do you often land a bandeja (soft smash at the net)?", he: "אתה מצליח לרוב בבנדחה (סמאש רך ברשת)?" },
-    qEval: { fr: "{name} réussit-il souvent une bandeja (smash en douceur au filet) ?", en: "Does {name} often land a bandeja (soft smash at net)?", he: "האם {name} מצליח לרוב בבנדחה (סמאש רך ברשת)?" },
+    q:     { fr: "Tu réussis souvent une bandeja (smash tout en douceur au filet) ?", en: "Do you often land a bandeja (soft smash at the net)?", he: "אתה מבצע בנדחה (סמאש רך ברשת)?" },
+    qEval: { fr: "{name} réussit-il souvent une bandeja (smash en douceur au filet) ?", en: "Does {name} often land a bandeja (soft smash at net)?", he: "{name} מבצע בנדחה (סמאש רך ברשת)?" },
     options: [
       { fr: 'Rarement, je découvre encore le geste',           en: 'Rarely, still learning the move',            he: 'לעיתים רחוקות, עדיין לומד את התנועה',   value: 1   },
       { fr: 'Occasionnellement, une fois sur trois',           en: 'Occasionally, about one in three',           he: 'מדי פעם, בערך אחד מתוך שלושה',          value: 2   },
@@ -688,8 +688,8 @@ export const QUIZ_QUESTIONS = [
     ]},
 
   { id: 5, type: 'tech',
-    q:     { fr: "Tu réussis souvent une vibora (smash de côté, coupé et rapide) ?", en: "Do you often land a vibora (sliced side smash)?", he: "אתה מצליח לרוב בויברה (סמאש צידי חתוך ומהיר)?" },
-    qEval: { fr: "{name} réussit-il souvent une vibora (smash de côté, coupé et rapide) ?", en: "Does {name} often land a vibora (sliced side smash)?", he: "האם {name} מצליח לרוב בויברה (סמאש צידי חתוך ומהיר)?" },
+    q:     { fr: "Tu réussis souvent une vibora (smash de côté, coupé et rapide) ?", en: "Do you often land a vibora (sliced side smash)?", he: "אתה מבצע ויברה (סמאש צידי בסלייס, מהיר)?" },
+    qEval: { fr: "{name} réussit-il souvent une vibora (smash de côté, coupé et rapide) ?", en: "Does {name} often land a vibora (sliced side smash)?", he: "{name} מבצע ויברה (סמאש צידי בסלייס, מהיר)?" },
     options: [
       { fr: 'Je ne la connais pas encore',                     en: "I don't know it yet",                        he: 'עוד לא מכיר אותה',                      value: 1   },
       { fr: 'En apprentissage, timing incertain',              en: 'Still learning, timing is inconsistent',     he: 'בשלב לימוד, התזמון לא עקבי',            value: 2   },
@@ -719,8 +719,8 @@ export const QUIZ_QUESTIONS = [
     ]},
 
   { id: 8, type: 'tech',
-    q:     { fr: "Un smash puissant rebondit sur ta vitre et retombe court, près du filet : tu le renvoies ?", en: "A hard smash bounces off your glass and lands short: do you return it?", he: "סמאש חזק מקפץ מהזכוכית שלך ונופל קרוב: אתה מחזיר אותו?" },
-    qEval: { fr: "Un smash puissant rebondit sur la vitre de {name} et retombe court : le renvoie-t-il ?", en: "A hard smash bounces off {name}'s glass and lands short: do they return it?", he: "סמאש חזק מקפץ מהזכוכית של {name} ונופל קרוב: האם הוא מחזיר?" },
+    q:     { fr: "Un smash puissant rebondit sur ta vitre et retombe court, près du filet : tu le renvoies ?", en: "A hard smash bounces off your glass and lands short: do you return it?", he: "סמאש חזק מהיריב קופץ בזכוכית שלך ונופל קרוב לרשת: אתה מחזיר אותו?" },
+    qEval: { fr: "Un smash puissant rebondit sur la vitre de {name} et retombe court : le renvoie-t-il ?", en: "A hard smash bounces off {name}'s glass and lands short: do they return it?", he: "סמאש חזק מהיריב קופץ בזכוכית של {name} ונופל קרוב לרשת: האם הוא מחזיר?" },
     options: [
       { fr: 'Je le rate souvent, trop puissant',               en: 'I often miss it, too powerful',              he: 'אני לרוב מפספס, חזק מדי',               value: 1   },
       { fr: 'Je le renvoie, mais la balle reste haute',        en: 'I return it, but the ball stays high',       he: 'אני מחזיר אותו, אבל הכדור נשאר גבוה',   value: 2   },
@@ -876,7 +876,7 @@ export const GLOSSARY = [
     def: {
       fr: "Coup aérien joué en réponse à un lob adverse, avec un effet coupé et peu de puissance. Son but n'est pas de gagner le point mais de garder la position au filet, souvent visé dans les pieds de l'adversaire.",
       en: "An overhead shot played in response to an opponent's lob, with a slice and little power. Its goal isn't to win the point but to keep the net position — usually aimed at the opponent's feet.",
-      he: "מכה גבוהה המבוצעת בתגובה ללוב של היריב, עם אפקט חתוך וכוח מועט. מטרתה אינה לזכות בנקודה אלא לשמור על עמדת הרשת, ומכוונת לרוב לרגלי היריב.",
+      he: "מכה גבוהה המבוצעת בתגובה ללוב של היריב, עם אפקט סלייס וכוח מועט. מטרתה אינה לזכות בנקודה אלא לשמור על עמדת הרשת, ומכוונת לרוב לרגלי היריב.",
     },
   },
   {
@@ -1045,10 +1045,10 @@ export function generateLevelSummary(answers, lang) {
     },
     // Q2 — Confiance : revers slicé (curseur)
     2: {
-      1:   { fr: "ton revers slicé manque encore de confiance",                               en: "your sliced backhand still lacks confidence",                          he: "הבקהנד החתוך שלך עדיין חסר ביטחון" },
-      3:   { fr: "ta confiance sur le revers slicé se construit",                             en: "your sliced backhand confidence is building",                          he: "הביטחון שלך בבקהנד החתוך בבנייה" },
-      5.5: { fr: "tu es plutôt confiant sur ton revers slicé",                                en: "you're fairly confident with your backhand slice",                     he: "אתה די בטוח בבקהנד החתוך שלך" },
-      7:   { fr: "tu es totalement confiant sur ton revers slicé",                            en: "you're fully confident with your backhand slice",                     he: "אתה בטוח לחלוטין בבקהנד החתוך שלך" },
+      1:   { fr: "ton revers slicé manque encore de confiance",                               en: "your sliced backhand still lacks confidence",                          he: "הבקהנד הסלייס שלך עדיין חסר ביטחון" },
+      3:   { fr: "ta confiance sur le revers slicé se construit",                             en: "your sliced backhand confidence is building",                          he: "הביטחון שלך בבקהנד הסלייס בבנייה" },
+      5.5: { fr: "tu es plutôt confiant sur ton revers slicé",                                en: "you're fairly confident with your backhand slice",                     he: "אתה די בטוח בבקהנד הסלייס שלך" },
+      7:   { fr: "tu es totalement confiant sur ton revers slicé",                            en: "you're fully confident with your backhand slice",                     he: "אתה בטוח לחלוטין בבקהנד הסלייס שלך" },
     },
     // Q3 — Confiance : coup droit (curseur)
     3: {
