@@ -678,22 +678,22 @@ export const QUIZ_QUESTIONS = [
 
   // ═══════════════════ GROUPE 2 · Coups nommés ═══════════════════════════════
   { id: 4, type: 'tech',
-    q:     { fr: "Tu réussis souvent une bandeja (smash tout en douceur au filet) ?", en: "Do you often land a bandeja (soft smash at the net)?", he: "אתה מבצע בנדחה (סמאש רך ברשת)?" },
-    qEval: { fr: "{name} réussit-il souvent une bandeja (smash en douceur au filet) ?", en: "Does {name} often land a bandeja (soft smash at net)?", he: "{name} מבצע בנדחה (סמאש רך ברשת)?" },
+    q:     { fr: "Tu réussis souvent une bandeja (smash tout en douceur au filet) ?", en: "Do you often land a bandeja (soft smash at the net)?", he: "אתה עושה בנדחה (סמאש רך ברשת)?" },
+    qEval: { fr: "{name} réussit-il souvent une bandeja (smash en douceur au filet) ?", en: "Does {name} often land a bandeja (soft smash at net)?", he: "{name} עושה בנדחה (סמאש רך ברשת)?" },
     options: [
       { fr: 'Rarement, je découvre encore le geste',           en: 'Rarely, still learning the move',            he: 'לעיתים רחוקות, עדיין לומד את התנועה',   value: 1   },
-      { fr: 'Occasionnellement, une fois sur trois',           en: 'Occasionally, about one in three',           he: 'מדי פעם, בערך אחד מתוך שלושה',          value: 2   },
-      { fr: 'Souvent, coup de routine fiable',                 en: 'Often, a reliable routine shot',              he: 'לעיתים קרובות, מכה שגרתית ואמינה',      value: 3.5 },
-      { fr: 'Je la maîtrise parfaitement, direction et effet au choix', en: 'Fully mastered, direction and spin at will', he: 'שליטה מלאה, כיוון וספין לפי הרצון', value: 7 },
+      { fr: 'Occasionnellement, une fois sur trois',           en: 'Occasionally, about one in three',           he: 'מדי פעם, בערך שליש מהפעמים',            value: 2   },
+      { fr: 'Souvent, coup de routine fiable',                 en: 'Often, a reliable routine shot',              he: 'לעיתים קרובות, מכה שאני שולט בה בביטחון', value: 3.5 },
+      { fr: 'Je la maîtrise parfaitement, direction et effet au choix', en: 'Fully mastered, direction and spin at will', he: 'שליטה מלאה, כיוון וספין כרצוני', value: 7 },
     ]},
 
   { id: 5, type: 'tech',
-    q:     { fr: "Tu réussis souvent une vibora (smash de côté, coupé et rapide) ?", en: "Do you often land a vibora (sliced side smash)?", he: "אתה מבצע ויברה (סמאש צידי בסלייס, מהיר)?" },
-    qEval: { fr: "{name} réussit-il souvent une vibora (smash de côté, coupé et rapide) ?", en: "Does {name} often land a vibora (sliced side smash)?", he: "{name} מבצע ויברה (סמאש צידי בסלייס, מהיר)?" },
+    q:     { fr: "Tu réussis souvent une vibora (smash de côté, coupé et rapide) ?", en: "Do you often land a vibora (sliced side smash)?", he: "אתה עושה ויברה (סמאש צידי בסלייס, מהיר)?" },
+    qEval: { fr: "{name} réussit-il souvent une vibora (smash de côté, coupé et rapide) ?", en: "Does {name} often land a vibora (sliced side smash)?", he: "{name} עושה ויברה (סמאש צידי בסלייס, מהיר)?" },
     options: [
       { fr: 'Je ne la connais pas encore',                     en: "I don't know it yet",                        he: 'עוד לא מכיר אותה',                      value: 1   },
-      { fr: 'En apprentissage, timing incertain',              en: 'Still learning, timing is inconsistent',     he: 'בשלב לימוד, התזמון לא עקבי',            value: 2   },
-      { fr: 'Je la place avec intention',                      en: 'I place it with intent',                     he: 'אני ממקם אותה בכוונה',                  value: 3.5 },
+      { fr: 'En apprentissage, timing incertain',              en: 'Still learning, timing is inconsistent',     he: 'עדיין לומד, התזמון לא עקבי',            value: 2   },
+      { fr: 'Je la place avec intention',                      en: 'I place it with intent',                     he: 'אני שם אותה איפה שאני רוצה',            value: 3.5 },
       { fr: 'Maîtrise totale, croisée ou à la ligne',          en: 'Total mastery, cross or line',               he: 'שליטה מלאה, אלכסונית או קווית',         value: 7   },
     ]},
 
@@ -715,7 +715,7 @@ export const QUIZ_QUESTIONS = [
       { fr: 'Non, je perds le point',                          en: 'No, I lose the point',                       he: 'לא, אני מפסיד את הנקודה',               value: 1   },
       { fr: 'Je la renvoie, mais trop haute',                  en: 'I get it back, but too high',                he: 'אני מחזיר אותו, אבל גבוה מדי',          value: 2   },
       { fr: 'Je la renvoie basse, difficile à attaquer',       en: 'I return it low, hard to attack',            he: 'אני מחזיר אותו נמוך, קשה לתקוף',        value: 3.5 },
-      { fr: 'Je transforme la double vitre en point gagnant',  en: 'I turn the corner double-glass into a winner', he: 'אני הופך את כפל הקיר לנקודה מנצחת',   value: 7   },
+      { fr: 'Je transforme la double vitre en point gagnant',  en: 'I turn the corner double-glass into a winner', he: 'אני הופך את כפל הזכוכית לנקודה מנצחת', value: 7   },
     ]},
 
   { id: 8, type: 'tech',
@@ -743,7 +743,7 @@ export const QUIZ_QUESTIONS = [
     q:     { fr: "Ton smash fait sortir la balle par le côté du terrain (par 3) ?", en: "Does your smash send the ball out the side (par 3)?", he: "הסמאש שלך מוציא את הכדור מהצד של המגרש (פר 3)?" },
     qEval: { fr: "Le smash de {name} fait-il sortir la balle par le côté (par 3) ?", en: "Does {name}'s smash send the ball out the side (par 3)?", he: "האם הסמאש של {name} מוציא את הכדור מהצד (פר 3)?" },
     options: [
-      { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מבצע סמאש',                value: 1   },
+      { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מסמש',                      value: 1   },
       { fr: 'Ça sort parfois par le côté, sans le vouloir',    en: 'It sometimes exits the side, unintentionally', he: 'לפעמים יוצא מהצד, בלי כוונה',          value: 2   },
       { fr: 'Je vise le par 3 et je le réussis souvent',       en: 'I aim for the par 3 and often land it',      he: 'אני מכוון לפר 3 ולרוב מצליח',           value: 3.5 },
       { fr: 'Je choisis le par 3 selon la situation',          en: 'I choose the par 3 based on the situation',  he: 'אני בוחר פר 3 לפי המצב',                value: 7   },
@@ -753,7 +753,7 @@ export const QUIZ_QUESTIONS = [
     q:     { fr: "Ton smash fait sortir la balle par le fond du terrain (par 4) ?", en: "Does your smash send the ball out the back (par 4)?", he: "הסמאש שלך מוציא את הכדור מאחורי המגרש (פר 4)?" },
     qEval: { fr: "Le smash de {name} fait-il sortir la balle par le fond (par 4) ?", en: "Does {name}'s smash send the ball out the back (par 4)?", he: "האם הסמאש של {name} מוציא את הכדור מאחור (פר 4)?" },
     options: [
-      { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מבצע סמאש',                value: 1   },
+      { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מסמש',                      value: 1   },
       { fr: 'Ça sort parfois par le fond, sans le vouloir',    en: 'It sometimes exits the back, unintentionally', he: 'לפעמים יוצא מאחור, בלי כוונה',         value: 2   },
       { fr: 'Je vise le par 4 et je le réussis souvent',       en: 'I aim for the par 4 and often land it',      he: 'אני מכוון לפר 4 ולרוב מצליח',           value: 3.5 },
       { fr: 'Je choisis le par 4 selon la situation',          en: 'I choose the par 4 based on the situation',  he: 'אני בוחר פר 4 לפי המצב',                value: 7   },
@@ -890,7 +890,7 @@ export const GLOSSARY = [
   },
   {
     key: 'sortie de vitre',
-    term: { fr: 'sortie de vitre', en: 'glass exit', he: 'יציאת קיר' },
+    term: { fr: 'sortie de vitre', en: 'glass exit', he: 'יציאת זכוכית' },
     def: {
       fr: "Coup joué après que la balle rebondit sur la vitre de fond ou de côté. Technique-clé du padel : il faut anticiper le rebond, reculer, et relancer avec intention.",
       en: "A shot played after the ball bounces off the back or side glass. Key padel skill: you must anticipate the rebound, step back, and play with intent.",
@@ -899,7 +899,7 @@ export const GLOSSARY = [
   },
   {
     key: 'double vitre',
-    term: { fr: 'double vitre', en: 'double glass', he: 'כפל קיר' },
+    term: { fr: 'double vitre', en: 'double glass', he: 'כפל זכוכית' },
     def: {
       fr: "Balle qui rebondit sur deux vitres consécutivement (fond puis côté, ou l'inverse). Très difficile à lire car la trajectoire change deux fois.",
       en: "A ball that bounces off two glass walls consecutively (back then side, or vice versa). Very hard to read because the trajectory changes twice.",
@@ -1073,17 +1073,17 @@ export function generateLevelSummary(answers, lang) {
     },
     // Q6 — Renvoi simple (une vitre)
     6: {
-      1:   { fr: "les rebonds de vitre te surprennent encore",                                en: "wall rebounds still catch you off guard",                              he: "ניתוזי הקיר עדיין מפתיעים אותך" },
-      2:   { fr: "tu récupères la balle de vitre, mais loin du filet",                    en: "you get the wall ball back, but far from the net",                       he: "אתה מחזיר את כדור הקיר, אבל רחוק מהרשת" },
+      1:   { fr: "les rebonds de vitre te surprennent encore",                                en: "wall rebounds still catch you off guard",                              he: "ניתוזי הזכוכית עדיין מפתיעים אותך" },
+      2:   { fr: "tu récupères la balle de vitre, mais loin du filet",                    en: "you get the wall ball back, but far from the net",                       he: "אתה מחזיר את כדור הזכוכית, אבל רחוק מהרשת" },
       3.5: { fr: "tu renvoies assez fort pour empêcher l'attaque adverse",                                    en: "you return hard enough to stop their attack",                                    he: "אתה מחזיר חזק מספיק כדי למנוע את התקפת היריב" },
-      7:   { fr: "tu places ton renvoi de vitre pour créer une ouverture",                                       en: "you place your wall return to create an opening",                                  he: "אתה ממקם את החזרת הקיר כדי ליצור פתח" },
+      7:   { fr: "tu places ton renvoi de vitre pour créer une ouverture",                                       en: "you place your wall return to create an opening",                                  he: "אתה ממקם את החזרת הזכוכית כדי ליצור פתח" },
     },
     // Q7 — Double vitre du coin
     7: {
-      1:   { fr: "la double vitre du coin te fait encore perdre le point",                    en: "the corner double-glass still costs you the point",                   he: "כפל הקיר בפינה עדיין עולה לך בנקודה" },
-      2:   { fr: "tu renvoies la double vitre, mais trop haute",                    en: "you get the corner double-glass back, but too high",              he: "אתה מחזיר את כפל הקיר, אבל גבוה מדי" },
-      3.5: { fr: "tu renvoies la double vitre basse, difficile à attaquer",                            en: "you return the corner double-glass low, hard to attack",                          he: "אתה מחזיר את כפל הקיר נמוך, קשה לתקוף" },
-      7:   { fr: "tu transformes la double vitre du coin en point gagnant",                         en: "you turn the corner double-glass into a winner",                     he: "אתה הופך את כפל הקיר בפינה לנקודה מנצחת" },
+      1:   { fr: "la double vitre du coin te fait encore perdre le point",                    en: "the corner double-glass still costs you the point",                   he: "כפל הזכוכית בפינה עדיין עולה לך בנקודה" },
+      2:   { fr: "tu renvoies la double vitre, mais trop haute",                    en: "you get the corner double-glass back, but too high",              he: "אתה מחזיר את כפל הזכוכית, אבל גבוה מדי" },
+      3.5: { fr: "tu renvoies la double vitre basse, difficile à attaquer",                            en: "you return the corner double-glass low, hard to attack",                          he: "אתה מחזיר את כפל הזכוכית נמוך, קשה לתקוף" },
+      7:   { fr: "tu transformes la double vitre du coin en point gagnant",                         en: "you turn the corner double-glass into a winner",                     he: "אתה הופך את כפל הזכוכית בפינה לנקודה מנצחת" },
     },
     // Q8 — Défense sur smash adverse puissant
     8: {
@@ -1097,7 +1097,7 @@ export function generateLevelSummary(answers, lang) {
       1:   { fr: "tes renvois depuis la vitre arrière restent encore courts",                 en: "your back-glass returns still stay short",                            he: "ההחזרות שלך מהזכוכית האחורית עדיין קצרות" },
       2:   { fr: "tes renvois de vitre arrière sont parfois profonds, sans direction précise",                en: "your back-glass returns are sometimes deep, without precise direction",                                   he: "ההחזרות שלך מהזכוכית האחורית לפעמים עמוקות, בלי כיוון מדויק" },
       3.5: { fr: "tes renvois de vitre arrière sont profonds et placés, ça complique son jeu",            en: "your back-glass returns are deep and placed, complicating their game",                        he: "ההחזרות שלך מהזכוכית האחורית עמוקות וממוקמות, זה מסבך את משחקו" },
-      7:   { fr: "tu choisis systématiquement où retombe ton renvoi de vitre arrière",                            en: "you consistently choose where your back-glass return lands",                       he: "אתה בוחר באופן עקבי איפה נוחתת החזרת הקיר האחורי שלך" },
+      7:   { fr: "tu choisis systématiquement où retombe ton renvoi de vitre arrière",                            en: "you consistently choose where your back-glass return lands",                       he: "אתה בוחר באופן עקבי איפה נוחתת החזרת הזכוכית האחורית שלך" },
     },
     // Q10 — Par 3
     10: {
