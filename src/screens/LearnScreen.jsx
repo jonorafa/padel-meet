@@ -195,7 +195,7 @@ export default function LearnScreen({ lang = 'fr', dark = false, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{
-              fontFamily: 'Pinyon Script, cursive', fontSize: 34,
+              fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 34,
               color: COURT.green, lineHeight: 1,
             }}>{L.title}</div>
             <div style={{

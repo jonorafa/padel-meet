@@ -384,7 +384,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             ) : avatar ? (
               <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <span style={{ fontFamily: 'Pinyon Script, cursive', fontSize: 34, color: COURT.cream }}>
+              <span style={{ fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 34, color: COURT.cream }}>
                 {fullName.charAt(0) || 'P'}
               </span>
             )}

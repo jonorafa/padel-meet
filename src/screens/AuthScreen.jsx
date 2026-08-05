@@ -165,8 +165,8 @@ export default function AuthScreen() {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <Ornament width={70} style={{ display: 'block', margin: '0 auto 8px' }} />
           <div style={{
-            fontFamily: 'Pinyon Script, cursive',
-            fontSize: 56, color: COURT.green, lineHeight: 1,
+            fontFamily: 'Pinyon Script, Pinyon Fallback, cursive',
+            fontSize: 56, color: COURT.green, lineHeight: 1, whiteSpace: 'nowrap',
           }}>
             Padel Meet
           </div>

@@ -46,8 +46,11 @@ export default function LanguageScreen() {
       <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
         <Ornament width={110} style={{ margin: '0 auto 14px', display: 'block' }} />
         <div style={{
-          fontFamily: 'Pinyon Script, cursive', fontSize: 72, lineHeight: 0.9,
-          color: COURT.green, textAlign: 'center',
+          // Plafond en vw : à 72 px fixes le titre faisait 292 px pour 264 px
+          // disponibles sur un écran de 320 px (iPhone SE) — il débordait.
+          // Voir le repli métrique « Pinyon Fallback » dans index.css.
+          fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 'min(72px, 20vw)', lineHeight: 0.9,
+          color: COURT.green, textAlign: 'center', whiteSpace: 'nowrap',
           animation: 'inkReveal 1.4s ease-out',
         }}>
           Padel Meet

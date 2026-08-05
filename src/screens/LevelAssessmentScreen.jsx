@@ -35,8 +35,13 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
       <div style={{ position: 'relative', textAlign: 'center', zIndex: 2 }}>
         <Ornament width={120} style={{ margin: '0 auto 24px', display: 'block' }} />
         <div style={{
-          fontFamily: 'Pinyon Script, cursive', fontSize: 92, lineHeight: 0.9,
-          color: COURT.green, animation: 'inkBleed 1.6s ease-out',
+          // 92px rendait le titre large de ~373 px pour 311 px disponibles
+          // (375 px d'écran − 2×32 px de padding) : il repassait à la ligne.
+          // Plafond en vw calibré sur la largeur mesurée de Pinyon Script
+          // (4,055 × la taille de police) pour tenir sur une ligne jusqu'aux
+          // écrans de 320 px, tout en gardant 92 px au-delà de 484 px.
+          fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 'min(92px, 19vw)', lineHeight: 0.9,
+          color: COURT.green, animation: 'inkBleed 1.6s ease-out', whiteSpace: 'nowrap',
         }}>
           Padel Meet
         </div>

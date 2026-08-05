@@ -163,7 +163,7 @@ export function PadelRacket({ size = 80, frame = COURT.green, grip = COURT.ink, 
         <circle key={i} cx={x} cy={y} r="1.5" fill={frame} opacity="0.78" />
       ))}
       <path d="M 22 30 Q 40 22 58 30" stroke={accent} strokeWidth="0.7" fill="none" opacity="0.5" />
-      <text x="40" y="56" textAnchor="middle" fontFamily="Pinyon Script, cursive" fontSize="11" fill={frame} opacity="0.85">Padel</text>
+      <text x="40" y="56" textAnchor="middle" fontFamily="Pinyon Script, Pinyon Fallback, cursive" fontSize="11" fill={frame} opacity="0.85">Padel</text>
       <path d="M 28 84 L 24 96 L 32 96 L 36 92 Z" fill={frame} />
       <path d="M 52 84 L 56 96 L 48 96 L 44 92 Z" fill={frame} />
       <path d="M 32 96 Q 40 100 48 96 L 46 102 Q 40 104 34 102 Z" fill={frame} />

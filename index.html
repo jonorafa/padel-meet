@@ -35,6 +35,16 @@
 
     <title>Padel Meet</title>
 
+    <!-- Polices : chargées ici plutôt que via @import dans le CSS. Un @import
+         n'est découvert qu'APRÈS le téléchargement + parsing de la feuille de
+         styles, ce qui retardait l'arrivée de Pinyon Script et allongeait
+         d'autant le flash de police de repli sur le titre. Le repli métrique
+         « Pinyon Fallback » (src/index.css) neutralise le saut de mise en
+         page ; ce préchargement réduit en plus la durée du flash. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Mulish:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" />
+
     <!-- Google Identity Services — One Tap auth (évite le redirect supabase.co) -->
     <script src="https://accounts.google.com/gsi/client" async></script>
 
