@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react'
-import { COURT, PadelSlider } from '../components/CourtUI'
+import { COURT, PadelSlider, initialsAvatar } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
-import { useProfilePhotos } from '../hooks/useProfilePhotos'
+import { supabase } from '../lib/supabase'
+import { compressImage } from '../lib/image'
 import { I18N } from '../data/courtData'
-import { PhotoGalleryEditor } from '../components/PhotoGalleryEditor'
 
 const ChevronLeftIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -49,8 +49,15 @@ const Chip = ({ active, onClick, children, dark }) => {
 export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const { user, profile, saveProfile } = useAuth()
   const { lang } = usePrefs()
-  const { photos, uploadPhoto, deletePhoto, setPrimaryPhoto, reorderPhotos, loading: photosLoading } = useProfilePhotos(user?.id)
   const t = I18N[lang] || I18N.fr
+
+  // Une seule photo : celle affichée sur le profil (profiles.photo_url).
+  // La galerie multi-photos a été retirée — le glisser-déposer pour réordonner
+  // ne fonctionnait pas correctement, et l'app n'a jamais montré qu'une seule
+  // photo aux autres joueurs de toute façon (PlayerCard/DetailedProfileModal
+  // lisent uniquement photo_url).
+  const [photoUrl, setPhotoUrl]         = useState(profile?.photo_url || '')
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   const [formData, setFormData] = useState({
     name:           profile?.name           || '',
@@ -80,8 +87,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
   const completionItems = [
     { pts: 15, done: !!formData.name?.trim() },
-    { pts: 20, done: photos.length >= 1 },
-    { pts: 10, done: photos.length >= 3 },
+    { pts: 30, done: !!photoUrl },
     { pts: 20, done: bioWordCount >= 1 },
     { pts: 20, done: bioWordCount >= 10 },
     { pts: 15, done: !!(formData.dominant_hand && formData.preferred_side && formData.play_style && formData.motivation) },
@@ -96,11 +102,10 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     :                          (lang === 'he' ? 'התחל פרופיל' : lang === 'en' ? 'Start your profile' : 'Commence ton profil')
 
   const completionHint = (() => {
-    if (photos.length === 0)        return lang === 'he' ? 'הוסף תמונה לפרופיל שלך' : lang === 'en' ? 'Add a profile photo' : 'Ajoute ta première photo'
+    if (!photoUrl)                  return lang === 'he' ? 'הוסף תמונה לפרופיל שלך' : lang === 'en' ? 'Add a profile photo' : 'Ajoute ta photo de profil'
     if (!formData.name?.trim())     return lang === 'he' ? 'הוסף את שמך המלא' : lang === 'en' ? 'Add your full name' : 'Ajoute ton nom complet'
     if (bioWordCount === 0)          return lang === 'he' ? 'כתוב ביוגרפיה' : lang === 'en' ? 'Write a bio to introduce yourself' : 'Écris ta bio pour te présenter'
     if (bioWordCount < 10)           return lang === 'he' ? 'הוסף לפחות 10 מילים לביוגרפיה' : lang === 'en' ? 'Add at least 10 words to your bio' : 'Ajoute au moins 10 mots dans ta bio'
-    if (photos.length < 3)          return lang === 'he' ? 'הוסף עוד תמונות' : lang === 'en' ? 'Add more photos to stand out' : 'Ajoute plus de photos pour te démarquer'
     return lang === 'he' ? 'הפרופיל שלך מושלם !' : lang === 'en' ? 'Your profile is perfect!' : 'Ton profil est parfait !'
   })()
 
@@ -114,8 +119,9 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   // ── Handlers ────────────────────────────────────────────────────
   const handleFileInputChange = async (e) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !user) return
     e.target.value = ''   // reset so same file can be re-picked
+    setError(null)
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
       setError('Format non supporté. Utilisez JPEG, PNG ou WebP.')
       return
@@ -124,8 +130,26 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       setError('Fichier trop lourd (max 5 Mo).')
       return
     }
-    const result = await uploadPhoto(file)
-    if (!result) setError("Échec de l'envoi de la photo")
+    setUploadingPhoto(true)
+    try {
+      const compressed = await compressImage(file)
+      const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      const path = `photos/${user.id}/${stamp}.jpg`
+      const { error: upErr } = await supabase.storage
+        .from('profile-photos')
+        .upload(path, compressed, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false })
+      if (upErr) throw upErr
+      const { data: pub } = supabase.storage.from('profile-photos').getPublicUrl(path)
+      const url = pub?.publicUrl
+      if (!url) throw new Error('URL publique introuvable')
+      const { error: saveErr } = await saveProfile({ photo_url: url })
+      if (saveErr) throw saveErr
+      setPhotoUrl(url)
+    } catch (err) {
+      setError(err.message || "Échec de l'envoi de la photo")
+    } finally {
+      setUploadingPhoto(false)
+    }
   }
 
   const handleInputChange = (field, value) =>
@@ -276,26 +300,45 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
             />
           </section>
 
-          {/* ── Photos ────────────────────────────────────────── */}
+          {/* ── Photo ─────────────────────────────────────────── */}
           <section>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h2 style={{
-                fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700,
-                color: ink, margin: 0,
-              }}>{t.photos}</h2>
-              <span style={{ fontFamily: 'Mulish', fontSize: 12, color: muted }}>{photos.length}/10</span>
+            <h2 style={sectionTitleStyle}>{t.photos}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div
+                onClick={() => !uploadingPhoto && fileInputRef.current?.click()}
+                style={{
+                  width: 84, height: 84, borderRadius: 16, flexShrink: 0,
+                  background: photoUrl ? `url(${photoUrl}) center/cover` : `url(${initialsAvatar(formData.name)}) center/cover`,
+                  border: `1px solid ${border}`, cursor: uploadingPhoto ? 'wait' : 'pointer',
+                  opacity: uploadingPhoto ? 0.6 : 1, transition: 'opacity 0.2s',
+                }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <button
+                  onClick={() => !uploadingPhoto && fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  style={{
+                    padding: '9px 16px', borderRadius: 10, cursor: uploadingPhoto ? 'wait' : 'pointer',
+                    background: COURT.green, color: COURT.cream, border: 'none',
+                    fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  {uploadingPhoto
+                    ? (lang === 'he' ? 'מעלה…' : lang === 'en' ? 'Uploading…' : 'Envoi…')
+                    : photoUrl
+                      ? (lang === 'he' ? 'החלף תמונה' : lang === 'en' ? 'Change photo' : 'Changer la photo')
+                      : (lang === 'he' ? 'הוסף תמונה' : lang === 'en' ? 'Add a photo' : 'Ajouter une photo')}
+                </button>
+                <p style={{ fontFamily: 'Mulish', fontSize: 11.5, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
+                  {lang === 'he'
+                    ? 'תמונה אחת בלבד — זו שהשחקנים האחרים יראו בפרופיל שלך.'
+                    : lang === 'en'
+                      ? 'A single photo — the one other players will see on your profile.'
+                      : 'Une seule photo — c\'est celle que les autres joueurs verront sur ton profil.'}
+                </p>
+              </div>
             </div>
 
-            <PhotoGalleryEditor
-              photos={photos}
-              onDelete={deletePhoto}
-              onSetPrimary={setPrimaryPhoto}
-              onReorder={reorderPhotos}
-              onAdd={(!photosLoading && !saving && photos.length < 10) ? () => fileInputRef.current?.click() : null}
-              dark={dark}
-            />
-
-            {/* Hidden file input triggered by the gallery's add slot */}
             <input
               ref={fileInputRef}
               type="file"
@@ -450,13 +493,13 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
         </button>
         <button
           onClick={handleSave}
-          disabled={saving || photosLoading}
+          disabled={saving || uploadingPhoto}
           style={{
             flex: 1, padding: '14px 0', borderRadius: 12,
             background: COURT.green, border: `0.5px solid ${COURT.green}`,
             fontFamily: 'Mulish', fontSize: 15, fontWeight: 700, color: COURT.cream,
-            cursor: (saving || photosLoading) ? 'not-allowed' : 'pointer',
-            opacity: (saving || photosLoading) ? 0.6 : 1,
+            cursor: (saving || uploadingPhoto) ? 'not-allowed' : 'pointer',
+            opacity: (saving || uploadingPhoto) ? 0.6 : 1,
           }}
         >
           {saving ? t.saving : t.saveProfile}
