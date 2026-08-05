@@ -777,48 +777,67 @@ export const BADGE_LABEL_KEY = {
   level_5:     'trophyLevel5',
 };
 
-export function BadgeRow({ badges, size = 18, label, dark, t, align = 'start' }) {
+export function BadgeRow({ badges, size = 18, label, dark, t, align = 'start', tappable = true }) {
   const [open, setOpen] = useState(null);
+  const [tipPos, setTipPos] = useState(null); // { left, top } en px viewport, déjà bornés
+  const btnRefs = useRef({});
   const unlocked = badges.filter(b => b.unlocked);
   if (unlocked.length === 0) return null;
   const stone   = dark ? COURT.darkMuted : COURT.stone;
   const circleBg = dark ? COURT.darkCard : COURT.cream;
   const border   = dark ? COURT.darkBorder : `${COURT.gold}60`;
   const circleSize = size + 16;
+
+  const toggle = (key) => {
+    if (open === key) { setOpen(null); return; }
+    const btn = btnRefs.current[key];
+    const rect = btn?.getBoundingClientRect();
+    if (rect) {
+      const TW = 150; // largeur approx de la bulle
+      const center = rect.left + rect.width / 2;
+      const safeLeft = Math.min(Math.max(8, center - TW / 2), window.innerWidth - TW - 8);
+      setTipPos({ left: safeLeft, top: rect.bottom + 6 });
+    }
+    setOpen(key);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: align === 'end' ? 'flex-end' : 'flex-start' }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: align === 'end' ? 'flex-end' : 'flex-start' }}>
         {unlocked.map(b => {
           const badgeLabel = t?.[BADGE_LABEL_KEY[b.key]] || b.key;
           return (
-            <div key={b.key} style={{ position: 'relative' }}>
-              <button
-                type="button"
-                onClick={() => setOpen(prev => prev === b.key ? null : b.key)}
-                title={badgeLabel}
-                aria-label={badgeLabel}
-                style={{
-                  width: circleSize, height: circleSize, borderRadius: circleSize / 2,
-                  background: circleBg, border: `1px solid ${border}`, padding: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: size, lineHeight: 1, flexShrink: 0, cursor: 'pointer',
-                  boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(15,61,41,0.12)',
-                }}
-              >{b.icon}</button>
-              {open === b.key && (
-                <div style={{
-                  position: 'absolute', top: '100%', marginTop: 6, left: '50%',
-                  transform: 'translateX(-50%)', zIndex: 20, whiteSpace: 'nowrap',
-                  background: COURT.greenDeep, color: COURT.cream,
-                  padding: '5px 10px', borderRadius: 8,
-                  fontFamily: 'Mulish', fontSize: 11,
-                  boxShadow: '0 4px 12px rgba(15,61,41,0.25)',
-                }}>{badgeLabel}</div>
-              )}
-            </div>
+            <button
+              key={b.key}
+              ref={el => { btnRefs.current[b.key] = el; }}
+              type="button"
+              onClick={tappable ? () => toggle(b.key) : undefined}
+              title={badgeLabel}
+              aria-label={badgeLabel}
+              style={{
+                width: circleSize, height: circleSize, borderRadius: circleSize / 2,
+                background: circleBg, border: `1px solid ${border}`, padding: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: size, lineHeight: 1, flexShrink: 0,
+                cursor: tappable ? 'pointer' : 'default',
+                boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(15,61,41,0.12)',
+              }}
+            >{b.icon}</button>
           );
         })}
       </div>
+      {/* Bulle en position:fixed — échappe tout overflow/bord de carte, bornée à
+          l'écran comme dans Achievements (même technique, cf plus haut). */}
+      {tappable && open && tipPos && (
+        <div style={{
+          position: 'fixed', left: tipPos.left, top: tipPos.top,
+          zIndex: 9999, whiteSpace: 'nowrap',
+          background: COURT.greenDeep, color: COURT.cream,
+          padding: '5px 10px', borderRadius: 8,
+          fontFamily: 'Mulish', fontSize: 11,
+          boxShadow: '0 4px 12px rgba(15,61,41,0.25)',
+        }}>{t?.[BADGE_LABEL_KEY[open]] || open}</div>
+      )}
       {label && (
         <div style={{
           fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em',

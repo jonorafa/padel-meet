@@ -2888,7 +2888,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               )}
             </div>
             <div style={{ flexShrink: 0 }}>
-              <BadgeRow badges={badgeResults} dark={dark} t={t} align="end" />
+              {/* tappable=false : les noms des trophées sont déjà affichés en
+                  permanence à gauche (badgeNamesLabel, sous le nom) — pas
+                  besoin d'une bulle au tap ici, ce serait redondant. */}
+              <BadgeRow badges={badgeResults} dark={dark} t={t} align="end" tappable={false} />
             </div>
           </div>
           <Ornament width={50} color={COURT.gold} />
