@@ -17,7 +17,7 @@ export function initSentry() {
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({
         maskAllText: true,  // RGPD : textes masqués dans les replays
-        blockAllMedia: false,
+        blockAllMedia: true,
       }),
     ],
     // Ignore les erreurs réseau banales

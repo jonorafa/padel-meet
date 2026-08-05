@@ -194,12 +194,14 @@ export function AuthProvider({ children }) {
       email: user.email,
       // Normalise le username en minuscules
       ...(profileData.username ? { username: profileData.username.toLowerCase().trim() } : {}),
-      // RGPD : le texte « En continuant, tu acceptes nos CGU » est affiché sur
-      // l'écran de connexion, mais l'acceptation n'était jamais enregistrée —
-      // impossible donc de prouver quand un utilisateur a consenti. On horodate
-      // au premier enregistrement du profil, et JAMAIS ensuite : la date de
-      // consentement d'origine ne doit pas être réécrite à chaque sauvegarde.
-      accepted_terms_at: profile?.accepted_terms_at ?? new Date().toISOString(),
+      // RGPD/PPL : consentement actif désormais (case cochée sur AuthScreen,
+      // pas un texte passif) — padel_consent_ts est l'horodatage RÉEL du clic
+      // sur la case, écrit en localStorage à cet instant. On ne retombe sur
+      // new Date() que si la clé est absente (comptes déjà existants, créés
+      // avant ce changement). Comme avant, jamais réécrit après le premier
+      // upsert (?? sur profile?.accepted_terms_at en premier).
+      accepted_terms_at: profile?.accepted_terms_at ?? localStorage.getItem('padel_consent_ts') ?? new Date().toISOString(),
+      consent_version: profile?.consent_version ?? localStorage.getItem('padel_consent_version') ?? null,
       updated_at: new Date().toISOString(),
     }
     const { data, error } = await supabase
@@ -214,7 +216,11 @@ export function AuthProvider({ children }) {
       }
       return { data: null, error }
     }
-    if (data) setProfile(data)
+    if (data) {
+      setProfile(data)
+      localStorage.removeItem('padel_consent_ts')
+      localStorage.removeItem('padel_consent_version')
+    }
     return { data, error: null }
   }
 

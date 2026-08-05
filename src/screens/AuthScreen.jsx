@@ -16,6 +16,11 @@ async function generateNonce() {
   return { raw, hashed }
 }
 
+// Version des CGU/Privacy Policy présentées ici — écrite dans profiles.consent_version
+// au premier saveProfile() (cf AuthContext.jsx). Changer cette valeur quand les
+// documents légaux changent, pour tracer quelle version un utilisateur a acceptée.
+const CONSENT_VERSION = '2026-08'
+
 const LABELS = {
   fr: {
     tagline: 'Trouve ton partenaire idéal',
@@ -46,6 +51,19 @@ export default function AuthScreen() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [consentChecked, setConsentChecked] = useState(false)
+
+  // Consentement actif (case cochée), pas passif : on horodate l'instant réel
+  // du clic ici, côté client, pour qu'AuthContext.saveProfile() l'utilise au
+  // lieu de l'instant (plus tardif, et pas forcément consenti) du premier
+  // appel serveur. Nettoyé après écriture réussie en DB.
+  const handleConsentChange = (checked) => {
+    setConsentChecked(checked)
+    if (checked) {
+      localStorage.setItem('padel_consent_ts', new Date().toISOString())
+      localStorage.setItem('padel_consent_version', CONSENT_VERSION)
+    }
+  }
 
   // ── Google Identity Services (overlay) ──────────────────────────────────────
   const googleWrapRef = useRef(null)   // conteneur relatif (mesure la largeur)
@@ -179,9 +197,67 @@ export default function AuthScreen() {
           </div>
         </div>
 
+        {/* ── Consentement CGU / Confidentialité — case à cocher, AVANT les
+            actions : le consentement doit précéder l'action, pas la suivre.
+            Non pré-cochée ; tant qu'elle ne l'est pas, Google et Invité sont
+            bloqués plus bas. ── */}
+        <label style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20,
+          cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
+        }}>
+          <input
+            type="checkbox"
+            checked={consentChecked}
+            onChange={(e) => handleConsentChange(e.target.checked)}
+            style={{ marginTop: 2, width: 18, height: 18, accentColor: COURT.green, cursor: 'pointer', flexShrink: 0 }}
+          />
+          <span style={{ fontFamily: 'Mulish', fontSize: 12.5, lineHeight: 1.55, color: ink }}>
+            {lang === 'en' ? (
+              <>
+                I have read and accept the{' '}
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/terms') }}
+                  style={{ textDecoration: 'underline', color: COURT.green }}
+                >Terms</span>
+                {' '}and{' '}
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/privacy') }}
+                  style={{ textDecoration: 'underline', color: COURT.green }}
+                >Privacy Policy</span>
+              </>
+            ) : lang === 'he' ? (
+              <>
+                קראתי ואני מסכים/ה ל
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/terms') }}
+                  style={{ textDecoration: 'underline', color: COURT.green }}
+                >תנאי השימוש</span>
+                {' '}ול
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/privacy') }}
+                  style={{ textDecoration: 'underline', color: COURT.green }}
+                >מדיניות הפרטיות</span>
+              </>
+            ) : (
+              <>
+                J'ai lu et j'accepte les{' '}
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/terms') }}
+                  style={{ textDecoration: 'underline', color: COURT.green }}
+                >CGU</span>
+                {' '}et la{' '}
+                <span
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/privacy') }}
+                  style={{ textDecoration: 'underline', color: COURT.green }}
+                >Politique de confidentialité</span>
+              </>
+            )}
+          </span>
+        </label>
+
         {/* ── Google (bouton Court visible + vrai bouton Google transparent par-dessus) ── */}
         <div ref={googleWrapRef} style={{ position: 'relative', width: '100%' }}>
-          <button onClick={handleGoogle} disabled={loading} style={{
+          <button onClick={handleGoogle} disabled={loading || !consentChecked} style={{
             width: '100%', padding: '15px', borderRadius: 14,
             background: card, border: `0.5px solid ${border}`,
             boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
@@ -214,14 +290,14 @@ export default function AuthScreen() {
               position: 'absolute', inset: 0, zIndex: 2,
               opacity: 0, overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              pointerEvents: gisReady && !loading ? 'auto' : 'none',
+              pointerEvents: gisReady && !loading && consentChecked ? 'auto' : 'none',
               cursor: 'pointer',
             }}
           />
         </div>
 
         {/* ── Invité ── */}
-        <button onClick={handleGuest} disabled={loading} style={{
+        <button onClick={handleGuest} disabled={loading || !consentChecked} style={{
           marginTop: 20, width: '100%', background: 'none',
           border: 'none', cursor: loading ? 'default' : 'pointer', textAlign: 'center',
           opacity: loading ? 0.5 : 1,
@@ -248,18 +324,6 @@ export default function AuthScreen() {
             {error}
           </div>
         )}
-
-        {/* ── Consentement CGU / Confidentialité ── */}
-        <div style={{ marginTop: 24, textAlign: 'center', fontFamily: 'Mulish', fontSize: 11.5, lineHeight: 1.6, color: stone }}>
-          {lang === 'en' ? 'By continuing, you agree to our ' : lang === 'he' ? 'בהמשך, אתה מסכים ל' : 'En continuant, tu acceptes nos '}
-          <span onClick={() => navigate('/terms')} style={{ textDecoration: 'underline', cursor: 'pointer', color: COURT.green }}>
-            {lang === 'en' ? 'Terms' : lang === 'he' ? 'תנאי השימוש' : 'CGU'}
-          </span>
-          {lang === 'en' ? ' and ' : lang === 'he' ? ' ו' : ' et notre '}
-          <span onClick={() => navigate('/privacy')} style={{ textDecoration: 'underline', cursor: 'pointer', color: COURT.green }}>
-            {lang === 'en' ? 'Privacy Policy' : lang === 'he' ? 'מדיניות הפרטיות' : 'Politique de confidentialité'}
-          </span>.
-        </div>
 
       </div>
     </div>
