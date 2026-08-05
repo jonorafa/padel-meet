@@ -2875,24 +2875,18 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               fontSize: 11, color: COURT.rust,
             }}>{uploadError}</div>
           )}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginTop: 10, marginBottom: 14 }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{userName}</div>
-              <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>{userCity} · 2026</div>
-              {/* Noms des trophées : sous le nom et sur toute la largeur, pour ne
-                  pas comprimer le nom quand plusieurs sont débloqués. */}
-              {badgeNamesLabel && (
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.35 }}>
-                  {badgeNamesLabel}
-                </div>
-              )}
-            </div>
-            <div style={{ flexShrink: 0 }}>
-              {/* tappable=false : les noms des trophées sont déjà affichés en
-                  permanence à gauche (badgeNamesLabel, sous le nom) — pas
-                  besoin d'une bulle au tap ici, ce serait redondant. */}
-              <BadgeRow badges={badgeResults} dark={dark} t={t} align="end" tappable={false} />
-            </div>
+          <div style={{ marginTop: 10, marginBottom: 14 }}>
+            <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{userName}</div>
+            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>{userCity} · 2026</div>
+            {/* Trophées sur leur propre ligne, pleine largeur : avec 3-4 badges
+                débloqués, ça a besoin de place pour respirer plutôt que de se
+                comprimer à droite du nom. tappable=false : le libellé est déjà
+                affiché en permanence via `label`, pas besoin d'une bulle au tap. */}
+            {badgeNamesLabel && (
+              <div style={{ marginTop: 10 }}>
+                <BadgeRow badges={badgeResults} dark={dark} t={t} label={badgeNamesLabel} tappable={false} />
+              </div>
+            )}
           </div>
           <Ornament width={50} color={COURT.gold} />
           {level == null ? (
