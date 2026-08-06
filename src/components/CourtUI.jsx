@@ -25,6 +25,23 @@ export const COURT = {
   red: '#C0392B',
 };
 
+// ─── Échelle typographique ───
+// Plus rien sous 13px dans l'app. 6 crans, aucune valeur intermédiaire.
+export const TYPE = {
+  micro:   13,  // libellés secondaires, métadonnées, compteurs
+  body:    15,  // corps de texte dense (listes, messages)
+  bodyLg:  17,  // corps de texte de lecture (conseils, bios)
+  title:   20,  // titres de section (Spectral italique)
+  screen:  26,  // titre d'écran (Spectral italique)
+  hero:    34,  // chiffre dominant
+};
+
+// ─── Interlettrage ───
+// Une seule valeur, réservée aux sur-titres capitales.
+export const TRACK = {
+  caps: '0.14em',
+};
+
 // ─── Dark mode context ───
 let _darkMode = false;
 export const setDarkMode = (v) => { _darkMode = v; };
@@ -609,6 +626,61 @@ const NAV_ICONS = {
     </svg>
   ),
 };
+
+/**
+ * En-tête d'écran unique. Remplace les copies manuelles de MatchScreen
+ * (SwipeStack, ChatScreen, MatchesScreen) — leurs pastilles de notification
+ * divergeaient (12px sans animation vs 14px avec `notifPop`) faute d'un seul
+ * composant partagé. `children` (optionnel) reçoit des actions additionnelles
+ * affichées avant la cloche de notifications.
+ */
+export function ScreenHeader({ eyebrow, title, notifCount = 0, onShowNotifs, dark, rtl = false, children, paddingTop = '56px' }) {
+  const ink    = dark ? COURT.darkText   : COURT.ink;
+  const border = dark ? COURT.darkBorder : `${COURT.green}30`;
+  const accent = dark ? COURT.greenLight : COURT.green;
+  const ff     = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
+
+  return (
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{
+      padding: `${paddingTop} 22px 16px`,
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12,
+      borderBottom: `0.5px solid ${border}`,
+    }}>
+      <div style={{ minWidth: 0 }}>
+        {eyebrow && (
+          <div style={{
+            fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
+            letterSpacing: TRACK.caps, textTransform: 'uppercase',
+            color: accent, marginBottom: 3,
+          }}>{eyebrow}</div>
+        )}
+        <div style={{
+          fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500,
+          fontSize: TYPE.screen, lineHeight: 1.1, color: ink,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{title}</div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+        {children}
+        {onShowNotifs && (
+          <button onClick={onShowNotifs} aria-label="Notifications" style={{
+            position: 'relative', width: 44, height: 44,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: ink,
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <NotifBadge count={notifCount} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function BottomNav({ active, onChange, t, chatCount, dark }) {
   const bg = dark ? COURT.darkCard : COURT.cream;

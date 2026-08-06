@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
 import {
-  COURT, PadelBall, PadelRacket, FloatingBalls, Ornament,
-  ThinButton, HeritageTag, BottomNav,
+  COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
+  ThinButton, HeritageTag, BottomNav, ScreenHeader, NotifBadge,
   SkeletonCard, MatchFlash, BottomSheet,
   isDark, initialsAvatar, Achievements, CompatRing, BadgeRow, BADGE_LABEL_KEY,
 } from '../components/CourtUI';
@@ -658,68 +658,52 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
       position: 'absolute', inset: 0, background: bg,
-      paddingTop: 'max(56px, calc(env(safe-area-inset-top, 0px) + 16px))',
       paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px))',
       overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
     }}>
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 10px' }}>
-        <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-          <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 26, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{t.partners}</div>
+      <ScreenHeader
+        eyebrow={t.atClub} title={t.partners}
+        notifCount={notifCount} onShowNotifs={onShowNotifs}
+        dark={dark} rtl={rtl}
+        paddingTop="max(56px, calc(env(safe-area-inset-top, 0px) + 16px))"
+      />
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '12px 22px 10px' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.6"
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder={lang === 'he' ? 'חפש...' : lang === 'en' ? 'Search...' : 'Chercher...'}
+            style={{
+              paddingLeft: 28, paddingRight: 10, height: 30, width: '100%',
+              background: dark ? COURT.darkCard : COURT.cream,
+              border: `0.5px solid ${searchQuery ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
+              borderRadius: 999,
+              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+              fontStyle: rtl ? 'normal' : 'italic',
+              fontSize: TYPE.micro, color: ink, outline: 'none', transition: 'border-color 0.2s',
+              boxSizing: 'border-box',
+            }}
+          />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, marginLeft: 12 }}>
-          {/* Cloche notifications */}
-          <button onClick={onShowNotifs} style={{
-            position: 'relative', flexShrink: 0, width: 30, height: 30, borderRadius: 15,
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: dark ? COURT.darkText : COURT.green,
-          }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            {notifCount > 0 && (
-              <div style={{ position: 'absolute', top: -2, right: -2, width: 12, height: 12, borderRadius: 6, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{notifCount}</div>
-            )}
-          </button>
-          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.6"
-              style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={lang === 'he' ? 'חפש...' : lang === 'en' ? 'Search...' : 'Chercher...'}
-              style={{
-                paddingLeft: 28, paddingRight: 10, height: 26, width: '100%',
-                background: dark ? COURT.darkCard : COURT.cream,
-                border: `0.5px solid ${searchQuery ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
-                borderRadius: 999,
-                fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-                fontStyle: rtl ? 'normal' : 'italic',
-                fontSize: 13, color: ink, outline: 'none', transition: 'border-color 0.2s',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-          <button onClick={onEditFilters} style={{
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
-            borderRadius: 999, padding: '0 12px', height: 30,
-            fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-            fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: COURT.green, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
-            whiteSpace: 'nowrap', boxSizing: 'border-box',
-          }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" style={{ flexShrink: 0 }}>
-              <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
-            </svg>
-            {t.filters}
-          </button>
-        </div>
+        <button onClick={onEditFilters} style={{
+          background: dark ? COURT.darkCard : COURT.cream,
+          border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
+          borderRadius: 999, padding: '0 12px', height: 30,
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+          fontStyle: rtl ? 'normal' : 'italic', fontSize: TYPE.micro, color: COURT.green, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+          whiteSpace: 'nowrap', boxSizing: 'border-box',
+        }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" style={{ flexShrink: 0 }}>
+            <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
+          {t.filters}
+        </button>
       </div>
 
       <div style={{ flex: 1, position: 'relative', margin: '0 16px 8px', minHeight: 0 }}>
@@ -1898,27 +1882,11 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
 
   return (
     <>
-    <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 20px' }}>
-        <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-          <div style={{ fontFamily: 'Spectral, serif', fontSize: 28, color: ink, fontStyle: 'italic', fontWeight: 500 }}>{t.chat}</div>
-        </div>
-        <button onClick={onShowNotifs} style={{
-          position: 'relative', width: 36, height: 36, borderRadius: 18,
-          background: dark ? COURT.darkCard : COURT.cream,
-          border: `0.5px solid ${border}`,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: dark ? COURT.darkText : COURT.green,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
-          )}
-        </button>
-      </div>
+    <div style={{ position: 'absolute', inset: 0, background: bg, paddingBottom: 100, overflow: 'auto' }}>
+      {/* rtl={false} explicite : cet écran n'a pas de dir="rtl" sur son
+          conteneur racine (contrairement aux 3 autres) — pré-existant, hors
+          périmètre de ce chantier, pas corrigé silencieusement ici. */}
+      <ScreenHeader eyebrow={t.atClub} title={t.chat} notifCount={notifCount} onShowNotifs={onShowNotifs} dark={dark} rtl={false} />
 
       {matchesLoading || matches === null ? (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: stone }}>
@@ -2108,29 +2076,10 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
   ];
 
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px 16px' }}>
-        <div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.28em', textTransform: 'uppercase' }}>{t.atClub}</div>
-          <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500 }}>{t.matches}</div>
-        </div>
-        <button onClick={onShowNotifs} style={{
-          position: 'relative', width: 36, height: 36, borderRadius: 18,
-          background: dark ? COURT.darkCard : COURT.cream,
-          border: `0.5px solid ${border}`,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: dark ? COURT.darkText : COURT.green,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
-          )}
-        </button>
-      </div>
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingBottom: 100, overflow: 'auto' }}>
+      <ScreenHeader eyebrow={t.atClub} title={t.matches} notifCount={notifCount} onShowNotifs={onShowNotifs} dark={dark} rtl={rtl} />
 
-      <div style={{ display: 'flex', margin: '0 24px 20px', background: dark ? COURT.darkCard : COURT.creamDark, borderRadius: 10, padding: 4 }}>
+      <div style={{ display: 'flex', margin: '20px 24px', background: dark ? COURT.darkCard : COURT.creamDark, borderRadius: 10, padding: 4 }}>
         {tabs.map(tb => (
           <button key={tb.id} onClick={() => setTab(tb.id)} style={{
             flex: 1, padding: '10px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -2814,10 +2763,8 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          {notifCount > 0 && (
-            <div style={{ position: 'absolute', top: -2, right: -2, width: 14, height: 14, borderRadius: 7, background: COURT.red, border: `1.5px solid ${bg}`, fontFamily: 'Mulish', fontSize: 11, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, animation: 'notifPop 0.4s ease' }}>{notifCount}</div>
-          )}
+            </svg>
+            <NotifBadge count={notifCount} />
           </button>
         </div>
       </div>
