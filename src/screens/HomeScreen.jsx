@@ -1,14 +1,14 @@
 import { Suspense, lazy } from 'react'
-import { COURT } from '../components/CourtUI'
+import { COURT, TYPE } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
 import { DAILY_TIPS } from '../data/courtData'
 
 const StatsSection = lazy(() => import('../components/StatsSection'))
 
 // ── Icône livre SVG (style trait, non-Apple) ─────────────────────────────────
-function BookIcon({ color }) {
+function BookIcon({ color, size = 22 }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -20,7 +20,6 @@ function BookIcon({ color }) {
 // ── Conseil du jour — rotation déterministe sur 24h (minuit UTC) ──────────────
 function TipOfTheDay({ lang, dark }) {
   const rtl   = lang === 'he'
-  const bg    = dark ? COURT.darkCard : '#F7F3EA'
   const ink   = dark ? COURT.darkText : COURT.ink
   const stone = dark ? COURT.darkMuted : COURT.stone
   const border= dark ? COURT.darkBorder : `${COURT.green}25`
@@ -43,24 +42,23 @@ function TipOfTheDay({ lang, dark }) {
   return (
     <div style={{
       margin: '0 20px 4px',
-      background: bg,
+      background: dark ? COURT.darkCard : '#fff',
       border: `0.5px solid ${border}`,
-      borderLeft: `3px solid ${COURT.green}`,
       borderRadius: 16,
-      padding: '16px 18px',
+      padding: 20,
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <BookIcon color={COURT.green} />
+          <BookIcon color={COURT.green} size={20} />
           <span style={{
-            fontFamily: 'Mulish', fontSize: 11, fontWeight: 700,
-            letterSpacing: '0.18em', textTransform: 'uppercase', color: COURT.green,
+            fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
+            letterSpacing: '0.08em', color: COURT.green,
           }}>
             {labels.eyebrow}
           </span>
         </div>
-        <span style={{ fontFamily: 'Mulish', fontSize: 10, color: stone }}>
+        <span style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone }}>
           {labels.counter}
         </span>
       </div>
@@ -69,26 +67,29 @@ function TipOfTheDay({ lang, dark }) {
       <p style={{
         fontFamily: ff,
         fontStyle: rtl ? 'normal' : 'italic',
-        fontSize: 15,
-        lineHeight: 1.6,
+        fontSize: TYPE.bodyLg,
+        lineHeight: 1.55,
         color: ink,
         margin: 0,
+        textWrap: 'pretty',
       }}>
         {text}
       </p>
 
+      <div style={{ height: '0.5px', background: border, margin: '16px 0 12px' }} />
+
       {/* Sous-note : renouvellement */}
       <p style={{
-        fontFamily: 'Mulish', fontSize: 11, color: stone,
-        margin: '10px 0 0', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 6,
+        fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone,
+        margin: 0, lineHeight: 1.45, display: 'flex', alignItems: 'center', gap: 7,
       }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
         </svg>
         <span>
-          {lang === 'he' ? 'חזור מדי יום לעצות חדשות'
-            : lang === 'en' ? 'Come back daily for new tips'
-            : 'Reviens chaque jour pour de nouveaux conseils'}
+          {lang === 'he' ? 'טיפ חדש כל יום'
+            : lang === 'en' ? 'New tip every day'
+            : 'Nouveau conseil chaque jour'}
         </span>
       </p>
     </div>
@@ -114,7 +115,6 @@ function StatsSkeleton({ dark }) {
 // pour rester cohérent visuellement sur cet écran.
 function LearnEntryCard({ lang, dark, onOpen }) {
   const rtl    = lang === 'he'
-  const bg     = dark ? COURT.darkCard : '#F7F3EA'
   const ink    = dark ? COURT.darkText : COURT.ink
   const stone  = dark ? COURT.darkMuted : COURT.stone
   const border = dark ? COURT.darkBorder : `${COURT.green}25`
@@ -129,15 +129,15 @@ function LearnEntryCard({ lang, dark, onOpen }) {
   return (
     <button onClick={onOpen} dir={rtl ? 'rtl' : 'ltr'} style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      width: 'calc(100% - 40px)', margin: '0 20px 4px',
-      background: bg, border: `0.5px solid ${border}`, borderLeft: `3px solid ${COURT.gold}`,
+      width: 'calc(100% - 40px)', margin: '0 20px 4px', minHeight: 64, boxSizing: 'border-box',
+      background: dark ? COURT.darkCard : '#fff', border: `0.5px solid ${border}`,
       borderRadius: 16, padding: '16px 18px', cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
     }}>
       <div>
-        <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 17, color: ink, fontWeight: 500 }}>
+        <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: TYPE.bodyLg, color: ink, fontWeight: 500 }}>
           {L.title}
         </div>
-        <div style={{ fontFamily: 'Mulish', fontSize: 12, color: stone, marginTop: 2 }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, marginTop: 2 }}>
           {L.sub}
         </div>
       </div>
