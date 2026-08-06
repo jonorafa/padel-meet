@@ -591,17 +591,17 @@ export function BottomSheet({ children, onClose, title, dark }) {
 // ─── Nav icons ───
 const NAV_ICONS = {
   home: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.8 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z" />
     </svg>
   ),
   search: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.8 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
     </svg>
   ),
   learn: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.8 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
       <line x1="9" y1="7" x2="15" y2="7" />
@@ -609,19 +609,19 @@ const NAV_ICONS = {
     </svg>
   ),
   trophy: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.8 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 4h12v4a6 6 0 0 1-12 0V4z" />
       <path d="M6 6H3v2a3 3 0 0 0 3 3M18 6h3v2a3 3 0 0 1-3 3" />
       <path d="M10 14h4v3l1 3H9l1-3z" />
     </svg>
   ),
   chat: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.8 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
   user: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.5 : 1} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 1.8 : 1.5} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
     </svg>
   ),
@@ -687,7 +687,6 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
   const border = dark ? COURT.darkBorder : `${COURT.green}40`;
   const activeColor = dark ? COURT.greenLight : COURT.green;
   const inactiveColor = dark ? COURT.darkMuted : COURT.stone;
-  const dotColor = dark ? COURT.darkGold : COURT.gold;
 
   const items = [
     { id: 'learn', label: t?.learn || 'Learn', iconKey: 'learn' },
@@ -701,7 +700,7 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
     <div style={{
       position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40,
       background: bg, borderTop: `0.5px solid ${border}`,
-      padding: '10px 8px 28px',
+      padding: '8px 6px 26px',
       display: 'flex', justifyContent: 'space-around', alignItems: 'flex-start',
     }}>
       {items.map(it => {
@@ -711,8 +710,9 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
             if (navigator.vibrate) navigator.vibrate(8);
             onChange(it.id);
           }} style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-            background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: '8px 6px', minWidth: 60, minHeight: 48, boxSizing: 'border-box',
             color: isActive ? activeColor : inactiveColor,
             transition: 'color 0.25s',
             position: 'relative',
@@ -720,10 +720,10 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
             {it.badge > 0 && <NotifBadge count={it.badge} />}
             {NAV_ICONS[it.iconKey](isActive, dark)}
             <div style={{
-              width: 4, height: 4, borderRadius: 4,
-              background: isActive ? dotColor : 'transparent',
-              transition: 'background 0.25s',
-            }} />
+              fontFamily: 'Mulish', fontSize: 11,
+              fontWeight: isActive ? 800 : 600, lineHeight: 1,
+              whiteSpace: 'nowrap',
+            }}>{it.label}</div>
           </button>
         );
       })}
