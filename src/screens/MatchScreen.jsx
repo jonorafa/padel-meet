@@ -6,10 +6,11 @@ import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, HeritageTag, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
   SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, CompatRing, BadgeRow, BADGE_LABEL_KEY,
+  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY,
 } from '../components/CourtUI';
 import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
+import { LevelBlock } from '../components/LevelBlock';
 import { compressImage } from '../lib/image';
 import { I18N, regionToCountry, getGreeting } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
@@ -396,26 +397,20 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           </div>
         </div>
 
-        {/* ─── Niveau + compatibilité — bloc unique ────────────────────── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: COURT.green, borderRadius: 14, padding: '10px 16px',
-          marginTop: 14,
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.gold,}}>{t.currentLevel}</div>
-            <div style={{ fontFamily: 'Spectral, serif', fontSize: 26, color: COURT.cream, lineHeight: 1.15 }}>
-              {p.level != null ? p.level.toFixed(1) : '—'}
-            </div>
-          </div>
-          <div style={{ width: 0.5, alignSelf: 'stretch', background: `${COURT.cream}30` }} />
-          <CompatRing size={58} value={compat} stroke={COURT.gold} txt={COURT.cream}
-            track={`${COURT.cream}25`} label={t.compatibility || t.confidence} rtl={lang === 'he'} />
-        </div>
-
-        {/* Taux de confiance */}
-        <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 8 }}>
-          ✓ {t.confidence} {Math.round(p.confidenceRate ?? 90)}%
+        {/* ─── Niveau / confiance / compatibilité — hiérarchisés ─────────
+            Les trois s'affichaient au même poids visuel (niveau + deux
+            anneaux dorés identiques) : rien n'indiquait lequel compte.
+            peerCount/matchCount ne sont pas disponibles pour un joueur
+            consulté (useTierSignals ne lit que l'utilisateur connecté) —
+            LevelBlock affiche alors une phrase générique. */}
+        <div style={{ marginTop: 14 }}>
+          <LevelBlock
+            level={p.level}
+            confidence={p.confidenceRate ?? 90}
+            compat={compat}
+            lang={lang}
+            dark={dark}
+          />
         </div>
 
         {/* Tags */}
@@ -2872,18 +2867,23 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               </div>
             </div>
           ) : (
-            /* ── Niveau évalué — grille standard ── */
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginTop: 18 }}>
-              {[
-                { label: t.currentLevel,  value: level.toFixed(1) },
-                { label: t.matchesPlayed, value: userMatches },
-                { label: t.confidence,    value: `${confidence}%` },
-              ].map((s, i) => (
-                <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <div style={{ fontFamily: 'Mulish', fontSize: lang === 'he' ? 11 : 8, fontWeight: 700, color: stone, whiteSpace: 'nowrap' }}>{s.label}</div>
-                  <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
-                </div>
-              ))}
+            /* ── Niveau évalué — bloc hiérarchisé (niveau dominant, confiance
+                 en pastille). compat={null} : on ne se compare pas à soi-même.
+                 Le nombre de matchs joués reste affiché juste en dessous, il
+                 n'entre pas dans la hiérarchie des trois scores. ── */
+            <div style={{ marginTop: 18 }}>
+              <LevelBlock
+                level={level}
+                confidence={confidence}
+                compat={null}
+                matchCount={userMatches}
+                lang={lang}
+                dark={dark}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone, whiteSpace: 'nowrap' }}>{t.matchesPlayed}</div>
+                <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{userMatches}</div>
+              </div>
             </div>
           )}
         </div>

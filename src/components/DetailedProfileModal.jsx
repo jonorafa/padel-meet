@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { COURT, BadgeRow } from './CourtUI'
 import { PhotoLightbox } from './PhotoLightbox'
+import { LevelBlock } from './LevelBlock'
 import { Sentry } from '../sentry'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
@@ -269,22 +270,6 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             {player.age && (player.region || player.city) ? ' · ' : ''}
             {player.region || player.city || ''}
           </p>
-          {player.level != null && (
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '8px 16px', borderRadius: 10,
-              background: `${COURT.green}18`, border: `0.5px solid ${COURT.green}40`,
-              width: 'fit-content',
-              marginTop: 4,
-            }}>
-              <span style={{ fontFamily: 'Mulish', fontSize: 13, color: muted, fontWeight: 600 }}>
-                {t.currentLevel || 'Niveau'}
-              </span>
-              <span style={{ fontFamily: 'Spectral, serif', fontSize: 20, fontWeight: 700, color: COURT.green, fontStyle: 'italic' }}>
-                {player.level.toFixed(1)}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Bouton fermer */}
@@ -302,6 +287,21 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
 
       {/* ─── CONTENU PRINCIPAL (scroll si besoin) ─── */}
       <div style={{ flex: 1, overflowY: 'auto', background: bg, padding: '24px 16px 16px' }}>
+        {/* Niveau / confiance / compatibilité — hiérarchisés. compat={null} :
+            la compatibilité dépend de qui regarde et n'est pas calculée ici
+            (elle l'est sur la carte de recherche, qui a `me` sous la main). */}
+        {player.level != null && (
+          <div style={{ marginBottom: 24 }}>
+            <LevelBlock
+              level={player.level}
+              confidence={player.confidence_rate}
+              compat={null}
+              lang={lang}
+              dark={dark}
+            />
+          </div>
+        )}
+
         {/* Stats compactes si présentes */}
         {stats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
