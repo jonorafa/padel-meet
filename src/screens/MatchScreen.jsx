@@ -2253,26 +2253,25 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
               <div style={{ marginBottom: 18 }}>
                 <SectionHeading>{t.trophiesTitle || 'Trophées'}</SectionHeading>
               </div>
+              {/* `Icon` et `progress` viennent de computeBadges (badges.jsx) —
+                  seuls le libellé et la description restent définis ici, ils
+                  sont propres à cet écran. */}
               <Achievements dark={dark} badges={[
                 {
-                  icon: '🎾', label: trophies[0].label, on: trophies[0].unlocked,
+                  ...badgeResults[0], label: trophies[0].label, on: trophies[0].unlocked,
                   desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
-                  progress: { cur: Math.min(userMatches, 1), max: 1 },
                 },
                 {
-                  icon: '🔥', label: trophies[1].label, on: trophies[1].unlocked,
+                  ...badgeResults[1], label: trophies[1].label, on: trophies[1].unlocked,
                   desc: lang === 'fr' ? 'Gagne 5 matchs d\'affilée pour débloquer' : lang === 'en' ? 'Win 5 matches in a row to unlock' : 'זכה ב-5 משחקים ברצף',
-                  progress: { cur: Math.min(longestStreak, 5), max: 5 },
                 },
                 {
-                  icon: '⭐', label: trophies[2].label, on: trophies[2].unlocked,
+                  ...badgeResults[2], label: trophies[2].label, on: trophies[2].unlocked,
                   desc: lang === 'fr' ? 'Joue au moins 10 matchs pour débloquer' : lang === 'en' ? 'Play at least 10 matches to unlock' : 'שחק לפחות 10 משחקים',
-                  progress: { cur: Math.min(userMatches, 10), max: 10 },
                 },
                 {
-                  icon: '👑', label: trophies[3].label, on: trophies[3].unlocked,
+                  ...badgeResults[3], label: trophies[3].label, on: trophies[3].unlocked,
                   desc: lang === 'fr' ? 'Atteins le niveau 5 pour débloquer' : lang === 'en' ? 'Reach level 5 to unlock' : 'הגע לרמה 5 לפתיחה',
-                  progress: { cur: Math.min(Math.round((level ?? 0) * 10) / 10, 5), max: 5 },
                 },
               ]} />
             </div>

@@ -20,7 +20,9 @@ export const COURT = {
   darkCard: '#1A2820',
   darkBorder: '#2A3D30',
   darkText: '#E8F0EB',
-  darkMuted: '#6B8A75',
+  // #6B8A75 donnait un ratio ≈4:1 sur darkCard (#1A2820), sous le seuil AA —
+  // et c'est la couleur de TOUS les libellés secondaires en mode sombre.
+  darkMuted: '#8FB39C',
   darkGold: '#D4AF6A',
   red: '#C0392B',
 };
@@ -805,31 +807,54 @@ export function Achievements({ badges, dark }) {
       )}
 
       <div style={{ display: 'flex', gap: 10 }}>
-        {badges.map((badge, i) => (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <button
-              ref={el => { btnRefs.current[i] = el; }}
-              onClick={() => toggle(i)}
-              style={{
-                width: 52, height: 52, borderRadius: 26, padding: 0,
-                background: badge.on ? COURT.green : cardBg,
-                border: `0.5px solid ${badge.on ? COURT.gold : COURT.green + '20'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 22, cursor: 'pointer',
-                filter: badge.on ? 'none' : 'grayscale(1)',
-                opacity: badge.on ? 1 : 0.5,
-                boxShadow: open === i ? `0 0 0 3px ${COURT.gold}40` : 'none',
-                transform: open === i ? 'translateY(-2px)' : 'none',
-                transition: 'box-shadow 0.2s, transform 0.2s',
-              }}
-            >
-              {badge.on ? badge.icon : '🔒'}
-            </button>
-            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
-              {badge.label}
+        {badges.map((badge, i) => {
+          // État verrouillé : l'icône reste visible (en gris), et un anneau
+          // doré montre la progression — le cadenas précédent était identique
+          // pour les trois trophées et ne disait pas ce qu'il restait à faire.
+          const prog = badge.progress;
+          const showRing = !badge.on && prog && prog.cur > 0;
+          const C = 163.36; // circonférence pour r=26
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ position: 'relative', width: 52, height: 52 }}>
+                <button
+                  ref={el => { btnRefs.current[i] = el; }}
+                  onClick={() => toggle(i)}
+                  style={{
+                    width: 52, height: 52, borderRadius: 26, padding: 0,
+                    background: badge.on ? COURT.green : cardBg,
+                    border: `0.5px solid ${badge.on ? COURT.gold : COURT.green + '20'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: open === i ? `0 0 0 3px ${COURT.gold}40` : 'none',
+                    transform: open === i ? 'translateY(-2px)' : 'none',
+                    transition: 'box-shadow 0.2s, transform 0.2s',
+                  }}
+                >
+                  {badge.Icon
+                    ? <badge.Icon size={24} color={badge.on ? COURT.goldLight : (_darkMode ? COURT.darkMuted : COURT.stone)} />
+                    : <span style={{ fontSize: 22 }}>{badge.icon}</span>}
+                </button>
+                {showRing && (
+                  <svg width={52} height={52} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                    <circle cx="26" cy="26" r="25" fill="none" stroke={COURT.gold} strokeWidth="2" strokeLinecap="round"
+                      strokeDasharray={C}
+                      strokeDashoffset={C * (1 - prog.cur / prog.max)}
+                      transform="rotate(-90 26 26)" />
+                  </svg>
+                )}
+              </div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
+                {badge.label}
+                {showRing && (
+                  <div style={{ color: COURT.gold, fontWeight: 700, marginTop: 2 }}>
+                    {prog.cur} / {prog.max}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </>
   );
@@ -894,7 +919,11 @@ export function BadgeRow({ badges, size = 18, label, dark, t, align = 'start', t
                 cursor: tappable ? 'pointer' : 'default',
                 boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(15,61,41,0.12)',
               }}
-            >{b.icon}</button>
+            >
+              {b.Icon
+                ? <b.Icon size={size} color={COURT.goldLight} />
+                : b.icon}
+            </button>
           );
         })}
       </div>
