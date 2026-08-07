@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { COURT, PadelBall, Ornament, BottomSheet, initialsAvatar } from './CourtUI'
+import { COURT, PadelBall, Ornament, BottomSheet, initialsAvatar,
+  LightningIcon, HourglassIcon, AlertIcon, XIcon } from './CourtUI'
 import { supabase } from '../lib/supabase'
 import { useMatchResults } from '../hooks/useMatchResults'
 
@@ -112,8 +113,14 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
               background: COURT.rust, border: 'none', color: COURT.cream,
               fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
               cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
-              {busy ? '…' : (lang === 'en' ? '✕ Reject' : lang === 'he' ? '✕ דחה' : '✕ Refuser')}
+              {busy ? '…' : (
+                <>
+                  <XIcon size={13} />
+                  {lang === 'en' ? 'Reject' : lang === 'he' ? 'דחה' : 'Refuser'}
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -128,9 +135,10 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
               color: COURT.rust, border: `0.5px solid ${COURT.rust}60`,
               borderRadius: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 13, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}
           >
-            ✕ {t.reject}
+            <XIcon size={13} /> {t.reject}
           </button>
           <button
             onClick={() => onConfirm(pending.id)}
@@ -182,10 +190,8 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
             {pending.score} · {t.expiresIn} {formatTimeRemaining(pending.expiresAt)}
           </div>
         </div>
-        <div style={{
-          fontFamily: 'Mulish', fontSize: 13, color: stone,
-        }}>
-          ⏳
+        <div style={{ display: 'flex', alignItems: 'center', color: stone }}>
+          <HourglassIcon size={16} />
         </div>
       </div>
     </div>
@@ -289,16 +295,20 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             <div style={{
               fontFamily: 'Mulish', fontSize: 13, color: COURT.green,
               fontWeight: 600, marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 7,
             }}>
-              ⚡ {t.toConfirm} ({pendingToConfirm.length})
+              <LightningIcon size={13} color={COURT.green} />
+              {t.toConfirm} ({pendingToConfirm.length})
             </div>
             {panelError && (
               <div style={{
                 padding: '8px 12px', borderRadius: 8, marginBottom: 10,
                 background: `${COURT.rust}12`, border: `0.5px solid ${COURT.rust}40`,
                 fontFamily: 'Mulish', fontSize: 12, color: COURT.rust,
+                display: 'flex', alignItems: 'center', gap: 7,
               }}>
-                ⚠️ {panelError}
+                <AlertIcon size={14} color={COURT.rust} />
+                {panelError}
               </div>
             )}
             {pendingToConfirm.map(p => (
@@ -319,8 +329,10 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             <div style={{
               fontFamily: 'Mulish', fontSize: 13, color: stone,
               marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 7,
             }}>
-              ⏳ {t.awaiting} ({pendingAwaitingConfirmation.length})
+              <HourglassIcon size={13} color={stone} />
+              {t.awaiting} ({pendingAwaitingConfirmation.length})
             </div>
             {pendingAwaitingConfirmation.map(p => (
               <ScoreAwaitingCard
@@ -385,7 +397,8 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         }}>
           {evalSent ? (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🎾</div>
+              {/* PadelBall plutôt que 🎾 : l'app a déjà sa propre balle tracée */}
+              <div style={{ marginBottom: 12 }}><PadelBall size={48} /></div>
               <p style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.green, margin: '0 0 6px' }}>
                 {t.evalThanks}
               </p>

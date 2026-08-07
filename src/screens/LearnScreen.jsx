@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { COURT } from '../components/CourtUI'
+import { COURT, TYPE, LockIcon } from '../components/CourtUI'
 import { QUIZ_CHAPTERS } from '../data/quizData'
 import { Sentry } from '../sentry'
 
@@ -194,9 +194,15 @@ export default function LearnScreen({ lang = 'fr', dark = false, onClose }) {
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
+            {/* Pinyon Script est réservée au wordmark « Padel Meet » : l'utiliser
+                aussi comme titre d'écran lui faisait perdre sa valeur de
+                signature, et à 34px en cursive « Apprendre » était nettement
+                moins lisible qu'un titre Spectral. `ink` plutôt qu'un vert fixe
+                pour suivre le mode sombre comme les autres écrans. */}
             <div style={{
-              fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 34,
-              color: COURT.green, lineHeight: 1,
+              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+              fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500,
+              fontSize: TYPE.screen, color: ink, lineHeight: 1.1,
             }}>{L.title}</div>
             <div style={{
               fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
@@ -644,12 +650,4 @@ function Star({ filled, size = 14 }) {
   )
 }
 
-function LockIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff"
-      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}>
-      <rect x="5" y="11" width="14" height="9" rx="2" />
-      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-    </svg>
-  )
-}
+// LockIcon vit désormais dans CourtUI.jsx (partagé) — cf. import en tête.

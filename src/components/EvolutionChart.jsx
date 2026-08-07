@@ -86,7 +86,9 @@ export default function EvolutionChart() {
       }}>
         {evoPoints.length >= 2 ? (() => {
           const W = 300, H = 130
-          const padL = 26, padR = 8, padT = 10, padB = 22
+          // padB élargi (22 → 28) pour que les dates d'axe à 11px ne touchent
+          // plus le bord du graphique.
+          const padL = 26, padR = 8, padT = 10, padB = 28
           const chartW = W - padL - padR
           const chartH = H - padT - padB
           const minY = 0, maxY = 7
@@ -120,7 +122,8 @@ export default function EvolutionChart() {
             setTouchIdx(ci)
           }
           const cursor = touchIdx !== null ? xy[touchIdx] : null
-          const ttW = 90, ttH = 18
+          // L'étiquette du curseur grandit avec sa police (8,5 → 12px).
+          const ttW = 108, ttH = 22
           const ttX = cursor ? Math.min(Math.max(cursor[0] - ttW / 2, padL), W - padR - ttW) : 0
           const ttY = cursor ? Math.max(cursor[1] - ttH - 8, padT) : 0
           return (
@@ -142,27 +145,30 @@ export default function EvolutionChart() {
                   <g key={v}>
                     <line x1={padL} y1={yy} x2={W - padR} y2={yy}
                       stroke={dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'} strokeWidth="0.5" />
-                    <text x={padL - 4} y={yy + 3.5} textAnchor="end"
-                      fontSize="7" fontFamily="Mulish" fill={stone}>{v}</text>
+                    <text x={padL - 6} y={yy + 4} textAnchor="end"
+                      fontSize="11" fontWeight="600" fontFamily="Mulish" fill={stone}>{v}</text>
                   </g>
                 )
               })}
               {/* Area + line */}
               <path d={areaPath} fill="url(#evoFill)" />
-              <path d={linePath} fill="none" stroke={COURT.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={linePath} fill="none" stroke={COURT.green} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               {/* X axis date labels */}
               {xIdxs.map((idx, li) => (
-                <text key={idx} x={xy[idx][0]} y={H - 4}
+                <text key={idx} x={xy[idx][0]} y={H - 2}
                   textAnchor={li === 0 ? 'start' : li === xIdxs.length - 1 ? 'end' : 'middle'}
-                  fontSize="7" fontFamily="Mulish" fill={stone}>
+                  fontSize="11" fontWeight="600" fontFamily="Mulish" fill={stone}>
                   {fmtDate(evoDates?.[idx])}
                 </text>
               ))}
-              {/* Endpoint dot (no cursor) */}
-              {!cursor && (
-                <circle cx={xy[n-1][0]} cy={xy[n-1][1]} r="3.5"
-                  fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
-              )}
+              {/* Un point sur chaque évaluation réelle, le dernier en doré —
+                  seul l'endpoint était marqué, les autres évaluations étaient
+                  invisibles sur la courbe. */}
+              {!cursor && xy.map((p, i) => (
+                <circle key={i} cx={p[0]} cy={p[1]} r={i === n - 1 ? 4 : 3}
+                  fill={i === n - 1 ? COURT.gold : COURT.green}
+                  stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
+              ))}
               {/* Interactive cursor */}
               {cursor && (
                 <g>
@@ -172,8 +178,8 @@ export default function EvolutionChart() {
                     fill={COURT.gold} stroke={dark ? COURT.darkCard : COURT.cream} strokeWidth="1.5" />
                   <rect x={ttX} y={ttY} width={ttW} height={ttH} rx="3"
                     fill={dark ? COURT.darkCard : '#fff'} stroke={COURT.green + '60'} strokeWidth="0.5" />
-                  <text x={ttX + ttW / 2} y={ttY + 11.5} textAnchor="middle"
-                    fontSize="8.5" fontFamily="Mulish" fontWeight="600" fill={COURT.green}>
+                  <text x={ttX + ttW / 2} y={ttY + 14.5} textAnchor="middle"
+                    fontSize="12" fontFamily="Mulish" fontWeight="700" fill={COURT.green}>
                     {`${evoPoints[touchIdx]?.toFixed(1)}  ·  ${fmtDate(evoDates?.[touchIdx])}`}
                   </text>
                 </g>

@@ -428,6 +428,52 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
   );
 }
 
+// ─── Icônes d'état — même style que les icônes de nav (linecap round) ───
+// Remplacent les emoji ⚡ ⏳ ⚠️ ✕ du panneau des scores à confirmer : c'est
+// l'écran où l'on confirme un résultat de match, il mérite le même soin.
+export const LightningIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M13 2 4 14h6l-1 8 9-12h-6z" />
+  </svg>
+);
+
+export const HourglassIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2h12M6 22h12M7 2c0 5 3.5 6 5 8-1.5 2-5 3-5 8M17 2c0 5-3.5 6-5 8 1.5 2 5 3 5 8" />
+  </svg>
+);
+
+export const AlertIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 9v4M12 17h.01" />
+    <path d="M10.3 3.86 1.8 18a1.5 1.5 0 0 0 1.3 2.2h17.8a1.5 1.5 0 0 0 1.3-2.2L13.7 3.86a1.5 1.5 0 0 0-2.6 0z" />
+  </svg>
+);
+
+export const XIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+// ─── Verrou binaire (chapitre verrouillé / déverrouillé) ───
+// Vivait dans LearnScreen.jsx ; partagé ici pour tout écran binaire à venir.
+// Les trophées n'utilisent PAS ce cadenas : ils ont une progression continue
+// (3/5), donc un anneau de progression (cf Achievements) y dit bien plus.
+export function LockIcon({ size = 26, color = '#fff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.9 }}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
 // ─── Notification Badge ───
 export function NotifBadge({ count }) {
   if (!count) return null;
