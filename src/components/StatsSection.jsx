@@ -110,10 +110,8 @@ export default function StatsSection() {
   }
   const lbl = {
     fontFamily:    'Mulish',
-    fontSize: 11,
+    fontSize:      13,
     fontWeight:    600,
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
     color:         stone,
     marginBottom:  10,
   }

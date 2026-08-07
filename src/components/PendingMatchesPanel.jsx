@@ -183,8 +183,7 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
           </div>
         </div>
         <div style={{
-          fontFamily: 'Mulish', fontSize: 9, color: stone,
-          letterSpacing: '0.16em', textTransform: 'uppercase',
+          fontFamily: 'Mulish', fontSize: 13, color: stone,
         }}>
           ⏳
         </div>
@@ -288,8 +287,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         {pendingToConfirm.length > 0 && (
           <>
             <div style={{
-              fontFamily: 'Mulish', fontSize: 10, color: COURT.green,
-              letterSpacing: '0.24em', textTransform: 'uppercase',
+              fontFamily: 'Mulish', fontSize: 13, color: COURT.green,
               fontWeight: 600, marginBottom: 12,
             }}>
               ⚡ {t.toConfirm} ({pendingToConfirm.length})
@@ -319,8 +317,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         {pendingAwaitingConfirmation.length > 0 && (
           <>
             <div style={{
-              fontFamily: 'Mulish', fontSize: 10, color: stone,
-              letterSpacing: '0.24em', textTransform: 'uppercase',
+              fontFamily: 'Mulish', fontSize: 13, color: stone,
               marginBottom: 12,
             }}>
               ⏳ {t.awaiting} ({pendingAwaitingConfirmation.length})
@@ -440,8 +437,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
 
               {/* Label de description */}
               <div style={{
-                fontFamily: 'Mulish', fontSize: 11, letterSpacing: '0.18em',
-                textTransform: 'uppercase', color: COURT.green,
+                fontFamily: 'Mulish', fontSize: 13, color: COURT.green,
                 marginBottom: 20,
               }}>
                 {getLevelLabel(evalProposedLevel, t)}

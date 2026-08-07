@@ -277,7 +277,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               width: 'fit-content',
               marginTop: 4,
             }}>
-              <span style={{ fontFamily: 'Mulish', fontSize: 11, color: muted, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>
+              <span style={{ fontFamily: 'Mulish', fontSize: 13, color: muted, fontWeight: 600 }}>
                 {t.currentLevel || 'Niveau'}
               </span>
               <span style={{ fontFamily: 'Spectral, serif', fontSize: 20, fontWeight: 700, color: COURT.green, fontStyle: 'italic' }}>
@@ -335,14 +335,14 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             }}>
               <div />
               <div style={{
-                fontFamily: 'Mulish', fontSize: 11, fontWeight: 700,
-                color: COURT.green, letterSpacing: '0.22em', textTransform: 'uppercase',
+                fontFamily: 'Mulish', fontSize: 13, fontWeight: 700,
+                color: COURT.green,
               }}>
                 {myGameLabel}
               </div>
               <div style={{
-                fontFamily: 'Mulish', fontSize: 11, fontWeight: 700,
-                color: COURT.rust, letterSpacing: '0.22em', textTransform: 'uppercase',
+                fontFamily: 'Mulish', fontSize: 13, fontWeight: 700,
+                color: COURT.rust,
               }}>
                 {seekingLabel}
               </div>
@@ -361,8 +361,8 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                 </div>
                 <div>
                   <div style={{
-                    fontFamily: 'Mulish', fontSize: 10,
-                    color: muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2, fontWeight: 600,
+                    fontFamily: 'Mulish', fontSize: 13,
+                    color: muted, marginBottom: 2, fontWeight: 600,
                   }}>{label}</div>
                   <div style={{
                     fontFamily: 'Spectral, serif', fontStyle: 'italic',
@@ -372,8 +372,8 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                 </div>
                 <div>
                   <div style={{
-                    fontFamily: 'Mulish', fontSize: 10,
-                    color: muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2, fontWeight: 600,
+                    fontFamily: 'Mulish', fontSize: 13,
+                    color: muted, marginBottom: 2, fontWeight: 600,
                   }}>{label}</div>
                   <div style={{
                     fontFamily: 'Spectral, serif', fontStyle: 'italic',

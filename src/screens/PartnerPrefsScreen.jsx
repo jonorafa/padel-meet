@@ -141,7 +141,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
 function ChipRow({ label, value, options, onChange, stone, dark }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8, fontWeight: 600 }}>
+      <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8, fontWeight: 600 }}>
         {label}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -280,19 +280,19 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
 
         {/* Plage de niveau */}
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: 8, fontWeight: 600 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8, fontWeight: 600 }}>
             {t.levelRange}
           </div>
           <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '14px 16px 10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>MIN</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 3 }}>MIN</div>
                 <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
                   {Number.isInteger(prefs.levelMin) ? prefs.levelMin : prefs.levelMin.toFixed(1)}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 3 }}>MAX</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 3 }}>MAX</div>
                 <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
                   {Number.isInteger(prefs.levelMax) ? prefs.levelMax : prefs.levelMax.toFixed(1)}
                 </div>

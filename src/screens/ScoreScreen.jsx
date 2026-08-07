@@ -208,8 +208,7 @@ function GlossaryCard({ termKey, lang, dark, onClose }) {
         {/* Label "Vocabulaire padel" */}
         <div style={{
           marginTop: 14,
-          fontFamily: 'Mulish', fontSize: 9,
-          letterSpacing: '0.2em', textTransform: 'uppercase',
+          fontFamily: 'Mulish', fontSize: 13,
           color: stone,
         }}>
           {lang === 'he' ? 'מילון פאדל' : lang === 'en' ? 'Padel glossary' : 'Vocabulaire padel'}
@@ -316,7 +315,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
       <div style={{ position: 'absolute', top: 60, left: 70, right: 70, height: 1.5, background: `${COURT.green}25`, borderRadius: 2, overflow: 'hidden' }}>
         <div style={{ width: `${progress}%`, height: '100%', background: COURT.green, transition: 'width 0.5s ease' }} />
       </div>
-      <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.22em', textTransform: 'uppercase', marginTop: 14, marginBottom: 20 }}>
+      <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 14, marginBottom: 20 }}>
         {t.quizQ} {idx + 1} {t.of} {total}
       </div>
 
@@ -339,8 +338,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
           return questionText.toLowerCase().includes(term);
         }) && (
           <div style={{
-            fontFamily: 'Mulish', fontSize: 9, color: COURT.green,
-            letterSpacing: '0.14em', textTransform: 'uppercase',
+            fontFamily: 'Mulish', fontSize: 13, color: COURT.green,
             marginBottom: 4, opacity: 0.7,
           }}>
             {lang === 'he' ? '← לחץ על המילה הירוקה להסבר'

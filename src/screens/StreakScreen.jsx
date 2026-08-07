@@ -69,7 +69,7 @@ export default function StreakScreen({ onClose }) {
           onClick={onClose}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: stone, fontSize: 24, lineHeight: 1, transform: rtl ? 'scaleX(-1)' : 'none', padding: 0 }}
         >‹</button>
-        <span style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, letterSpacing: '0.24em', textTransform: 'uppercase', color: stone }}>
+        <span style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: stone }}>
           {L.title}
         </span>
         <div style={{ width: 26 }} />
@@ -86,13 +86,13 @@ export default function StreakScreen({ onClose }) {
         <div style={{ fontFamily: 'Spectral, serif', fontSize: 70, fontWeight: 700, color: dark ? COURT.cream : COURT.greenDeep, lineHeight: 1, marginTop: 4 }}>
           {streak}
         </div>
-        <div style={{ fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: stone, marginTop: 4 }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: stone, marginTop: 4 }}>
           {L.sub}
         </div>
 
         {/* ── Cette semaine ── */}
         <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 16, padding: 16, margin: '26px 0 14px' }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 9.5, fontWeight: 600, letterSpacing: '0.24em', textTransform: 'uppercase', color: stone, marginBottom: 12, textAlign: rtl ? 'right' : 'left' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: stone, marginBottom: 12, textAlign: rtl ? 'right' : 'left' }}>
             {L.week}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -149,8 +149,7 @@ export default function StreakScreen({ onClose }) {
           </div>
           <div>
             <div style={{
-              fontFamily: 'Mulish', fontSize: 10.5, fontWeight: 600,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
+              fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
               color: dark ? COURT.cream : COURT.greenDeep, marginBottom: 5,
             }}>
               {L.rewardTitle}

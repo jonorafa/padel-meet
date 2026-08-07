@@ -35,8 +35,7 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
         {/* Label "TON NIVEAU" */}
         <div style={{
           opacity: s >= 1 ? 1 : 0, transform: `translateY(${s >= 1 ? 0 : 16}px)`, transition: 'all 0.9s ease',
-          fontFamily: 'Mulish', fontSize: 11, color: COURT.gold, letterSpacing: '0.32em',
-          textTransform: 'uppercase', marginBottom: 24,
+          fontFamily: 'Mulish', fontSize: 13, color: COURT.gold, marginBottom: 24,
         }}>
           {level != null ? t.yourLevel : (t.levelNotEvaluated || 'Niveau non évalué')}
         </div>

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { COURT, PadelRacket, PadelBall, Ornament } from '../components/CourtUI'
+import { COURT, TYPE, TRACK, PadelRacket, PadelBall, Ornament } from '../components/CourtUI'
 import { usePrefs } from '../context/PrefsContext'
 
 const langs = [
@@ -60,8 +60,8 @@ export default function LanguageScreen() {
         {/* Label */}
         <div style={{
           textAlign: 'center',
-          fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.26em', textTransform: 'uppercase',
+          fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600,
+          letterSpacing: TRACK.caps, textTransform: 'uppercase',
           color: dark ? COURT.darkMuted : COURT.stone,
           marginBottom: 16,
         }}>Language</div>

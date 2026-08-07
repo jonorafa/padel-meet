@@ -321,8 +321,7 @@ export default function LearnScreen({ lang = 'fr', dark = false, onClose }) {
               )}
               {!completed && unlocked && (
                 <div style={{
-                  fontFamily: 'Mulish', fontSize: 10.5, color: COURT.green, marginTop: 4,
-                  letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700,
+                  fontFamily: 'Mulish', fontSize: 13, color: COURT.green, marginTop: 4, fontWeight: 700,
                 }}>{isCurrent ? L.start : L.review}</div>
               )}
             </div>
@@ -460,8 +459,7 @@ function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
           {/* ── Label chapitre ── */}
           <div style={{ padding: '0 22px 16px', flexShrink: 0 }}>
             <div style={{
-              fontFamily: 'Mulish', fontSize: 10.5, color: stone,
-              letterSpacing: '0.18em', textTransform: 'uppercase',
+              fontFamily: 'Mulish', fontSize: 13, color: stone,
             }}>{tr(chapter.title)} · {L.question} {qIndex + 1} {L.of} {questions.length}</div>
           </div>
 

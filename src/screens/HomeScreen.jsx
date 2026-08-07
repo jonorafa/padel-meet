@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { COURT, TYPE } from '../components/CourtUI'
+import { COURT, TYPE, TRACK } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
 import { DAILY_TIPS } from '../data/courtData'
 
@@ -172,8 +172,8 @@ export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0, o
       }}>
         <div>
           <div style={{
-            fontFamily: 'Mulish', fontSize: 11, fontWeight: 700,
-            letterSpacing: '0.22em', textTransform: 'uppercase', color: COURT.green,
+            fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
+            letterSpacing: TRACK.caps, textTransform: 'uppercase', color: COURT.green,
             marginBottom: 4,
           }}>
             {lang === 'he' ? 'פאדל מיט' : 'Padel Meet'}

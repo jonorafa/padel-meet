@@ -240,7 +240,7 @@ export function SectionHeading({ children, italic = true }) {
       <h3 style={{
         fontFamily: 'Spectral, serif',
         fontStyle: italic ? 'italic' : 'normal',
-        fontWeight: 400, fontSize: 20, margin: 0, color,
+        fontWeight: 400, fontSize: TYPE.title, margin: 0, color,
       }}>{children}</h3>
       <Ornament width={48} color={_darkMode ? COURT.darkGold : COURT.gold} />
     </div>

@@ -69,8 +69,8 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
               onClick={onSkip}
               style={{
                 marginTop: 18,
-                fontFamily: 'Mulish', fontSize: 11,
-                color: stone, letterSpacing: '0.16em', textTransform: 'uppercase',
+                fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+                color: stone,
                 cursor: 'pointer',
                 opacity: visible ? 0.6 : 0,
                 transform: `translateY(${visible ? 0 : 8}px)`,

@@ -425,7 +425,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Full name */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 4, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4,}}>
               {t.fullName}
             </div>
             <input
@@ -438,7 +438,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Dominant hand */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
               {t.hand}
             </div>
             <ChipGroup
@@ -451,7 +451,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Preferred side */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8,}}>
               {t.side}
             </div>
             <CourtSidePicker
@@ -465,7 +465,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Play style */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
               {t.style}
             </div>
             <ChipGroup
@@ -482,7 +482,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Motivation */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
               {t.motivation}
             </div>
             <ChipGroup
@@ -499,7 +499,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Frequency */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
               {t.frequency}
             </div>
             <ChipGroup
@@ -512,7 +512,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Country */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 8, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8,}}>
               {t.region}
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -545,7 +545,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Sub-region (city) */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginBottom: 6, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
               {t.subRegion}
             </div>
             <ChipGroup

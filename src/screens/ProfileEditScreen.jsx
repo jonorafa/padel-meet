@@ -189,8 +189,8 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     color: ink, margin: '0 0 12px',
   }
   const fieldLabelStyle = {
-    display: 'block', fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
-    color: muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px',
+    display: 'block', fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+    color: muted, margin: '0 0 8px',
   }
 
   return (
