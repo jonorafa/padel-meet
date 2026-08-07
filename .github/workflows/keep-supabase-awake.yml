@@ -23,10 +23,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase REST (reset du compteur d'inactivité)
+        # URL et clé lues depuis les variables de dépôt si elles existent
+        # (Settings → Secrets and variables → Actions → Variables), sinon repli
+        # sur les valeurs actuelles. Ce repli évite de casser quoi que ce soit
+        # aujourd'hui ; en cas de changement de projet Supabase, définir
+        # SUPABASE_URL et SUPABASE_ANON_KEY suffit — aucun commit nécessaire.
+        # La clé anon est publique (déjà dans le bundle JS), d'où `vars` et non
+        # `secrets` : une variable reste lisible dans les logs, c'est voulu ici.
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://gcphtjyjcrmcyxkosswo.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || 'sb_publishable_wDHMKLUBocwATfoHyhlnYQ_YValgoH7' }}
         run: |
           code=$(curl -s -o /dev/null -w "%{http_code}" -m 30 \
-            "https://gcphtjyjcrmcyxkosswo.supabase.co/rest/v1/profiles?select=id&limit=1" \
-            -H "apikey: sb_publishable_wDHMKLUBocwATfoHyhlnYQ_YValgoH7")
+            "$SUPABASE_URL/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY")
           echo "Supabase REST → HTTP $code"
           if [ "$code" != "200" ]; then
             echo "::error::Supabase ne répond pas correctement (HTTP $code) — projet en pause ?"
