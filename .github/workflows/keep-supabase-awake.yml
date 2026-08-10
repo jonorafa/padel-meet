@@ -4,8 +4,19 @@
 # maintenir le compteur à zéro. Découvert le 2026-07-02 : projet INACTIVE,
 # prod down, restauration manuelle nécessaire.
 #
-# La clé utilisée est la clé publishable (anon) — déjà publique dans le bundle
-# JS de l'app, aucun secret ici.
+# URL et clé lues depuis les secrets du repo (Settings → Secrets and
+# variables → Actions → Secrets → SUPABASE_URL / SUPABASE_ANON_KEY) — plus
+# aucune valeur en dur ici. La clé anon reste publique par nature (déjà dans
+# le bundle JS de l'app) ; le repo étant public, coder le project ref en dur
+# offrait du fingerprinting gratuit (versions Postgres/GoTrue/Storage
+# exactes via /rest/v1/) — d'où `secrets` plutôt que `vars`, malgré le fait
+# que la valeur elle-même ne soit pas sensible.
+#
+# ⚠️ ACTION MANUELLE REQUISE avant la prochaine exécution planifiée (chaque
+# jour à 05:17 UTC) : créer ces deux secrets dans les réglages du repo, sinon
+# ce workflow échoue à chaque run et le filet anti-pause cesse de fonctionner.
+#   gh secret set SUPABASE_URL --body "https://<project-ref>.supabase.co"
+#   gh secret set SUPABASE_ANON_KEY --body "sb_publishable_..."
 #
 # ⚠️ GitHub désactive les workflows planifiés après 60 jours sans commit sur le
 # repo (email d'avertissement avant). Tant que le projet est développé
@@ -23,17 +34,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase REST (reset du compteur d'inactivité)
-        # URL et clé lues depuis les variables de dépôt si elles existent
-        # (Settings → Secrets and variables → Actions → Variables), sinon repli
-        # sur les valeurs actuelles. Ce repli évite de casser quoi que ce soit
-        # aujourd'hui ; en cas de changement de projet Supabase, définir
-        # SUPABASE_URL et SUPABASE_ANON_KEY suffit — aucun commit nécessaire.
-        # La clé anon est publique (déjà dans le bundle JS), d'où `vars` et non
-        # `secrets` : une variable reste lisible dans les logs, c'est voulu ici.
         env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://gcphtjyjcrmcyxkosswo.supabase.co' }}
-          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || 'sb_publishable_wDHMKLUBocwATfoHyhlnYQ_YValgoH7' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::SUPABASE_URL ou SUPABASE_ANON_KEY absent des secrets du repo (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
           code=$(curl -s -o /dev/null -w "%{http_code}" -m 30 \
             "$SUPABASE_URL/rest/v1/profiles?select=id&limit=1" \
             -H "apikey: $SUPABASE_ANON_KEY")
