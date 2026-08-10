@@ -5,6 +5,9 @@ import { createClient } from '@supabase/supabase-js'
 // pour migrer de région — imposerait un commit et un redéploiement, et
 // modifier les variables Vercel n'aurait aucun effet visible.
 const url = import.meta.env.VITE_SUPABASE_URL
+// Format sb_publishable_* : c'est la clé anon, publique par conception (déjà
+// visible dans le bundle JS livré au navigateur, protégée uniquement par les
+// policies RLS côté base) — pas un secret à traiter comme tel.
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Échec bruyant plutôt que silencieux : sans ces variables l'app ne peut rien
