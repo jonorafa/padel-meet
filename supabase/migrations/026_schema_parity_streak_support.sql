@@ -71,9 +71,15 @@ ALTER TABLE public.profiles
 -- ─────────────────────────────────────────────────────────────────────────────
 -- B) Table des messages de support (formulaire de contact)
 --
--- Structure reprise à l'identique de Tokyo. Le formulaire accepte les
--- visiteurs NON connectés, d'où user_id nullable ; `email` et `name` sont
--- saisis par l'utilisateur (ce ne sont pas des copies de profiles/auth.users).
+-- Structure reprise de Tokyo. Le formulaire accepte les visiteurs NON
+-- connectés, d'où user_id nullable ; `email` et `name` sont saisis par
+-- l'utilisateur (ce ne sont pas des copies de profiles/auth.users).
+--
+-- La FK pointe vers auth.users(id), PAS vers profiles(id) : un utilisateur
+-- peut être authentifié sans avoir encore de ligne `profiles` (onboarding non
+-- terminé — aucun trigger ne crée le profil à l'inscription, cf. chantier 2).
+-- Avec une FK vers profiles, son envoi du formulaire échouerait en violation
+-- de clé étrangère. auth.users est le référentiel qui existe toujours.
 --
 -- ON DELETE SET NULL sur user_id : à la suppression d'un compte (RGPD,
 -- delete_user_account, migration 024), le message reste pour le suivi du
@@ -81,7 +87,7 @@ ALTER TABLE public.profiles
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.support_messages (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  user_id    UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   name       TEXT NOT NULL,
   email      TEXT NOT NULL,
   type       TEXT NOT NULL DEFAULT 'Feedback',
@@ -89,6 +95,17 @@ CREATE TABLE IF NOT EXISTS public.support_messages (
   status     TEXT NOT NULL DEFAULT 'new',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Rattrapage de cible de FK. `CREATE TABLE IF NOT EXISTS` ci-dessus est ignoré
+-- EN ENTIER quand la table existe déjà : sur un projet où elle a été créée
+-- avec une autre cible, la définition ne serait jamais corrigée. Ce bloc rend
+-- la cible déterministe quel que soit l'historique du projet. Idempotent, et
+-- sans effet là où la contrainte est déjà correcte.
+ALTER TABLE public.support_messages
+  DROP CONSTRAINT IF EXISTS support_messages_user_id_fkey;
+ALTER TABLE public.support_messages
+  ADD CONSTRAINT support_messages_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 ALTER TABLE public.support_messages ENABLE ROW LEVEL SECURITY;
 
