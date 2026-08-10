@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { track } from '../analytics'
 
 /**
  * Enregistre les swipes en DB et détecte les matches mutuels.
@@ -31,15 +32,21 @@ export function useSwipes() {
       )
 
     if (error) return { isMatch: false }
-    if (direction !== 'right') return { isMatch: false }
 
-    // Si le profil cible est un démo → swipe enregistré mais jamais de match
+    // is_demo lu une seule fois ici, pour l'event ET (plus bas) la logique de
+    // match mutuel qui en avait besoin — évite de la requêter deux fois pour
+    // un swipe à droite.
     const { data: targetProfile } = await supabase
       .from('profiles')
       .select('is_demo')
       .eq('id', targetId)
       .maybeSingle()
 
+    track('swipe', { direction, target_is_demo: !!targetProfile?.is_demo })
+
+    if (direction !== 'right') return { isMatch: false }
+
+    // Si le profil cible est un démo → swipe enregistré mais jamais de match
     if (targetProfile?.is_demo) {
       return { isMatch: false }
     }
@@ -88,6 +95,7 @@ export function useSwipes() {
       text_he: `${myName} עשה לך מאץ׳!`,
     })
 
+    track('match_created')
     return { isMatch: true }
   }, [user?.id, profile?.name])
 

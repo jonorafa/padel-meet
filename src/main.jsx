@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
 import { initSentry } from './sentry.js'
+import { initAnalytics } from './analytics.js'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { PrefsProvider } from './context/PrefsContext.jsx'
@@ -9,6 +10,8 @@ import { PresenceProvider } from './context/PresenceContext.jsx'
 
 // Initialise Sentry avant le premier render (no-op si VITE_SENTRY_DSN absent)
 initSentry();
+// Idem pour l'analytics (no-op si VITE_POSTHOG_KEY absent)
+initAnalytics();
 
 // Service worker (PWA). Déplacé depuis un <script> inline d'index.html : la CSP
 // aurait sinon eu besoin de 'unsafe-inline' sur script-src, ce qui annule sa

@@ -11,8 +11,9 @@ export default defineConfig({
         // et le chunk applicatif initial reste léger.
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('@sentry'))   return 'sentry'
-            if (id.includes('@supabase')) return 'supabase'
+            if (id.includes('@sentry'))    return 'sentry'
+            if (id.includes('@supabase'))  return 'supabase'
+            if (id.includes('posthog-js')) return 'posthog'
             return 'react' // react, react-dom, react-router-dom + petits vendors
           }
         },

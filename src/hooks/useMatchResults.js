@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { Sentry } from '../sentry'
+import { track } from '../analytics'
 
 /**
  * Hook pour gérer la soumission et confirmation des scores de match
@@ -161,6 +162,8 @@ export function useMatchResults() {
       })
 
       if (rpcError) throw rpcError
+
+      track('result_confirmed')
 
       // Recharge la liste
       await fetchPendingResults()

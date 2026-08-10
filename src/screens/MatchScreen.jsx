@@ -12,6 +12,7 @@ import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
 import { LevelBlock } from '../components/LevelBlock';
 import { compressImage } from '../lib/image';
+import { track } from '../analytics';
 import { I18N, regionToCountry, getGreeting } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
@@ -1027,8 +1028,12 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const sendMessage = async () => {
     if (!input.trim() || !matchId || !user) return;
     const text = input.trim();
+    // Basé sur l'historique déjà chargé en mémoire (pas de requête
+    // supplémentaire) : vrai si aucun message de moi n'existe encore dans ce match.
+    const isFirstFromMe = !messages.some(m => m.from === 'me');
     setInput('');
     await supabase.from('messages').insert({ match_id: matchId, sender_id: user.id, content: text });
+    if (isFirstFromMe) track('chat_first_message', { match_id: matchId });
   };
 
   // ── Envoyer une proposition de match ────────────────────────────────────────

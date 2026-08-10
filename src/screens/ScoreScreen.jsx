@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { COURT, Ornament, PadelSlider } from '../components/CourtUI';
 import { QUIZ_QUESTIONS, GLOSSARY, computeLevel, scaleToLevel } from '../data/courtData';
+import { track } from '../analytics';
 
 // ─── Groupe 1 « ressenti » : curseur 1-10 ────────────────────────────────────
 // Composant à part, monté avec `key={q.id}` par l'appelant : remonter le
@@ -269,6 +270,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
     setTimeout(() => {
       if (idx + 1 >= total) {
         const lvl = computeLevel(newAnswers);
+        track('quiz_completed', { level: lvl, answered_count: Object.keys(newAnswers).length });
         onDone(lvl, newAnswers);
       } else {
         setIdx(idx + 1);

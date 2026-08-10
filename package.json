@@ -14,6 +14,7 @@
     "@sentry/react": "^10.56.0",
     "@supabase/supabase-js": "^2.106.0",
     "motion": "^12.43.0",
+    "posthog-js": "^1.415.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.2",

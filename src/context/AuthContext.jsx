@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { track, identifyUser, resetUser } from '../analytics'
 
 const AuthContext = createContext({})
 
@@ -27,6 +28,11 @@ export function AuthProvider({ children }) {
       if (event === 'PASSWORD_RECOVERY') setRecovery(true)
       setUser(session?.user ?? null)
       if (session?.user) {
+        // Lie l'identité analytics à la connexion — pas seulement au premier
+        // signup, à chaque connexion (couvre aussi la reconnexion). resetUser()
+        // est appelé au signOut, symétriquement, pour ne pas attribuer les
+        // events du prochain utilisateur sur un appareil partagé.
+        if (event === 'SIGNED_IN') identifyUser(session.user.id)
         // User signed in — exit guest mode automatically
         sessionStorage.removeItem('padel-guest')
         sessionStorage.setItem('current_user_id', session.user.id)
@@ -177,6 +183,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('padel_level')
     localStorage.removeItem('padel_confidence')
     localStorage.removeItem('padel_level_history')
+    resetUser()
     await supabase.auth.signOut()
   }
 
@@ -187,6 +194,13 @@ export function AuthProvider({ children }) {
    */
   const saveProfile = async (profileData) => {
     if (!user) return { error: new Error('Non authentifié') }
+    // Vrai signal de "premier compte" : aucun trigger DB ne crée la ligne
+    // profiles à l'inscription (vérifié : aucun trigger sur auth.users dans
+    // les migrations). La ligne n'existe qu'après ce tout premier upsert —
+    // donc `profile` (state, avant ce merge) est encore null. C'est plus
+    // fiable que comparer profiles.created_at à "maintenant" après coup,
+    // puisqu'à cet instant précis la ligne n'a pas encore été créée.
+    const isFirstProfile = !profile
     const merged = {
       ...(profile || {}),
       ...profileData,
@@ -217,6 +231,7 @@ export function AuthProvider({ children }) {
       return { data: null, error }
     }
     if (data) {
+      if (isFirstProfile) track('signup', { method: 'google' })
       setProfile(data)
       localStorage.removeItem('padel_consent_ts')
       localStorage.removeItem('padel_consent_version')
