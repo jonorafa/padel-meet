@@ -205,16 +205,19 @@ export function AuthProvider({ children }) {
       ...(profile || {}),
       ...profileData,
       id: user.id,
-      email: user.email,
       // Normalise le username en minuscules
       ...(profileData.username ? { username: profileData.username.toLowerCase().trim() } : {}),
-      // RGPD/PPL : consentement actif désormais (case cochée sur AuthScreen,
-      // pas un texte passif) — padel_consent_ts est l'horodatage RÉEL du clic
-      // sur la case, écrit en localStorage à cet instant. On ne retombe sur
-      // new Date() que si la clé est absente (comptes déjà existants, créés
-      // avant ce changement). Comme avant, jamais réécrit après le premier
-      // upsert (?? sur profile?.accepted_terms_at en premier).
-      accepted_terms_at: profile?.accepted_terms_at ?? localStorage.getItem('padel_consent_ts') ?? new Date().toISOString(),
+      // RGPD/PPL : consentement actif (case cochée sur AuthScreen, pas un
+      // texte passif) — padel_consent_ts est l'horodatage RÉEL du clic sur la
+      // case, écrit en localStorage à cet instant. Jamais réécrit après le
+      // premier upsert (?? sur profile?.accepted_terms_at en premier).
+      //
+      // Fin de chaîne à null, plus new Date() : sans consentement réel
+      // enregistré, un horodatage généré ici serait une preuve FABRIQUÉE —
+      // exactement ce que la migration 022 visait à éliminer. Les deux champs
+      // tombent à null ensemble, ce que la contrainte consent_coherence
+      // (migration 024) vérifie côté base.
+      accepted_terms_at: profile?.accepted_terms_at ?? localStorage.getItem('padel_consent_ts') ?? null,
       consent_version: profile?.consent_version ?? localStorage.getItem('padel_consent_version') ?? null,
       updated_at: new Date().toISOString(),
     }
