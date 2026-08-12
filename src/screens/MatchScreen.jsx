@@ -6,7 +6,7 @@ import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, HeritageTag, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
   SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY,
+  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, GlossaryCard,
 } from '../components/CourtUI';
 import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
@@ -25,6 +25,7 @@ import { useSwipes }        from '../hooks/useSwipes';
 import { useUserMatches }        from '../hooks/useUserMatches';
 import { useMatchPartnersQuick } from '../hooks/useMatchPartnersQuick';
 import { useMatchHistory }       from '../hooks/useMatchHistory';
+import { useTierSignals }        from '../hooks/useTierSignals';
 import { useNotifications } from '../hooks/useNotifications';
 import { DetailedProfileModal } from '../components/DetailedProfileModal';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
@@ -507,7 +508,12 @@ function applyFilters(players, f) {
   });
 }
 
-function EmptyStack({ t, lang, onReset, dark }) {
+// `onEditFilters` : élargir les critères — l'action utile quand la pile est
+// vide, déjà câblée plus haut dans SwipeStack (bouton Préférences). `onReset`
+// (recharger avec les MÊMES critères) recyclait les profils déjà écartés dès
+// que `matched` contenait quoi que ce soit — reléguée en action secondaire,
+// clairement subordonnée (ThinButton "cream" plutôt que "green").
+function EmptyStack({ t, lang, onReset, onEditFilters, dark }) {
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
   const rtl   = lang === 'he';
@@ -516,7 +522,8 @@ function EmptyStack({ t, lang, onReset, dark }) {
       <div style={{ animation: 'bounceY 2s ease-in-out infinite', marginBottom: 20 }}><PadelBall size={50} /></div>
       <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 20, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.closedClub}</div>
       <p style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, maxWidth: 240, margin: '12px 0 24px' }}>{t.closedHint}</p>
-      <ThinButton variant="green" onClick={onReset}>{t.refreshStack}</ThinButton>
+      <ThinButton variant="green" onClick={onEditFilters}>{t.widenFilters}</ThinButton>
+      <ThinButton variant="cream" onClick={onReset} style={{ marginTop: 10, padding: '10px 20px', fontSize: 14 }}>{t.refreshStack}</ThinButton>
     </div>
   );
 }
@@ -704,7 +711,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
         {stack === null ? (
           <div style={{ position: 'absolute', inset: 0 }}><SkeletonCard /></div>
         ) : displayStack.length === 0 ? (
-          <EmptyStack t={t} lang={lang} onReset={() => { setStack(matched.length ? matched : allPlayers || []); setLastCard(null); setSearchQuery(''); }} dark={dark} />
+          <EmptyStack t={t} lang={lang} onReset={() => { setStack(matched.length ? matched : allPlayers || []); setLastCard(null); setSearchQuery(''); }} onEditFilters={onEditFilters} dark={dark} />
         ) : displayStack.slice(0, 3).map((p, i) => {
           const isTop = i === 0;
           if (!isTop) {
@@ -2516,9 +2523,11 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const { lang, dark, level, confidence, setLang, toggleDark, setLevel } = usePrefs();
   const navigate = useNavigate();
   const matchHistory = useMatchHistory();
+  const tierSignals = useTierSignals(level);
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [glossaryKey, setGlossaryKey] = useState(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showPartnerPrefs, setShowPartnerPrefs] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
@@ -2888,10 +2897,30 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone, whiteSpace: 'nowrap' }}>{t.matchesPlayed}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{userMatches}</div>
               </div>
+              {/* Niveau provisoire (signal 2 de useTierSignals — coverage < 70 %) :
+                  jusqu'ici aucun texte ne signalait cet état à l'utilisateur, alors
+                  que le mécanisme bloque déjà toute promotion en silence. */}
+              {tierSignals && !tierSignals.coverage.met && (
+                <div
+                  onClick={() => setGlossaryKey('provisionalLevel')}
+                  style={{
+                    marginTop: 10, textAlign: 'center', cursor: 'pointer',
+                    fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone,
+                  }}
+                >
+                  <span style={{ borderBottom: '1px dotted', paddingBottom: 1 }}>
+                    {lang === 'he' ? 'רמה זמנית' : lang === 'en' ? 'Provisional level' : 'Niveau provisoire'}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {glossaryKey && (
+        <GlossaryCard termKey={glossaryKey} lang={lang} dark={dark} onClose={() => setGlossaryKey(null)} />
+      )}
 
       <div style={{ padding: '24px 24px 100px' }}>
 

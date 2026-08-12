@@ -1,4 +1,5 @@
-import { COURT, TYPE, CompatRing } from './CourtUI';
+import { useState } from 'react';
+import { COURT, TYPE, CompatRing, GlossaryCard } from './CourtUI';
 
 /**
  * Bloc de scores d'un joueur, hiérarchisé :
@@ -14,6 +15,7 @@ import { COURT, TYPE, CompatRing } from './CourtUI';
  * plutôt que des zéros trompeurs.
  */
 export function LevelBlock({ level, confidence, compat = null, peerCount, matchCount, lang = 'fr', dark }) {
+  const [glossaryKey, setGlossaryKey] = useState(null);
   const ink    = dark ? COURT.darkText   : COURT.ink;
   const stone  = dark ? COURT.darkMuted  : COURT.stone;
   const border = dark ? COURT.darkBorder : `${COURT.green}25`;
@@ -66,13 +68,19 @@ export function LevelBlock({ level, confidence, compat = null, peerCount, matchC
               {level != null ? level.toFixed(1) : '—'}
             </div>
             {confidence != null && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap',
-                background: dark ? COURT.darkBg : '#fff',
-                border: `0.5px solid ${confColor}b0`, borderRadius: 9999, padding: '5px 11px',
-              }}>
+              <div
+                onClick={() => setGlossaryKey('confidenceRate')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap',
+                  background: dark ? COURT.darkBg : '#fff', cursor: 'pointer',
+                  border: `0.5px solid ${confColor}b0`, borderRadius: 9999, padding: '5px 11px',
+                }}
+              >
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: confColor }} />
-                <span style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700, color: ink }}>
+                <span style={{
+                  fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700, color: ink,
+                  borderBottom: '1px dotted', paddingBottom: 1,
+                }}>
                   {Math.round(confidence)} % {L.confirmed}
                 </span>
               </div>
@@ -100,6 +108,10 @@ export function LevelBlock({ level, confidence, compat = null, peerCount, matchC
             {L.compat}
           </p>
         </>
+      )}
+
+      {glossaryKey && (
+        <GlossaryCard termKey={glossaryKey} lang={lang} dark={dark} onClose={() => setGlossaryKey(null)} />
       )}
     </div>
   );

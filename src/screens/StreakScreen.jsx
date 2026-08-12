@@ -1,4 +1,5 @@
-import { COURT } from '../components/CourtUI'
+import { useState } from 'react'
+import { COURT, GlossaryCard } from '../components/CourtUI'
 import { usePrefs } from '../context/PrefsContext'
 import { useStreak } from '../hooks/useStreak'
 import { FlameSVG }  from '../components/FlameSVG'
@@ -6,6 +7,7 @@ import { FlameSVG }  from '../components/FlameSVG'
 // ─────────────────────────────────────────────────────────────────────────────
 export default function StreakScreen({ onClose }) {
   const { lang, dark } = usePrefs()
+  const [glossaryKey, setGlossaryKey] = useState(null)
   const streakData     = useStreak()
   const rtl            = lang === 'he'
 
@@ -120,12 +122,19 @@ export default function StreakScreen({ onClose }) {
                 <div style={{ width: `${pct}%`, height: '100%', background: COURT.gold, borderRadius: 3, transition: 'width 0.6s' }} />
               </div>
             </div>
-            <div style={{ textAlign: 'center', flexShrink: 0, opacity: 0.55 }}>
-              <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.gold }}>{goal}</div>
+            <div
+              onClick={() => setGlossaryKey('tier')}
+              style={{ textAlign: 'center', flexShrink: 0, opacity: 0.55, cursor: 'pointer' }}
+            >
+              <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.gold, borderBottom: '1px dotted', paddingBottom: 1 }}>{goal}</div>
               <div style={{ fontFamily: 'Mulish', fontSize: 8, letterSpacing: '0.1em' }}>{L.tier}</div>
             </div>
           </div>
         </div>
+
+        {glossaryKey && (
+          <GlossaryCard termKey={glossaryKey} lang={lang} dark={dark} onClose={() => setGlossaryKey(null)} />
+        )}
 
         {/* ── Carte récompense palier 10 ── */}
         <div style={{

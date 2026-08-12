@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useId } from 'react';
+import { GLOSSARY } from '../data/courtData';
 
 // ─── Design tokens ───
 export const COURT = {
@@ -1032,6 +1033,128 @@ export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = C
           fontFamily: 'Spectral, serif', fontSize: size * 0.28, color: txt, lineHeight: 1,
           transform: label ? 'translateY(-3px)' : 'none',
         }}>{value}%</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Rendu de texte avec termes du glossaire cliquables ──────────────────────
+// Parcourt le texte, détecte les termes du glossaire (pour la langue courante)
+// et les entoure d'un <span> vert/souligné cliquable. Déplacé depuis
+// ScoreScreen.jsx pour être réutilisable ailleurs (LevelBlock, StreakScreen).
+export function renderWithGlossary(text, lang, onTermClick) {
+  if (!text || !GLOSSARY?.length) return text;
+
+  // Collecte les termes pour la langue courante + leurs clés de glossaire
+  const termMap = GLOSSARY.map(entry => ({
+    display: entry.term[lang] || entry.term.fr,
+    key: entry.key,
+  })).filter(t => t.display);
+
+  // Trie du plus long au plus court pour éviter les captures partielles
+  termMap.sort((a, b) => b.display.length - a.display.length);
+
+  // Construction d'un regex case-insensitive groupant tous les termes
+  const escaped = termMap.map(t => t.display.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  if (escaped.length === 0) return text;
+  const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+
+  const parts = text.split(regex);
+  return parts.map((part, i) => {
+    const match = termMap.find(t => t.display.toLowerCase() === part.toLowerCase());
+    if (match) {
+      return (
+        <span
+          key={i}
+          onClick={e => { e.stopPropagation(); onTermClick(match.key); }}
+          style={{
+            color: COURT.green,
+            borderBottom: `1.5px dotted ${COURT.green}`,
+            cursor: 'pointer',
+            fontStyle: 'normal',
+          }}
+        >{part}</span>
+      );
+    }
+    return part;
+  });
+}
+
+// ─── Tooltip / carte de définition ───────────────────────────────────────────
+export function GlossaryCard({ termKey, lang, dark, onClose }) {
+  const entry = GLOSSARY?.find(g => g.key === termKey);
+  if (!entry) return null;
+
+  const bg     = dark ? COURT.darkCard  : '#FFFDF8';
+  const ink    = dark ? COURT.darkText  : COURT.ink;
+  const stone  = dark ? COURT.darkMuted : COURT.stone;
+  const border = dark ? COURT.darkBorder: `${COURT.green}40`;
+
+  return (
+    // Overlay semi-transparent — clic en dehors ferme
+    <div
+      onClick={onClose}
+      style={{
+        position: 'absolute', inset: 0, zIndex: 80,
+        background: 'rgba(0,0,0,0.35)',
+        display: 'flex', alignItems: 'flex-end',
+        padding: '0 20px 40px',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', background: bg,
+          border: `0.5px solid ${border}`,
+          borderRadius: 16, padding: '20px 20px 24px',
+          boxShadow: '0 -4px 32px rgba(0,0,0,0.15)',
+          animation: 'fadeUp 0.25s ease',
+        }}
+      >
+        {/* En-tête */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{
+            fontFamily: 'Spectral, serif',
+            fontSize: 22, fontWeight: 600, color: COURT.green,
+            fontStyle: 'italic',
+          }}>
+            {entry.term[lang] || entry.term.fr}
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: 28, height: 28, borderRadius: 14,
+              background: `${COURT.green}18`, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: COURT.green,
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Séparateur */}
+        <div style={{ height: 0.5, background: `${COURT.green}30`, marginBottom: 12 }} />
+
+        {/* Définition */}
+        <div style={{
+          fontFamily: 'Spectral, serif',
+          fontStyle: 'italic', fontSize: 15,
+          color: ink, lineHeight: 1.6,
+        }}>
+          {entry.def[lang] || entry.def.fr}
+        </div>
+
+        {/* Label "Vocabulaire padel" */}
+        <div style={{
+          marginTop: 14,
+          fontFamily: 'Mulish', fontSize: 13,
+          color: stone,
+        }}>
+          {lang === 'he' ? 'מילון פאדל' : lang === 'en' ? 'Padel glossary' : 'Vocabulaire padel'}
+        </div>
       </div>
     </div>
   );
