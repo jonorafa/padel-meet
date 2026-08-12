@@ -7,17 +7,23 @@ import { useMatchResults } from '../hooks/useMatchResults'
 /**
  * Format le temps restant avant expiration (ex: "2j 4h", "3h", "12min")
  */
-function formatTimeRemaining(expiresAt) {
+function formatTimeRemaining(expiresAt, lang = 'fr') {
   const diff = expiresAt.getTime() - Date.now()
-  if (diff <= 0) return 'expiré'
+  if (diff <= 0) {
+    return lang === 'en' ? 'expired' : lang === 'he' ? 'פג תוקף' : 'expiré'
+  }
 
   const days = Math.floor(diff / 86400000)
   const hours = Math.floor((diff % 86400000) / 3600000)
   const minutes = Math.floor((diff % 3600000) / 60000)
 
-  if (days > 0) return `${days}j ${hours}h`
-  if (hours > 0) return `${hours}h`
-  return `${minutes}min`
+  const d = lang === 'en' ? 'd' : lang === 'he' ? 'י' : 'j'
+  const h = lang === 'he' ? 'ש' : 'h'
+  const min = lang === 'en' ? 'min' : lang === 'he' ? 'ד' : 'min'
+
+  if (days > 0) return `${days}${d} ${hours}${h}`
+  if (hours > 0) return `${hours}${h}`
+  return `${minutes}${min}`
 }
 
 /**
@@ -66,7 +72,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
             {pending.otherPlayer?.name || t.opponent}
           </div>
           <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.12em' }}>
-            {t.scoreSubmittedByThem} · {formatTimeRemaining(pending.expiresAt)}
+            {t.scoreSubmittedByThem} · {formatTimeRemaining(pending.expiresAt, lang)}
           </div>
         </div>
       </div>
@@ -187,7 +193,7 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
             {t.waitingConfirmFrom} <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.green }}>{pending.otherPlayer?.name}</span>
           </div>
           <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em', marginTop: 2 }}>
-            {pending.score} · {t.expiresIn} {formatTimeRemaining(pending.expiresAt)}
+            {pending.score} · {t.expiresIn} {formatTimeRemaining(pending.expiresAt, lang)}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', color: stone }}>
