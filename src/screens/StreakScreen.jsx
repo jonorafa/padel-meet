@@ -123,7 +123,7 @@ export default function StreakScreen({ onClose }) {
               </div>
             </div>
             <div
-              onClick={() => setGlossaryKey('tier')}
+              onClick={e => { e.stopPropagation(); setGlossaryKey('tier'); }}
               style={{ textAlign: 'center', flexShrink: 0, opacity: 0.55, cursor: 'pointer' }}
             >
               <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.gold, borderBottom: '1px dotted', paddingBottom: 1 }}>{goal}</div>

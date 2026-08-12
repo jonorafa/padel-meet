@@ -69,7 +69,7 @@ export function LevelBlock({ level, confidence, compat = null, peerCount, matchC
             </div>
             {confidence != null && (
               <div
-                onClick={() => setGlossaryKey('confidenceRate')}
+                onClick={e => { e.stopPropagation(); setGlossaryKey('confidenceRate'); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap',
                   background: dark ? COURT.darkBg : '#fff', cursor: 'pointer',

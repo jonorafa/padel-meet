@@ -2902,7 +2902,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                   que le mécanisme bloque déjà toute promotion en silence. */}
               {tierSignals && !tierSignals.coverage.met && (
                 <div
-                  onClick={() => setGlossaryKey('provisionalLevel')}
+                  onClick={e => { e.stopPropagation(); setGlossaryKey('provisionalLevel'); }}
                   style={{
                     marginTop: 10, textAlign: 'center', cursor: 'pointer',
                     fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone,

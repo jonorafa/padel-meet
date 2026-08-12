@@ -1095,7 +1095,7 @@ export function GlossaryCard({ termKey, lang, dark, onClose }) {
     <div
       onClick={onClose}
       style={{
-        position: 'absolute', inset: 0, zIndex: 80,
+        position: 'fixed', inset: 0, zIndex: 450,
         background: 'rgba(0,0,0,0.35)',
         display: 'flex', alignItems: 'flex-end',
         padding: '0 20px 40px',
