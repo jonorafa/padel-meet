@@ -6,7 +6,7 @@ import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
   SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, GlossaryCard, CompatRing,
+  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, CompatRing,
   LightningIcon, HourglassIcon, AlertIcon, LockIcon, StarIcon, TrendUpIcon, BellIcon,
 } from '../components/CourtUI';
 import { FlameSVG } from '../components/FlameSVG';
@@ -27,7 +27,6 @@ import { useSwipes }        from '../hooks/useSwipes';
 import { useUserMatches }        from '../hooks/useUserMatches';
 import { useMatchPartnersQuick } from '../hooks/useMatchPartnersQuick';
 import { useMatchHistory }       from '../hooks/useMatchHistory';
-import { useTierSignals }        from '../hooks/useTierSignals';
 import { useNotifications } from '../hooks/useNotifications';
 import { DetailedProfileModal } from '../components/DetailedProfileModal';
 import { ProfileEditScreen } from '../screens/ProfileEditScreen';
@@ -304,19 +303,26 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
 }
 
 // ─── Stat box (grille 2×2 : niveau / confiance / côté / style) ─────────────
+// Libellé sur UNE seule ligne (ellipsis si trop long) : sur un écran de 375 px
+// chaque colonne fait ~150 px, et un libellé qui passe sur 2 lignes double la
+// hauteur de la grille — c'est ce qui forçait la carte à défiler.
 function StatBox({ label, value, color, dark }) {
   return (
     <div style={{
       background: dark ? COURT.darkCard : '#fff',
       border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
-      borderRadius: 12, padding: '12px 14px',
+      borderRadius: 12, padding: '9px 12px', minWidth: 0,
     }}>
       <div style={{
-        fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+        fontFamily: 'Mulish', fontSize: 10, fontWeight: 600,
         color: dark ? COURT.darkMuted : COURT.stone,
-        letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 4,
+        letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{label}</div>
-      <div style={{ fontFamily: 'Mulish', fontSize: 20, fontWeight: 700, color }}>{value}</div>
+      <div style={{
+        fontFamily: 'Mulish', fontSize: 18, fontWeight: 700, color,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>{value}</div>
     </div>
   );
 }
@@ -332,7 +338,6 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
   const ff_serif  = lang === 'he' ? 'Mulish, sans-serif' : 'Spectral, serif';
-  const ff_italic = lang === 'he' ? 'Mulish, sans-serif' : 'Spectral, serif';
   const bg    = dark ? COURT.darkCard : COURT.cream;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
@@ -340,12 +345,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
 
   const styleLabel = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[p.style] || t.allcourt;
   const sideLabel  = p.side === 'forehand' ? t.forehand : t.backhand;
-  const bio = lang === 'he' ? p.bioHe : (lang === 'en' ? (p.bioEn || p.bioFr) : p.bioFr);
   const compat = me ? compatScore(me, p) : (p.confidenceRate ?? 90);
-  // streakMax omis : la "série de 5 victoires" n'est calculable aujourd'hui
-  // que pour l'utilisateur connecté (cf src/lib/badges.js) — le badge 🔥 ne
-  // s'affichera donc pas ici, c'est attendu.
-  const badges = computeBadges({ matchesPlayed: p.matches ?? 0, level: p.level ?? 0 });
 
   // Partenaire idéal — réutilise le JSON partner_prefs existant
   const prefs = p.partnerPrefs || {};
@@ -372,9 +372,12 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       boxShadow: dark ? '0 12px 32px rgba(0,0,0,0.4)' : '0 12px 32px rgba(15,61,41,0.14)',
       display: 'flex', flexDirection: 'column',
     }}>
-      <div style={{ padding: '18px 20px 16px', flex: 1, overflow: 'auto' }}>
+      {/* overflow hidden (et non auto) : la carte de swipe doit tenir d'un seul
+          tenant — rien à faire défiler pour voir la suite. Le détail complet
+          reste accessible au clic (DetailedProfileModal). */}
+      <div style={{ padding: '16px 18px 14px', flex: 1, overflow: 'hidden', minHeight: 0 }}>
         {/* ─── En-tête : vignette + nom/âge/ville ──────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           <div
             onClick={(e) => { e.stopPropagation(); setLightboxOpen(true); }}
             onPointerDown={(e) => e.stopPropagation()}
@@ -395,25 +398,25 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: ff_serif, fontSize: 22, color: ink, fontWeight: 500, lineHeight: 1.1 }}>
+            <div style={{ fontFamily: ff_serif, fontSize: 20, color: ink, fontWeight: 500, lineHeight: 1.15 }}>
               {p.name.split(' ')[0]}{' '}
               <span style={{ fontStyle: lang === 'he' ? 'normal' : 'italic', color: COURT.green }}>
                 {p.name.split(' ').slice(1).join(' ')}
               </span>
             </div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 12, color: stone, marginTop: 3, lineHeight: 1.35 }}>
               {p.age ? `${p.age} ${lang === 'en' ? 'y/o' : lang === 'he' ? 'שנים' : 'ans'} · ` : ''}
               {p.height ? `${p.height} cm · ` : ''}
               📍 {p.city} · {p.matches} {p.matches > 1
-                ? (lang === 'en' ? 'matches played' : lang === 'he' ? 'משחקים' : 'matchs joués')
-                : (lang === 'en' ? 'match played' : lang === 'he' ? 'משחק' : 'match joué')}
+                ? (lang === 'en' ? 'matches' : lang === 'he' ? 'משחקים' : 'matchs')
+                : (lang === 'en' ? 'match' : lang === 'he' ? 'משחק' : 'match')}
               {p.winrate != null && p.matches > 0 ? ` · ${p.winrate}% ${t.winsWord}` : ''}
             </div>
             {p.isDemo && (
               <div style={{
-                display: 'inline-flex', alignItems: 'center', marginTop: 5,
-                fontFamily: 'Mulish', fontSize: 13, color: COURT.gold,
-                border: `0.5px solid ${COURT.gold}50`, borderRadius: 20, padding: '2px 8px',
+                display: 'inline-flex', alignItems: 'center', marginTop: 4,
+                fontFamily: 'Mulish', fontSize: 11, color: COURT.gold,
+                border: `0.5px solid ${COURT.gold}50`, borderRadius: 20, padding: '1px 7px',
               }}>
                 {lang === 'he' ? 'פרופיל לדוגמה' : lang === 'en' ? 'Demo profile' : 'Profil démo'}
               </div>
@@ -423,8 +426,8 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           {/* Compatibilité — seul score qui dépend de qui regarde */}
           {compat != null && (
             <div style={{ flexShrink: 0, textAlign: 'center' }}>
-              <CompatRing size={64} value={compat} stroke={COURT.rust} txt={COURT.rust} track={`${COURT.rust}20`} rtl={lang === 'he'} />
-              <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4 }}>
+              <CompatRing size={56} value={compat} stroke={COURT.rust} txt={COURT.rust} track={`${COURT.rust}20`} rtl={lang === 'he'} />
+              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginTop: 2 }}>
                 {lang === 'en' ? 'Compatibility' : lang === 'he' ? 'התאמה' : 'Compatibilité'}
               </div>
             </div>
@@ -432,7 +435,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* ─── Grille de 4 chiffres clés ──────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
           <StatBox
             label={lang === 'en' ? 'Declared level' : lang === 'he' ? 'רמה מוצהרת' : 'Niveau déclaré'}
             value={p.level != null ? p.level.toFixed(1) : '—'}
@@ -455,33 +458,21 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           />
         </div>
 
-        {/* Trophées débloqués */}
-        <div style={{ marginTop: 12 }}>
-          <BadgeRow badges={badges} dark={dark} t={t} />
-        </div>
-
-        {/* Bio */}
-        {bio && (
-          <p style={{
-            fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13,
-            color: ink, lineHeight: 1.45, marginTop: 12, marginBottom: 0,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          }}>« {bio} »</p>
-        )}
-
-        {/* Cherche */}
+        {/* Cherche — limité à 4 puces : au-delà, la rangée passe sur 2 lignes
+            et la carte ne tient plus d'un seul tenant. */}
         {seekChips.length > 0 && (
-          <div style={{ marginTop: 12, paddingTop: 12, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
               {lang === 'en' ? 'Looking for' : lang === 'he' ? 'מחפש' : 'Cherche'}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {seekChips.map((c, i) => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {seekChips.slice(0, 4).map((c, i) => (
                 <span key={i} style={{
-                  padding: '6px 12px', borderRadius: 999,
+                  padding: '4px 10px', borderRadius: 999,
                   background: 'transparent', color: ink,
                   border: `0.5px solid ${border}`,
-                  fontFamily: ff_serif, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14,
+                  fontFamily: ff_serif, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 13,
+                  whiteSpace: 'nowrap',
                 }}>{c.label}</span>
               ))}
             </div>
@@ -2549,11 +2540,9 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const { lang, dark, level, confidence, setLang, toggleDark, setLevel } = usePrefs();
   const navigate = useNavigate();
   const matchHistory = useMatchHistory();
-  const tierSignals = useTierSignals(level);
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState(null);
-  const [glossaryKey, setGlossaryKey] = useState(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showPartnerPrefs, setShowPartnerPrefs] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
@@ -2922,30 +2911,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone, whiteSpace: 'nowrap' }}>{t.matchesPlayed}</div>
                 <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{userMatches}</div>
               </div>
-              {/* Niveau provisoire (signal 2 de useTierSignals — coverage < 70 %) :
-                  jusqu'ici aucun texte ne signalait cet état à l'utilisateur, alors
-                  que le mécanisme bloque déjà toute promotion en silence. */}
-              {tierSignals && !tierSignals.coverage.met && (
-                <div
-                  onClick={e => { e.stopPropagation(); setGlossaryKey('provisionalLevel'); }}
-                  style={{
-                    marginTop: 10, textAlign: 'center', cursor: 'pointer',
-                    fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone,
-                  }}
-                >
-                  <span style={{ borderBottom: '1px dotted', paddingBottom: 1 }}>
-                    {lang === 'he' ? 'רמה זמנית' : lang === 'en' ? 'Provisional level' : 'Niveau provisoire'}
-                  </span>
-                </div>
-              )}
             </div>
           )}
         </div>
       </div>
-
-      {glossaryKey && (
-        <GlossaryCard termKey={glossaryKey} lang={lang} dark={dark} onClose={() => setGlossaryKey(null)} />
-      )}
 
       <div style={{ padding: '24px 24px 100px' }}>
 
