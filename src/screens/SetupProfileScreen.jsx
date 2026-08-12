@@ -336,7 +336,20 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     onDone()
   }
 
-  const canSubmit = fullName.trim().length >= 2 && !!avatar && !submitting
+  // ── Complétion par bloc ──
+  const aboutComplete   = fullName.trim().length >= 2 && hand
+  const playComplete    = side && style && motivation && frequency && region && city
+  const photoComplete   = !!avatar
+  const totalComplete   = [aboutComplete, playComplete, photoComplete].filter(Boolean).length
+
+  const canSubmit = aboutComplete && photoComplete && playComplete && !submitting
+
+  const getMissingField = () => {
+    if (!fullName.trim() || fullName.trim().length < 2) return 'nom'
+    if (!avatar) return 'photo'
+    return null
+  }
+  const missingText = getMissingField()
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
@@ -344,8 +357,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
     }}>
 
-      {/* ── Header ── */}
-      <div style={{ padding: '32px 24px 12px', textAlign: 'center', flexShrink: 0 }}>
+      {/* ── Header avec progression ── */}
+      <div style={{ padding: '28px 24px 16px', textAlign: 'center', flexShrink: 0 }}>
         <Ornament width={50} style={{ margin: '0 auto 8px', display: 'block' }} />
         <div style={{
           fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
@@ -355,77 +368,48 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           {t.title}
         </div>
         <div style={{
-          fontFamily: 'Mulish', fontSize: 12, color: stone, marginTop: 4,
+          fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4, marginBottom: 12,
         }}>
-          {t.subtitle}
+          {totalComplete} / 3
+        </div>
+        {/* Barre de progression en 3 cercles */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+          {[aboutComplete, playComplete, photoComplete].map((done, i) => (
+            <div key={i} style={{
+              width: 10, height: 10, borderRadius: '50%',
+              background: done ? COURT.green : `${border}`,
+              transition: 'all 0.2s',
+            }} />
+          ))}
         </div>
       </div>
 
       {/* ── Scrollable body ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 40px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 24px 40px' }}>
 
-        {/* Avatar */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
-          <div
-            onClick={() => fileRef.current?.click()}
-            style={{
-              width: 80, height: 80, borderRadius: 40, overflow: 'hidden', cursor: 'pointer',
-              border:  `2px solid ${COURT.gold}60`,
-              background: avatar ? 'transparent' : COURT.green,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            {uploading ? (
-              <div style={{
-                width: 22, height: 22, borderRadius: '50%',
-                border: `2px solid ${COURT.cream}40`, borderTopColor: COURT.cream,
-                animation: 'spin 0.7s linear infinite',
-              }} />
-            ) : avatar ? (
-              <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 34, color: COURT.cream }}>
-                {fullName.charAt(0) || 'P'}
-              </span>
+        {/* ── Bloc 1 : Toi ── */}
+        <div style={{
+          background: dark ? `${COURT.darkCard}80` : `${COURT.cream}40`,
+          border: `0.5px solid ${border}`,
+          borderRadius: 12, padding: 16, marginBottom: 14,
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
+          }}>
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {lang === 'en' ? 'About' : lang === 'he' ? 'אודות' : 'Toi'}
+            </div>
+            {aboutComplete && (
+              <div style={{ fontSize: 16 }}>✓</div>
             )}
           </div>
-          <button
-            onClick={() => fileRef.current?.click()}
-            style={{
-              marginTop: 6, background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: 'Mulish', fontSize: 11, color: COURT.green, textDecoration: 'underline',
-            }}
-          >
-            {avatar ? t.changePhoto : t.photo}
-          </button>
-          {uploadError ? (
-            <div style={{
-              marginTop: 4, fontFamily: 'Mulish', fontSize: 11,
-              color: '#e53e3e', fontStyle: 'italic',
-              textAlign: 'center', maxWidth: 260,
-            }}>
-              {uploadError}
-            </div>
-          ) : !avatar && (
-            <div style={{
-              marginTop: 4, fontFamily: 'Mulish', fontSize: 11,
-              color: COURT.rust, fontStyle: 'italic',
-            }}>
-              {L[lang]?.photoRequired || 'Ajoutez une photo'}
-            </div>
-          )}
-          <input
-            ref={fileRef} type="file" accept="image/*"
-            style={{ display: 'none' }}
-            onChange={e => handleAvatarUpload(e.target.files?.[0])}
-          />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* Full name */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4,}}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4 }}>
               {t.fullName}
             </div>
             <input
@@ -438,7 +422,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
           {/* Dominant hand */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
               {t.hand}
             </div>
             <ChipGroup
@@ -448,10 +432,31 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               dark={dark}
             />
           </div>
+        </div>
+
+        {/* ── Bloc 2 : Ton jeu ── */}
+        <div style={{
+          background: dark ? `${COURT.darkCard}80` : `${COURT.cream}40`,
+          border: `0.5px solid ${border}`,
+          borderRadius: 12, padding: 16, marginBottom: 14,
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
+          }}>
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
+            </div>
+            {playComplete && (
+              <div style={{ fontSize: 16 }}>✓</div>
+            )}
+          </div>
 
           {/* Preferred side */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8,}}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8 }}>
               {t.side}
             </div>
             <CourtSidePicker
@@ -464,8 +469,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           </div>
 
           {/* Play style */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
               {t.style}
             </div>
             <ChipGroup
@@ -481,8 +486,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           </div>
 
           {/* Motivation */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
               {t.motivation}
             </div>
             <ChipGroup
@@ -498,8 +503,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           </div>
 
           {/* Frequency */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
               {t.frequency}
             </div>
             <ChipGroup
@@ -510,9 +515,9 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             />
           </div>
 
-          {/* Country */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8,}}>
+          {/* Region */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8 }}>
               {t.region}
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
@@ -543,9 +548,9 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             </div>
           </div>
 
-          {/* Sub-region (city) */}
+          {/* City */}
           <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6,}}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
               {t.subRegion}
             </div>
             <ChipGroup
@@ -555,45 +560,130 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               dark={dark}
             />
           </div>
-
-          {/* Form error */}
-          {formError && (
-            <div style={{ fontFamily: 'Mulish', fontSize: 12, color: '#e53e3e', textAlign: 'center' }}>
-              {formError}
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            style={{
-              marginTop: 8, width: '100%', padding: '16px',
-              background: canSubmit ? COURT.green : `${COURT.green}55`,
-              color: COURT.cream,
-              border: `0.5px solid ${COURT.gold}60`,
-              borderRadius: 12,
-              cursor: canSubmit ? 'pointer' : 'not-allowed',
-              fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
-              fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 17,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              transition: 'opacity 0.2s',
-            }}
-          >
-            {submitting ? (
-              <div style={{
-                width: 17, height: 17, borderRadius: '50%',
-                border: `2px solid ${COURT.cream}40`, borderTopColor: COURT.cream,
-                animation: 'spin 0.7s linear infinite',
-              }} />
-            ) : (
-              <PadelBall size={18} shadow={false} />
-            )}
-            {t.submit}
-          </button>
-
         </div>
+
+        {/* ── Bloc 3 : Ta photo ── */}
+        <div style={{
+          background: dark ? `${COURT.darkCard}80` : `${COURT.cream}40`,
+          border: `0.5px solid ${border}`,
+          borderRadius: 12, padding: 16, marginBottom: 14,
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
+          }}>
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {lang === 'en' ? 'Your photo' : lang === 'he' ? 'התמונה שלך' : 'Ta photo'}
+            </div>
+            {photoComplete && (
+              <div style={{ fontSize: 16 }}>✓</div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div
+              onClick={() => fileRef.current?.click()}
+              style={{
+                width: 80, height: 80, borderRadius: 40, overflow: 'hidden', cursor: 'pointer',
+                border:  `2px solid ${COURT.gold}60`,
+                background: avatar ? 'transparent' : COURT.green,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              {uploading ? (
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%',
+                  border: `2px solid ${COURT.cream}40`, borderTopColor: COURT.cream,
+                  animation: 'spin 0.7s linear infinite',
+                }} />
+              ) : avatar ? (
+                <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 34, color: COURT.cream }}>
+                  {fullName.charAt(0) || 'P'}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => fileRef.current?.click()}
+              style={{
+                marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: 'Mulish', fontSize: 13, color: COURT.green, textDecoration: 'underline',
+              }}
+            >
+              {avatar ? t.changePhoto : t.photo}
+            </button>
+            {uploadError ? (
+              <div style={{
+                marginTop: 6, fontFamily: 'Mulish', fontSize: 13,
+                color: '#e53e3e', fontStyle: 'italic',
+                textAlign: 'center', maxWidth: 260,
+              }}>
+                {uploadError}
+              </div>
+            ) : !avatar && (
+              <div style={{
+                marginTop: 6, fontFamily: 'Mulish', fontSize: 13,
+                color: COURT.rust, fontStyle: 'italic',
+              }}>
+                {L[lang]?.photoRequired || 'Ajoutez une photo'}
+              </div>
+            )}
+            <input
+              ref={fileRef} type="file" accept="image/*"
+              style={{ display: 'none' }}
+              onChange={e => handleAvatarUpload(e.target.files?.[0])}
+            />
+          </div>
+        </div>
+
+        {/* Form error */}
+        {formError && (
+          <div style={{ fontFamily: 'Mulish', fontSize: 13, color: '#e53e3e', textAlign: 'center', marginBottom: 12 }}>
+            {formError}
+          </div>
+        )}
+
+        {/* Submit */}
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          style={{
+            width: '100%', padding: '16px',
+            background: canSubmit ? COURT.green : `${COURT.green}55`,
+            color: COURT.cream,
+            border: `0.5px solid ${COURT.gold}60`,
+            borderRadius: 12,
+            cursor: canSubmit ? 'pointer' : 'not-allowed',
+            fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+            fontStyle: rtl ? 'normal' : 'italic',
+            fontSize: 17,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            transition: 'opacity 0.2s',
+          }}
+        >
+          {submitting ? (
+            <div style={{
+              width: 17, height: 17, borderRadius: '50%',
+              border: `2px solid ${COURT.cream}40`, borderTopColor: COURT.cream,
+              animation: 'spin 0.7s linear infinite',
+            }} />
+          ) : (
+            <PadelBall size={18} shadow={false} />
+          )}
+          {canSubmit ? (
+            t.submit
+          ) : missingText ? (
+            lang === 'en' ? `Complete — missing ${missingText}` :
+            lang === 'he' ? `השלם — ${missingText} חסר` :
+            `${t.submit} — il reste ${missingText}`
+          ) : (
+            t.submit
+          )}
+        </button>
+
       </div>
     </div>
   )
