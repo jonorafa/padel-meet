@@ -7,7 +7,9 @@ import {
   ThinButton, HeritageTag, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
   SkeletonCard, MatchFlash, BottomSheet,
   isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, GlossaryCard,
+  LightningIcon, HourglassIcon, AlertIcon, LockIcon, StarIcon, TrendUpIcon, BellIcon,
 } from '../components/CourtUI';
+import { FlameSVG } from '../components/FlameSVG';
 import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
 import { LevelBlock } from '../components/LevelBlock';
@@ -91,7 +93,7 @@ function Chips({ value, onChange, options, dark }) {
             fontFamily: 'Spectral, serif', fontStyle: 'italic',
             fontSize: 14, transition: 'all 0.2s',
           }}>
-            {opt.icon && <span style={{ fontSize: 11 }}>{opt.icon}</span>}
+            {opt.icon && <span style={{ display: 'inline-flex' }}>{opt.icon}</span>}
             {opt.label}
           </button>
         );
@@ -191,7 +193,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
       >
         <PadelBall size={20} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
         <span>{min.toFixed(1)}</span><span>{max.toFixed(1)}</span>
       </div>
     </div>
@@ -339,9 +341,9 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   if (prefs.hand && prefs.hand !== 'any')
     seekChips.push({ icon: '🤚', label: prefs.hand === 'left' ? t.leftHand : t.rightHand, color: COURT.green });
   if (prefs.side && prefs.side !== 'any')
-    seekChips.push({ icon: '🎾', label: prefs.side === 'forehand' ? t.forehand : t.backhand, color: COURT.green });
+    seekChips.push({ icon: <PadelBall size={12} shadow={false} />, label: prefs.side === 'forehand' ? t.forehand : t.backhand, color: COURT.green });
   if (prefs.style && prefs.style !== 'any')
-    seekChips.push({ icon: '⚡', label: seekStyleMap[prefs.style] || prefs.style, color: COURT.rust });
+    seekChips.push({ icon: <LightningIcon size={12} color={COURT.rust} />, label: seekStyleMap[prefs.style] || prefs.style, color: COURT.rust });
   if (prefs.motivation && prefs.motivation !== 'any')
     seekChips.push({ icon: '◎', label: seekMotivMap[prefs.motivation] || prefs.motivation, color: COURT.gold });
   if (prefs.region && prefs.region !== 'any')
@@ -384,7 +386,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
               </span>
               <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13, color: stone }}> · {p.age}</span>
             </div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.05em', marginTop: 4 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, letterSpacing: '0.05em', marginTop: 4 }}>
               📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
             </div>
             {p.isDemo && (
@@ -454,7 +456,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
                   padding: '5px 11px', borderRadius: 999,
                   background: `${c.color}12`, color: c.color,
                   border: `0.5px solid ${c.color}30`,
-                  fontFamily: ff_italic, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 12,
+                  fontFamily: ff_italic, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 13,
                   display: 'inline-flex', gap: 5, alignItems: 'center',
                 }}>{c.icon} {c.label}</span>
               ))}
@@ -1188,10 +1190,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       <div style={{ margin: '4px 0', background: card, border: `1px solid ${color}40`, borderRadius: 14, padding: '12px 14px', width: '100%' }}>
         {/* Header avec numéro de tentative */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: 'Mulish', fontSize: 13, color,}}>
-            🎾 {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : lang === 'he' ? 'תוצאה הוגשה' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : lang === 'he' ? 'תוצאה לאישור' : 'Score à confirmer')}
+          <div style={{ fontFamily: 'Mulish', fontSize: 13, color, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <PadelBall size={14} shadow={false} /> {pending.isSubmitter ? (lang === 'en' ? 'Score submitted' : lang === 'he' ? 'תוצאה הוגשה' : 'Score soumis') : (lang === 'en' ? 'Score to confirm' : lang === 'he' ? 'תוצאה לאישור' : 'Score à confirmer')}
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, background: dark ? '#2a2a2a' : '#e8e4da', borderRadius: 999, padding: '2px 8px' }}>
             {attemptNum}/3
           </div>
         </div>
@@ -1230,18 +1232,18 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </button>
             </div>
             {actionError && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust, textAlign: 'center', marginBottom: 4 }}>
-                ⚠️ {actionError}
+              <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.rust, textAlign: 'center', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                <AlertIcon size={12} color={COURT.rust} /> {actionError}
               </div>
             )}
             {remaining > 1 && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, textAlign: 'center' }}>
                 {lang === 'en' ? `${remaining - 1} attempt(s) left after rejection` : lang === 'he' ? `${remaining - 1} ניסיון נוסף אחרי דחייה` : `${remaining - 1} tentative(s) restante(s) si refus`}
               </div>
             )}
             {remaining === 1 && (
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust, textAlign: 'center', fontWeight: 500 }}>
-                ⚠️ {lang === 'en' ? 'Last attempt — reject = match unrecorded' : lang === 'he' ? 'ניסיון אחרון — דחייה = המשחק לא יירשם' : 'Dernière tentative — refus = match inenregistrable'}
+              <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.rust, textAlign: 'center', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                <AlertIcon size={12} color={COURT.rust} /> {lang === 'en' ? 'Last attempt — reject = match unrecorded' : lang === 'he' ? 'ניסיון אחרון — דחייה = המשחק לא יירשם' : 'Dernière tentative — refus = match inenregistrable'}
               </div>
             )}
           </>
@@ -1253,7 +1255,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   // ── Carte "match verrouillé" ────────────────────────────────────────────────
   const renderLockedCard = () => (
     <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.rust}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
-      <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><LockIcon size={24} color={COURT.rust} /></div>
       <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: COURT.rust, fontStyle: 'italic', marginBottom: 4 }}>
         {lang === 'en' ? 'Match unrecordable' : lang === 'he' ? 'לא ניתן לרשום את המשחק' : 'Match inenregistrable'}
       </div>
@@ -1288,7 +1290,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Spectral, serif', fontSize: 18, color: ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{player?.name}</div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 11, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: playerIsOnline ? '#4CAF50' : stone, letterSpacing: '0.12em' }}>
               {formatPresence(playerIsOnline, player?.lastSeen, lang)}
             </div>
           </div>
@@ -1399,7 +1401,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       <div style={{ display: 'flex', gap: 8, padding: '8px 14px', borderBottom: `0.5px solid ${border}`, background: dark ? '#1a1f1a' : '#F7F4EE', overflowX: 'auto' }}>
         {[
           { key: 'proposal', icon: '📅', label: lang === 'en' ? 'Plan match' : lang === 'he' ? 'הצע משחק' : 'Proposer' },
-          { key: 'score',    icon: '🎾', label: lang === 'en' ? 'Enter score' : lang === 'he' ? 'הזן תוצאה' : 'Score', disabled: scoreLocked || pendingForMatch.length > 0 },
+          { key: 'score',    icon: <PadelBall size={13} shadow={false} />, label: lang === 'en' ? 'Enter score' : lang === 'he' ? 'הזן תוצאה' : 'Score', disabled: scoreLocked || pendingForMatch.length > 0 },
           (() => {
             if (evalCooldownUntil) {
               const fmtD = evalCooldownUntil.toLocaleDateString(
@@ -1407,9 +1409,9 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 { day: 'numeric', month: 'short' }
               );
               const cooldownLabel = lang === 'en' ? `From ${fmtD}` : lang === 'he' ? `זמין ב-${fmtD}` : `Dispo le ${fmtD}`;
-              return { key: 'eval', icon: '⭐', label: cooldownLabel, disabled: true };
+              return { key: 'eval', icon: <StarIcon size={13} />, label: cooldownLabel, disabled: true };
             }
-            return { key: 'eval', icon: '⭐', label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' };
+            return { key: 'eval', icon: <StarIcon size={13} />, label: lang === 'en' ? 'Rate player' : lang === 'he' ? 'דרג שחקן' : 'Évaluer' };
           })(),
         ].map(({ key, icon, label, disabled }) => (
           <button key={key}
@@ -1425,7 +1427,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               background: sheet === key ? COURT.green : 'transparent',
               border: `0.5px solid ${disabled ? stone : sheet === key ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '50')}`,
               color: disabled ? stone : sheet === key ? COURT.cream : COURT.green,
-              fontFamily: 'Mulish', fontSize: 12, cursor: disabled ? 'default' : 'pointer',
+              fontFamily: 'Mulish', fontSize: 13, cursor: disabled ? 'default' : 'pointer',
               opacity: disabled ? 0.45 : 1,
             }}>
             <span style={{ fontSize: 14 }}>{icon}</span> {label}
@@ -1467,7 +1469,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           {/* Avertissement date : match pas encore joué */}
           {scoreDateBlocked && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 12px', background: `${COURT.gold}18`, border: `0.5px solid ${COURT.gold}60`, borderRadius: 8 }}>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>⏳</span>
+              <span style={{ flexShrink: 0, display: 'flex' }}><HourglassIcon size={18} color={COURT.gold} /></span>
               <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: ink }}>
                 {lang === 'en'
                   ? `Match scheduled for ${latestAcceptedProposal?.metadata?.date} — submit the score after the match.`
@@ -1570,7 +1572,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               <button onClick={() => setSets(prev => [...prev, { me: '', them: '' }])} style={{
                 alignSelf: 'flex-start', padding: '7px 14px', borderRadius: 20,
                 border: `0.5px solid ${COURT.green}`, background: 'transparent',
-                color: COURT.green, fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
+                color: COURT.green, fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
@@ -1578,8 +1580,8 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               </button>
             )}
           </div>
-          {scoreError && <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust }}>{scoreError}</div>}
-          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, color: stone }}>
+          {scoreError && <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.rust }}>{scoreError}</div>}
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
             {lang === 'en' ? `${player?.name} will need to confirm the score.` : lang === 'he' ? `${player?.name} יצטרך לאשר את התוצאה.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
           </div>
           <button onClick={sendScore} disabled={scoreSending || !scoreText.trim() || scoreDateBlocked} style={{
@@ -1635,7 +1637,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                           style={{
                             flex: 1, padding: '8px', borderRadius: 8,
                             background: COURT.green, border: 'none', color: COURT.cream,
-                            fontFamily: 'Mulish', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                            fontFamily: 'Mulish', fontSize: 13, fontWeight: 500, cursor: 'pointer',
                             opacity: respondingId === m._id ? 0.5 : 1,
                           }}>
                           ✓ {lang === 'en' ? 'Accept' : lang === 'he' ? 'אשר' : 'Accepter'}
@@ -1647,7 +1649,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                             flex: 1, padding: '8px', borderRadius: 8,
                             background: 'transparent', color: COURT.rust,
                             border: `0.5px solid ${COURT.rust}`,
-                            fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
+                            fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer',
                             opacity: respondingId === m._id ? 0.5 : 1,
                           }}>
                           ✗ {lang === 'en' ? 'Decline' : lang === 'he' ? 'דחה' : 'Refuser'}
@@ -1660,7 +1662,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       <div style={{
                         marginTop: 10, padding: '6px 10px',
                         background: `${COURT.green}15`, borderRadius: 8,
-                        fontFamily: 'Mulish', fontSize: 11, color: COURT.green, fontWeight: 500,
+                        fontFamily: 'Mulish', fontSize: 13, color: COURT.green, fontWeight: 500,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       }}>
                         ✓ {lang === 'en' ? 'Match accepted' : lang === 'he' ? 'משחק אושר' : 'Match accepté'}
@@ -1670,14 +1672,14 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       <div style={{
                         marginTop: 10, padding: '6px 10px',
                         background: `${COURT.rust}15`, borderRadius: 8,
-                        fontFamily: 'Mulish', fontSize: 11, color: COURT.rust,
+                        fontFamily: 'Mulish', fontSize: 13, color: COURT.rust,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       }}>
                         ✗ {lang === 'en' ? 'Match declined' : lang === 'he' ? 'משחק נדחה' : 'Match refusé'}
                       </div>
                     )}
 
-                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
                   </div>
                 );
               })()
@@ -1694,7 +1696,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 {m.text[lang] || m.text.fr}
                 {/* Ligne heure + accusé de lecture (messages envoyés uniquement) */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3, marginTop: 4 }}>
-                  <span style={{ fontFamily: 'Mulish', fontSize: 11, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
+                  <span style={{ fontFamily: 'Mulish', fontSize: 13, color: m.from === 'me' ? `${COURT.cream}70` : stone }}>{m.time}</span>
                   {m.from === 'me' && <ReadReceipt read={!!m.readAt} />}
                 </div>
               </div>
@@ -1771,7 +1773,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500 }}>
                 {lang === 'en' ? `Evaluate ${player?.name}` : lang === 'he' ? `העריך את ${player?.name}` : `Évaluer ${player?.name}`}
               </div>
-              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, color: dark ? COURT.darkMuted : COURT.stone }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: dark ? COURT.darkMuted : COURT.stone }}>
                 {lang === 'en' ? 'Answer as if rating their level' : lang === 'he' ? 'ענה לפי הרמה שלו/ה' : 'Répondez en pensant à son niveau'}
               </div>
             </div>
@@ -1957,7 +1959,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
           {lastMessage && (
             <div style={{
               fontFamily: 'Mulish',
-              fontSize: 11,
+              fontSize: 13,
               color: hasUnread ? COURT.green : stone,
               fontWeight: hasUnread ? 700 : 400,
             }}>{lastMessage.time}</div>
@@ -1979,7 +1981,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
           ) : (
             <div style={{
               flex: 1, minWidth: 0,
-              fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.12em',
+              fontFamily: 'Mulish', fontSize: 13, color: stone, letterSpacing: '0.12em',
             }}>
               {formatPresence(isOnline, player?.lastSeen, lang)}
             </div>
@@ -1992,7 +1994,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
               background: COURT.green,
               color: COURT.cream,
               fontFamily: 'Mulish, sans-serif',
-              fontSize: 11, fontWeight: 700,
+              fontSize: 13, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: `0 1px 4px ${COURT.green}55`,
             }}>{unreadCount > 99 ? '99+' : unreadCount}</div>
@@ -2151,8 +2153,8 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: COURT.rust }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.green }}>{wins} {t.winRateLabel?.toLowerCase()}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.rust }}>{history.length - wins} {lang === 'he' ? 'הפסדים' : lang === 'en' ? 'losses' : 'défaites'}</div>
               </div>
             </div>
           )}
@@ -2346,7 +2348,7 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500 }}>{p.name || '—'}</div>
               {p.level != null && (
-                <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, letterSpacing: '0.1em' }}>Niv. {p.level?.toFixed(1)}</div>
               )}
             </div>
             <svg width="18" height="17" viewBox="0 0 24 22" fill="none" stroke={COURT.green} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -2458,7 +2460,7 @@ function ContactSheet({ dark, lang, onClose }) {
                   background: type === tp ? COURT.green : card,
                   border: `0.5px solid ${type === tp ? COURT.gold : border}`,
                   color: type === tp ? COURT.cream : stone,
-                  fontFamily: 'Mulish', fontSize: 11, fontWeight: 600,
+                  fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
                   transition: 'all 0.2s',
                 }}>{tp}</button>
               ))}
@@ -2733,14 +2735,13 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           <div style={{ fontFamily: ff_serif, fontSize: 28, color: ink, fontStyle: rtl ? 'normal' : 'italic', fontWeight: 500, lineHeight: 1.1 }}>{userName || t.myProfile}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {/* 🔥 Série de jours */}
+          {/* Série de jours */}
           <button onClick={onOpenStreak} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             background: dark ? COURT.darkCard : COURT.cream,
             border: `0.5px solid ${border}`,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, lineHeight: 1,
-          }}>🔥</button>
+          }}><FlameSVG size={16} animated={false} /></button>
           <button onClick={() => setShowEditProfile(true)} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             background: dark ? COURT.darkCard : COURT.cream,
@@ -2831,7 +2832,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           {uploadError && (
             <div style={{
               marginTop: 6, fontFamily: ff_italic, fontStyle: 'italic',
-              fontSize: 11, color: COURT.rust,
+              fontSize: 13, color: COURT.rust,
             }}>{uploadError}</div>
           )}
           <div style={{ marginTop: 10, marginBottom: 14 }}>
@@ -2982,10 +2983,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </div>
         </div>
 
-        {/* ════ MON JEU ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
-          textTransform:'uppercase', margin:'22px 0 8px' }}>
-          {lang==='fr' ? 'Mon jeu' : lang==='en' ? 'My game' : 'המשחק שלי'}
+        <div style={{ margin: '22px 0 8px' }}>
+          <SectionHeading italic={!rtl}>
+            {lang==='fr' ? 'Mon jeu' : lang==='en' ? 'My game' : 'המשחק שלי'}
+          </SectionHeading>
         </div>
         <div style={{ background:card, border:`0.5px solid ${border}`, borderRadius:16, overflow:'hidden' }}>
 
@@ -3034,7 +3035,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             </div>
             {evalBlocked && nextEvalStr && (
               <div style={{
-                fontFamily:'Mulish', fontSize: 11, color:stone,
+                fontFamily:'Mulish', fontSize: 13, color:stone,
                 letterSpacing:'0.06em', paddingLeft:48, paddingBottom:2,
               }}>
                 {lang==='fr' ? `Disponible le ${nextEvalStr}` : lang==='en' ? `Available on ${nextEvalStr}` : `זמין מ-${nextEvalStr}`}
@@ -3043,10 +3044,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </div>
         </div>
 
-        {/* ════ APPLICATION ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
-          textTransform:'uppercase', margin:'22px 0 8px' }}>
-          {lang==='fr' ? 'Application' : lang==='en' ? 'App' : 'אפליקציה'}
+        <div style={{ margin: '22px 0 8px' }}>
+          <SectionHeading italic={!rtl}>
+            {lang==='fr' ? 'Application' : lang==='en' ? 'App' : 'אפליקציה'}
+          </SectionHeading>
         </div>
         <div style={{ background:card, border:`0.5px solid ${border}`, borderRadius:16, overflow:'hidden' }}>
 
@@ -3063,7 +3064,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Langue' : lang==='en' ? 'Language' : 'שפה'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 Français · English · עברית
               </div>
             </div>
@@ -3088,10 +3089,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </div>
         </div>
 
-        {/* ════ AIDE & LÉGAL ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
-          textTransform:'uppercase', margin:'22px 0 8px' }}>
-          {lang==='fr' ? 'Aide & légal' : lang==='en' ? 'Help & legal' : 'עזרה'}
+        <div style={{ margin: '22px 0 8px' }}>
+          <SectionHeading italic={!rtl}>
+            {lang==='fr' ? 'Aide & légal' : lang==='en' ? 'Help & legal' : 'עזרה'}
+          </SectionHeading>
         </div>
         <div style={{ background:card, border:`0.5px solid ${border}`, borderRadius:16, overflow:'hidden' }}>
 
@@ -3108,7 +3109,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Aide & support' : lang==='en' ? 'Help & support' : 'עזרה ותמיכה'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Nous contacter' : lang==='en' ? 'Contact us' : 'צור קשר'}
               </div>
             </div>
@@ -3127,7 +3128,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Confidentialité' : lang==='en' ? 'Privacy' : 'פרטיות'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
               </div>
             </div>
@@ -3146,7 +3147,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? "Conditions d'utilisation" : lang==='en' ? 'Terms of use' : 'תנאי שימוש'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 12, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'CGU & règles de la communauté' : lang==='en' ? 'Terms & community rules' : 'תנאים וכללי קהילה'}
               </div>
             </div>
@@ -3154,10 +3155,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </div>
         </div>
 
-        {/* ════ COMPTE ════ */}
-        <div style={{ fontFamily:'Mulish', fontSize: 11, color:stone, letterSpacing:'0.26em',
-          textTransform:'uppercase', margin:'22px 0 8px' }}>
-          {lang==='fr' ? 'Compte' : lang==='en' ? 'Account' : 'חשבון'}
+        <div style={{ margin: '22px 0 8px' }}>
+          <SectionHeading italic={!rtl}>
+            {lang==='fr' ? 'Compte' : lang==='en' ? 'Account' : 'חשבון'}
+          </SectionHeading>
         </div>
         <div style={{ background:card, border:`0.5px solid ${COURT.red}25`, borderRadius:16, overflow:'hidden' }}>
           <div onClick={handleSignOut} style={{ display:'flex', alignItems:'center',
@@ -3202,7 +3203,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 <div style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: COURT.red, marginBottom: 4 }}>
                   {lang === 'fr' ? 'Action irréversible' : lang === 'he' ? 'פעולה בלתי הפיכה' : 'Irreversible action'}
                 </div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 12, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.5, opacity: 0.8 }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.5, opacity: 0.8 }}>
                   {lang === 'fr'
                     ? 'Toutes vos données seront supprimées définitivement : profil, matchs, messages et photos.'
                     : lang === 'he'
@@ -3258,7 +3259,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             href="https://www.iubenda.com/privacy-policy/72981168"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ fontFamily:'Mulish', fontSize: 11, color:stone, opacity:0.5,
+            style={{ fontFamily:'Mulish', fontSize: 13, color:stone, opacity:0.5,
               textDecoration:'underline', textDecorationColor:`${stone}40` }}
           >
             {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
@@ -3347,7 +3348,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{item.label}</div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>{item.sub}</div>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>{item.sub}</div>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COURT.green} strokeWidth="1.5" strokeLinecap="round">
                   {rtl ? <polyline points="15 18 9 12 15 6"/> : <polyline points="9 18 15 12 9 6"/>}
@@ -3394,7 +3395,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontSize: 15, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{bp.name}</div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>
+                  <div style={{ fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.darkMuted : COURT.stone, marginTop: 2 }}>
                     {bp.level ? `Niveau ${bp.level}` : 'Niveau non défini'} · {bp.region || bp.city || '—'}
                   </div>
                 </div>
@@ -3410,7 +3411,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                     background: dark ? COURT.darkCard : `${COURT.green}15`,
                     border: `0.5px solid ${COURT.green}50`,
                     color: COURT.green,
-                    fontFamily: 'Mulish', fontSize: 12, fontWeight: 600,
+                    fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
                     cursor: unblockingId === bp.id ? 'default' : 'pointer',
                     opacity: unblockingId === bp.id ? 0.6 : 1,
                     flexShrink: 0,
@@ -3460,7 +3461,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: ff_serif, fontSize: 15, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{m.player.name}</div>
                   {m.player.level && (
-                    <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 1 }}>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 1 }}>
                       {lang === 'fr' ? `Niveau ${m.player.level}` : lang === 'en' ? `Level ${m.player.level}` : `רמה ${m.player.level}`}
                     </div>
                   )}
@@ -3504,7 +3505,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>
                   {lang === 'fr' ? `Évaluer ${evalTarget.name}` : lang === 'en' ? `Rate ${evalTarget.name}` : `דרג את ${evalTarget.name}`}
                 </div>
-                <div style={{ fontFamily: 'Mulish', fontSize: 12, color: stone }}>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone }}>
                   {lang === 'fr' ? 'Réponds en pensant à son niveau' : lang === 'en' ? 'Answer thinking about their level' : 'ענה לפי הרמה שלו/ה'}
                 </div>
               </div>
@@ -3543,7 +3544,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 borderRadius: 20, padding: '28px 32px', textAlign: 'center',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
               }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><StarIcon size={40} color={COURT.gold} filled /></div>
                 <div style={{ fontFamily: ff_serif, fontSize: 18, color: COURT.green, fontWeight: 700, fontStyle: 'italic' }}>
                   {lang === 'fr' ? 'Évaluation envoyée !' : lang === 'en' ? 'Rating sent!' : 'הערכה נשלחה!'}
                 </div>
@@ -3697,7 +3698,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COURT.gold} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
               </svg>
-              <div style={{ fontFamily: 'Mulish', fontSize: 12.5, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.55 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: 13.5, color: dark ? COURT.darkText : COURT.ink, lineHeight: 1.55 }}>
                 {lang==='fr'
                   ? 'Ton niveau sera mis à jour selon tes réponses. Ton indice de confiance n\'est pas affecté.'
                   : lang==='en'
@@ -4003,7 +4004,11 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
-  const iconMap = { match: '🎾', eval: '⭐', level: '📈' };
+  const iconMap = {
+    match: <PadelBall size={17} shadow={false} />,
+    eval:  <StarIcon size={16} color={COURT.cream} />,
+    level: <TrendUpIcon size={16} color={COURT.cream} />,
+  };
 
   return (
     <BottomSheet onClose={onClose} title={t.notifications} dark={dark}>
@@ -4021,13 +4026,13 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
             {from?.photo ? (
               <div style={{ width: 40, height: 40, borderRadius: 20, background: `url(${from.photo}) center/cover`, flexShrink: 0 }} />
             ) : (
-              <div style={{ width: 40, height: 40, borderRadius: 20, background: COURT.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-                {iconMap[n.type] || '🔔'}
+              <div style={{ width: 40, height: 40, borderRadius: 20, background: COURT.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {iconMap[n.type] || <BellIcon size={16} color={COURT.cream} />}
               </div>
             )}
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: ink, lineHeight: 1.4 }}>{n.text[lang] || n.text.fr}</div>
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 2 }}>{n.time}</div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 2 }}>{n.time}</div>
             </div>
             {!n.read && <div style={{ width: 8, height: 8, borderRadius: 4, background: COURT.green, flexShrink: 0 }} />}
           </div>
@@ -4163,7 +4168,7 @@ function ScheduleMatchSheet({ lang, dark, onClose, onProposalSent, initialPartne
         </button>
 
         {/* ── Note explicative ─────────────────────────────────────────── */}
-        <div style={{ marginTop: 12, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: stone, textAlign: 'center' }}>
+        <div style={{ marginTop: 12, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, textAlign: 'center' }}>
           {selectedMatch
             ? (lang === 'en'
                 ? `${selectedMatch.player.name} will need to accept. The score can be entered after the match.`
@@ -4340,7 +4345,7 @@ export default function MainApp() {
           background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.gold}`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
-          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12,
+          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
           boxShadow: '0 2px 8px rgba(15,61,41,0.25)', animation: 'notifPop 0.4s ease',
         }}>
           <PadelBall size={14} shadow={false} />

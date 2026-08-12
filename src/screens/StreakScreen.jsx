@@ -100,7 +100,7 @@ export default function StreakScreen({ onClose }) {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {days.map((d, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: 9, fontWeight: 600, color: stone, letterSpacing: '0.1em', marginBottom: 7 }}>{d}</div>
+                <div style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: stone, letterSpacing: '0.1em', marginBottom: 7 }}>{d}</div>
                 <FlameSVG size={20} animated={false} dim={!(weekBits & (1 << i))} />
               </div>
             ))}
@@ -124,10 +124,10 @@ export default function StreakScreen({ onClose }) {
             </div>
             <div
               onClick={e => { e.stopPropagation(); setGlossaryKey('tier'); }}
-              style={{ textAlign: 'center', flexShrink: 0, opacity: 0.55, cursor: 'pointer' }}
+              style={{ textAlign: 'center', flexShrink: 0, opacity: 0.8, cursor: 'pointer' }}
             >
               <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: COURT.gold, borderBottom: '1px dotted', paddingBottom: 1 }}>{goal}</div>
-              <div style={{ fontFamily: 'Mulish', fontSize: 8, letterSpacing: '0.1em' }}>{L.tier}</div>
+              <div style={{ fontFamily: 'Mulish', fontSize: 13, letterSpacing: '0.1em' }}>{L.tier}</div>
             </div>
           </div>
         </div>

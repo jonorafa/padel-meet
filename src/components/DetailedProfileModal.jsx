@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { COURT, BadgeRow } from './CourtUI'
+import { COURT, BadgeRow, PadelBall, LightningIcon } from './CourtUI'
 import { PhotoLightbox } from './PhotoLightbox'
 import { LevelBlock } from './LevelBlock'
 import { Sentry } from '../sentry'
@@ -205,14 +205,14 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         ? (prefs.hand === 'left' ? (t.leftHand || 'Gaucher') : (t.rightHand || 'Droitier')) : null,
     },
     {
-      icon: '🎾',
+      icon: <PadelBall size={13} shadow={false} />,
       label: t.side || 'Côté',
       mine:  player.preferred_side ? sideLabel : '—',
       seeks: prefs.side && prefs.side !== 'any'
         ? (prefs.side === 'forehand' ? (t.forehand || 'Drive') : (t.backhand || 'Revers')) : null,
     },
     {
-      icon: '⚡',
+      icon: <LightningIcon size={13} color={COURT.rust} />,
       label: t.playerStyle || 'Style',
       mine:  player.play_style ? (styleMap[player.play_style] || player.play_style) : '—',
       seeks: prefs.style && prefs.style !== 'any' ? (styleMap[prefs.style] || prefs.style) : null,

@@ -461,6 +461,28 @@ export const XIcon = ({ size = 16, color = 'currentColor' }) => (
   </svg>
 );
 
+export const StarIcon = ({ size = 16, color = 'currentColor', filled = false }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? color : 'none'} stroke={color}
+    strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
+  </svg>
+);
+
+export const TrendUpIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 17 9 11 13 15 21 6" /><polyline points="15 6 21 6 21 12" />
+  </svg>
+);
+
+export const BellIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  </svg>
+);
+
 // ─── Verrou binaire (chapitre verrouillé / déverrouillé) ───
 // Vivait dans LearnScreen.jsx ; partagé ici pour tout écran binaire à venir.
 // Les trophées n'utilisent PAS ce cadenas : ils ont une progression continue
