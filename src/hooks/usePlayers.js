@@ -12,6 +12,7 @@ function transformDBProfile(p) {
     id: p.id,                   // UUID string
     name: p.name || 'Joueur',
     age: p.age || 28,
+    height: p.height ?? null,   // cm, optionnel — purement informatif
     city: p.city || p.region || 'Israel',
     country: regionToCountry(p),  // 'France' ou 'Israël' (tolère données héritées)
     level: p.level ?? null,     // null = quiz non effectué

@@ -4,9 +4,9 @@ import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
-  ThinButton, HeritageTag, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
+  ThinButton, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
   SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, GlossaryCard,
+  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, GlossaryCard, CompatRing,
   LightningIcon, HourglassIcon, AlertIcon, LockIcon, StarIcon, TrendUpIcon, BellIcon,
 } from '../components/CourtUI';
 import { FlameSVG } from '../components/FlameSVG';
@@ -303,6 +303,24 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
   );
 }
 
+// ─── Stat box (grille 2×2 : niveau / confiance / côté / style) ─────────────
+function StatBox({ label, value, color, dark }) {
+  return (
+    <div style={{
+      background: dark ? COURT.darkCard : '#fff',
+      border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
+      borderRadius: 12, padding: '12px 14px',
+    }}>
+      <div style={{
+        fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+        color: dark ? COURT.darkMuted : COURT.stone,
+        letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 4,
+      }}>{label}</div>
+      <div style={{ fontFamily: 'Mulish', fontSize: 20, fontWeight: 700, color }}>{value}</div>
+    </div>
+  );
+}
+
 // ─── Player Card ────────────────────────────────────────────────────────────
 // Recherche par niveau/fiabilité, pas par photo : la photo reste une petite
 // vignette identifiante (haut gauche), l'essentiel de l'espace va aux
@@ -321,9 +339,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const border= dark ? COURT.darkBorder : `${COURT.green}40`;
 
   const styleLabel = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[p.style] || t.allcourt;
-  const motivLabel = { fun: t.fun, improve: t.improve, compete: t.compete }[p.motivation] || t.fun;
   const sideLabel  = p.side === 'forehand' ? t.forehand : t.backhand;
-  const handLabel  = p.hand === 'left' ? t.leftHand : t.rightHand;
   const bio = lang === 'he' ? p.bioHe : (lang === 'en' ? (p.bioEn || p.bioFr) : p.bioFr);
   const compat = me ? compatScore(me, p) : (p.confidenceRate ?? 90);
   // streakMax omis : la "série de 5 victoires" n'est calculable aujourd'hui
@@ -363,7 +379,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             onClick={(e) => { e.stopPropagation(); setLightboxOpen(true); }}
             onPointerDown={(e) => e.stopPropagation()}
             style={{
-              width: 68, height: 68, borderRadius: 18, flexShrink: 0,
+              width: 64, height: 64, borderRadius: 32, flexShrink: 0,
               background: `url(${p.photo}) center/cover`,
               border: `0.5px solid ${border}`, cursor: 'pointer', position: 'relative',
             }}
@@ -384,10 +400,14 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
               <span style={{ fontStyle: lang === 'he' ? 'normal' : 'italic', color: COURT.green }}>
                 {p.name.split(' ').slice(1).join(' ')}
               </span>
-              <span style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13, color: stone }}> · {p.age}</span>
             </div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, letterSpacing: '0.05em', marginTop: 4 }}>
-              📍 {p.city} · {p.matches} {t.matchesPlayed?.toLowerCase?.() || 'matchs'}{p.winrate != null ? ` · ${p.winrate}% ${t.winsWord}` : ''}
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4 }}>
+              {p.age ? `${p.age} ${lang === 'en' ? 'y/o' : lang === 'he' ? 'שנים' : 'ans'} · ` : ''}
+              {p.height ? `${p.height} cm · ` : ''}
+              📍 {p.city} · {p.matches} {p.matches > 1
+                ? (lang === 'en' ? 'matches played' : lang === 'he' ? 'משחקים' : 'matchs joués')
+                : (lang === 'en' ? 'match played' : lang === 'he' ? 'משחק' : 'match joué')}
+              {p.winrate != null && p.matches > 0 ? ` · ${p.winrate}% ${t.winsWord}` : ''}
             </div>
             {p.isDemo && (
               <div style={{
@@ -399,34 +419,44 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
               </div>
             )}
           </div>
+
+          {/* Compatibilité — seul score qui dépend de qui regarde */}
+          {compat != null && (
+            <div style={{ flexShrink: 0, textAlign: 'center' }}>
+              <CompatRing size={64} value={compat} stroke={COURT.rust} txt={COURT.rust} track={`${COURT.rust}20`} rtl={lang === 'he'} />
+              <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4 }}>
+                {lang === 'en' ? 'Compatibility' : lang === 'he' ? 'התאמה' : 'Compatibilité'}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* ─── Niveau / confiance / compatibilité — hiérarchisés ─────────
-            Les trois s'affichaient au même poids visuel (niveau + deux
-            anneaux dorés identiques) : rien n'indiquait lequel compte.
-            peerCount/matchCount ne sont pas disponibles pour un joueur
-            consulté (useTierSignals ne lit que l'utilisateur connecté) —
-            LevelBlock affiche alors une phrase générique. */}
-        <div style={{ marginTop: 14 }}>
-          <LevelBlock
-            level={p.level}
-            confidence={p.confidenceRate ?? 90}
-            compat={compat}
-            lang={lang}
-            dark={dark}
+        {/* ─── Grille de 4 chiffres clés ──────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
+          <StatBox
+            label={lang === 'en' ? 'Declared level' : lang === 'he' ? 'רמה מוצהרת' : 'Niveau déclaré'}
+            value={p.level != null ? p.level.toFixed(1) : '—'}
+            color={ink} dark={dark}
+          />
+          <StatBox
+            label={lang === 'en' ? 'Confidence rate' : lang === 'he' ? 'מדד אמינות' : 'Taux de confiance'}
+            value={`${Math.round(p.confidenceRate ?? 90)} %`}
+            color={COURT.gold} dark={dark}
+          />
+          <StatBox
+            label={t.side || (lang === 'en' ? 'Preferred side' : lang === 'he' ? 'צד מועדף' : 'Côté préféré')}
+            value={sideLabel}
+            color={ink} dark={dark}
+          />
+          <StatBox
+            label={t.playerStyle || (lang === 'en' ? 'Style' : lang === 'he' ? 'סגנון' : 'Style')}
+            value={styleLabel}
+            color={COURT.rust} dark={dark}
           />
         </div>
 
-        {/* Tags */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 12 }}>
-          <HeritageTag color={COURT.green}>{handLabel}</HeritageTag>
-          <HeritageTag color={COURT.green}>{sideLabel}</HeritageTag>
-          <HeritageTag color={COURT.rust}>{styleLabel}</HeritageTag>
-          <HeritageTag color={COURT.gold}>{motivLabel}</HeritageTag>
-        </div>
-
         {/* Trophées débloqués */}
-        <div style={{ marginTop: 10 }}>
+        <div style={{ marginTop: 12 }}>
           <BadgeRow badges={badges} dark={dark} t={t} />
         </div>
 
@@ -439,26 +469,20 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           }}>« {bio} »</p>
         )}
 
-        {/* Partenaire idéal */}
+        {/* Cherche */}
         {seekChips.length > 0 && (
-          <div style={{
-            marginTop: 12, paddingTop: 12,
-            borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
-          }}>
-            <div style={{
-              fontFamily: 'Mulish', fontSize: 13, color: COURT.gold, marginBottom: 8,
-            }}>
-              {t.partnerPrefsTitle || 'Le partenaire idéal'}
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+              {lang === 'en' ? 'Looking for' : lang === 'he' ? 'מחפש' : 'Cherche'}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {seekChips.map((c, i) => (
                 <span key={i} style={{
-                  padding: '5px 11px', borderRadius: 999,
-                  background: `${c.color}12`, color: c.color,
-                  border: `0.5px solid ${c.color}30`,
-                  fontFamily: ff_italic, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 13,
-                  display: 'inline-flex', gap: 5, alignItems: 'center',
-                }}>{c.icon} {c.label}</span>
+                  padding: '6px 12px', borderRadius: 999,
+                  background: 'transparent', color: ink,
+                  border: `0.5px solid ${border}`,
+                  fontFamily: ff_serif, fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14,
+                }}>{c.label}</span>
               ))}
             </div>
           </div>

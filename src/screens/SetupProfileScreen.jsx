@@ -12,8 +12,12 @@ const L = {
     subtitle:    'Complète ton profil pour rejoindre le club.',
     fullName:    'Nom complet',
     fullNamePh:  'Prénom Nom',
+    onlyRequired: 'Seul le nom est obligatoire — le reste est facultatif.',
     photo:       'Photo de profil',
     changePhoto: 'Changer photo',
+    optional:    'optionnel',
+    height:      'Taille',
+    heightPh:    'cm',
     hand:        'Main dominante',
     right:       'Droitier',
     left:        'Gaucher',
@@ -33,8 +37,7 @@ const L = {
     region:      'Région',
     subRegion:   'Où habites-tu ?',
     submit:      'Entrer au club',
-    required:    'Remplis tous les champs.',
-    photoRequired: 'Ajoutez une photo pour continuer',
+    required:    'Ton nom est le seul champ obligatoire.',
     uploadError: "Échec de l'envoi de la photo. Réessaie.",
   },
   en: {
@@ -42,8 +45,12 @@ const L = {
     subtitle:    'Complete your profile to join the club.',
     fullName:    'Full name',
     fullNamePh:  'First Last',
+    onlyRequired: 'Only your name is required — everything else is optional.',
     photo:       'Profile photo',
     changePhoto: 'Change',
+    optional:    'optional',
+    height:      'Height',
+    heightPh:    'cm',
     hand:        'Dominant hand',
     right:       'Right-handed',
     left:        'Left-handed',
@@ -63,8 +70,7 @@ const L = {
     region:      'Region',
     subRegion:   'Where do you live?',
     submit:      'Enter the club',
-    required:    'Please fill in all fields.',
-    photoRequired: 'Add a photo to continue',
+    required:    'Your name is the only required field.',
     uploadError: 'Photo upload failed. Please try again.',
   },
   he: {
@@ -72,8 +78,12 @@ const L = {
     subtitle:    'השלם את הפרופיל שלך כדי להצטרף למועדון.',
     fullName:    'שם מלא',
     fullNamePh:  'שם פרטי שם משפחה',
+    onlyRequired: 'רק השם שלך נדרש — כל השאר אופציונלי.',
     photo:       'תמונת פרופיל',
     changePhoto: 'שנה',
+    optional:    'אופציונלי',
+    height:      'גובה',
+    heightPh:    'ס"מ',
     hand:        'יד דומיננטית',
     right:       'ימני',
     left:        'שמאלי',
@@ -93,8 +103,7 @@ const L = {
     region:      'אזור',
     subRegion:   'איפה אתה גר?',
     submit:      'כניסה למועדון',
-    required:    'אנא מלא את כל השדות.',
-    photoRequired: 'הוסף תמונה כדי להמשיך',
+    required:    'השם שלך הוא השדה היחיד הנדרש.',
     uploadError: 'העלאת התמונה נכשלה. נסה שוב.',
   },
 }
@@ -228,6 +237,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [avatar,          setAvatar]          = useState(googlePhoto)
   const [avatarPath,      setAvatarPath]      = useState('')   // chemin storage (pour créer la ligne galerie après submit)
   const [uploadError,     setUploadError]     = useState('')
+  const [height,          setHeight]          = useState('')  // cm, optionnel
   const [hand,            setHand]            = useState('right')
   const [side,            setSide]            = useState('forehand')
   const [style,           setStyle]           = useState('all-court')
@@ -309,6 +319,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       name:           fullName.trim(),
       full_name:      fullName.trim(),
       photo_url:      avatar,
+      height:         height ? Number(height) : null,
       dominant_hand:  hand,
       preferred_side: side,
       play_style:     style,
@@ -336,20 +347,33 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     onDone()
   }
 
-  // ── Complétion par bloc ──
-  const aboutComplete   = fullName.trim().length >= 2 && hand
-  const playComplete    = side && style && motivation && frequency && region && city
-  const photoComplete   = !!avatar
-  const totalComplete   = [aboutComplete, playComplete, photoComplete].filter(Boolean).length
+  // ── Complétion réelle : une fraction sur les champs du formulaire, pas un
+  // indicateur à 3 crans arbitraire. Chaque champ rempli compte pour 1/9 —
+  // le pourcentage monte quand on remplit, descend (redescendrait) si on vide.
+  // Seul le nom est nécessaire pour soumettre ; les 8 autres sont facultatifs
+  // mais comptent quand même dans le %, pour que « profil complet » ait un
+  // sens réel plutôt que de refléter seulement les 3 champs obligatoires
+  // d'avant (qui, eux, ne l'étaient déjà plus vraiment côté produit).
+  const fieldsFilled = [
+    fullName.trim().length >= 2,
+    !!height,
+    !!avatar,
+    !!hand,
+    !!side,
+    !!style,
+    !!motivation,
+    frequency > 0,
+    !!(region && city),
+  ]
+  const completionPct = Math.round((fieldsFilled.filter(Boolean).length / fieldsFilled.length) * 100)
 
-  const canSubmit = aboutComplete && photoComplete && playComplete && !submitting
+  // Coches par bloc — purement informatives (« cette section est entièrement
+  // remplie »), ne bloquent jamais la soumission.
+  const aboutComplete = fullName.trim().length >= 2 && !!height
+  const playComplete  = !!hand && !!side && !!style && !!motivation && frequency > 0 && !!region && !!city
+  const photoComplete = !!avatar
 
-  const getMissingField = () => {
-    if (!fullName.trim() || fullName.trim().length < 2) return 'nom'
-    if (!avatar) return 'photo'
-    return null
-  }
-  const missingText = getMissingField()
+  const canSubmit = fullName.trim().length >= 2 && !submitting
 
   return (
     <div dir={rtl ? 'rtl' : 'ltr'} style={{
@@ -368,19 +392,18 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           {t.title}
         </div>
         <div style={{
-          fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4, marginBottom: 12,
+          fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 4, marginBottom: 4,
         }}>
-          {totalComplete} / 3
+          {lang === 'en' ? 'Profile' : lang === 'he' ? 'פרופיל' : 'Profil'} {completionPct}%
         </div>
-        {/* Barre de progression en 3 cercles */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-          {[aboutComplete, playComplete, photoComplete].map((done, i) => (
-            <div key={i} style={{
-              width: 10, height: 10, borderRadius: '50%',
-              background: done ? COURT.green : `${border}`,
-              transition: 'all 0.2s',
-            }} />
-          ))}
+        {/* Barre de progression continue — un vrai pourcentage de champs remplis,
+            pas 3 crans fixes. Monte à chaque champ rempli (nom compris), même
+            facultatif. */}
+        <div style={{ width: 160, height: 5, borderRadius: 3, background: border, margin: '0 auto 8px', overflow: 'hidden' }}>
+          <div style={{ width: `${completionPct}%`, height: '100%', background: COURT.green, borderRadius: 3, transition: 'width 0.3s' }} />
+        </div>
+        <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic' }}>
+          {t.onlyRequired}
         </div>
       </div>
 
@@ -407,10 +430,10 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             )}
           </div>
 
-          {/* Full name */}
+          {/* Full name — seul champ obligatoire du formulaire */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4 }}>
-              {t.fullName}
+              {t.fullName} <span style={{ color: COURT.rust }}>*</span>
             </div>
             <input
               value={fullName}
@@ -420,10 +443,25 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             />
           </div>
 
+          {/* Height — optionnel, affiché sur la carte de swipe à côté de l'âge */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4 }}>
+              {t.height} <span style={{ fontStyle: 'italic' }}>({t.optional})</span>
+            </div>
+            <input
+              type="number" inputMode="numeric" min="100" max="250"
+              value={height}
+              onChange={e => setHeight(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+              placeholder={lang === 'en' ? 'e.g. 178' : lang === 'he' ? 'למשל 178' : 'ex. 178'}
+              style={{ ...inputStyle, width: 120 }}
+            />
+            <span style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginInlineStart: 8 }}>{t.heightPh}</span>
+          </div>
+
           {/* Dominant hand */}
           <div>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
-              {t.hand}
+              {t.hand} <span style={{ fontStyle: 'italic' }}>({t.optional})</span>
             </div>
             <ChipGroup
               value={hand}
@@ -443,11 +481,16 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
           }}>
-            <div style={{
-              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-            }}>
-              {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <div style={{
+                fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}>
+                {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
+              </div>
+              <span style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', textTransform: 'none' }}>
+                ({t.optional})
+              </span>
             </div>
             {playComplete && (
               <div style={{ fontSize: 16 }}>✓</div>
@@ -571,11 +614,16 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
           }}>
-            <div style={{
-              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-            }}>
-              {lang === 'en' ? 'Your photo' : lang === 'he' ? 'התמונה שלך' : 'Ta photo'}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <div style={{
+                fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}>
+                {lang === 'en' ? 'Your photo' : lang === 'he' ? 'התמונה שלך' : 'Ta photo'}
+              </div>
+              <span style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', textTransform: 'none' }}>
+                ({t.optional})
+              </span>
             </div>
             {photoComplete && (
               <div style={{ fontSize: 16 }}>✓</div>
@@ -626,9 +674,9 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             ) : !avatar && (
               <div style={{
                 marginTop: 6, fontFamily: 'Mulish', fontSize: 13,
-                color: COURT.rust, fontStyle: 'italic',
+                color: stone, fontStyle: 'italic',
               }}>
-                {L[lang]?.photoRequired || 'Ajoutez une photo'}
+                ({t.optional})
               </div>
             )}
             <input
@@ -673,15 +721,9 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           ) : (
             <PadelBall size={18} shadow={false} />
           )}
-          {canSubmit ? (
-            t.submit
-          ) : missingText ? (
-            lang === 'en' ? `Complete — missing ${missingText}` :
-            lang === 'he' ? `השלם — ${missingText} חסר` :
-            `${t.submit} — il reste ${missingText}`
-          ) : (
-            t.submit
-          )}
+          {canSubmit
+            ? t.submit
+            : (lang === 'en' ? 'Enter your name to continue' : lang === 'he' ? 'הזן את שמך כדי להמשיך' : 'Indique ton nom pour continuer')}
         </button>
 
       </div>
