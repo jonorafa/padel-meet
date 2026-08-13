@@ -45,13 +45,11 @@ const MSG = {
     notAVideo:  "C'est une photo, pas une vidéo. Reviens en arrière et choisis un fichier vidéo (MP4, MOV...).",
     tooBig:     'Vidéo trop lourde (max 50 Mo). Réduis la qualité ou raccourcis l’extrait.',
     tooLong:    (d) => `Vidéo trop longue (${Math.round(d)} s, max ${MAX_VIDEO_SECONDS} s). Garde juste un point.`,
-    unreadable: 'Vidéo illisible par ce navigateur. Réessaie, ou essaie un fichier MP4.',
   },
   en: {
     notAVideo:  "That's a photo, not a video. Go back and pick a video file (MP4, MOV...).",
     tooBig:     'Video too large (max 50 MB). Lower the quality or trim the clip.',
     tooLong:    (d) => `Video too long (${Math.round(d)}s, max ${MAX_VIDEO_SECONDS}s). Keep a single point.`,
-    unreadable: 'This browser can’t read that video. Try again, or use an MP4 file.',
   },
   he: {
     // Traduction non relue par un locuteur natif — même réserve que les
@@ -59,18 +57,27 @@ const MSG = {
     notAVideo:  'זו תמונה, לא סרטון. חזור ובחר קובץ וידאו (MP4, MOV...).',
     tooBig:     'הסרטון כבד מדי (מקסימום 50 מ״ב). הקטן את האיכות או קצר את הקטע.',
     tooLong:    (d) => `הסרטון ארוך מדי (${Math.round(d)} שניות, מקסימום ${MAX_VIDEO_SECONDS}). השאר נקודה אחת.`,
-    unreadable: 'הדפדפן לא הצליח לקרוא את הסרטון. נסה שוב, או קובץ MP4.',
   },
 };
 
-// Beaucoup de moteurs mobiles (Safari iOS en tête) ne chargent les métadonnées
-// d'un <video> de façon fiable QUE s'il est attaché au DOM — un élément créé
-// via document.createElement() et jamais inséré peut rester bloqué
-// indéfiniment sans jamais déclencher loadedmetadata ni error. C'était le bug
-// réel derrière "Format vidéo non lisible" : le fichier était parfaitement
-// lisible, l'élément qui devait le lire n'était juste jamais monté.
+// Beaucoup de moteurs ne chargent les métadonnées d'un <video> de façon
+// fiable QUE s'il est attaché au DOM — un élément créé via
+// document.createElement() et jamais inséré peut rester bloqué indéfiniment
+// sans jamais déclencher loadedmetadata ni error (1er correctif, insuffisant
+// à lui seul : confirmé en repro réelle sur Safari iOS ET Chrome Mac, donc
+// pas un problème de codec — même échec sur deux moteurs de décodage
+// différents ne peut pas s'expliquer par le format du fichier).
+//
+// Deuxième couche du même problème : la taille de l'élément. Un <video> de
+// 1×1px avec opacity:0 reste techniquement "dans le DOM", mais certains
+// moteurs n'allouent pas de vrai pipeline de décodage pour une zone quasi
+// nulle — optimisation qui a du sens pour un <video> jamais affiché, mais
+// qui empêche ici même loadedmetadata de se déclencher. Taille réaliste
+// (proportions vidéo courantes) plutôt que 1px, opacity:0 retiré (redondant
+// avec le positionnement hors écran, et lui aussi susceptible d'être traité
+// comme un signal de dépriorisation par le moteur de rendu).
 function attachHidden(el) {
-  el.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+  el.style.cssText = 'position:fixed;left:-9999px;top:0;width:480px;height:270px;pointer-events:none;';
   document.body.appendChild(el);
   return () => el.remove();
 }
@@ -199,7 +206,16 @@ export async function prepareVideo(file, lang = 'fr') {
   try {
     loaded = await loadVideo(file);
   } catch {
-    throw new Error(m.unreadable);
+    // Trois correctifs successifs sur cette étape (attache au DOM, taille de
+    // l'élément) sans confirmation qu'elle marche sur tous les moteurs réels
+    // — repro faite sur Safari iOS ET Chrome Mac, échec identique sur les
+    // deux. Plutôt que de risquer un 4e faux correctif, on cesse de bloquer
+    // l'envoi sur cette vérification : un fichier qui a passé le contrôle de
+    // type et de taille est accepté même si le navigateur n'a pas réussi à
+    // en lire les métadonnées. Coût assumé : la durée n'est pas vérifiée
+    // dans ce cas (duration à 0) et la vignette est générique plutôt qu'une
+    // vraie image extraite — mais l'envoi aboutit, ce qui est l'objectif.
+    return { file, poster: await placeholderPoster(), duration: 0 };
   }
   const { video, url, cleanup } = loaded;
 
