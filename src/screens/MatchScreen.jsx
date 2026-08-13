@@ -4347,6 +4347,13 @@ export default function MainApp() {
       setShowGuestModal(true);
       return;
     }
+    // LearnScreen n'a pas de zIndex au-dessus de BottomNav (contrairement à
+    // StreakScreen/DetailedProfileModal, qui bloquent volontairement la nav
+    // tant qu'ils sont ouverts) : le clic sur un onglet changeait bien `tab`
+    // en interne, mais LearnScreen restait affiché par-dessus sans jamais se
+    // fermer — l'utilisateur voyait le bouton s'activer sans que l'écran
+    // change. Un changement d'onglet explicite doit le refermer.
+    if (showLearn) setShowLearn(false);
     setTab(newTab);
   };
 

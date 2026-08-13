@@ -30,14 +30,13 @@ function TipOfTheDay({ lang, dark }) {
   const tip = DAILY_TIPS[dayIndex]
   const text = tip[lang] ?? tip.fr
 
-  // Numéro du jour dans le cycle (1-based, pour l'affichage)
-  const tipNum = (dayIndex % DAILY_TIPS.length) + 1
-
+  // Pas de compteur "X / N" affiché : ça révèle la taille du stock de
+  // conseils, et un utilisateur qui atteint N/N sait qu'il a tout vu.
   const labels = {
-    fr: { eyebrow: 'Conseil du jour', counter: `${tipNum} / ${DAILY_TIPS.length}` },
-    en: { eyebrow: 'Tip of the day',  counter: `${tipNum} / ${DAILY_TIPS.length}` },
-    he: { eyebrow: 'טיפ של היום',     counter: `${tipNum} / ${DAILY_TIPS.length}` },
-  }[lang] ?? { eyebrow: 'Conseil du jour', counter: `${tipNum} / ${DAILY_TIPS.length}` }
+    fr: { eyebrow: 'Conseil du jour' },
+    en: { eyebrow: 'Tip of the day' },
+    he: { eyebrow: 'טיפ של היום' },
+  }[lang] ?? { eyebrow: 'Conseil du jour' }
 
   return (
     <div style={{
@@ -48,18 +47,13 @@ function TipOfTheDay({ lang, dark }) {
       padding: 20,
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <BookIcon color={COURT.green} size={20} />
-          <span style={{
-            fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
-            letterSpacing: '0.08em', color: COURT.green,
-          }}>
-            {labels.eyebrow}
-          </span>
-        </div>
-        <span style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone }}>
-          {labels.counter}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <BookIcon color={COURT.green} size={20} />
+        <span style={{
+          fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
+          letterSpacing: '0.08em', color: COURT.green,
+        }}>
+          {labels.eyebrow}
         </span>
       </div>
 
