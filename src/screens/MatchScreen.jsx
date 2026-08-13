@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
@@ -335,6 +335,78 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const { profile: me } = useAuth();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
+
+  // « Cherche » ne rentre pas toujours : le corps de carte est en
+  // overflow:hidden (la carte doit tenir d'un seul tenant, sans défilement),
+  // donc tout dépassement est ROGNÉ SANS RIEN AFFICHER. Avec une vidéo,
+  // l'ensemble réclame ~427 px de corps : ça passe largement sur un grand
+  // téléphone, et ça déborde de 93 px sur un écran de 667 px (mesuré).
+  // Plutôt qu'un seuil de hauteur arbitraire — le point de bascule tombe pile
+  // dans les tailles d'iPhone courantes — la carte MESURE après rendu et
+  // retire les puces seulement si elles ne tiennent pas.
+  // Deux paliers d'allègement, appliqués seulement si nécessaire : on retire
+  // d'abord les puces, puis — si ça déborde encore — on réduit la vignette.
+  // Ce second palier corrige aussi un défaut PRÉEXISTANT : sans puces, une
+  // carte avec vidéo débordait déjà de 23 px sur un écran de 667 px, le bas
+  // de la grille de stats étant rogné sans que rien ne le signale.
+  const corpsRef = useRef(null);
+  const [chipsTiennent, setChipsTiennent] = useState(true);
+  const [videoCompacte, setVideoCompacte] = useState(false);
+  const [, setMesure] = useState(0);   // déclencheur du ResizeObserver (cf. plus bas)
+  // Mémorise la place disponible d'un rendu à l'autre : c'est ce qui permet de
+  // décider dans les DEUX sens sans dépendre de l'ordre des événements. Se
+  // fier à « je viens d'être redimensionné, je réinitialise tout puis je
+  // mesure » ne marchait pas : au moment de la mesure, la carte pouvait
+  // encore porter son ancienne hauteur, et les puces restaient masquées après
+  // agrandissement de l'écran (constaté en passant de 667 à 812 px).
+  const espacePrecedent = useRef(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- voir la note en fin d'effet
+  useLayoutEffect(() => {
+    const el = corpsRef.current;
+    if (!el) return;
+    const dispo = el.clientHeight;
+    // La place a augmenté → on rétablit TOUT le détail d'un coup, et le rendu
+    // suivant resserre à nouveau si besoin. Rétablir une marche à la fois ne
+    // marchait pas : la place mémorisée était mise à jour dès la première
+    // marche, donc les rendus suivants ne voyaient plus d'augmentation et les
+    // puces ne revenaient jamais (constaté : vignette restaurée, puces non).
+    if (dispo > espacePrecedent.current) {
+      espacePrecedent.current = dispo;
+      if (videoCompacte || !chipsTiennent) {
+        setVideoCompacte(false);
+        setChipsTiennent(true);
+        return;
+      }
+    }
+    espacePrecedent.current = dispo;
+    // Mesure SYNCHRONE, sans requestAnimationFrame : rAF ne se déclenche pas
+    // dans un onglet masqué (constaté — la mesure ne tournait jamais), et une
+    // carte montée en arrière-plan serait restée rognée au retour. Lire
+    // scrollHeight ici force le calcul de mise en page : la valeur est juste
+    // avant même le premier affichage.
+    if (el.scrollHeight > dispo + 1) {
+      if (chipsTiennent)      setChipsTiennent(false);
+      else if (!videoCompacte) setVideoCompacte(true);
+    }
+    // VOLONTAIREMENT sans tableau de dépendances (d'où le disable ci-dessous).
+    // Avec [chipsTiennent, videoCompacte, mesure, p?.id], l'effet ne se rejoue
+    // plus sur un rendu ordinaire et la re-mesure repose alors uniquement sur
+    // le ResizeObserver — qui n'est pas livré quand l'onglet est masqué (même
+    // limite que requestAnimationFrame). Testé : dans ce cas la carte gardait
+    // ses puces après réduction de l'écran, contenu rogné à la clé. En se
+    // rejouant à chaque rendu, la mesure se rattrape quoi qu'il arrive.
+    // La suite converge : on ne resserre que d'un cran par rendu, et on ne
+    // rétablit que si la place a réellement augmenté.
+  });
+  // Un changement de taille ne provoque pas forcément un rendu : sans ce
+  // déclencheur, la mesure ci-dessus ne serait jamais rejouée.
+  useEffect(() => {
+    const el = corpsRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setMesure((n) => n + 1));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
@@ -376,7 +448,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       {/* overflow hidden (et non auto) : la carte de swipe doit tenir d'un seul
           tenant — rien à faire défiler pour voir la suite. Le détail complet
           reste accessible au clic (DetailedProfileModal). */}
-      <div style={{ padding: '16px 18px 14px', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <div ref={corpsRef} style={{ padding: '16px 18px 14px', flex: 1, overflow: 'hidden', minHeight: 0 }}>
         {/* ─── En-tête : vignette + nom/âge/ville ──────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           <div
@@ -446,7 +518,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             onClick={(e) => { e.stopPropagation(); setVideoOpen(true); }}
             onPointerDown={(e) => e.stopPropagation()}
             style={{
-              marginTop: 12, height: 96, borderRadius: 12, overflow: 'hidden',
+              marginTop: 12, height: videoCompacte ? 72 : 96, borderRadius: 12, overflow: 'hidden',
               position: 'relative', cursor: 'pointer',
               background: `url(${p.videoPoster}) center/cover`,
               border: `0.5px solid ${border}`,
@@ -500,10 +572,11 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* Cherche — limité à 4 puces : au-delà, la rangée passe sur 2 lignes
-            et la carte ne tient plus d'un seul tenant. Masqué quand il y a une
-            vidéo : les deux ensemble ne rentrent pas, et la vidéo en dit plus
-            long sur le joueur que ses critères de recherche. */}
-        {seekChips.length > 0 && !(p.videoUrl && p.videoPoster) && (
+            et la carte ne tient plus d'un seul tenant. Affiché même avec une
+            vidéo : la vignette est assez compacte pour que les deux tiennent
+            dans la carte sans la faire défiler (vérifié sur 375 px de large,
+            le plus étroit qu'on vise). */}
+        {seekChips.length > 0 && chipsTiennent && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
               {lang === 'en' ? 'Looking for' : lang === 'he' ? 'מחפש' : 'Cherche'}
