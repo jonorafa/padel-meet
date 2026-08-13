@@ -12,7 +12,6 @@ import {
 import { FlameSVG } from '../components/FlameSVG';
 import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
-import { LevelBlock } from '../components/LevelBlock';
 import { compressImage } from '../lib/image';
 import { track } from '../analytics';
 import { I18N, regionToCountry, getGreeting } from '../data/courtData';
@@ -2626,6 +2625,11 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const userCity   = profile?.region   || profile?.city || '';
   const userPhoto  = profile?.photo_url || '';
   const userMatches= profile?.matches_played ?? 0;
+  // null si aucun match — jamais 0% affiché sans données réelles (même règle
+  // que usePlayers.js pour la liste des joueurs).
+  const userWinRate = userMatches > 0 && profile?.wins != null
+    ? Math.round((profile.wins / userMatches) * 100)
+    : null;
 
   // ─── Trophées (mêmes règles que MatchesScreen, cf src/lib/badges.js) ────
   let longestStreak = 0, _runStreak = 0;
@@ -2849,7 +2853,16 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             }}>{uploadError}</div>
           )}
           <div style={{ marginTop: 10, marginBottom: 14 }}>
-            <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic' }}>{userName}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', minWidth: 0 }}>{userName}</div>
+              {/* Niveau démarqué à côté du nom — c'est le chiffre qui compte le
+                  plus sur ce profil, il n'a plus besoin d'une carte à part. */}
+              {level != null && (
+                <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 34, color: COURT.green, lineHeight: 1, flexShrink: 0 }}>
+                  {level.toFixed(1)}
+                </div>
+              )}
+            </div>
             <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>{userCity} · 2026</div>
             {/* Trophées sur leur propre ligne, pleine largeur : avec 3-4 badges
                 débloqués, ça a besoin de place pour respirer plutôt que de se
@@ -2894,23 +2907,24 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               </div>
             </div>
           ) : (
-            /* ── Niveau évalué — bloc hiérarchisé (niveau dominant, confiance
-                 en pastille). compat={null} : on ne se compare pas à soi-même.
-                 Le nombre de matchs joués reste affiché juste en dessous, il
-                 n'entre pas dans la hiérarchie des trois scores. ── */
-            <div style={{ marginTop: 18 }}>
-              <LevelBlock
-                level={level}
-                confidence={confidence}
-                compat={null}
-                matchCount={userMatches}
-                lang={lang}
-                dark={dark}
-              />
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 10 }}>
-                <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone, whiteSpace: 'nowrap' }}>{t.matchesPlayed}</div>
-                <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: COURT.green, lineHeight: 1 }}>{userMatches}</div>
-              </div>
+            /* ── Le niveau est maintenant affiché à côté du nom, en haut —
+                 cette rangée ne montre plus que les trois stats secondaires :
+                 % de victoire, matchs joués, indice de confiance. */
+            <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
+              {[
+                { label: lang === 'en' ? 'Win rate' : lang === 'he' ? 'אחוז ניצחונות' : '% de victoire',
+                  value: userWinRate != null ? `${userWinRate}%` : '—' },
+                { label: t.matchesPlayed, value: userMatches },
+                { label: t.confidence, value: `${confidence}%` },
+              ].map((s, i) => (
+                <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, color: stone,
+                    letterSpacing: '0.04em', textTransform: 'uppercase', textAlign: 'center',
+                  }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
+                </div>
+              ))}
             </div>
           )}
         </div>
