@@ -27,18 +27,36 @@ export function posterPathFromVideoPath(videoPath) {
   return videoPath.replace(/\.[^./]+$/, '-poster.jpg');
 }
 
+// Certains pickers mobiles (notamment iOS quand la vidéo vient directement de
+// la pellicule plutôt que d'un fichier nommé) fournissent un File dont le nom
+// n'a AUCUN point — "IMG_1234" par exemple. `"IMG_1234".split('.').pop()`
+// renvoie alors "IMG_1234" en entier (pas undefined), qui se serait retrouvé
+// tel quel comme "extension" du chemin storage. Inoffensif pour le
+// fonctionnement (Supabase Storage ne se sert pas de l'extension), mais
+// jamais intentionnel — on ne garde le suffixe que s'il ressemble
+// réellement à une extension.
+export function safeExtFromFilename(name) {
+  const m = /\.([a-z0-9]{2,4})$/i.exec(name || '');
+  return m ? m[1].toLowerCase() : 'mp4';
+}
+
 const MSG = {
   fr: {
+    notAVideo:  "C'est une photo, pas une vidéo. Reviens en arrière et choisis un fichier vidéo (MP4, MOV...).",
     tooBig:     'Vidéo trop lourde (max 50 Mo). Réduis la qualité ou raccourcis l’extrait.',
     tooLong:    (d) => `Vidéo trop longue (${Math.round(d)} s, max ${MAX_VIDEO_SECONDS} s). Garde juste un point.`,
     unreadable: 'Vidéo illisible par ce navigateur. Réessaie, ou essaie un fichier MP4.',
   },
   en: {
+    notAVideo:  "That's a photo, not a video. Go back and pick a video file (MP4, MOV...).",
     tooBig:     'Video too large (max 50 MB). Lower the quality or trim the clip.',
     tooLong:    (d) => `Video too long (${Math.round(d)}s, max ${MAX_VIDEO_SECONDS}s). Keep a single point.`,
     unreadable: 'This browser can’t read that video. Try again, or use an MP4 file.',
   },
   he: {
+    // Traduction non relue par un locuteur natif — même réserve que les
+    // autres chaînes he ajoutées cette session (cf. commits précédents).
+    notAVideo:  'זו תמונה, לא סרטון. חזור ובחר קובץ וידאו (MP4, MOV...).',
     tooBig:     'הסרטון כבד מדי (מקסימום 50 מ״ב). הקטן את האיכות או קצר את הקטע.',
     tooLong:    (d) => `הסרטון ארוך מדי (${Math.round(d)} שניות, מקסימום ${MAX_VIDEO_SECONDS}). השאר נקודה אחת.`,
     unreadable: 'הדפדפן לא הצליח לקרוא את הסרטון. נסה שוב, או קובץ MP4.',
@@ -164,7 +182,17 @@ function placeholderPoster(width = 320, height = 180) {
 export async function prepareVideo(file, lang = 'fr') {
   const m = MSG[lang] || MSG.fr;
 
-  // Taille d'abord : inutile de décoder un fichier qu'on va refuser.
+  // Avant même la taille : sur certains sélecteurs mobiles, l'OS affiche des
+  // photos malgré accept="video/*" (hors de notre contrôle côté code). Sans
+  // ce contrôle, une photo choisie par erreur atterrissait dans loadVideo(),
+  // échouait à charger comme vidéo, et ressortait comme "Vidéo illisible" —
+  // techniquement vrai mais qui pointe vers le mauvais problème (l'utilisateur
+  // cherche un bug de lecture vidéo, alors qu'il a juste choisi une image).
+  // Une photo peut très bien peser moins de 50 Mo : ce contrôle doit donc
+  // précéder celui de la taille, pas seulement celui de la lecture.
+  if (file.type && file.type.startsWith('image/')) throw new Error(m.notAVideo);
+
+  // Taille ensuite : inutile de décoder un fichier qu'on va refuser.
   if (file.size > MAX_VIDEO_BYTES) throw new Error(m.tooBig);
 
   let loaded;

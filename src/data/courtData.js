@@ -1042,13 +1042,20 @@ export function computeLevel(answers) {
 }
 
 // ─── Percentile top joueurs ───────────────────────────────────────────────────
-// Basé sur une distribution typique de joueurs de padel.
-// Retourne "Top X%" de joueurs que le joueur dépasse.
+// Table fixe, ASSUMÉE comme telle — aucune donnée réelle derrière (pas de
+// requête, pas de notion de région malgré le libellé "dans ta région" affiché
+// à l'écran par ResultScreen). Calibrée sur 3 points d'ancrage volontaires :
+// niveau 3 ≈ joueur médian (top 50%), niveau 4 = top 20%, niveau 5 = top 5%.
+// Les valeurs entre ancrages sont interpolées géométriquement (le "top %"
+// décroît par ratio constant, pas par écart constant — cohérent avec une
+// distribution de compétence, où les niveaux élevés se raréfient plus vite
+// que les niveaux bas ne se banalisent). En dessous de 3.0, la courbe
+// d'origine est conservée (65→100), personne n'a demandé à la retoucher.
 export function levelToTopPercent(level) {
   const table = [
-    [7.0, 2], [6.5, 4], [6.0, 7], [5.5, 12],
-    [5.0, 18], [4.5, 28], [4.0, 40], [3.5, 55],
-    [3.0, 68], [2.5, 78], [2.0, 86], [1.5, 93],
+    [7.0, 1],  [6.5, 1],  [6.0, 2],  [5.5, 3],
+    [5.0, 5],  [4.5, 10], [4.0, 20], [3.5, 32],
+    [3.0, 50], [2.5, 78], [2.0, 86], [1.5, 93],
     [1.0, 97], [0.5, 100],
   ];
   for (const [lvl, pct] of table) {

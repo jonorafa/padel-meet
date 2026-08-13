@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { supabase } from '../lib/supabase'
 import { compressImage } from '../lib/image'
-import { prepareVideo, buildVideoPaths, posterPathFromVideoPath, MAX_VIDEO_SECONDS } from '../lib/video'
+import { prepareVideo, buildVideoPaths, posterPathFromVideoPath, safeExtFromFilename, MAX_VIDEO_SECONDS } from '../lib/video'
 import { I18N } from '../data/courtData'
 
 const ChevronLeftIcon = () => (
@@ -175,7 +175,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     const previousVideoPath = videoPath
     try {
       const { file: videoFile, poster } = await prepareVideo(file, lang)
-      const ext = (videoFile.name.split('.').pop() || 'mp4').toLowerCase().slice(0, 4)
+      const ext = safeExtFromFilename(videoFile.name)
       const { videoPath: vPath, posterPath: pPath } = buildVideoPaths(user.id, ext)
 
       const { error: vErr } = await supabase.storage

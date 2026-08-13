@@ -4,7 +4,7 @@ import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
 import { Sentry }    from '../sentry'
 import { SUB_REGIONS } from '../data/courtData'
-import { prepareVideo, MAX_VIDEO_SECONDS, buildVideoPaths } from '../lib/video'
+import { prepareVideo, MAX_VIDEO_SECONDS, buildVideoPaths, safeExtFromFilename } from '../lib/video'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -16,7 +16,6 @@ const L = {
     onlyRequired: 'Seul le nom est obligatoire — le reste est facultatif.',
     photo:       'Photo de profil',
     changePhoto: 'Changer photo',
-    optional:    'optionnel',
     height:      'Taille',
     heightPh:    'cm',
     video:       'Extrait vidéo',
@@ -55,7 +54,6 @@ const L = {
     onlyRequired: 'Only your name is required — everything else is optional.',
     photo:       'Profile photo',
     changePhoto: 'Change',
-    optional:    'optional',
     height:      'Height',
     heightPh:    'cm',
     video:       'Video clip',
@@ -94,7 +92,6 @@ const L = {
     onlyRequired: 'רק השם שלך נדרש — כל השאר אופציונלי.',
     photo:       'תמונת פרופיל',
     changePhoto: 'שנה',
-    optional:    'אופציונלי',
     height:      'גובה',
     heightPh:    'ס"מ',
     video:       'קטע וידאו',
@@ -341,7 +338,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     setVideoUploading(true)
     try {
       const { file: videoFile, poster } = await prepareVideo(file, lang)
-      const ext              = (videoFile.name.split('.').pop() || 'mp4').toLowerCase().slice(0, 4)
+      const ext = safeExtFromFilename(videoFile.name)
       const { videoPath: vPath, posterPath: pPath } = buildVideoPaths(user.id, ext)
 
       const { error: vErr } = await supabase.storage
@@ -517,7 +514,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           {/* Height — optionnel, affiché sur la carte de swipe à côté de l'âge */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4 }}>
-              {t.height} <span style={{ fontStyle: 'italic' }}>({t.optional})</span>
+              {t.height}
             </div>
             <input
               type="number" inputMode="numeric" min="100" max="250"
@@ -532,7 +529,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           {/* Dominant hand */}
           <div>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
-              {t.hand} <span style={{ fontStyle: 'italic' }}>({t.optional})</span>
+              {t.hand}
             </div>
             <ChipGroup
               value={hand}
@@ -552,16 +549,11 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
           }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <div style={{
-                fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}>
-                {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
-              </div>
-              <span style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', textTransform: 'none' }}>
-                ({t.optional})
-              </span>
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
             </div>
             {playComplete && (
               <div style={{ fontSize: 16 }}>✓</div>
@@ -685,16 +677,11 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
           }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <div style={{
-                fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}>
-                {lang === 'en' ? 'Photo & video' : lang === 'he' ? 'תמונה ווידאו' : 'Photo & vidéo'}
-              </div>
-              <span style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', textTransform: 'none' }}>
-                ({t.optional})
-              </span>
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {lang === 'en' ? 'Photo & video' : lang === 'he' ? 'תמונה ווידאו' : 'Photo & vidéo'}
             </div>
             {photoComplete && (
               <div style={{ fontSize: 16 }}>✓</div>
@@ -742,14 +729,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               }}>
                 {uploadError}
               </div>
-            ) : !avatar && (
-              <div style={{
-                marginTop: 6, fontFamily: 'Mulish', fontSize: 13,
-                color: stone, fontStyle: 'italic',
-              }}>
-                ({t.optional})
-              </div>
-            )}
+            ) : null}
             <input
               ref={fileRef} type="file" accept="image/*"
               style={{ display: 'none' }}
@@ -760,7 +740,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           {/* ── Extrait vidéo ── */}
           <div style={{ marginTop: 18, paddingTop: 16, borderTop: `0.5px solid ${border}` }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 2 }}>
-              {t.video} <span style={{ fontStyle: 'italic' }}>({t.optional})</span>
+              {t.video}
             </div>
             {/* La limite affichée vient de la constante partagée avec la
                 validation : impossible d'annoncer une durée et d'en refuser
