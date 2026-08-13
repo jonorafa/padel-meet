@@ -2,6 +2,19 @@ import { Component } from 'react'
 import { COURT } from './CourtUI'
 import { Sentry } from '../sentry'
 
+// À chaque déploiement, Vite renomme les chunks lazy-loadés avec un nouveau
+// hash (OnboardingFlow-XXXX.js). Un onglet resté ouvert depuis AVANT le
+// déploiement référence encore l'ancien hash — quand il tente de charger un
+// chunk pas encore visité (ex: OnboardingFlow au moment de l'inscription),
+// il demande un fichier que le déploiement actuel ne sert plus. Le navigateur
+// lève "Failed to fetch dynamically imported module" : rien à voir avec le
+// code de l'écran, l'onglet est juste périmé. Un rechargement (qui récupère
+// le nouveau index.html, donc les bons hashs) répare ça à coup sûr — pas la
+// peine d'imposer ce diagnostic à l'utilisateur.
+const CHUNK_ERROR_RE = /failed to fetch dynamically imported module|importing a module script failed|dynamically imported module/i
+const CHUNK_RELOAD_KEY = 'padel_chunk_reload_ts'
+const CHUNK_RELOAD_WINDOW_MS = 10_000 // si l'erreur revient DANS ce délai après un rechargement, ce n'est pas un chunk périmé — on arrête d'insister
+
 /**
  * ErrorBoundary — attrape les erreurs React non gérées et affiche
  * un écran de secours plutôt qu'un écran blanc.
@@ -23,6 +36,30 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error('[ErrorBoundary]', error, info)
+
+    if (CHUNK_ERROR_RE.test(error?.message || '')) {
+      let lastReload = null
+      try { lastReload = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY)) || null } catch { /* stockage indisponible (navigation privée) : on retente quand même une fois */ }
+      const recentlyReloaded = lastReload && (Date.now() - lastReload) < CHUNK_RELOAD_WINDOW_MS
+
+      if (!recentlyReloaded) {
+        // Premier échec, ou le précédent rechargement date d'assez longtemps :
+        // c'est bien un chunk périmé, pas une boucle. On recharge SANS montrer
+        // l'écran d'erreur — Sentry n'a pas besoin de le voir non plus, ce
+        // n'est pas un incident applicatif, juste un onglet en retard d'un
+        // déploiement.
+        try { sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now())) } catch { /* tant pis, on recharge quand même */ }
+        window.location.reload()
+        return
+      }
+      // L'erreur revient MOINS de 10s après un rechargement : soit le chunk
+      // manque vraiment (déploiement cassé), soit le réseau est coupé — dans
+      // les deux cas, boucler ne réparerait rien. On efface le repère pour
+      // qu'un futur vrai chunk périmé retente sa chance, et on montre l'écran
+      // manuel comme avant.
+      try { sessionStorage.removeItem(CHUNK_RELOAD_KEY) } catch { /* non bloquant */ }
+    }
+
     Sentry.captureException(error, { contexts: { react: { componentStack: info?.componentStack } } })
     this.setState({ errorInfo: info })
   }
