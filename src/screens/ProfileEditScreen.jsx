@@ -174,6 +174,22 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
     setUploadingVideo(true)
     const previousVideoPath = videoPath
     try {
+      // Cf. handleVideoUpload de SetupProfileScreen.jsx pour le détail : le
+      // client Supabase retombe silencieusement sur la clé anon quand
+      // getSession() ne renvoie pas de session au moment d'une requête —
+      // vérifié dans le code de @supabase/supabase-js lui-même. On force
+      // l'appel ici pour lui laisser une vraie chance de rafraîchir un token
+      // expirant avant l'upload, plutôt que de découvrir le problème via un
+      // "row-level security policy" incompréhensible.
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error(
+          lang === 'en' ? "Your connection isn't ready yet. Wait a moment and try again."
+          : lang === 'he' ? 'החיבור שלך עדיין לא מוכן. חכה רגע ונסה שוב.'
+          : "Ta connexion n'est pas encore prête. Attends un instant et réessaie."
+        )
+      }
+
       const { file: videoFile, poster } = await prepareVideo(file, lang)
       const ext = safeExtFromFilename(videoFile.name)
       const { videoPath: vPath, posterPath: pPath } = buildVideoPaths(user.id, ext)

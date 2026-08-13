@@ -45,6 +45,7 @@ const L = {
     submit:      'Entrer au club',
     required:    'Ton nom est le seul champ obligatoire.',
     uploadError: "Échec de l'envoi de la photo. Réessaie.",
+    sessionNotReady: "Ta connexion n'est pas encore prête. Attends un instant et réessaie.",
   },
   en: {
     title:       'My profile',
@@ -83,6 +84,7 @@ const L = {
     submit:      'Enter the club',
     required:    'Your name is the only required field.',
     uploadError: 'Photo upload failed. Please try again.',
+    sessionNotReady: "Your connection isn't ready yet. Wait a moment and try again.",
   },
   he: {
     title:       'הפרופיל שלי',
@@ -121,6 +123,8 @@ const L = {
     submit:      'כניסה למועדון',
     required:    'השם שלך הוא השדה היחיד הנדרש.',
     uploadError: 'העלאת התמונה נכשלה. נסה שוב.',
+    // Traduction non relue par un locuteur natif.
+    sessionNotReady: 'החיבור שלך עדיין לא מוכן. חכה רגע ונסה שוב.',
   },
 }
 
@@ -337,6 +341,19 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     setVideoError('')
     setVideoUploading(true)
     try {
+      // getSession() (par opposition à lire `user` du state React) rafraîchit
+      // activement un token sur le point d'expirer avant de le renvoyer — le
+      // client Supabase l'appelle de toute façon en interne avant CHAQUE
+      // requête, mais retombe SILENCIEUSEMENT sur la clé anon si elle renvoie
+      // une session vide (bug observé : "new row violates row-level security
+      // policy" sans autre explication). En l'appelant nous-mêmes ici, une
+      // session expirée a une vraie chance de se rafraîchir avant l'upload —
+      // et si elle est réellement absente, on le sait tout de suite avec un
+      // message clair, plutôt que de laisser filer une requête anon vouée à
+      // l'échec côté RLS.
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error(t.sessionNotReady)
+
       const { file: videoFile, poster } = await prepareVideo(file, lang)
       const ext = safeExtFromFilename(videoFile.name)
       const { videoPath: vPath, posterPath: pPath } = buildVideoPaths(user.id, ext)
