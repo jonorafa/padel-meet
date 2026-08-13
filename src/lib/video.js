@@ -8,6 +8,25 @@
 export const MAX_VIDEO_BYTES   = 50 * 1024 * 1024; // aligné sur le bucket (50 Mo)
 export const MAX_VIDEO_SECONDS = 20;               // un point de padel, pas un match
 
+// `profiles` ne stocke qu'UN chemin storage (video_storage_path) — pas de
+// colonne séparée pour la vignette. Les deux fichiers sont écrits côte à côte
+// sous le même "stamp" (voir buildVideoPaths), donc le chemin de la vignette
+// se retrouve en dérivant celui de la vidéo plutôt qu'en ajoutant une colonne.
+// Les DEUX sites d'écriture (SetupProfileScreen, ProfileEditScreen) doivent
+// utiliser cette même fonction pour rester cohérents entre eux.
+export function buildVideoPaths(userId, ext) {
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  return {
+    videoPath:  `videos/${userId}/${stamp}.${ext}`,
+    posterPath: `videos/${userId}/${stamp}-poster.jpg`,
+  };
+}
+
+export function posterPathFromVideoPath(videoPath) {
+  if (!videoPath) return null;
+  return videoPath.replace(/\.[^./]+$/, '-poster.jpg');
+}
+
 const MSG = {
   fr: {
     tooBig:     'Vidéo trop lourde (max 50 Mo). Réduis la qualité ou raccourcis l’extrait.',

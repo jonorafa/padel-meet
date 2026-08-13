@@ -4,7 +4,7 @@ import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
 import { Sentry }    from '../sentry'
 import { SUB_REGIONS } from '../data/courtData'
-import { prepareVideo, MAX_VIDEO_SECONDS } from '../lib/video'
+import { prepareVideo, MAX_VIDEO_SECONDS, buildVideoPaths } from '../lib/video'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -341,10 +341,8 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     setVideoUploading(true)
     try {
       const { file: videoFile, poster } = await prepareVideo(file, lang)
-      const stamp    = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-      const ext      = (videoFile.name.split('.').pop() || 'mp4').toLowerCase().slice(0, 4)
-      const vPath    = `videos/${user.id}/${stamp}.${ext}`
-      const pPath    = `videos/${user.id}/${stamp}-poster.jpg`
+      const ext              = (videoFile.name.split('.').pop() || 'mp4').toLowerCase().slice(0, 4)
+      const { videoPath: vPath, posterPath: pPath } = buildVideoPaths(user.id, ext)
 
       const { error: vErr } = await supabase.storage
         .from('profile-videos')

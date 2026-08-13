@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { supabase } from '../lib/supabase'
 import { compressImage } from '../lib/image'
+import { prepareVideo, buildVideoPaths, posterPathFromVideoPath, MAX_VIDEO_SECONDS } from '../lib/video'
 import { I18N } from '../data/courtData'
 
 const ChevronLeftIcon = () => (
@@ -59,6 +60,13 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const [photoUrl, setPhotoUrl]         = useState(profile?.photo_url || '')
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
+  // Extrait vidéo — même logique un-seul-fichier que la photo (pas de galerie).
+  const [videoUrl,    setVideoUrl]    = useState(profile?.video_url        || '')
+  const [videoPoster, setVideoPoster] = useState(profile?.video_poster_url || '')
+  const [videoPath,   setVideoPath]   = useState(profile?.video_storage_path || '')
+  const [uploadingVideo, setUploadingVideo] = useState(false)
+  const [videoError,     setVideoError]     = useState(null)
+
   const [formData, setFormData] = useState({
     name:           profile?.name           || '',
     bio_fr:         profile?.bio_fr         || '',
@@ -77,6 +85,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const [success, setSuccess] = useState(false)
 
   const fileInputRef = useRef(null)
+  const videoFileInputRef = useRef(null)
 
   // ── Profile completion score (live, from real data) ─────────────
   const longestBio = [formData.bio_fr, formData.bio_en, formData.bio_he]
@@ -149,6 +158,85 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       setError(err.message || "Échec de l'envoi de la photo")
     } finally {
       setUploadingPhoto(false)
+    }
+  }
+
+  // Remplace la vidéo existante : envoie la nouvelle AVANT de supprimer
+  // l'ancienne, pour ne jamais laisser le profil sans vidéo si l'envoi
+  // échoue en cours de route. Le nettoyage de l'ancien fichier est
+  // best-effort — non-bloquant, comme le reste des opérations de storage
+  // secondaires dans cette app (cf. insert galerie dans SetupProfileScreen).
+  const handleVideoFileChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    e.target.value = ''
+    setVideoError(null)
+    setUploadingVideo(true)
+    const previousVideoPath = videoPath
+    try {
+      const { file: videoFile, poster } = await prepareVideo(file, lang)
+      const ext = (videoFile.name.split('.').pop() || 'mp4').toLowerCase().slice(0, 4)
+      const { videoPath: vPath, posterPath: pPath } = buildVideoPaths(user.id, ext)
+
+      const { error: vErr } = await supabase.storage
+        .from('profile-videos')
+        .upload(vPath, videoFile, { contentType: videoFile.type || 'video/mp4', upsert: true })
+      if (vErr) throw vErr
+
+      const { error: pErr } = await supabase.storage
+        .from('profile-videos')
+        .upload(pPath, poster, { contentType: 'image/jpeg', upsert: true })
+      if (pErr) throw pErr
+
+      const { data: vPub } = supabase.storage.from('profile-videos').getPublicUrl(vPath)
+      const { data: pPub } = supabase.storage.from('profile-videos').getPublicUrl(pPath)
+      const newVideoUrl    = vPub?.publicUrl || ''
+      const newVideoPoster = pPub?.publicUrl || ''
+
+      const { error: saveErr } = await saveProfile({
+        video_url: newVideoUrl, video_poster_url: newVideoPoster, video_storage_path: vPath,
+      })
+      if (saveErr) throw saveErr
+
+      setVideoUrl(newVideoUrl); setVideoPoster(newVideoPoster); setVideoPath(vPath)
+
+      // Nouvelle vidéo confirmée en base : l'ancienne peut être effacée du
+      // bucket. Si ça échoue, un fichier orphelin reste — gênant pour le
+      // stockage, mais sans impact pour l'utilisateur (le profil pointe déjà
+      // vers le nouveau fichier).
+      if (previousVideoPath) {
+        const oldPoster = posterPathFromVideoPath(previousVideoPath)
+        const { error: rmErr } = await supabase.storage
+          .from('profile-videos')
+          .remove([previousVideoPath, oldPoster])
+        if (rmErr) console.warn('[profile] nettoyage ancienne vidéo non-bloquant:', rmErr.message)
+      }
+    } catch (err) {
+      setVideoError(err?.message || "Échec de l'envoi de la vidéo")
+    } finally {
+      setUploadingVideo(false)
+    }
+  }
+
+  const handleRemoveVideo = async () => {
+    if (!videoPath) return
+    setVideoError(null)
+    setUploadingVideo(true)
+    try {
+      const { error: saveErr } = await saveProfile({
+        video_url: null, video_poster_url: null, video_storage_path: null,
+      })
+      if (saveErr) throw saveErr
+      const oldPoster = posterPathFromVideoPath(videoPath)
+      const { error: rmErr } = await supabase.storage
+        .from('profile-videos')
+        .remove([videoPath, oldPoster])
+      if (rmErr) console.warn('[profile] suppression vidéo non-bloquant:', rmErr.message)
+      setVideoUrl(''); setVideoPoster(''); setVideoPath('')
+    } catch (err) {
+      setVideoError(err?.message || 'Échec de la suppression')
+    } finally {
+      setUploadingVideo(false)
     }
   }
 
@@ -344,6 +432,93 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={handleFileInputChange}
+              style={{ display: 'none' }}
+            />
+          </section>
+
+          {/* ── Vidéo ─────────────────────────────────────────── */}
+          <section>
+            <h2 style={sectionTitleStyle}>
+              {lang === 'he' ? 'קטע וידאו' : lang === 'en' ? 'Video clip' : 'Extrait vidéo'}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div
+                onClick={() => !uploadingVideo && videoFileInputRef.current?.click()}
+                style={{
+                  position: 'relative', width: 84, height: 84, borderRadius: 16, flexShrink: 0,
+                  background: videoPoster ? `url(${videoPoster}) center/cover` : card,
+                  border: `1px solid ${border}`, cursor: uploadingVideo ? 'wait' : 'pointer',
+                  opacity: uploadingVideo ? 0.6 : 1, transition: 'opacity 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {videoPoster && !uploadingVideo && (
+                  <div style={{
+                    width: 30, height: 30, borderRadius: 15,
+                    background: 'rgba(255,255,255,0.92)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill={COURT.green}><path d="M8 5v14l11-7z" /></svg>
+                  </div>
+                )}
+                {!videoPoster && (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={muted}
+                    strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m22 8-6 4 6 4V8z" /><rect x="2" y="6" width="14" height="12" rx="2" />
+                  </svg>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => !uploadingVideo && videoFileInputRef.current?.click()}
+                    disabled={uploadingVideo}
+                    style={{
+                      padding: '9px 16px', borderRadius: 10, cursor: uploadingVideo ? 'wait' : 'pointer',
+                      background: COURT.green, color: COURT.cream, border: 'none',
+                      fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+                    }}
+                  >
+                    {uploadingVideo
+                      ? (lang === 'he' ? 'מעלה…' : lang === 'en' ? 'Uploading…' : 'Envoi…')
+                      : videoUrl
+                        ? (lang === 'he' ? 'החלף וידאו' : lang === 'en' ? 'Change video' : 'Changer la vidéo')
+                        : (lang === 'he' ? 'הוסף וידאו' : lang === 'en' ? 'Add a video' : 'Ajouter une vidéo')}
+                  </button>
+                  {videoUrl && (
+                    <button
+                      onClick={handleRemoveVideo}
+                      disabled={uploadingVideo}
+                      style={{
+                        padding: '9px 14px', borderRadius: 10, cursor: uploadingVideo ? 'wait' : 'pointer',
+                        background: 'transparent', color: COURT.rust, border: `0.5px solid ${COURT.rust}60`,
+                        fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
+                      }}
+                    >
+                      {lang === 'he' ? 'הסר' : lang === 'en' ? 'Remove' : 'Retirer'}
+                    </button>
+                  )}
+                </div>
+                <p style={{ fontFamily: 'Mulish', fontSize: 11.5, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
+                  {lang === 'he'
+                    ? `נקודה אחת מצולמת (עד ${MAX_VIDEO_SECONDS} שניות). זה מה שמראה הכי טוב את הרמה שלך.`
+                    : lang === 'en'
+                      ? `One filmed point (max ${MAX_VIDEO_SECONDS}s). It shows your level better than anything else.`
+                      : `Un point filmé (max ${MAX_VIDEO_SECONDS} s). C'est ce qui montre le mieux ton niveau.`}
+                </p>
+                {videoError && (
+                  <p style={{ fontFamily: 'Mulish', fontSize: 12.5, color: COURT.red, margin: '6px 0 0', lineHeight: 1.4 }}>
+                    {videoError}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <input
+              ref={videoFileInputRef}
+              type="file"
+              accept="video/mp4,video/quicktime,video/webm,video/*"
+              onChange={handleVideoFileChange}
               style={{ display: 'none' }}
             />
           </section>
