@@ -2853,13 +2853,23 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             }}>{uploadError}</div>
           )}
           <div style={{ marginTop: 10, marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ fontFamily: ff_serif, fontSize: 24, color: ink, fontWeight: 500, fontStyle: rtl ? 'normal' : 'italic', minWidth: 0 }}>{userName}</div>
               {/* Niveau démarqué à côté du nom — c'est le chiffre qui compte le
-                  plus sur ce profil, il n'a plus besoin d'une carte à part. */}
+                  plus sur ce profil, il n'a plus besoin d'une carte à part.
+                  Libellé "Niveau" au-dessus : le chiffre seul ne dit pas de quoi
+                  il s'agit. */}
               {level != null && (
-                <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 34, color: COURT.green, lineHeight: 1, flexShrink: 0 }}>
-                  {level.toFixed(1)}
+                <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                  <div style={{
+                    fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, color: stone,
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                  }}>
+                    {lang === 'en' ? 'Level' : lang === 'he' ? 'רמה' : 'Niveau'}
+                  </div>
+                  <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 40, color: COURT.green, lineHeight: 1 }}>
+                    {level.toFixed(1)}
+                  </div>
                 </div>
               )}
             </div>
