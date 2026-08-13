@@ -2743,8 +2743,12 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
     }
   };
 
+  // Pas de paddingBottom sur le conteneur défilant ci-dessous : le contenu
+  // interne (padding '24px 24px 100px' plus bas) fournit déjà les 100px qui
+  // dégagent la nav du bas. En cumuler ici en ajoutait 100 de plus, laissant
+  // un vide défilable après le dernier lien.
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, overflow: 'auto' }}>
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 24px 16px' }}>
         <div>
           {/* Salutation selon l'heure : Bonjour (4h–17h) / Bonsoir (17h–4h) */}
