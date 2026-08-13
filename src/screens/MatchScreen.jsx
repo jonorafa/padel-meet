@@ -12,6 +12,7 @@ import {
 import { FlameSVG } from '../components/FlameSVG';
 import { compatScore } from '../lib/compatibility';
 import { PhotoLightbox } from '../components/PhotoLightbox';
+import { VideoLightbox } from '../components/VideoLightbox';
 import { compressImage } from '../lib/image';
 import { track } from '../analytics';
 import { I18N, regionToCountry, getGreeting } from '../data/courtData';
@@ -333,6 +334,7 @@ function StatBox({ label, value, color, dark }) {
 function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const { profile: me } = useAuth();
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
@@ -434,6 +436,46 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* ─── Grille de 4 chiffres clés ──────────────────────────────── */}
+        {/* ─── Extrait vidéo ──────────────────────────────────────────────
+            Seule la VIGNETTE est chargée ici : la vidéo elle-même ne part
+            qu'au tap (3 cartes sont montées simultanément dans la pile, en
+            précharger 3 vidéos serait ruineux). La vignette reste aussi
+            visible si le navigateur ne sait pas décoder le fichier. */}
+        {p.videoUrl && p.videoPoster && (
+          <div
+            onClick={(e) => { e.stopPropagation(); setVideoOpen(true); }}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              marginTop: 12, height: 96, borderRadius: 12, overflow: 'hidden',
+              position: 'relative', cursor: 'pointer',
+              background: `url(${p.videoPoster}) center/cover`,
+              border: `0.5px solid ${border}`,
+            }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', gap: 10,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.15))',
+            }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 17, flexShrink: 0,
+                background: 'rgba(255,255,255,0.92)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill={COURT.green}>
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <span style={{
+                fontFamily: ff_serif, fontStyle: lang === 'he' ? 'normal' : 'italic',
+                fontSize: 15, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+              }}>
+                {lang === 'en' ? 'Watch a point' : lang === 'he' ? 'צפה בנקודה' : 'Voir un point'}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
           <StatBox
             label={lang === 'en' ? 'Declared level' : lang === 'he' ? 'רמה מוצהרת' : 'Niveau déclaré'}
@@ -458,8 +500,10 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         </div>
 
         {/* Cherche — limité à 4 puces : au-delà, la rangée passe sur 2 lignes
-            et la carte ne tient plus d'un seul tenant. */}
-        {seekChips.length > 0 && (
+            et la carte ne tient plus d'un seul tenant. Masqué quand il y a une
+            vidéo : les deux ensemble ne rentrent pas, et la vidéo en dit plus
+            long sur le joueur que ses critères de recherche. */}
+        {seekChips.length > 0 && !(p.videoUrl && p.videoPoster) && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
               {lang === 'en' ? 'Looking for' : lang === 'he' ? 'מחפש' : 'Cherche'}
@@ -493,6 +537,13 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       </div>
 
       <PhotoLightbox src={lightboxOpen ? p.photo : null} onClose={() => setLightboxOpen(false)} />
+      {/* Monté en permanence (src à null quand fermé) : c'est AnimatePresence,
+          à l'intérieur, qui joue l'animation de sortie. */}
+      <VideoLightbox
+        src={videoOpen ? p.videoUrl : null}
+        poster={p.videoPoster}
+        onClose={() => setVideoOpen(false)}
+      />
     </div>
   );
 }

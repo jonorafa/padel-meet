@@ -4,6 +4,7 @@ import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
 import { Sentry }    from '../sentry'
 import { SUB_REGIONS } from '../data/courtData'
+import { prepareVideo, MAX_VIDEO_SECONDS } from '../lib/video'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -18,6 +19,12 @@ const L = {
     optional:    'optionnel',
     height:      'Taille',
     heightPh:    'cm',
+    video:       'Extrait vidéo',
+    videoHint:   'Un point filmé (max 20 s). C’est ce qui montre le mieux ton niveau.',
+    addVideo:    'Ajouter une vidéo',
+    changeVideo: 'Changer la vidéo',
+    removeVideo: 'Retirer',
+    videoSending:'Envoi de la vidéo…',
     hand:        'Main dominante',
     right:       'Droitier',
     left:        'Gaucher',
@@ -51,6 +58,12 @@ const L = {
     optional:    'optional',
     height:      'Height',
     heightPh:    'cm',
+    video:       'Video clip',
+    videoHint:   'One filmed point (max 20s). It shows your level better than anything else.',
+    addVideo:    'Add a video',
+    changeVideo: 'Change video',
+    removeVideo: 'Remove',
+    videoSending:'Uploading video…',
     hand:        'Dominant hand',
     right:       'Right-handed',
     left:        'Left-handed',
@@ -84,6 +97,12 @@ const L = {
     optional:    'אופציונלי',
     height:      'גובה',
     heightPh:    'ס"מ',
+    video:       'קטע וידאו',
+    videoHint:   'נקודה אחת מצולמת (עד 20 שניות). זה מה שמראה הכי טוב את הרמה שלך.',
+    addVideo:    'הוסף וידאו',
+    changeVideo: 'החלף וידאו',
+    removeVideo: 'הסר',
+    videoSending:'מעלה וידאו…',
     hand:        'יד דומיננטית',
     right:       'ימני',
     left:        'שמאלי',
@@ -228,6 +247,7 @@ function CourtSidePicker({ value, onChange, dark, leftLabel, rightLabel }) {
 export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const { user, saveProfile }  = useAuth()
   const fileRef                = useRef()
+  const videoRef               = useRef()
 
   // Pre-fill from Google profile if available
   const googleName  = user?.user_metadata?.full_name  || ''
@@ -238,6 +258,12 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [avatarPath,      setAvatarPath]      = useState('')   // chemin storage (pour créer la ligne galerie après submit)
   const [uploadError,     setUploadError]     = useState('')
   const [height,          setHeight]          = useState('')  // cm, optionnel
+  // Extrait vidéo (optionnel) — envoyé au moment du choix, pas au submit
+  const [videoUrl,        setVideoUrl]        = useState('')
+  const [videoPoster,     setVideoPoster]     = useState('')
+  const [videoPath,       setVideoPath]       = useState('')
+  const [videoUploading,  setVideoUploading]  = useState(false)
+  const [videoError,      setVideoError]      = useState('')
   const [hand,            setHand]            = useState('right')
   const [side,            setSide]            = useState('forehand')
   const [style,           setStyle]           = useState('all-court')
@@ -305,6 +331,49 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     }
   }
 
+  // ── Extrait vidéo ────────────────────────────────────────────────────────
+  // Envoi immédiat (comme la photo) : au submit, seules les URL sont écrites
+  // dans profiles. prepareVideo valide taille/durée et extrait la vignette —
+  // c'est elle qui rend la carte de swipe affichable sans charger la vidéo.
+  const handleVideoUpload = async (file) => {
+    if (!file) return
+    setVideoError('')
+    setVideoUploading(true)
+    try {
+      const { file: videoFile, poster } = await prepareVideo(file, lang)
+      const stamp    = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      const ext      = (videoFile.name.split('.').pop() || 'mp4').toLowerCase().slice(0, 4)
+      const vPath    = `videos/${user.id}/${stamp}.${ext}`
+      const pPath    = `videos/${user.id}/${stamp}-poster.jpg`
+
+      const { error: vErr } = await supabase.storage
+        .from('profile-videos')
+        .upload(vPath, videoFile, { contentType: videoFile.type || 'video/mp4', upsert: true })
+      if (vErr) throw vErr
+
+      // Vignette dans le même bucket : mêmes règles RLS, un seul dossier à
+      // nettoyer si la vidéo est remplacée.
+      const { error: pErr } = await supabase.storage
+        .from('profile-videos')
+        .upload(pPath, poster, { contentType: 'image/jpeg', upsert: true })
+      if (pErr) throw pErr
+
+      const { data: vPub } = supabase.storage.from('profile-videos').getPublicUrl(vPath)
+      const { data: pPub } = supabase.storage.from('profile-videos').getPublicUrl(pPath)
+      setVideoUrl(vPub?.publicUrl || '')
+      setVideoPoster(pPub?.publicUrl || '')
+      setVideoPath(vPath)
+    } catch (err) {
+      console.error('Video upload failed:', err)
+      Sentry.captureException(err)
+      // prepareVideo lève déjà un message traduit et lisible : on l'affiche tel
+      // quel plutôt que de le noyer dans un libellé générique.
+      setVideoError(err?.message || t.uploadError)
+    } finally {
+      setVideoUploading(false)
+    }
+  }
+
   // ── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setFormError('')
@@ -320,6 +389,9 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
       full_name:      fullName.trim(),
       photo_url:      avatar,
       height:         height ? Number(height) : null,
+      video_url:          videoUrl    || null,
+      video_poster_url:   videoPoster || null,
+      video_storage_path: videoPath   || null,
       dominant_hand:  hand,
       preferred_side: side,
       play_style:     style,
@@ -348,9 +420,9 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   }
 
   // ── Complétion réelle : une fraction sur les champs du formulaire, pas un
-  // indicateur à 3 crans arbitraire. Chaque champ rempli compte pour 1/9 —
+  // indicateur à 3 crans arbitraire. Chaque champ rempli compte pour 1/10 —
   // le pourcentage monte quand on remplit, descend (redescendrait) si on vide.
-  // Seul le nom est nécessaire pour soumettre ; les 8 autres sont facultatifs
+  // Seul le nom est nécessaire pour soumettre ; les autres sont facultatifs
   // mais comptent quand même dans le %, pour que « profil complet » ait un
   // sens réel plutôt que de refléter seulement les 3 champs obligatoires
   // d'avant (qui, eux, ne l'étaient déjà plus vraiment côté produit).
@@ -358,6 +430,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     fullName.trim().length >= 2,
     !!height,
     !!avatar,
+    !!videoUrl,
     !!hand,
     !!side,
     !!style,
@@ -371,7 +444,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   // remplie »), ne bloquent jamais la soumission.
   const aboutComplete = fullName.trim().length >= 2 && !!height
   const playComplete  = !!hand && !!side && !!style && !!motivation && frequency > 0 && !!region && !!city
-  const photoComplete = !!avatar
+  const photoComplete = !!avatar && !!videoUrl
 
   const canSubmit = fullName.trim().length >= 2 && !submitting
 
@@ -619,7 +692,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                 fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
                 textTransform: 'uppercase',
               }}>
-                {lang === 'en' ? 'Your photo' : lang === 'he' ? 'התמונה שלך' : 'Ta photo'}
+                {lang === 'en' ? 'Photo & video' : lang === 'he' ? 'תמונה ווידאו' : 'Photo & vidéo'}
               </div>
               <span style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', textTransform: 'none' }}>
                 ({t.optional})
@@ -683,6 +756,97 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               ref={fileRef} type="file" accept="image/*"
               style={{ display: 'none' }}
               onChange={e => handleAvatarUpload(e.target.files?.[0])}
+            />
+          </div>
+
+          {/* ── Extrait vidéo ── */}
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `0.5px solid ${border}` }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 2 }}>
+              {t.video} <span style={{ fontStyle: 'italic' }}>({t.optional})</span>
+            </div>
+            {/* La limite affichée vient de la constante partagée avec la
+                validation : impossible d'annoncer une durée et d'en refuser
+                une autre. */}
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+              {t.videoHint.replace('20 s', `${MAX_VIDEO_SECONDS} s`).replace('20s', `${MAX_VIDEO_SECONDS}s`).replace('20 שניות', `${MAX_VIDEO_SECONDS} שניות`)}
+            </div>
+
+            {videoUrl ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {/* Vignette extraite de la vidéo à l'envoi */}
+                <div style={{
+                  position: 'relative', width: 96, height: 64, borderRadius: 8, overflow: 'hidden',
+                  background: `url(${videoPoster}) center/cover`, border: `0.5px solid ${border}`,
+                  flexShrink: 0,
+                }}>
+                  <div style={{
+                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.25)',
+                  }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                  <button onClick={() => videoRef.current?.click()} style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontFamily: 'Mulish', fontSize: 13, color: COURT.green, textDecoration: 'underline',
+                  }}>{t.changeVideo}</button>
+                  <button
+                    onClick={() => { setVideoUrl(''); setVideoPoster(''); setVideoPath(''); setVideoError('') }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      fontFamily: 'Mulish', fontSize: 13, color: COURT.rust, textDecoration: 'underline',
+                    }}>{t.removeVideo}</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => videoRef.current?.click()}
+                disabled={videoUploading}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 16px', borderRadius: 10,
+                  background: dark ? COURT.darkCard : COURT.cream,
+                  border: `0.5px solid ${COURT.green}60`,
+                  color: dark ? COURT.darkText : COURT.green,
+                  fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
+                  cursor: videoUploading ? 'wait' : 'pointer', opacity: videoUploading ? 0.6 : 1,
+                }}
+              >
+                {videoUploading ? (
+                  <>
+                    <div style={{
+                      width: 14, height: 14, borderRadius: '50%',
+                      border: `2px solid ${COURT.green}40`, borderTopColor: COURT.green,
+                      animation: 'spin 0.7s linear infinite',
+                    }} />
+                    {t.videoSending}
+                  </>
+                ) : (
+                  <>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m22 8-6 4 6 4V8z" /><rect x="2" y="6" width="14" height="12" rx="2" />
+                    </svg>
+                    {t.addVideo}
+                  </>
+                )}
+              </button>
+            )}
+
+            {videoError && (
+              <div style={{
+                marginTop: 8, fontFamily: 'Mulish', fontSize: 13,
+                color: '#e53e3e', fontStyle: 'italic', lineHeight: 1.4,
+              }}>
+                {videoError}
+              </div>
+            )}
+
+            <input
+              ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm,video/*"
+              style={{ display: 'none' }}
+              onChange={e => { handleVideoUpload(e.target.files?.[0]); e.target.value = '' }}
             />
           </div>
         </div>

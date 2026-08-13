@@ -13,6 +13,10 @@ function transformDBProfile(p) {
     name: p.name || 'Joueur',
     age: p.age || 28,
     height: p.height ?? null,   // cm, optionnel — purement informatif
+    // Extrait vidéo : la vignette permet d'afficher la carte sans charger la
+    // vidéo (3 cartes montées à la fois dans la pile).
+    videoUrl:    p.video_url ?? null,
+    videoPoster: p.video_poster_url ?? null,
     city: p.city || p.region || 'Israel',
     country: regionToCountry(p),  // 'France' ou 'Israël' (tolère données héritées)
     level: p.level ?? null,     // null = quiz non effectué
