@@ -4,6 +4,11 @@ const DSN = import.meta.env.VITE_SENTRY_DSN;
 
 export function initSentry() {
   if (!DSN) return; // pas de DSN → silencieux en dev local
+  // Uniquement en production : sans ce garde, VITE_SENTRY_DSN étant aussi
+  // défini en local, chaque session de dev/test remontait ses erreurs
+  // (rechargements de serveur, service worker interrompu…) comme s'il
+  // s'agissait d'utilisateurs réels.
+  if (!import.meta.env.PROD) return;
 
   Sentry.init({
     dsn: DSN,
