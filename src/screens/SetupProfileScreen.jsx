@@ -4,7 +4,7 @@ import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
 import { Sentry }    from '../sentry'
 import { SUB_REGIONS } from '../data/courtData'
-import { prepareVideo, MAX_VIDEO_SECONDS, buildVideoPaths, safeExtFromFilename } from '../lib/video'
+import { prepareVideo, MAX_VIDEO_SECONDS, buildVideoPaths, safeExtFromFilename, storageContentType } from '../lib/video'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -360,7 +360,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
 
       const { error: vErr } = await supabase.storage
         .from('profile-videos')
-        .upload(vPath, videoFile, { contentType: videoFile.type || 'video/mp4', upsert: true })
+        .upload(vPath, videoFile, { contentType: storageContentType(videoFile), upsert: true })
       if (vErr) throw vErr
 
       // Vignette dans le même bucket : mêmes règles RLS, un seul dossier à

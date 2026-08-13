@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { COURT, BadgeRow, PadelBall, LightningIcon } from './CourtUI'
 import { PhotoLightbox } from './PhotoLightbox'
+import { VideoLightbox } from './VideoLightbox'
 import { LevelBlock } from './LevelBlock'
 import { Sentry } from '../sentry'
 import { useAuth } from '../context/AuthContext'
@@ -73,6 +74,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
   const [modSheet, setModSheet] = useState(null)  // null|'block'|'report'|'blocked'|'reported'
   const [modBusy, setModBusy] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [videoOpen, setVideoOpen] = useState(false)
 
   const doBlock = async () => {
     setModBusy(true)
@@ -287,6 +289,47 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
 
       {/* ─── CONTENU PRINCIPAL (scroll si besoin) ─── */}
       <div style={{ flex: 1, overflowY: 'auto', background: bg, padding: '24px 16px 16px' }}>
+        {/* ─── Extrait vidéo ───────────────────────────────────────────────
+            La carte de swipe propose déjà la vidéo, mais pas cette fiche —
+            or c'est ici qu'on atterrit en tapant la carte pour « en voir
+            plus ». Sans ce bloc, la vidéo devenait introuvable dès qu'on
+            ouvrait le profil complet. Seule la vignette est chargée ; la
+            vidéo ne part qu'au tap. */}
+        {player.video_url && (
+          <div
+            onClick={() => setVideoOpen(true)}
+            style={{
+              marginBottom: 24, height: 150, borderRadius: 14, overflow: 'hidden',
+              position: 'relative', cursor: 'pointer', border: `0.5px solid ${border}`,
+              background: player.video_poster_url
+                ? `url(${player.video_poster_url}) center/cover`
+                : COURT.green,
+            }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', gap: 10,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.15))',
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 22, flexShrink: 0,
+                background: 'rgba(255,255,255,0.92)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={COURT.green}>
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <span style={{
+                fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic',
+                fontSize: 16, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+              }}>
+                {lang === 'en' ? 'Watch a point' : lang === 'he' ? 'צפה בנקודה' : 'Voir un point'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Niveau / confiance / compatibilité — hiérarchisés. compat={null} :
             la compatibilité dépend de qui regarde et n'est pas calculée ici
             (elle l'est sur la carte de recherche, qui a `me` sous la main). */}
@@ -420,6 +463,11 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
       </div>
 
       <PhotoLightbox src={lightboxOpen ? player.photo_url : null} onClose={() => setLightboxOpen(false)} />
+      <VideoLightbox
+        src={videoOpen ? player.video_url : null}
+        poster={player.video_poster_url}
+        onClose={() => setVideoOpen(false)}
+      />
 
       {/* ─── ACTION SHEET MODÉRATION ─── */}
       {modSheet && (

@@ -40,6 +40,25 @@ export function safeExtFromFilename(name) {
   return m ? m[1].toLowerCase() : 'mp4';
 }
 
+// Type MIME sous lequel on STOCKE la vidéo — pas forcément celui que le
+// navigateur a annoncé pour le fichier choisi.
+//
+// Une vidéo filmée par iPhone arrive en `video/quicktime` (.mov). Or les
+// navigateurs Chromium REFUSENT ce type : `canPlayType('video/quicktime')`
+// renvoie la chaîne vide (vérifié), donc la vidéo ne se lit pas — alors que
+// son contenu est presque toujours du H.264/AAC (vérifié sur les fichiers
+// réellement envoyés ici : marqueurs `avc1` + `mp4a`), parfaitement lisible
+// partout dès qu'il est annoncé en `video/mp4`. Le conteneur QuickTime et le
+// conteneur MP4 sont assez proches pour que tous les moteurs l'acceptent.
+//
+// On ne renomme donc que l'ÉTIQUETTE, jamais le fichier : aucun ré-encodage,
+// aucune perte. Les formats déjà universels (mp4, webm) passent inchangés.
+export function storageContentType(file) {
+  const t = (file?.type || '').toLowerCase();
+  if (!t || t === 'video/quicktime' || t === 'video/x-quicktime') return 'video/mp4';
+  return t;
+}
+
 const MSG = {
   fr: {
     notAVideo:  "C'est une photo, pas une vidéo. Reviens en arrière et choisis un fichier vidéo (MP4, MOV...).",

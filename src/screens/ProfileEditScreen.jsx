@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { supabase } from '../lib/supabase'
 import { compressImage } from '../lib/image'
-import { prepareVideo, buildVideoPaths, posterPathFromVideoPath, safeExtFromFilename, MAX_VIDEO_SECONDS } from '../lib/video'
+import { prepareVideo, buildVideoPaths, posterPathFromVideoPath, safeExtFromFilename, storageContentType, MAX_VIDEO_SECONDS } from '../lib/video'
 import { I18N } from '../data/courtData'
+import { VideoLightbox } from '../components/VideoLightbox'
 
 const ChevronLeftIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -66,6 +67,8 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
   const [videoPath,   setVideoPath]   = useState(profile?.video_storage_path || '')
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [videoError,     setVideoError]     = useState(null)
+  // Lecture de sa PROPRE vidéo depuis l'écran d'édition (tap sur la vignette).
+  const [previewOpen,    setPreviewOpen]    = useState(false)
 
   const [formData, setFormData] = useState({
     name:           profile?.name           || '',
@@ -196,7 +199,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
 
       const { error: vErr } = await supabase.storage
         .from('profile-videos')
-        .upload(vPath, videoFile, { contentType: videoFile.type || 'video/mp4', upsert: true })
+        .upload(vPath, videoFile, { contentType: storageContentType(videoFile), upsert: true })
       if (vErr) throw vErr
 
       const { error: pErr } = await supabase.storage
@@ -458,8 +461,19 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               {lang === 'he' ? 'קטע וידאו' : lang === 'en' ? 'Video clip' : 'Extrait vidéo'}
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              {/* Tap sur la vignette = REGARDER sa vidéo (pas la remplacer) :
+                  sans ça, impossible de vérifier quel point on a envoyé, le
+                  seul geste disponible étant « changer ». Le remplacement
+                  reste accessible par son propre bouton, juste à côté. */}
               <div
-                onClick={() => !uploadingVideo && videoFileInputRef.current?.click()}
+                onClick={() => {
+                  if (uploadingVideo) return
+                  if (videoUrl) setPreviewOpen(true)
+                  else videoFileInputRef.current?.click()
+                }}
+                title={videoUrl
+                  ? (lang === 'he' ? 'צפה בסרטון' : lang === 'en' ? 'Watch the video' : 'Voir la vidéo')
+                  : undefined}
                 style={{
                   position: 'relative', width: 84, height: 84, borderRadius: 16, flexShrink: 0,
                   background: videoPoster ? `url(${videoPoster}) center/cover` : card,
@@ -468,7 +482,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
-                {videoPoster && !uploadingVideo && (
+                {videoUrl && !uploadingVideo && (
                   <div style={{
                     width: 30, height: 30, borderRadius: 15,
                     background: 'rgba(255,255,255,0.92)',
@@ -477,7 +491,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill={COURT.green}><path d="M8 5v14l11-7z" /></svg>
                   </div>
                 )}
-                {!videoPoster && (
+                {!videoUrl && (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={muted}
                     strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m22 8-6 4 6 4V8z" /><rect x="2" y="6" width="14" height="12" rx="2" />
@@ -516,11 +530,15 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                   )}
                 </div>
                 <p style={{ fontFamily: 'Mulish', fontSize: 11.5, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
-                  {lang === 'he'
-                    ? `נקודה אחת מצולמת (עד ${MAX_VIDEO_SECONDS} שניות). זה מה שמראה הכי טוב את הרמה שלך.`
-                    : lang === 'en'
-                      ? `One filmed point (max ${MAX_VIDEO_SECONDS}s). It shows your level better than anything else.`
-                      : `Un point filmé (max ${MAX_VIDEO_SECONDS} s). C'est ce qui montre le mieux ton niveau.`}
+                  {videoUrl
+                    ? (lang === 'he' ? 'הקש על התמונה הממוזערת כדי לצפות בסרטון שלך.'
+                      : lang === 'en' ? 'Tap the thumbnail to watch your clip.'
+                      : 'Appuie sur la vignette pour revoir ton extrait.')
+                    : lang === 'he'
+                      ? `נקודה אחת מצולמת (עד ${MAX_VIDEO_SECONDS} שניות). זה מה שמראה הכי טוב את הרמה שלך.`
+                      : lang === 'en'
+                        ? `One filmed point (max ${MAX_VIDEO_SECONDS}s). It shows your level better than anything else.`
+                        : `Un point filmé (max ${MAX_VIDEO_SECONDS} s). C'est ce qui montre le mieux ton niveau.`}
                 </p>
                 {videoError && (
                   <p style={{ fontFamily: 'Mulish', fontSize: 12.5, color: COURT.red, margin: '6px 0 0', lineHeight: 1.4 }}>
@@ -536,6 +554,14 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               accept="video/mp4,video/quicktime,video/webm,video/*"
               onChange={handleVideoFileChange}
               style={{ display: 'none' }}
+            />
+
+            {/* Monté en permanence (src à null quand fermé) : c'est
+                AnimatePresence qui anime l'ouverture ET la fermeture. */}
+            <VideoLightbox
+              src={previewOpen ? videoUrl : null}
+              poster={videoPoster}
+              onClose={() => setPreviewOpen(false)}
             />
           </section>
 
