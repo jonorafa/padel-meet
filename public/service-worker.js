@@ -36,6 +36,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Certains navigateurs intégrés (constaté avec celui de WhatsApp) ont un bug
+// connu : une requête de navigation interceptée par un service worker peut ne
+// JAMAIS se résoudre — ni succès, ni échec, ni timeout réseau — laissant la
+// page bloquée indéfiniment en plein chargement (barre d'adresse figée sur le
+// spinner). Un rechargement manuel déclenche une nouvelle tentative qui,
+// elle, aboutit généralement. Sans ce filet, le fetch() ci-dessous pouvait
+// rester en attente pour toujours : `respondWith` n'étant jamais résolu, la
+// navigation ne se terminait jamais.
+function fetchAvecDelai(request, delaiMs = 8000) {
+  return new Promise((resolve, reject) => {
+    const minuteur = setTimeout(() => reject(new Error('TIMEOUT_RESEAU')), delaiMs);
+    fetch(request).then(
+      (reponse) => { clearTimeout(minuteur); resolve(reponse); },
+      (erreur)  => { clearTimeout(minuteur); reject(erreur); },
+    );
+  });
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -44,17 +62,18 @@ self.addEventListener('fetch', (event) => {
   // → Supabase REST/Realtime/Auth, Sentry, CDN de polices, etc.
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  // Navigations SPA : réseau d'abord, repli app shell hors-ligne
+  // Navigations SPA : réseau d'abord (avec délai de sécurité), repli app
+  // shell hors-ligne ou sur ce bug de navigateur.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
+      fetchAvecDelai(request).catch(() => caches.match('/index.html'))
     );
     return;
   }
 
   // Assets statiques de même origine : réseau d'abord, mise en cache, repli cache
   event.respondWith(
-    fetch(request)
+    fetchAvecDelai(request)
       .then((response) => {
         if (response && response.status === 200 && response.type === 'basic') {
           const copy = response.clone();
