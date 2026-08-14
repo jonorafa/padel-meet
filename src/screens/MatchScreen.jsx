@@ -307,15 +307,15 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
 // chaque colonne fait ~150 px, et un libellé qui passe sur 2 lignes double la
 // hauteur de la grille — c'est ce qui forçait la carte à défiler.
 // `compact` : utilisé quand une vidéo partage déjà la carte avec la grille de
-// stats — moins de padding et une valeur plus petite pour que les 4 cases
-// (ou 6, sans vidéo) tiennent sans jamais faire intervenir le repli qui
-// masque « Cherche ».
-function StatBox({ label, value, color, dark, compact = false }) {
+// 6 stats — moins de padding et une valeur plus petite. `mini` va plus loin
+// encore (dernier palier du repli adaptatif de PlayerCard, sur les écrans où
+// même `compact` ne suffit pas à tout faire tenir).
+function StatBox({ label, value, color, dark, compact = false, mini = false }) {
   return (
     <div style={{
       background: dark ? COURT.darkCard : '#fff',
       border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
-      borderRadius: 12, padding: compact ? '7px 10px' : '9px 12px', minWidth: 0,
+      borderRadius: 12, padding: mini ? '5px 8px' : compact ? '7px 10px' : '9px 12px', minWidth: 0,
     }}>
       <div style={{
         fontFamily: 'Mulish', fontSize: 10, fontWeight: 600,
@@ -324,7 +324,7 @@ function StatBox({ label, value, color, dark, compact = false }) {
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{label}</div>
       <div style={{
-        fontFamily: 'Mulish', fontSize: compact ? 15 : 18, fontWeight: 700, color,
+        fontFamily: 'Mulish', fontSize: mini ? 13 : compact ? 15 : 18, fontWeight: 700, color,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{value}</div>
     </div>
@@ -340,77 +340,92 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
 
-  // « Cherche » ne rentre pas toujours : le corps de carte est en
-  // overflow:hidden (la carte doit tenir d'un seul tenant, sans défilement),
-  // donc tout dépassement est ROGNÉ SANS RIEN AFFICHER. Avec une vidéo,
-  // l'ensemble réclame ~427 px de corps : ça passe largement sur un grand
-  // téléphone, et ça déborde de 93 px sur un écran de 667 px (mesuré).
-  // Plutôt qu'un seuil de hauteur arbitraire — le point de bascule tombe pile
-  // dans les tailles d'iPhone courantes — la carte MESURE après rendu et
-  // retire les puces seulement si elles ne tiennent pas.
-  // Deux paliers d'allègement, appliqués seulement si nécessaire : on retire
-  // d'abord les puces, puis — si ça déborde encore — on réduit la vignette.
-  // Ce second palier corrige aussi un défaut PRÉEXISTANT : sans puces, une
-  // carte avec vidéo débordait déjà de 23 px sur un écran de 667 px, le bas
-  // de la grille de stats étant rogné sans que rien ne le signale.
+  // « Cherche » (et la taille de la vignette vidéo) ne rentrent pas toujours :
+  // le corps de carte est en overflow:hidden (la carte doit tenir d'un seul
+  // tenant, sans défilement), donc tout dépassement est ROGNÉ SANS RIEN
+  // AFFICHER. Le point de bascule tombe pile dans les tailles d'iPhone
+  // courantes, donc ni « toujours tout afficher » ni un seuil de hauteur en
+  // dur ne conviennent : la carte MESURE après rendu et allège par paliers,
+  // seulement si besoin.
+  //
+  // `detail` : 2 = tout (puces + vignette pleine), 1 = sans puces, 0 = sans
+  // puces + vignette réduite. Un SEUL nombre plutôt que deux booléens
+  // indépendants : la version précédente (chipsTiennent/videoCompacte +
+  // "place précédente" mémorisée pour décider si on peut remonter) restait
+  // bloquée en l'état plein quand la toute PREMIÈRE mesure tombait sur une
+  // valeur transitoire (pile de cartes encore en cours d'animation) — rien ne
+  // la corrigeait ensuite tant qu'aucun autre rendu n'était déclenché
+  // (confirmé : état React figé sur "puces visibles" avec 139px de
+  // débordement bien réel). Ici, chaque déclenchement (montage, ou
+  // ResizeObserver signalant un changement de taille) repart du PLEIN détail
+  // et laisse l'effet ci-dessous ressérrer si besoin — aucune mémoire d'une
+  // mesure potentiellement fausse à corriger a posteriori.
   const corpsRef = useRef(null);
-  const [chipsTiennent, setChipsTiennent] = useState(true);
-  const [videoCompacte, setVideoCompacte] = useState(false);
-  const [, setMesure] = useState(0);   // déclencheur du ResizeObserver (cf. plus bas)
-  // Mémorise la place disponible d'un rendu à l'autre : c'est ce qui permet de
-  // décider dans les DEUX sens sans dépendre de l'ordre des événements. Se
-  // fier à « je viens d'être redimensionné, je réinitialise tout puis je
-  // mesure » ne marchait pas : au moment de la mesure, la carte pouvait
-  // encore porter son ancienne hauteur, et les puces restaient masquées après
-  // agrandissement de l'écran (constaté en passant de 667 à 812 px).
-  const espacePrecedent = useRef(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- voir la note en fin d'effet
+  // 3 = tout (puces + vignette 96px) ; 2 = sans puces ; 1 = sans puces +
+  // vignette 72px ; 0 = sans puces + vignette 56px + marges resserrées.
+  // Un 4e palier a été nécessaire : avec les 2 cases Main/Motivation
+  // ajoutées à la grille (toujours affichées, y compris avec vidéo — demandé
+  // explicitement), les 3 premiers paliers ne suffisaient plus à faire tenir
+  // une carte avec vidéo sur un écran de 667px (45px de reste, mesuré même
+  // au palier « sans puces + vignette 72 »).
+  const [detail, setDetail] = useState(3);
+  // VOLONTAIREMENT sans tableau de dépendances : avec [detail], l'effet ne se
+  // rejoue plus sur un rendu ordinaire et la re-mesure reposerait alors
+  // uniquement sur le ResizeObserver — qui n'est pas livré quand l'onglet est
+  // masqué (comportement du navigateur, déjà rencontré avec
+  // requestAnimationFrame plus haut dans ce fichier). En se rejouant à chaque
+  // rendu, la mesure se rattrape quoi qu'il arrive ; la suite converge
+  // puisqu'on ne réduit que d'un cran par rendu et jamais en dessous de 0.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     const el = corpsRef.current;
     if (!el) return;
-    const dispo = el.clientHeight;
-    // La place a augmenté → on rétablit TOUT le détail d'un coup, et le rendu
-    // suivant resserre à nouveau si besoin. Rétablir une marche à la fois ne
-    // marchait pas : la place mémorisée était mise à jour dès la première
-    // marche, donc les rendus suivants ne voyaient plus d'augmentation et les
-    // puces ne revenaient jamais (constaté : vignette restaurée, puces non).
-    if (dispo > espacePrecedent.current) {
-      espacePrecedent.current = dispo;
-      if (videoCompacte || !chipsTiennent) {
-        setVideoCompacte(false);
-        setChipsTiennent(true);
-        return;
-      }
-    }
-    espacePrecedent.current = dispo;
     // Mesure SYNCHRONE, sans requestAnimationFrame : rAF ne se déclenche pas
     // dans un onglet masqué (constaté — la mesure ne tournait jamais), et une
     // carte montée en arrière-plan serait restée rognée au retour. Lire
     // scrollHeight ici force le calcul de mise en page : la valeur est juste
-    // avant même le premier affichage.
-    if (el.scrollHeight > dispo + 1) {
-      if (chipsTiennent)      setChipsTiennent(false);
-      else if (!videoCompacte) setVideoCompacte(true);
+    // avant même le premier affichage. Un seul cran par rendu ; l'effet se
+    // rejoue à chaque nouveau rendu (déclenché par son propre setDetail), donc
+    // la suite converge jusqu'à ce que ça tienne ou qu'il n'y ait plus rien à
+    // réduire.
+    if (detail > 0 && el.scrollHeight > el.clientHeight + 1) {
+      setDetail((d) => d - 1);
     }
-    // VOLONTAIREMENT sans tableau de dépendances (d'où le disable ci-dessous).
-    // Avec [chipsTiennent, videoCompacte, mesure, p?.id], l'effet ne se rejoue
-    // plus sur un rendu ordinaire et la re-mesure repose alors uniquement sur
-    // le ResizeObserver — qui n'est pas livré quand l'onglet est masqué (même
-    // limite que requestAnimationFrame). Testé : dans ce cas la carte gardait
-    // ses puces après réduction de l'écran, contenu rogné à la clé. En se
-    // rejouant à chaque rendu, la mesure se rattrape quoi qu'il arrive.
-    // La suite converge : on ne resserre que d'un cran par rendu, et on ne
-    // rétablit que si la place a réellement augmenté.
   });
-  // Un changement de taille ne provoque pas forcément un rendu : sans ce
-  // déclencheur, la mesure ci-dessus ne serait jamais rejouée.
+  // Redéclenche un cycle « plein détail → resserre si besoin » à chaque
+  // changement de taille du corps de carte. `observe()` livre lui-même une
+  // notification initiale avant la prochaine peinture (comportement
+  // standard) : pas besoin d'appeler repartirDuPlein() séparément au montage,
+  // seul le repli sans ResizeObserver doit le faire explicitement.
+  //
+  // ResizeObserver (comme requestAnimationFrame, déjà rencontré plus haut
+  // dans ce fichier) ne notifie PAS tant que l'onglet est en arrière-plan —
+  // vérifié directement : un ResizeObserver flambant neuf, posé sur cet
+  // élément pendant que document.visibilityState valait "hidden", n'a reçu
+  // AUCUNE notification en 2s, pas même celle garantie à l'observation. Si un
+  // changement de taille survient précisément pendant cette fenêtre (l'app en
+  // arrière-plan, puis remise au premier plan), aucune re-mesure ne se
+  // déclenche tant que rien d'autre ne force un nouveau rendu — d'où ce filet
+  // sur `visibilitychange`, pour rattraper exactement ce cas au retour.
   useEffect(() => {
     const el = corpsRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(() => setMesure((n) => n + 1));
+    if (!el) return;
+    const repartirDuPlein = () => setDetail(3);
+    document.addEventListener('visibilitychange', repartirDuPlein);
+    if (typeof ResizeObserver === 'undefined') {
+      repartirDuPlein();
+      return () => document.removeEventListener('visibilitychange', repartirDuPlein);
+    }
+    const ro = new ResizeObserver(repartirDuPlein);
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      document.removeEventListener('visibilitychange', repartirDuPlein);
+    };
   }, []);
+  const chipsTiennent  = detail >= 2;
+  const videoHauteur   = detail >= 2 ? 96 : detail === 1 ? 72 : 56;
+  const margesReduites = detail === 0;
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
   const noOp  = Math.max(0, Math.min(1, -dragX / 100));
   const playerIsOnline = useOnline(p?.id);
@@ -525,7 +540,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             onClick={(e) => { e.stopPropagation(); setVideoOpen(true); }}
             onPointerDown={(e) => e.stopPropagation()}
             style={{
-              marginTop: 12, height: videoCompacte ? 72 : 96, borderRadius: 12, overflow: 'hidden',
+              marginTop: margesReduites ? 8 : 12, height: videoHauteur, borderRadius: 12, overflow: 'hidden',
               position: 'relative', cursor: 'pointer',
               background: `url(${p.videoPoster}) center/cover`,
               border: `0.5px solid ${border}`,
@@ -555,45 +570,42 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           </div>
         )}
 
-        {/* Grille de stats — compacte (padding/police réduits) dès qu'une
-            vidéo partage la carte, pour ne jamais dépendre du repli qui
-            masque « Cherche ». Sans vidéo, la place gagnée sert à afficher
-            2 cases de plus (main, motivation) plutôt que de rester vide. */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
-          <StatBox compact={hasVideo}
+        {/* Grille de stats — toujours les 6 mêmes cases (niveau, confiance,
+            côté, style, main, motivation), qu'il y ait une vidéo ou non. Avec
+            vidéo, la place manque : on les passe en compact (padding/police
+            réduits) plutôt que d'en retirer — demandé explicitement, pour ne
+            jamais perdre Main/Motivation sur les profils vidéo. */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: margesReduites ? 6 : 8, marginTop: margesReduites ? 8 : 12 }}>
+          <StatBox compact={hasVideo} mini={margesReduites}
             label={lang === 'en' ? 'Declared level' : lang === 'he' ? 'רמה מוצהרת' : 'Niveau déclaré'}
             value={p.level != null ? p.level.toFixed(1) : '—'}
             color={ink} dark={dark}
           />
-          <StatBox compact={hasVideo}
+          <StatBox compact={hasVideo} mini={margesReduites}
             label={lang === 'en' ? 'Confidence rate' : lang === 'he' ? 'מדד אמינות' : 'Taux de confiance'}
             value={`${Math.round(p.confidenceRate ?? 90)} %`}
             color={COURT.gold} dark={dark}
           />
-          <StatBox compact={hasVideo}
+          <StatBox compact={hasVideo} mini={margesReduites}
             label={t.side || (lang === 'en' ? 'Preferred side' : lang === 'he' ? 'צד מועדף' : 'Côté préféré')}
             value={sideLabel}
             color={ink} dark={dark}
           />
-          <StatBox compact={hasVideo}
+          <StatBox compact={hasVideo} mini={margesReduites}
             label={t.playerStyle || (lang === 'en' ? 'Style' : lang === 'he' ? 'סגנון' : 'Style')}
             value={styleLabel}
             color={COURT.rust} dark={dark}
           />
-          {!hasVideo && (
-            <>
-              <StatBox
-                label={lang === 'en' ? 'Hand' : lang === 'he' ? 'יד' : 'Main'}
-                value={handLabel}
-                color={ink} dark={dark}
-              />
-              <StatBox
-                label={lang === 'en' ? 'Motivation' : lang === 'he' ? 'מוטיבציה' : 'Motivation'}
-                value={motivLabel}
-                color={COURT.gold} dark={dark}
-              />
-            </>
-          )}
+          <StatBox compact={hasVideo} mini={margesReduites}
+            label={lang === 'en' ? 'Hand' : lang === 'he' ? 'יד' : 'Main'}
+            value={handLabel}
+            color={ink} dark={dark}
+          />
+          <StatBox compact={hasVideo} mini={margesReduites}
+            label={lang === 'en' ? 'Motivation' : lang === 'he' ? 'מוטיבציה' : 'Motivation'}
+            value={motivLabel}
+            color={COURT.gold} dark={dark}
+          />
         </div>
 
         {/* Cherche — limité à 4 puces : au-delà, la rangée passe sur 2 lignes
