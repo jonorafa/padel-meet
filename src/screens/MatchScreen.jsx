@@ -577,7 +577,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             jamais perdre Main/Motivation sur les profils vidéo. */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: margesReduites ? 6 : 8, marginTop: margesReduites ? 8 : 12 }}>
           <StatBox compact={hasVideo} mini={margesReduites}
-            label={lang === 'en' ? 'Declared level' : lang === 'he' ? 'רמה מוצהרת' : 'Niveau déclaré'}
+            label={lang === 'en' ? 'Level' : lang === 'he' ? 'רמה' : 'Niveau'}
             value={p.level != null ? p.level.toFixed(1) : '—'}
             color={ink} dark={dark}
           />
