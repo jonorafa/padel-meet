@@ -306,12 +306,16 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
 // Libellé sur UNE seule ligne (ellipsis si trop long) : sur un écran de 375 px
 // chaque colonne fait ~150 px, et un libellé qui passe sur 2 lignes double la
 // hauteur de la grille — c'est ce qui forçait la carte à défiler.
-function StatBox({ label, value, color, dark }) {
+// `compact` : utilisé quand une vidéo partage déjà la carte avec la grille de
+// stats — moins de padding et une valeur plus petite pour que les 4 cases
+// (ou 6, sans vidéo) tiennent sans jamais faire intervenir le repli qui
+// masque « Cherche ».
+function StatBox({ label, value, color, dark, compact = false }) {
   return (
     <div style={{
       background: dark ? COURT.darkCard : '#fff',
       border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}`,
-      borderRadius: 12, padding: '9px 12px', minWidth: 0,
+      borderRadius: 12, padding: compact ? '7px 10px' : '9px 12px', minWidth: 0,
     }}>
       <div style={{
         fontFamily: 'Mulish', fontSize: 10, fontWeight: 600,
@@ -320,7 +324,7 @@ function StatBox({ label, value, color, dark }) {
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{label}</div>
       <div style={{
-        fontFamily: 'Mulish', fontSize: 18, fontWeight: 700, color,
+        fontFamily: 'Mulish', fontSize: compact ? 15 : 18, fontWeight: 700, color,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
       }}>{value}</div>
     </div>
@@ -415,9 +419,12 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
   const border= dark ? COURT.darkBorder : `${COURT.green}40`;
+  const hasVideo = !!(p.videoUrl && p.videoPoster);
 
   const styleLabel = { aggressive: t.aggressive, defensive: t.defensive, 'all-court': t.allcourt }[p.style] || t.allcourt;
   const sideLabel  = p.side === 'forehand' ? t.forehand : t.backhand;
+  const handLabel  = p.hand === 'left' ? t.leftHand : t.rightHand;
+  const motivLabel = { fun: t.fun, improve: t.improve, compete: t.compete }[p.motivation] || t.fun;
   const compat = me ? compatScore(me, p) : (p.confidenceRate ?? 90);
 
   // Partenaire idéal — réutilise le JSON partner_prefs existant
@@ -513,7 +520,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             qu'au tap (3 cartes sont montées simultanément dans la pile, en
             précharger 3 vidéos serait ruineux). La vignette reste aussi
             visible si le navigateur ne sait pas décoder le fichier. */}
-        {p.videoUrl && p.videoPoster && (
+        {hasVideo && (
           <div
             onClick={(e) => { e.stopPropagation(); setVideoOpen(true); }}
             onPointerDown={(e) => e.stopPropagation()}
@@ -548,27 +555,45 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           </div>
         )}
 
+        {/* Grille de stats — compacte (padding/police réduits) dès qu'une
+            vidéo partage la carte, pour ne jamais dépendre du repli qui
+            masque « Cherche ». Sans vidéo, la place gagnée sert à afficher
+            2 cases de plus (main, motivation) plutôt que de rester vide. */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
-          <StatBox
+          <StatBox compact={hasVideo}
             label={lang === 'en' ? 'Declared level' : lang === 'he' ? 'רמה מוצהרת' : 'Niveau déclaré'}
             value={p.level != null ? p.level.toFixed(1) : '—'}
             color={ink} dark={dark}
           />
-          <StatBox
+          <StatBox compact={hasVideo}
             label={lang === 'en' ? 'Confidence rate' : lang === 'he' ? 'מדד אמינות' : 'Taux de confiance'}
             value={`${Math.round(p.confidenceRate ?? 90)} %`}
             color={COURT.gold} dark={dark}
           />
-          <StatBox
+          <StatBox compact={hasVideo}
             label={t.side || (lang === 'en' ? 'Preferred side' : lang === 'he' ? 'צד מועדף' : 'Côté préféré')}
             value={sideLabel}
             color={ink} dark={dark}
           />
-          <StatBox
+          <StatBox compact={hasVideo}
             label={t.playerStyle || (lang === 'en' ? 'Style' : lang === 'he' ? 'סגנון' : 'Style')}
             value={styleLabel}
             color={COURT.rust} dark={dark}
           />
+          {!hasVideo && (
+            <>
+              <StatBox
+                label={lang === 'en' ? 'Hand' : lang === 'he' ? 'יד' : 'Main'}
+                value={handLabel}
+                color={ink} dark={dark}
+              />
+              <StatBox
+                label={lang === 'en' ? 'Motivation' : lang === 'he' ? 'מוטיבציה' : 'Motivation'}
+                value={motivLabel}
+                color={COURT.gold} dark={dark}
+              />
+            </>
+          )}
         </div>
 
         {/* Cherche — limité à 4 puces : au-delà, la rangée passe sur 2 lignes
