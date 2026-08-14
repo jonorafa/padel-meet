@@ -535,56 +535,63 @@ function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
             ))}
           </div>
 
-          {/* ── Panel feedback (style Duolingo) + bouton ── */}
-          <div style={{ flexShrink: 0 }}>
-            {answered ? (
+          {/* ── Feedback message ── */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px' }}>
+            {answered && (
               <div style={{
-                padding: '18px 22px',
-                paddingBottom: 'max(100px, calc(env(safe-area-inset-bottom, 0px) + 100px))',
+                marginTop: 20,
+                padding: '16px', borderRadius: 14,
                 background: isCorrect ? `${COURT.green}15` : `${COURT.red}10`,
-                borderTop: `2.5px solid ${isCorrect ? COURT.green : COURT.red}`,
-                animation: 'fadeUp 0.22s ease',
+                borderLeft: `4px solid ${isCorrect ? COURT.green : COURT.red}`,
               }}>
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{
-                    fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: 'italic',
-                    fontWeight: 700, fontSize: 16,
-                    color: isCorrect ? COURT.green : COURT.red, marginBottom: 4,
-                  }}>{isCorrect ? L.mascotCheer : L.mascotWrong}</div>
-                  <div style={{
-                    fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-                    fontSize: 14, color: ink, lineHeight: 1.5,
-                  }}>{tr(q.explain)}</div>
-                </div>
-                <button onClick={next} style={{
-                  width: '100%', padding: '15px', borderRadius: 14,
-                  background: isCorrect ? COURT.green : COURT.red,
-                  color: '#fff', border: 'none',
+                <div style={{
+                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: 'italic',
+                  fontWeight: 700, fontSize: 16,
+                  color: isCorrect ? COURT.green : COURT.red, marginBottom: 4,
+                }}>{isCorrect ? L.mascotCheer : L.mascotWrong}</div>
+                <div style={{
                   fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-                  fontSize: 17, fontWeight: 700, cursor: 'pointer',
-                  boxShadow: `0 4px 0 ${isCorrect ? COURT.greenDeep : '#8B1A1A'}`,
-                  letterSpacing: '0.03em',
-                }}>
-                  {qIndex < questions.length - 1 ? L.continue.toUpperCase() : L.finish.toUpperCase()}
-                </button>
-              </div>
-            ) : (
-              <div style={{
-                padding: '12px 22px',
-                paddingBottom: 'max(100px, calc(env(safe-area-inset-bottom, 0px) + 100px))',
-              }}>
-                <button disabled style={{
-                  width: '100%', padding: '15px', borderRadius: 14,
-                  background: `${COURT.green}35`, color: `${COURT.cream}99`,
-                  border: 'none', cursor: 'default',
-                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-                  fontSize: 17, fontWeight: 700, letterSpacing: '0.03em',
-                }}>
-                  {qIndex < questions.length - 1 ? L.continue.toUpperCase() : L.finish.toUpperCase()}
-                </button>
+                  fontSize: 14, color: ink, lineHeight: 1.5,
+                }}>{tr(q.explain)}</div>
               </div>
             )}
           </div>
+
+          {/* ── Bouton en bas (toujours visible) ── */}
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+            padding: '16px 22px',
+            paddingBottom: 'max(16px, calc(env(safe-area-inset-bottom, 0px) + 16px))',
+            background: bg, borderTop: `1px solid ${border}`,
+          }}>
+            {answered ? (
+              <button onClick={next} style={{
+                width: '100%', padding: '15px', borderRadius: 14,
+                background: isCorrect ? COURT.green : COURT.red,
+                color: '#fff', border: 'none',
+                fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 17, fontWeight: 700, cursor: 'pointer',
+                boxShadow: `0 4px 0 ${isCorrect ? COURT.greenDeep : '#8B1A1A'}`,
+                letterSpacing: '0.03em',
+                animation: 'slideUp 0.3s ease',
+              }}>
+                {qIndex < questions.length - 1 ? L.continue.toUpperCase() : L.finish.toUpperCase()}
+              </button>
+            ) : (
+              <button disabled style={{
+                width: '100%', padding: '15px', borderRadius: 14,
+                background: `${COURT.green}35`, color: `${COURT.cream}99`,
+                border: 'none', cursor: 'default',
+                fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
+                fontSize: 17, fontWeight: 700, letterSpacing: '0.03em',
+              }}>
+                {qIndex < questions.length - 1 ? L.continue.toUpperCase() : L.finish.toUpperCase()}
+              </button>
+            )}
+          </div>
+
+          {/* ── Spacer pour éviter que le contenu soit caché derrière le bouton ── */}
+          <div style={{ height: 'max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px))', flexShrink: 0 }} />
         </>
       ) : (
         // ── Écran de résultat ──
