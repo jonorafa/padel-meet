@@ -127,8 +127,20 @@ export default function EvolutionChart() {
           const ttX = cursor ? Math.min(Math.max(cursor[0] - ttW / 2, padL), W - padR - ttW) : 0
           const ttY = cursor ? Math.max(cursor[1] - ttH - 8, padT) : 0
           return (
+            // `direction: ltr` explicite : en hébreu, le conteneur est en
+            // dir="rtl" et le SVG en hérite, ce qui INVERSE la sémantique de
+            // text-anchor (start = droite, end = gauche) — alors que toute la
+            // géométrie ci-dessus est calculée en LTR (x croissant = temps qui
+            // avance). Mesuré en hébreu avant correctif : la 1re date d'axe
+            // partait à x=-19.9 (rognée hors cadre à gauche), la dernière
+            // atteignait x=328 pour un viewBox de 300 (débordement à droite),
+            // et les graduations Y se dessinaient à 20→26.6 c.-à-d. PAR-DESSUS
+            // la zone de tracé au lieu d'être à sa gauche. La courbe reste donc
+            // orientée comme en fr/en — un axe temporel se lit de gauche à
+            // droite dans les trois langues — et seuls les libellés hébreux
+            // gardent leur rendu bidi naturel à l'intérieur de chaque <text>.
             <svg ref={evoRef} width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
-              style={{ display: 'block', touchAction: 'none' }}
+              style={{ display: 'block', touchAction: 'none', direction: 'ltr' }}
               onTouchStart={handlePointer} onTouchMove={handlePointer} onTouchEnd={() => setTouchIdx(null)}
               onMouseMove={handlePointer} onMouseLeave={() => setTouchIdx(null)}
             >
