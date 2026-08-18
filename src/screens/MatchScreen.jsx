@@ -361,14 +361,34 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   // et laisse l'effet ci-dessous ressérrer si besoin — aucune mémoire d'une
   // mesure potentiellement fausse à corriger a posteriori.
   const corpsRef = useRef(null);
-  // 3 = tout (puces + vignette 96px) ; 2 = sans puces ; 1 = sans puces +
-  // vignette 72px ; 0 = sans puces + vignette 56px + marges resserrées.
-  // Un 4e palier a été nécessaire : avec les 2 cases Main/Motivation
-  // ajoutées à la grille (toujours affichées, y compris avec vidéo — demandé
-  // explicitement), les 3 premiers paliers ne suffisaient plus à faire tenir
-  // une carte avec vidéo sur un écran de 667px (45px de reste, mesuré même
-  // au palier « sans puces + vignette 72 »).
-  const [detail, setDetail] = useState(3);
+  // Paliers, du plus complet au plus resserré :
+  //   4 = badges + puces + vignette 96px
+  //   3 = puces + vignette 96px          (badges retirés en PREMIER)
+  //   2 = vignette 96px                  (puces retirées)
+  //   1 = vignette 72px
+  //   0 = vignette 56px + marges resserrées
+  // Les badges partent d'abord : c'est le contenu le moins essentiel à une
+  // décision de swipe (le niveau, le côté et la compatibilité comptent plus
+  // qu'une pastille « 10 matchs »), et ils ne servent qu'à combler le vide
+  // laissé par l'absence de vignette. Ils ne sont d'ailleurs rendus que sur
+  // les profils SANS vidéo, donc ce palier est simplement inopérant sur les
+  // cartes avec vidéo — qui reprennent alors la même suite qu'avant.
+  // Le palier « vignette 56px » a été nécessaire quand les 2 cases
+  // Main/Motivation ont été ajoutées à la grille (toujours affichées, y
+  // compris avec vidéo — demandé explicitement) : les paliers précédents ne
+  // suffisaient plus à faire tenir une carte avec vidéo sur un écran de
+  // 667px (45px de reste, mesuré).
+  const [detail, setDetail] = useState(4);
+  // Compteur de mesure — SEULE façon de garantir un rendu à chaque
+  // redimensionnement. `repartirDuPlein` ne peut pas s'en charger : il fait
+  // setDetail(4), or quand `detail` vaut DÉJÀ 4 (cas d'un écran qui rétrécit
+  // alors que la carte est au détail plein) React court-circuite la mise à
+  // jour, aucun rendu n'est déclenché, et l'effet de mesure ci-dessous ne
+  // tourne donc jamais — la carte reste au détail plein en débordant.
+  // Constaté : 812→667 sur une carte avec vidéo, detail figé à 4 et 139px
+  // rognés silencieusement. Ce compteur change à chaque notification, donc
+  // le rendu (et la mesure) a toujours lieu.
+  const [, setMesure] = useState(0);
   // VOLONTAIREMENT sans tableau de dépendances : avec [detail], l'effet ne se
   // rejoue plus sur un rendu ordinaire et la re-mesure reposerait alors
   // uniquement sur le ResizeObserver — qui n'est pas livré quand l'onglet est
@@ -410,7 +430,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   useEffect(() => {
     const el = corpsRef.current;
     if (!el) return;
-    const repartirDuPlein = () => setDetail(3);
+    const repartirDuPlein = () => { setDetail(4); setMesure((n) => n + 1); };
     document.addEventListener('visibilitychange', repartirDuPlein);
     if (typeof ResizeObserver === 'undefined') {
       repartirDuPlein();
@@ -423,7 +443,18 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
       document.removeEventListener('visibilitychange', repartirDuPlein);
     };
   }, []);
-  const chipsTiennent  = detail >= 2;
+  // streakMax volontairement omis : la « série de 5 victoires » n'est
+  // calculable aujourd'hui que pour l'utilisateur connecté (cf. src/lib/badges.jsx),
+  // pas pour un autre joueur — même omission que DetailedProfileModal, qui
+  // documente déjà ce choix. Le badge correspondant reste donc verrouillé ici,
+  // plutôt que d'être affiché sur la foi d'une valeur qu'on n'a pas.
+  const badgesJoueur = useMemo(
+    () => computeBadges({ matchesPlayed: p.matches ?? 0, level: p.level ?? 0 }),
+    [p.matches, p.level],
+  );
+
+  const badgesTiennent = detail >= 4;
+  const chipsTiennent  = detail >= 3;
   const videoHauteur   = detail >= 2 ? 96 : detail === 1 ? 72 : 56;
   const margesReduites = detail === 0;
   const yesOp = Math.max(0, Math.min(1, dragX / 100));
@@ -629,6 +660,24 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
                 }}>{c.label}</span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Distinctions — uniquement sur les profils SANS vidéo, où la
+            vignette ne prend pas ses 96px et laissait un vide d'environ 200px
+            en bas de carte (constaté sur un profil réel). Sur une carte AVEC
+            vidéo, la hauteur est déjà à la limite : on n'ajoute rien.
+            `tappable={false}` : ailleurs dans l'app un tap sur un badge ouvre
+            une infobulle, mais ici la carte est une cible de swipe dont le tap
+            ouvre la fiche détaillée — deux gestes concurrents sur la même
+            zone. Les badges restent purement informatifs, la fiche détaillée
+            porte déjà la version consultable.
+            BadgeRow renvoie null si aucun badge n'est débloqué : rien à
+            conditionner de plus, la carte retombe simplement sur son ancien
+            rendu pour un profil sans distinction. */}
+        {!hasVideo && badgesTiennent && (
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
+            <BadgeRow badges={badgesJoueur} dark={dark} t={t} tappable={false} />
           </div>
         )}
       </div>
