@@ -797,8 +797,16 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
             transition: 'color 0.25s',
             position: 'relative',
           }}>
-            {it.badge > 0 && <NotifBadge count={it.badge} />}
-            {NAV_ICONS[it.iconKey](isActive, dark)}
+            {/* Le badge s'ancre sur l'ICÔNE, pas sur le bouton : celui-ci fait
+                60px de large pour la zone tactile alors que l'icône en fait 22,
+                donc un positionnement relatif au bouton décollait la pastille
+                loin sur la droite au lieu de la poser sur le coin de l'icône.
+                Les deux autres NotifBadge (les cloches) restent inchangés :
+                leurs boutons sont déjà ajustés à l'icône. */}
+            <span style={{ position: 'relative', display: 'inline-flex' }}>
+              {NAV_ICONS[it.iconKey](isActive, dark)}
+              {it.badge > 0 && <NotifBadge count={it.badge} />}
+            </span>
             <div style={{
               fontFamily: 'Mulish', fontSize: TYPE.micro,
               fontWeight: isActive ? 800 : 600, lineHeight: 1,

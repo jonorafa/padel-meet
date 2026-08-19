@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, laz
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
+import { compterPersonnesNonLues } from '../lib/unread';
 import { RADIUS } from '../components/tokens';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
@@ -4558,9 +4559,9 @@ export default function MainApp() {
 
   // Total des messages non lus toutes conversations confondues → badge rouge onglet Chat
   const { matches: chatMatches } = useUserMatches();
-  const chatUnread = chatMatches
-    ? chatMatches.reduce((sum, m) => sum + (m.unreadCount || 0), 0)
-    : 0;
+  // Compte des PERSONNES, pas des messages : cinq messages non lus d'un même
+  // interlocuteur affichent « 1 ». Cf. src/lib/unread.js pour le détail.
+  const chatUnread = compterPersonnesNonLues(chatMatches);
 
   const bellProps = { onShowNotifs: () => setShowNotifs(true), notifCount: unreadCount };
 
