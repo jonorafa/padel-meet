@@ -63,7 +63,7 @@ export function LevelBlock({ level, confidence, compat = null, peerCount, matchC
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <div style={{
               fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 52, lineHeight: 1, color: COURT.green,
+              fontSize: TYPE.display, lineHeight: 1, color: COURT.green,
             }}>
               {level != null ? level.toFixed(1) : '—'}
             </div>

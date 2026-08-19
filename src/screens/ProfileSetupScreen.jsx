@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { COURT, PadelBall, FloatingBalls } from '../components/CourtUI';
+import { COURT, TYPE, PadelBall, FloatingBalls } from '../components/CourtUI';
 import { levelToTopPercent, generateLevelSummary } from '../data/courtData';
 
 export default function ResultScreen({ t, lang, level, answers, onContinue }) {
@@ -89,7 +89,7 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
                 <span style={{ color: COURT.gold }}>{topPct}%</span>
                 {' '}{lang === 'en' ? 'of players' : lang === 'he' ? 'מהשחקנים' : 'des joueurs'}
               </div>
-              <div style={{ fontFamily: ff, fontStyle: 'italic', fontSize: 11, color: `${COURT.cream}80` }}>
+              <div style={{ fontFamily: ff, fontStyle: 'italic', fontSize: TYPE.micro, color: `${COURT.cream}80` }}>
                 {regionLabel}
               </div>
             </div>

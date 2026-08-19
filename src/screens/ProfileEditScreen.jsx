@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { COURT, PadelSlider, initialsAvatar } from '../components/CourtUI'
+import { COURT, TYPE, PadelSlider, initialsAvatar } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
 import { supabase } from '../lib/supabase'
@@ -436,7 +436,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                       ? (lang === 'he' ? 'החלף תמונה' : lang === 'en' ? 'Change photo' : 'Changer la photo')
                       : (lang === 'he' ? 'הוסף תמונה' : lang === 'en' ? 'Add a photo' : 'Ajouter une photo')}
                 </button>
-                <p style={{ fontFamily: 'Mulish', fontSize: 11.5, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
                   {lang === 'he'
                     ? 'תמונה אחת בלבד — זו שהשחקנים האחרים יראו בפרופיל שלך.'
                     : lang === 'en'
@@ -529,7 +529,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                     </button>
                   )}
                 </div>
-                <p style={{ fontFamily: 'Mulish', fontSize: 11.5, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: muted, margin: '8px 0 0', lineHeight: 1.4 }}>
                   {videoUrl
                     ? (lang === 'he' ? 'הקש על התמונה הממוזערת כדי לצפות בסרטון שלך.'
                       : lang === 'en' ? 'Tap the thumbnail to watch your clip.'
@@ -587,7 +587,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                 }}
               />
               <p style={{
-                fontFamily: 'Mulish', fontSize: 11, color: muted,
+                fontFamily: 'Mulish', fontSize: TYPE.micro, color: muted,
                 textAlign: 'right', margin: '4px 0 0',
               }}>
                 {currentBio.length}/280

@@ -1,5 +1,5 @@
 import { Component } from 'react'
-import { COURT } from './CourtUI'
+import { COURT, TYPE } from './CourtUI'
 import { Sentry } from '../sentry'
 
 // À chaque déploiement, Vite renomme les chunks lazy-loadés avec un nouveau
@@ -128,7 +128,7 @@ export class ErrorBoundary extends Component {
         {errorText && (
           <div style={{ width: '100%', maxWidth: 340, marginBottom: 16 }}>
             <pre style={{
-              fontFamily: 'monospace', fontSize: 11, color: COURT.red,
+              fontFamily: 'monospace', fontSize: TYPE.micro, color: COURT.red,
               background: `${COURT.red}10`,
               border: `1px solid ${COURT.red}30`,
               borderRadius: 8, padding: '8px 12px',

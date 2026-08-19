@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { usePrefs } from '../context/PrefsContext'
-import { COURT, initialsAvatar } from '../components/CourtUI'
+import { COURT, TYPE, initialsAvatar } from '../components/CourtUI'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Back-office modération — /admin (réservé aux comptes is_admin).
@@ -85,7 +85,7 @@ export default function AdminScreen() {
         }} aria-label="Retour">←</button>
         <div>
           <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, fontWeight: 700, color: ink }}>Modération</div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone }}>
             {reports === null ? 'Chargement…' : `${counts.open || 0} à traiter · ${reports.length} au total`}
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function AdminScreen() {
                   <div style={{ fontFamily: 'Spectral, serif', fontSize: 15, fontWeight: 700, color: ink }}>
                     {r.reported?.name || 'Profil supprimé'}
                   </div>
-                  <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone }}>
+                  <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone }}>
                     signalé par {r.reporter?.name || 'Profil supprimé'} · {new Date(r.created_at).toLocaleDateString('fr-FR')}
                   </div>
                 </div>

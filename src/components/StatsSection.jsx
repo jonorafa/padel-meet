@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { COURT } from '../components/CourtUI'
+import { COURT, TYPE } from '../components/CourtUI'
 import { usePrefs }        from '../context/PrefsContext'
 import { useAuth }         from '../context/AuthContext'
 import { usePlayerStats }  from '../hooks/usePlayerStats'
@@ -164,7 +164,7 @@ export default function StatsSection() {
             <div style={valStyle}>{streak > 0 ? streak : '—'}</div>
           </div>
           {streak > 0 && (
-            <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 11, color: stone, marginTop: 6 }}>
+            <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: TYPE.micro, color: stone, marginTop: 6 }}>
               {streak} {L.jours}
             </div>
           )}

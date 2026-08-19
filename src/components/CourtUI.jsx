@@ -37,6 +37,8 @@ export const TYPE = {
   title:   20,  // titres de section (Spectral italique)
   screen:  26,  // titre d'écran (Spectral italique)
   hero:    34,  // chiffre dominant
+  display: 52,  // niveau sur le profil (LevelBlock)
+  giant:   88,  // valeur du slider d'auto-évaluation
 };
 
 // ─── Interlettrage ───
@@ -121,7 +123,7 @@ export function PadelSlider({
       {bigValue && (
         <div style={{
           textAlign: 'center', fontFamily: 'Spectral, serif',
-          fontSize: 88, lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
+          fontSize: TYPE.giant, lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
         }}>
           {value}
           {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: 'italic', fontFamily: 'Spectral, serif' }}>{suffix}</span>}
@@ -137,7 +139,7 @@ export function PadelSlider({
       {(leftLabel != null || rightLabel != null) && (
         <div style={{
           display: 'flex', justifyContent: 'space-between',
-          fontFamily: 'Mulish', fontSize: 11, color: stone, marginTop: 4,
+          fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, marginTop: 4,
         }}>
           <span>{leftLabel}</span><span>{rightLabel}</span>
         </div>
@@ -340,7 +342,7 @@ export function MatchFlash({ player, t, lang, onMessage, onContinue, onProposeSl
       {/* En-tête sobre */}
       <div style={{ textAlign: 'center', animation: 'fadeUp 0.5s ease both' }}>
         <div style={{
-          fontFamily: 'Mulish', fontSize: 11, color: COURT.gold,
+          fontFamily: 'Mulish', fontSize: TYPE.micro, color: COURT.gold,
           letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 14,
         }}>PADEL MEET</div>
         <div style={{
@@ -505,7 +507,7 @@ export function NotifBadge({ count }) {
       position: 'absolute', top: -4, right: -4,
       width: 16, height: 16, borderRadius: 8,
       background: COURT.red, color: '#fff',
-      fontSize: 11, fontFamily: 'Mulish', fontWeight: 600,
+      fontSize: TYPE.micro, fontFamily: 'Mulish', fontWeight: 600,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       animation: 'notifPop 0.4s cubic-bezier(.2,.9,.3,1.4)',
       border: `1.5px solid ${_darkMode ? COURT.darkBg : COURT.cream}`,
@@ -798,7 +800,7 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
             {it.badge > 0 && <NotifBadge count={it.badge} />}
             {NAV_ICONS[it.iconKey](isActive, dark)}
             <div style={{
-              fontFamily: 'Mulish', fontSize: 11,
+              fontFamily: 'Mulish', fontSize: TYPE.micro,
               fontWeight: isActive ? 800 : 600, lineHeight: 1,
               whiteSpace: 'nowrap',
             }}>{it.label}</div>
@@ -870,7 +872,7 @@ export function Achievements({ badges, dark }) {
           <div style={{ height: 5, background: `${COURT.cream}25`, borderRadius: 3, marginTop: 10, overflow: 'hidden' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: COURT.gold, borderRadius: 3 }} />
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 11, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
             {b.on ? '100%' : `${b.progress.cur} / ${b.progress.max}`}
           </div>
           <div style={{
@@ -920,7 +922,7 @@ export function Achievements({ badges, dark }) {
                   </svg>
                 )}
               </div>
-              <div style={{ fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.04em', marginTop: 6, lineHeight: 1.3, textAlign: 'center', maxWidth: '90%' }}>
                 {badge.label}
                 {showRing && (
                   <div style={{ color: COURT.gold, fontWeight: 700, marginTop: 2 }}>
@@ -1011,13 +1013,13 @@ export function BadgeRow({ badges, size = 18, label, dark, t, align = 'start', t
           zIndex: 9999, whiteSpace: 'nowrap',
           background: COURT.greenDeep, color: COURT.cream,
           padding: '5px 10px', borderRadius: 8,
-          fontFamily: 'Mulish', fontSize: 11,
+          fontFamily: 'Mulish', fontSize: TYPE.micro,
           boxShadow: '0 4px 12px rgba(15,61,41,0.25)',
         }}>{t?.[BADGE_LABEL_KEY[open]] || open}</div>
       )}
       {label && (
         <div style={{
-          fontFamily: 'Mulish', fontSize: 11, color: stone, letterSpacing: '0.04em',
+          fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.04em',
           textAlign: align === 'end' ? 'right' : 'left', lineHeight: 1.35,
         }}>
           {label}

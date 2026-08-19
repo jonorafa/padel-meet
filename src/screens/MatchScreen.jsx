@@ -541,7 +541,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             {p.isDemo && (
               <div style={{
                 display: 'inline-flex', alignItems: 'center', marginTop: 4,
-                fontFamily: 'Mulish', fontSize: 11, color: COURT.gold,
+                fontFamily: 'Mulish', fontSize: TYPE.micro, color: COURT.gold,
                 border: `0.5px solid ${COURT.gold}50`, borderRadius: 20, padding: '1px 7px',
               }}>
                 {lang === 'he' ? 'פרופיל לדוגמה' : lang === 'en' ? 'Demo profile' : 'Profil démo'}
@@ -3076,7 +3076,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               {level != null && (
                 <div style={{ textAlign: 'center', flexShrink: 0 }}>
                   <div style={{
-                    fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, color: stone,
+                    fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                   }}>
                     {lang === 'en' ? 'Level' : lang === 'he' ? 'רמה' : 'Niveau'}
@@ -4030,7 +4030,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                   {lang === 'fr' ? 'Niveau mis à jour' : lang === 'en' ? 'Level updated' : 'הרמה עודכנה'}
                 </div>
                 <div style={{
-                  fontFamily: 'Spectral, serif', fontSize: 88,
+                  fontFamily: 'Spectral, serif', fontSize: TYPE.giant,
                   color: COURT.green, lineHeight: 1,
                   animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)',
                 }}>

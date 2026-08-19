@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { COURT, SectionHeading } from './CourtUI'
+import { COURT, TYPE, SectionHeading } from './CourtUI'
 import { usePrefs } from '../context/PrefsContext'
 import { useLevelHistory } from '../hooks/useLevelHistory'
 import { I18N } from '../data/courtData'
@@ -74,7 +74,7 @@ export default function EvolutionChart() {
               border: `0.5px solid ${evoPeriod === key ? COURT.green : (dark ? COURT.darkBorder : COURT.stone + '40')}`,
               background: evoPeriod === key ? COURT.green : 'transparent',
               color: evoPeriod === key ? '#fff' : stone,
-              fontFamily: 'Mulish', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, cursor: 'pointer',
             }}>{lbl}</button>
           ))}
         </div>

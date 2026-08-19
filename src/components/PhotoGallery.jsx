@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { COURT } from './CourtUI'
+import { COURT, TYPE } from './CourtUI'
 
 /**
  * Photo carousel component — COURT design system
@@ -92,7 +92,7 @@ export function PhotoGallery({
             position: 'absolute', top: 10, left: 10,
             background: COURT.green, color: COURT.cream,
             padding: '3px 9px', borderRadius: 6,
-            fontSize: 11, fontWeight: 700, fontFamily: 'Mulish', letterSpacing: '0.05em',
+            fontSize: TYPE.micro, fontWeight: 700, fontFamily: 'Mulish', letterSpacing: '0.05em',
           }}>
             ★ Principale
           </div>
@@ -111,7 +111,7 @@ export function PhotoGallery({
           position: 'absolute', bottom: 10, right: 10,
           background: 'rgba(0,0,0,0.55)', color: '#fff',
           padding: '2px 8px', borderRadius: 8,
-          fontSize: 11, fontFamily: 'Mulish', letterSpacing: '0.03em',
+          fontSize: TYPE.micro, fontFamily: 'Mulish', letterSpacing: '0.03em',
         }}>
           {currentIndex + 1} / {photos.length}
         </div>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { COURT, PadelBall, Ornament } from '../components/CourtUI'
+import { COURT, TYPE, PadelBall, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
       <div onPointerDown={startDrag('max')} style={{ position: 'absolute', top: '50%', transform: 'translate(-50%, -50%)', left: `${maxPct}%`, cursor: 'grab', touchAction: 'none', zIndex: 3 }}>
         <PadelBall size={20} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: 11, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Mulish', fontSize: TYPE.micro, color: dark ? COURT.darkMuted : COURT.stone, letterSpacing: '0.18em', marginTop: 14 }}>
         <span>{min.toFixed(1)}</span><span>{max.toFixed(1)}</span>
       </div>
     </div>
