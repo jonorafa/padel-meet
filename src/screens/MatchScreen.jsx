@@ -2960,7 +2960,15 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   // dégagent la nav du bas. En cumuler ici en ajoutait 100 de plus, laissant
   // un vide défilable après le dernier lien.
   return (
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, overflow: 'auto' }}>
+    // paddingTop tenant compte de l'encoche, comme les autres écrans de ce
+    // fichier. Un 56 fixe plaçait le haut des ronds d'action à 70px du bord
+    // (mesuré) : sur un iPhone à encoche, où safe-area-inset-top vaut ~59px,
+    // il ne restait que 11px sous la barre d'état et le contour supérieur des
+    // ronds se retrouvait mangé — signalé depuis le navigateur de WhatsApp,
+    // qui ajoute encore sa propre barre par-dessus. La valeur plancher passe
+    // aussi de 56 à 68 : les ronds descendent d'une douzaine de pixels sur
+    // TOUS les appareils, y compris ceux sans encoche où ils frôlaient le bord.
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(68px, calc(env(safe-area-inset-top, 0px) + 28px))', overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 24px 16px' }}>
         <div>
           {/* Salutation selon l'heure : Bonjour (4h–17h) / Bonsoir (17h–4h) */}
