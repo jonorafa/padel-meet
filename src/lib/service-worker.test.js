@@ -78,7 +78,7 @@ function chargerSW({ caches = fauxCaches(), fetchImpl } = {}) {
     for (let i = 0; i < 10; i++) {
       const n = attentes.length
       await Promise.allSettled(attentes)
-      await new Promise((r) => setImmediate(r))
+      await new Promise((r) => setTimeout(r, 0))
       if (attentes.length === n) break
     }
   }
@@ -122,7 +122,7 @@ test('un asset hache va dans le cache commun, une icone dans le cache du build',
 })
 
 test('cross-origin et non-GET ne sont jamais interceptes', async () => {
-  const { handlers, evt } = chargerSW()
+  const { handlers } = chargerSW()
   const cas = [
     new Request('https://xyz.supabase.co/rest/v1/profiles'),
     new Request('https://exemple.test/api', { method: 'POST' }),
@@ -136,7 +136,7 @@ test('cross-origin et non-GET ne sont jamais interceptes', async () => {
 
 test('un chunk absent du serveur (404 apres deploiement) retombe sur le cache', async () => {
   const caches = fauxCaches({ [ASSETS]: { 'https://exemple.test/assets/vieux-chunk.js': 'CONTENU_EN_CACHE' } })
-  const { handlers, evt } = chargerSW({
+  const { handlers } = chargerSW({
     caches,
     fetchImpl: async () => reponse('not found', { status: 404 }),
   })
