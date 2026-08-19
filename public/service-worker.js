@@ -8,8 +8,34 @@
 //     mise en cache.
 //   • Navigations (SPA) : réseau d'abord, repli sur l'app shell hors-ligne.
 //   • Assets statiques : réseau d'abord, repli sur le cache.
+//
+// ── Deux caches, pour deux durées de vie différentes ────────────────────────
+// La version précédente n'en avait qu'un, nommé en dur 'padel-meet-v2', jamais
+// incrémenté. Conséquences :
+//   • `install` ne se rejoue que si le fichier du SW change ; comme son contenu
+//     était figé, l'index.html mis en cache datait de la toute première
+//     installation et référençait des chunks d'un build révolu ;
+//   • `activate` ne purgeait donc jamais rien, la condition de nettoyage
+//     comparant le cache courant à lui-même.
+// D'où la séparation :
+//   • SHELL : versionné par build. Contient l'index.html et les icônes, dont
+//     l'URL ne change PAS d'un déploiement à l'autre — c'est précisément ce qui
+//     rendait le contenu périmable. Un nom de cache différent à chaque build
+//     force une réinstallation propre et purge l'ancien.
+//   • ASSETS : commun à tous les builds. Ne reçoit que /assets/*, dont le nom
+//     porte un hachage de contenu : deux versions ne peuvent pas se recouvrir,
+//     rien n'y est donc jamais périmé. Le garder en dehors de la purge permet à
+//     un onglet resté ouvert pendant un déploiement de continuer à charger ses
+//     propres chunks, qui n'existent plus côté serveur.
 // ─────────────────────────────────────────────────────────────────────────────
-const CACHE_NAME = 'padel-meet-v2';
+
+// Remplacé au build par un identifiant dérivé du contenu (cf. le plugin
+// `estampillerServiceWorker` de vite.config.js). Reste littéral en dev, où le
+// SW n'a de toute façon pas d'intérêt.
+const BUILD_ID     = '__BUILD_ID__';
+const SHELL_CACHE  = `padel-meet-shell-${BUILD_ID}`;
+const ASSETS_CACHE = 'padel-meet-assets';
+
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -22,7 +48,12 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    // `cache: 'reload'` : sans ça, addAll peut se servir dans le cache HTTP du
+    // navigateur et remettre en cache l'index.html du déploiement précédent —
+    // ce que cette réécriture cherche justement à empêcher.
+    caches.open(SHELL_CACHE).then((cache) =>
+      cache.addAll(APP_SHELL.map((url) => new Request(url, { cache: 'reload' })))
+    )
   );
   self.skipWaiting();
 });
@@ -30,10 +61,15 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
-    )
+      Promise.all(
+        names
+          // Le cache d'assets est délibérément épargné (noms hachés, immuables).
+          // On ne supprime que les shells des builds précédents.
+          .filter((n) => n.startsWith('padel-meet-shell-') && n !== SHELL_CACHE)
+          .map((n) => caches.delete(n))
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Certains navigateurs intégrés (constaté avec celui de WhatsApp) ont un bug
@@ -54,6 +90,22 @@ function fetchAvecDelai(request, delaiMs = 8000) {
   });
 }
 
+// Repli hors-ligne d'une navigation. Renvoie systématiquement une Response :
+// `respondWith` reçoit une promesse résolue à `undefined` si l'app shell est
+// absente du cache, ce que le navigateur traite comme une erreur réseau — soit
+// une page d'erreur au lieu du repli attendu.
+function replierSurLeShell() {
+  return caches.match('/index.html').then((cache) =>
+    cache || new Response(
+      '<!doctype html><meta charset="utf-8"><title>Hors ligne</title>' +
+      '<body style="font-family:sans-serif;text-align:center;padding:48px 24px">' +
+      '<h1 style="color:#1F5C3F">Padel Meet</h1><p>Connexion indisponible. ' +
+      'Vérifie ton réseau puis recharge la page.</p>',
+      { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    )
+  );
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -66,20 +118,39 @@ self.addEventListener('fetch', (event) => {
   // shell hors-ligne ou sur ce bug de navigateur.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetchAvecDelai(request).catch(() => caches.match('/index.html'))
+      fetchAvecDelai(request)
+        .then((reponse) => {
+          // Rafraîchit le shell mis en cache à chaque navigation réussie : même
+          // si l'installation a échoué (réseau coupé au mauvais moment), le
+          // repli hors-ligne reste celui du build en cours.
+          if (reponse && reponse.ok) {
+            const copie = reponse.clone();
+            caches.open(SHELL_CACHE).then((cache) => cache.put('/index.html', copie));
+          }
+          return reponse;
+        })
+        .catch(replierSurLeShell)
     );
     return;
   }
 
-  // Assets statiques de même origine : réseau d'abord, mise en cache, repli cache
+  // Assets statiques de même origine : réseau d'abord, mise en cache, repli cache.
   event.respondWith(
     fetchAvecDelai(request)
       .then((response) => {
         if (response && response.status === 200 && response.type === 'basic') {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          // /assets/* porte un hachage de contenu → cache commun, jamais purgé.
+          // Le reste (icônes, manifest) suit la vie du build.
+          const cible = url.pathname.startsWith('/assets/') ? ASSETS_CACHE : SHELL_CACHE;
+          caches.open(cible).then((cache) => cache.put(request, copy));
+          return response;
         }
-        return response;
+        // Réponse reçue mais inexploitable (404 typiquement, quand un onglet
+        // ouvert avant un déploiement réclame un chunk que le serveur ne sert
+        // plus) : le cache d'assets détient encore ce fichier, on s'en sert
+        // plutôt que de laisser remonter une erreur de chargement de module.
+        return caches.match(request).then((cache) => cache || response);
       })
       .catch(() => caches.match(request))
   );
