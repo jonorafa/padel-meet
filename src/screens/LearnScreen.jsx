@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { COURT, TYPE, LockIcon } from '../components/CourtUI'
+import { RADIUS } from '../components/tokens'
 import { QUIZ_CHAPTERS } from '../data/quizData'
 import { Sentry } from '../sentry'
 
@@ -225,7 +226,7 @@ export default function LearnScreen({ lang = 'fr', dark = false, onClose }) {
 
       {/* ── Bandeau mascotte ── */}
       <div style={{
-        margin: '16px 20px 4px', padding: '16px', borderRadius: 20,
+        margin: '16px 20px 4px', padding: '16px', borderRadius: RADIUS.lg,
         background: dark ? `${COURT.green}18` : `${COURT.green}0D`,
         border: `1.5px solid ${COURT.green}35`,
         display: 'flex', alignItems: 'center', gap: 16,

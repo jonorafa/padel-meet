@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { COURT, PadelBall, Ornament, BottomSheet, initialsAvatar,
   LightningIcon, HourglassIcon, AlertIcon, XIcon } from './CourtUI'
+import { RADIUS } from './tokens'
 import { supabase } from '../lib/supabase'
 import { useMatchResults } from '../hooks/useMatchResults'
 
@@ -57,7 +58,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
 
   return (
     <div style={{
-      background: card, border: `0.5px solid ${border}`, borderRadius: 12,
+      background: card, border: `0.5px solid ${border}`, borderRadius: RADIUS.lg,
       padding: '14px 16px', marginBottom: 10,
     }}>
       {/* Header */}

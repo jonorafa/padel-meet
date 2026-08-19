@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { COURT, TYPE } from '../components/CourtUI'
+import { RADIUS } from './tokens'
 import { usePrefs }        from '../context/PrefsContext'
 import { useAuth }         from '../context/AuthContext'
 import { usePlayerStats }  from '../hooks/usePlayerStats'
@@ -105,7 +106,7 @@ export default function StatsSection() {
   const cardStyle = {
     background: card,
     border:     `0.5px solid ${border}`,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding:    18,
   }
   const lbl = {

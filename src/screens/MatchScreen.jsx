@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, laz
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
+import { RADIUS } from '../components/tokens';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
@@ -2247,7 +2248,7 @@ function StatsSkeleton({ dark }) {
       {/* Grille 2×2 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
         {[...Array(4)].map((_, i) => (
-          <div key={i} style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 14, padding: '14px 16px' }}>
+          <div key={i} style={{ background: card, border: `0.5px solid ${border}`, borderRadius: RADIUS.lg, padding: '14px 16px' }}>
             <div className={cls} style={{ width: 40, height: 28, borderRadius: 6, marginBottom: 8 }} />
             <div className={cls} style={{ width: 70, height: 8, borderRadius: 4 }} />
           </div>
