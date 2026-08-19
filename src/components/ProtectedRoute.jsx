@@ -1,5 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { usePrefs } from '../context/PrefsContext'
+import { AppLoading } from './AppLoading'
 
 /**
  * Guard pour les routes protégées (/app/*).
@@ -9,9 +11,13 @@ import { useAuth } from '../context/AuthContext'
  */
 export default function ProtectedRoute() {
   const { user, loading, isOnboarding, isGuest } = useAuth()
+  const { dark } = usePrefs()
 
-  // Pendant le chargement initial, on n'affiche rien
-  if (loading) return null
+  // Pendant le chargement initial, on affiche un écran d'attente. Rendre
+  // `null` ici produisait une page entièrement vide, indiscernable d'une app
+  // cassée : c'est ce que voyait l'utilisateur quand le démarrage de la
+  // session se bloquait (lien ouvert depuis WhatsApp).
+  if (loading) return <AppLoading dark={dark} />
 
   // Les invités peuvent accéder à l'app en lecture seule.
   // On lit aussi sessionStorage directement pour contourner la latence React :

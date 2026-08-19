@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { track, identifyUser, resetUser } from '../analytics'
+import { Sentry } from '../sentry'
 
 const AuthContext = createContext({})
 
@@ -15,11 +16,37 @@ export function AuthProvider({ children }) {
   const [recovery, setRecovery] = useState(false)
 
   useEffect(() => {
+    // ── Filet anti-écran blanc ────────────────────────────────────────────
+    // `loading` commande ProtectedRoute, qui ne rend RIEN tant qu'il est vrai.
+    // Tant que rien ne garantissait qu'il retombe, n'importe quel blocage du
+    // démarrage laissait l'utilisateur sur une page vide, sans message ni
+    // recours — symptôme signalé en ouvrant le lien depuis WhatsApp, où seul
+    // un rechargement manuel débloquait la situation.
+    // getSession() peut ne jamais se résoudre dans un navigateur intégré : il
+    // lit le stockage, rafraîchit éventuellement le jeton par le réseau, et
+    // supabase-js sérialise ces opérations derrière un verrou. Aucun de ces
+    // trois maillons n'échoue de façon observable — ils restent en attente.
+    // Ce minuteur borne l'attente : au pire l'utilisateur repart sur l'écran
+    // de connexion, ce qui est toujours mieux qu'un écran vide définitif.
+    let vivant = true
+    const filet = setTimeout(() => {
+      if (!vivant) return
+      Sentry.captureMessage('Démarrage auth non résolu — filet déclenché', 'warning')
+      setLoading(false)
+    }, 8000)
+    const fini = () => { clearTimeout(filet) }
+
     // Session initiale (gère aussi le retour OAuth depuis Google)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
-      if (session?.user) loadProfile(session.user.id)
-      else setLoading(false)
+      if (session?.user) loadProfile(session.user.id).finally(fini)
+      else { setLoading(false); fini() }
+    }).catch((err) => {
+      // Sans ce catch, un rejet laissait `loading` à true pour toujours : le
+      // .then ne s'exécute pas, donc aucun setLoading(false) n'était atteint.
+      Sentry.captureException(err)
+      setLoading(false)
+      fini()
     })
 
     // Écoute tous les changements d'état auth
@@ -51,7 +78,7 @@ export function AuthProvider({ children }) {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => { vivant = false; clearTimeout(filet); subscription.unsubscribe() }
   }, [])
 
   // Nettoie le localStorage des données utilisateur quand on change d'utilisateur
@@ -85,13 +112,22 @@ export function AuthProvider({ children }) {
   }, [user?.id])
 
   const loadProfile = async (userId) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle()
-    setProfile(data)    // null si pas encore de profil
-    setLoading(false)
+    // try/finally : sans lui, une erreur réseau sur cette requête sautait le
+    // setLoading(false) ci-dessous et bloquait l'app sur un écran vide, la
+    // promesse rejetée n'étant par ailleurs rattrapée nulle part.
+    let data = null
+    try {
+      ({ data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle())
+      setProfile(data)    // null si pas encore de profil
+    } catch (err) {
+      Sentry.captureException(err)
+    } finally {
+      setLoading(false)
+    }
     // Met à jour last_seen (pas online — la présence Realtime s'en occupe)
     if (data) {
       await supabase.from('profiles')

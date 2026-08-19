@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import LanguageScreen from './screens/LanguageScreen'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { AppLoading } from './components/AppLoading'
 import { usePrefs }   from './context/PrefsContext'
 import './index.css'
 
@@ -31,7 +32,9 @@ function MobileShell() {
         overflow: 'hidden',
         background: dark ? '#121A15' : '#f5f0e8',
       }}>
-        <Suspense fallback={null}>
+        {/* fallback visible plutôt que `null` : un écran chargé à la demande
+            qui tarde produisait sinon une page vide sans explication. */}
+        <Suspense fallback={<AppLoading dark={dark} />}>
           <Outlet />
         </Suspense>
       </div>

@@ -347,3 +347,11 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
   0%, 100% { transform: translateY(0px) scale(1); }
   50%      { transform: translateY(-10px) scale(1.03); }
 }
+
+/* Révélation différée du bouton « Recharger » de l'écran d'attente
+   (src/components/AppLoading.jsx) : on ne le propose pas pendant une attente
+   normale, seulement si le démarrage traîne au point de paraître bloqué. */
+@keyframes apparaitTardif {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
