@@ -760,7 +760,14 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
   const inactiveColor = dark ? COURT.darkMuted : COURT.stone;
 
   const items = [
-    { id: 'learn', label: t?.learn || 'Learn', iconKey: 'learn' },
+    // id 'home' : l'onglet rend HomeScreen (cf. la table `screens` de MainApp),
+    // l'ancien id 'learn' désignait en fait LearnScreen, ouvert séparément par
+    // dessus via showLearn — d'où la confusion à la lecture.
+    // iconKey volontairement laissé sur 'learn' : NAV_ICONS.home existe (une
+    // maison) mais iconKey choisit le GLYPHE affiché, pas un nom interne —
+    // basculer changerait le livre en maison dans la barre de nav, sous un
+    // libellé « Conseil ». Renommage interne uniquement, rendu inchangé.
+    { id: 'home', label: t?.learn || 'Learn', iconKey: 'learn' },
     { id: 'search', label: t?.search || 'Find', iconKey: 'search' },
     { id: 'chat', label: t?.chat || 'Chat', iconKey: 'chat', badge: chatCount },
     { id: 'trophy', label: t?.matches || 'Matches', iconKey: 'trophy' },

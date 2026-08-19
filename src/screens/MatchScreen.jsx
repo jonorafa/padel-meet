@@ -4565,7 +4565,7 @@ export default function MainApp() {
 
   const screens = {
     search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
-    learn:   <HomeScreen    lang={lang} dark={darkMode} onOpenLearn={() => setShowLearn(true)} {...bellProps} />,
+    home:    <HomeScreen    lang={lang} dark={darkMode} onOpenLearn={() => setShowLearn(true)} {...bellProps} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onStartMatch={() => setShowSchedule(true)} {...bellProps} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} statsSignal={statsSignal} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,
     profile: <ProfileScreen t={t} showEditProfile={showEditProfile} setShowEditProfile={setShowEditProfile} onOpenDetail={setDetailPlayerId} onOpenStreak={() => setShowStreak(true)} onOpenStats={() => { setStatsSignal(s => s + 1); setTab('trophy'); }} {...bellProps} />,
