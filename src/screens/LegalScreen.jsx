@@ -83,9 +83,16 @@ export default function LegalScreen({ doc = 'privacy' }) {
         traitement, ainsi que du droit de <b>retirer ton consentement</b> à tout moment. Tu peux
         <b> supprimer ton compte directement dans l'application</b> (Profil → Réglages), ou nous écrire à {CONTACT_EMAIL}.
       </p>
-      <p style={p}>
-        Tu as également le droit d'introduire une <b>réclamation auprès d'une autorité de contrôle</b>,
-        par exemple la CNIL en France (<b>cnil.fr</b>) ou l'autorité de protection des données de ton pays.
+      {/* Deux précautions sur ce paragraphe :
+          — <bdi> isole le nom hébreu. Sans lui, la parenthèse fermante et la
+            virgule qui le suivent sont des caractères neutres que l'algorithme
+            bidi rattache au sens du texte hébreu et déplace du mauvais côté.
+          — overflowWrap sur ce paragraphe SEUL (les autres gardent le style
+            commun) : l'URL de l'autorité est un mot insécable de 52 caractères
+            qui débordait du cadre sur mobile, mesuré avant correction. */}
+      <p style={{ ...p, overflowWrap: 'anywhere' }}>
+        Tu as également le droit d'introduire une <b>réclamation auprès de l'autorité de contrôle compétente</b> — en Israël,
+        la Privacy Protection Authority (<b><bdi>הרשות להגנת הפרטיות</bdi></b>), gov.il/en/departments/the_privacy_protection_authority.
       </p>
 
       <h2 style={h2}>Stockage local</h2>
