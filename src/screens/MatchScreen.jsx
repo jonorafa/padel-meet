@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
 import { compterPersonnesNonLues } from '../lib/unread';
+import { applyFilters, elargirJusquaResultat } from '../lib/filters';
 import { RADIUS } from '../components/tokens';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
@@ -723,25 +724,16 @@ function CircBtn({ children, onClick, color, large, dark }) {
   );
 }
 
-function applyFilters(players, f) {
-  return players.filter(p => {
-    if (f.side !== 'any' && p.side !== f.side) return false;
-    if (f.hand !== 'any' && p.hand !== f.hand) return false;
-    if (f.style !== 'any' && p.style !== f.style) return false;
-    if (f.motivation !== 'any' && p.motivation !== f.motivation) return false;
-    if (f.region !== 'any' && p.country !== f.region) return false;
-    if (p.level !== null && p.level !== undefined && (p.level < f.levelMin || p.level > f.levelMax)) return false;
-    if (f.frequency > 0 && p.frequency < f.frequency) return false;
-    return true;
-  });
-}
-
-// `onEditFilters` : élargir les critères — l'action utile quand la pile est
-// vide, déjà câblée plus haut dans SwipeStack (bouton Préférences). `onReset`
-// (recharger avec les MÊMES critères) recyclait les profils déjà écartés dès
-// que `matched` contenait quoi que ce soit — reléguée en action secondaire,
-// clairement subordonnée (ThinButton "cream" plutôt que "green").
-function EmptyStack({ t, lang, onReset, onEditFilters, dark }) {
+// `onElargir` élargit AUTOMATIQUEMENT les critères et relance la recherche.
+// Il ouvrait auparavant le panneau Préférences, laissant l'utilisateur deviner
+// quel réglage desserrer : un bouton « élargir mes préférences » qui se
+// contente d'ouvrir un formulaire ne fait pas ce qu'il annonce. Il relâche
+// désormais juste ce qu'il faut pour que des profils reviennent (cf.
+// elargirJusquaResultat dans src/lib/filters.js).
+// `onReset` (recharger avec les MÊMES critères) recyclait les profils déjà
+// écartés dès que `matched` contenait quoi que ce soit — reléguée en action
+// secondaire, clairement subordonnée (ThinButton "cream" plutôt que "green").
+function EmptyStack({ t, lang, onReset, onElargir, dark }) {
   const ink   = dark ? COURT.darkText : COURT.ink;
   const stone = dark ? COURT.darkMuted : COURT.stone;
   const rtl   = lang === 'he';
@@ -750,14 +742,14 @@ function EmptyStack({ t, lang, onReset, onEditFilters, dark }) {
       <div style={{ animation: 'bounceY 2s ease-in-out infinite', marginBottom: 20 }}><PadelBall size={50} /></div>
       <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 20, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.closedClub}</div>
       <p style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, maxWidth: 240, margin: '12px 0 24px' }}>{t.closedHint}</p>
-      <ThinButton variant="green" onClick={onEditFilters}>{t.widenFilters}</ThinButton>
+      <ThinButton variant="green" onClick={onElargir}>{t.widenFilters}</ThinButton>
       <ThinButton variant="cream" onClick={onReset} style={{ marginTop: 10, padding: '10px 20px', fontSize: 14 }}>{t.refreshStack}</ThinButton>
     </div>
   );
 }
 
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
-function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
+function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   // ── Données réelles ──
   const { profile: me } = useAuth();
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
@@ -774,6 +766,17 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
       .sort((a, b) => b.sc - a.sc)
       .map(x => x.p);
   }, [allPlayers, filters, me]);
+
+  // Élargissement automatique : relâche juste ce qu'il faut pour que des
+  // profils reviennent, puis laisse la pile se recharger d'elle-même (l'effet
+  // de synchronisation plus bas suit `matched`, qui dépend de `filters`).
+  // Repli sur le panneau Préférences si plus rien ne peut être élargi — sinon
+  // le bouton ne ferait rien du tout, ce qui est pire que d'ouvrir un réglage.
+  const elargirAutomatiquement = useCallback(() => {
+    const { filtres, change } = elargirJusquaResultat(allPlayers || [], filters);
+    if (change && onFiltersChange) onFiltersChange(filtres);
+    else onEditFilters?.();
+  }, [allPlayers, filters, onFiltersChange, onEditFilters]);
 
   const [stack,       setStack]     = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -939,7 +942,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onMatch, dark, onOpenDeta
         {stack === null ? (
           <div style={{ position: 'absolute', inset: 0 }}><SkeletonCard /></div>
         ) : displayStack.length === 0 ? (
-          <EmptyStack t={t} lang={lang} onReset={() => { setStack(matched.length ? matched : allPlayers || []); setLastCard(null); setSearchQuery(''); }} onEditFilters={onEditFilters} dark={dark} />
+          <EmptyStack t={t} lang={lang} onReset={() => { setStack(matched.length ? matched : allPlayers || []); setLastCard(null); setSearchQuery(''); }} onElargir={elargirAutomatiquement} dark={dark} />
         ) : displayStack.slice(0, 3).map((p, i) => {
           const isTop = i === 0;
           if (!isTop) {
@@ -1047,7 +1050,7 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
   return (
     <>
       <SwipeStack
-        t={t} lang={lang} filters={filters} dark={dark}
+        t={t} lang={lang} filters={filters} onFiltersChange={setFilters} dark={dark}
         onEditFilters={() => setShowPrefs(true)}
         onMatch={setMatchPlayer}
         onOpenDetail={onOpenDetail}
