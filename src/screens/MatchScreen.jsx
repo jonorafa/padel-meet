@@ -541,15 +541,12 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
                 : (lang === 'en' ? 'match' : lang === 'he' ? 'משחק' : 'match')}
               {p.winrate != null && p.matches > 0 ? ` · ${p.winrate}% ${t.winsWord}` : ''}
             </div>
-            {p.isDemo && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', marginTop: 4,
-                fontFamily: 'Mulish', fontSize: TYPE.micro, color: COURT.gold,
-                border: `0.5px solid ${COURT.gold}50`, borderRadius: 20, padding: '1px 7px',
-              }}>
-                {lang === 'he' ? 'פרופיל לדוגמה' : lang === 'en' ? 'Demo profile' : 'Profil démo'}
-              </div>
-            )}
+            {/* Badge « Profil démo » retiré à la demande : ces profils servent
+                de comptes de démonstration pour montrer le format aux premiers
+                utilisateurs, et doivent donc se présenter comme des comptes
+                ordinaires. Le drapeau is_demo reste en base et continue
+                d'empêcher tout match (cf. useSwipes) : c'est un choix
+                DISTINCT de l'affichage, ne pas le retirer par symétrie. */}
           </div>
 
           {/* Compatibilité — seul score qui dépend de qui regarde */}
