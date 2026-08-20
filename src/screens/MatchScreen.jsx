@@ -2966,9 +2966,9 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
     // il ne restait que 11px sous la barre d'état et le contour supérieur des
     // ronds se retrouvait mangé — signalé depuis le navigateur de WhatsApp,
     // qui ajoute encore sa propre barre par-dessus. La valeur plancher passe
-    // aussi de 56 à 68 : les ronds descendent d'une douzaine de pixels sur
-    // TOUS les appareils, y compris ceux sans encoche où ils frôlaient le bord.
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(68px, calc(env(safe-area-inset-top, 0px) + 28px))', overflow: 'auto' }}>
+    // aussi de 56 à 80 : les ronds descendent sur TOUS les appareils, y compris
+    // ceux sans encoche où ils frôlaient le bord.
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(80px, calc(env(safe-area-inset-top, 0px) + 40px))', overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 24px 16px' }}>
         <div>
           {/* Salutation selon l'heure : Bonjour (4h–17h) / Bonsoir (17h–4h) */}
@@ -2979,14 +2979,32 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           {/* Série de jours */}
           <button onClick={onOpenStreak} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${border}`,
+            // Fond BLANC et non COURT.cream : le cream est exactement la
+            // couleur de la page (#F5F1E8), le rond n'avait donc aucun
+            // contraste de remplissage et n'existait que par sa bordure.
+            background: dark ? COURT.darkCard : '#fff',
+            // 1px et non 0.5 : sur un arc, une demi-ligne est étalée par
+            // l'anti-crénelage là où le tracé devient horizontal — c.-à-d.
+            // pile en haut et en bas du cercle — et une bordure déjà à 31%
+            // d'opacité y devenait invisible. D'où un cercle qui paraissait
+            // « coupé » en haut alors que rien ne le rognait : les côtés,
+            // eux, restaient nets car le tracé y est vertical.
+            border: `1px solid ${border}`,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><FlameSVG size={16} animated={false} /></button>
           <button onClick={() => setShowEditProfile(true)} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${border}`,
+            // Fond BLANC et non COURT.cream : le cream est exactement la
+            // couleur de la page (#F5F1E8), le rond n'avait donc aucun
+            // contraste de remplissage et n'existait que par sa bordure.
+            background: dark ? COURT.darkCard : '#fff',
+            // 1px et non 0.5 : sur un arc, une demi-ligne est étalée par
+            // l'anti-crénelage là où le tracé devient horizontal — c.-à-d.
+            // pile en haut et en bas du cercle — et une bordure déjà à 31%
+            // d'opacité y devenait invisible. D'où un cercle qui paraissait
+            // « coupé » en haut alors que rien ne le rognait : les côtés,
+            // eux, restaient nets car le tracé y est vertical.
+            border: `1px solid ${border}`,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: dark ? COURT.darkText : COURT.green,
           }}>
@@ -2997,8 +3015,17 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </button>
           <button onClick={() => setShowMenu(true)} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${border}`,
+            // Fond BLANC et non COURT.cream : le cream est exactement la
+            // couleur de la page (#F5F1E8), le rond n'avait donc aucun
+            // contraste de remplissage et n'existait que par sa bordure.
+            background: dark ? COURT.darkCard : '#fff',
+            // 1px et non 0.5 : sur un arc, une demi-ligne est étalée par
+            // l'anti-crénelage là où le tracé devient horizontal — c.-à-d.
+            // pile en haut et en bas du cercle — et une bordure déjà à 31%
+            // d'opacité y devenait invisible. D'où un cercle qui paraissait
+            // « coupé » en haut alors que rien ne le rognait : les côtés,
+            // eux, restaient nets car le tracé y est vertical.
+            border: `1px solid ${border}`,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: dark ? COURT.darkText : COURT.green,
           }}>
@@ -3010,8 +3037,17 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </button>
           <button onClick={onShowNotifs} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
-            background: dark ? COURT.darkCard : COURT.cream,
-            border: `0.5px solid ${border}`,
+            // Fond BLANC et non COURT.cream : le cream est exactement la
+            // couleur de la page (#F5F1E8), le rond n'avait donc aucun
+            // contraste de remplissage et n'existait que par sa bordure.
+            background: dark ? COURT.darkCard : '#fff',
+            // 1px et non 0.5 : sur un arc, une demi-ligne est étalée par
+            // l'anti-crénelage là où le tracé devient horizontal — c.-à-d.
+            // pile en haut et en bas du cercle — et une bordure déjà à 31%
+            // d'opacité y devenait invisible. D'où un cercle qui paraissait
+            // « coupé » en haut alors que rien ne le rognait : les côtés,
+            // eux, restaient nets car le tracé y est vertical.
+            border: `1px solid ${border}`,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: dark ? COURT.darkText : COURT.green,
           }}>
