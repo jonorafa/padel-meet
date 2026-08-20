@@ -23,6 +23,46 @@ export const SUB_REGIONS = {
   'Israël': ['Centre', 'Sud', 'Nord'],
 };
 
+// Ville → sous-région.
+//
+// `profiles.city` porte DEUX vocabulaires, hérités de deux époques :
+//   • les comptes réels y stockent déjà une sous-région ('Centre'), car
+//     SetupProfileScreen y écrit un choix issu de SUB_REGIONS ;
+//   • les profils de démonstration y stockent une vraie ville ('Tel Aviv',
+//     'Haïfa', 'Paris'…).
+// Sans cette table, comparer la préférence « je cherche quelqu'un du Centre »
+// au champ d'un profil démo ne correspondait jamais — la préférence semblait
+// prise en compte tout en étant systématiquement sans effet.
+const VILLE_VERS_SOUS_REGION = {
+  // Centre (Gush Dan et périphérie)
+  'Tel Aviv': 'Centre', 'Herzliya': 'Centre', 'Raanana': 'Centre',
+  'Netanya': 'Centre', 'Petah Tikva': 'Centre', 'Ramat Gan': 'Centre',
+  'Rishon LeZion': 'Centre', 'Holon': 'Centre', 'Bat Yam': 'Centre',
+  'Kfar Saba': 'Centre', 'Rehovot': 'Centre',
+  // Nord
+  'Haïfa': 'Nord', 'Haifa': 'Nord', 'Tibériade': 'Nord', 'Nazareth': 'Nord',
+  'Akko': 'Nord', 'Nahariya': 'Nord',
+  // Sud
+  'Ashdod': 'Sud', 'Ashkelon': 'Sud', 'Beer Sheva': 'Sud', 'Eilat': 'Sud',
+  // Jérusalem est rattachée au Centre faute de sous-région dédiée dans
+  // SUB_REGIONS : la rattacher ailleurs serait plus faux, l'ignorer
+  // exclurait ses joueurs de toute préférence géographique.
+  'Jérusalem': 'Centre', 'Jerusalem': 'Centre',
+};
+
+/**
+ * Sous-région d'un profil, quel que soit le vocabulaire de son `city`.
+ * Renvoie null pour un profil français ou une ville inconnue : l'appelant
+ * doit alors s'abstenir plutôt que de deviner.
+ */
+export function profileSubRegion(p) {
+  if (!p) return null;
+  const brut = String(p.city || p.region || '').trim();
+  if (!brut) return null;
+  if (SUB_REGIONS['Israël'].includes(brut)) return brut;   // déjà une sous-région
+  return VILLE_VERS_SOUS_REGION[brut] || null;
+}
+
 // Régions appartenant à la France (pays + villes/sous-régions historiques)
 const FRANCE_REGIONS = [
   'France', 'Paris', 'Marseille', 'Lyon', 'Nice', 'Bordeaux', 'Toulouse', 'Lille',

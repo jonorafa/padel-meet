@@ -1,4 +1,7 @@
 // Score 0–100 : proximité de niveau + main complémentaire + correspondance « partenaire idéal ».
+// Extension explicite : Vite résout sans, mais pas le runner de tests Node.
+import { profileSubRegion } from '../data/courtData.js';
+
 // me  = profil brut DB (dominant_hand, partner_prefs, level)
 // p   = joueur transformé (hand, side, style, motivation, level)
 export function compatScore(me, p) {
@@ -24,8 +27,17 @@ export function compatScore(me, p) {
   if (pref.motivation && pref.motivation !== 'any' && p.motivation === pref.motivation) s += 7;
   if (pref.levelMin != null && pref.levelMax != null && p.level != null
       && p.level >= pref.levelMin && p.level <= pref.levelMax) s += 12;
-  // Note : pref.region (sous-régions d'Israël) n'est pas encore utilisé ici —
-  // la taxonomie diffère du filtre de recherche (pays). À aligner avant câblage.
+  // Sous-région : la préférence est exprimée en sous-régions d'Israël
+  // (Centre/Sud/Nord) alors que le filtre de RECHERCHE, lui, raisonne en pays.
+  // Les deux ne se comparaient donc pas et la préférence restait lettre morte.
+  // `profileSubRegion` ramène les deux vocabulaires de `city` (sous-région
+  // pour les comptes réels, vraie ville pour les démos) sur la même échelle.
+  // Pondéré 10 : jouer près de chez soi pèse autant que le style, un peu moins
+  // que la fourchette de niveau.
+  if (pref.region && pref.region !== 'any') {
+    const sien = p.subRegion ?? profileSubRegion(p);
+    if (sien && sien === pref.region) s += 10;
+  }
 
   return Math.round(Math.max(40, Math.min(99, s)));
 }

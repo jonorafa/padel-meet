@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { COURT, TYPE, PadelBall, Ornament } from '../components/CourtUI'
 import { useAuth } from '../context/AuthContext'
+import { SUB_REGIONS } from '../data/courtData'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
 const L = {
@@ -269,12 +270,13 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
 
         <ChipRow label={t.region} value={prefs.region} stone={stone} dark={dark}
           onChange={(v) => setPrefs(p => ({ ...p, region: v }))}
+          // Options DÉRIVÉES de SUB_REGIONS, jamais réécrites à la main : cette
+          // liste proposait « Eilat », qui n'existe dans aucune sous-région de
+          // profil — la préférence était donc impossible à satisfaire, sans que
+          // rien ne le signale. Une seule source évite que les deux redérivent.
           options={[
-            { value: 'any',    label: t.any },
-            { value: 'Centre', label: 'Centre' },
-            { value: 'Nord',   label: 'Nord' },
-            { value: 'Sud',    label: 'Sud' },
-            { value: 'Eilat',  label: 'Eilat' },
+            { value: 'any', label: t.any },
+            ...SUB_REGIONS['Israël'].map(r => ({ value: r, label: r })),
           ]}
         />
 

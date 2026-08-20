@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePresence } from '../context/PresenceContext'
 import { useBlocks } from './useBlocks'
 import { initialsAvatar } from '../components/CourtUI'
-import { regionToCountry } from '../data/courtData'
+import { regionToCountry, profileSubRegion } from '../data/courtData'
 
 function transformDBProfile(p) {
   const matchesPlayed = p.matches_played || 0
@@ -19,6 +19,9 @@ function transformDBProfile(p) {
     videoPoster: p.video_poster_url ?? null,
     city: p.city || p.region || 'Israel',
     country: regionToCountry(p),  // 'France' ou 'Israël' (tolère données héritées)
+    // Sous-région normalisée (Centre/Sud/Nord), quel que soit le vocabulaire
+    // stocké dans `city` — seule façon de comparer au « partenaire idéal ».
+    subRegion: profileSubRegion(p),
     level: p.level ?? null,     // null = quiz non effectué
     confidenceRate: p.confidence_rate ?? 50,
     hand: p.dominant_hand || 'right',

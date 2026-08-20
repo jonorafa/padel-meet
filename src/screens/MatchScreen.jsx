@@ -18,7 +18,7 @@ import { PhotoLightbox } from '../components/PhotoLightbox';
 import { VideoLightbox } from '../components/VideoLightbox';
 import { compressImage } from '../lib/image';
 import { track } from '../analytics';
-import { I18N, regionToCountry, getGreeting } from '../data/courtData';
+import { SUB_REGIONS, I18N, regionToCountry, getGreeting } from '../data/courtData';
 import { usePlayerStats } from '../hooks/usePlayerStats';
 import { useAuth }          from '../context/AuthContext';
 import { usePrefs }         from '../context/PrefsContext';
@@ -4228,12 +4228,14 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
           dark={dark} rtl={rtl}
           label={t.region || 'Région'} value={prefs.region}
           onChange={(v) => setPrefs(p => ({ ...p, region: v }))}
+          // Dérivé de SUB_REGIONS, comme à l'inscription (PartnerPrefsScreen).
+          // Ce panneau et celui de l'onboarding sont deux implémentations du
+          // MÊME réglage : c'est ainsi qu'ils avaient divergé, tous deux
+          // proposant « Eilat », qui n'est une sous-région d'aucun profil et
+          // rendait donc la préférence impossible à satisfaire, en silence.
           options={[
             { value: 'any', label: t.anySide || 'Indifférent' },
-            { value: 'Centre', label: 'Centre' },
-            { value: 'Nord',   label: 'Nord' },
-            { value: 'Sud',    label: 'Sud' },
-            { value: 'Eilat',  label: 'Eilat' },
+            ...SUB_REGIONS['Israël'].map(r => ({ value: r, label: r })),
           ]}
         />
 
