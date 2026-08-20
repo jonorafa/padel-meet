@@ -68,3 +68,82 @@ export function elargirJusquaResultat(players, filtres) {
   }
   return { filtres: courant, change: relaches.length > 0, relaches, epuise: false };
 }
+
+// ─── Persistance ────────────────────────────────────────────────────────────
+// Les filtres n'étaient pas sauvegardés : ils repartaient aux valeurs par
+// défaut à chaque ouverture de l'app, et tout réglage était perdu.
+
+const VALEURS = {
+  side:       ['any', 'forehand', 'backhand'],
+  hand:       ['any', 'left', 'right'],
+  style:      ['any', 'aggressive', 'defensive', 'all-court'],
+  motivation: ['any', 'fun', 'improve', 'compete'],
+};
+
+const nombreDans = (v, min, max, defaut) => {
+  const n = typeof v === 'number' ? v : parseFloat(v);
+  return Number.isFinite(n) && n >= min && n <= max ? n : defaut;
+};
+
+/**
+ * Valide des filtres venus du stockage, champ par champ, en retombant sur le
+ * défaut pour tout ce qui ne va pas.
+ *
+ * Ce n'est pas de la paranoïa : une valeur périmée ou corrompue, ici, ne
+ * provoque pas d'erreur visible — elle vide la pile de swipe SANS RIEN DIRE.
+ * L'utilisateur croirait qu'il n'y a plus personne à afficher. Le format
+ * stocké peut aussi changer d'une version à l'autre, et un ancien appareil
+ * gardera longtemps l'ancien.
+ */
+export function normaliserFiltres(brut, defauts) {
+  if (!brut || typeof brut !== 'object') return { ...defauts };
+  const out = { ...defauts };
+
+  for (const [cle, permises] of Object.entries(VALEURS)) {
+    if (permises.includes(brut[cle])) out[cle] = brut[cle];
+  }
+  // La région n'a pas de liste fermée (pays, et la taxonomie a déjà bougé) :
+  // on accepte toute chaîne non vide, faute de quoi on garde le défaut.
+  if (typeof brut.region === 'string' && brut.region.trim()) out.region = brut.region;
+
+  out.frequency = nombreDans(brut.frequency, 0, 5, defauts.frequency);
+  let min = nombreDans(brut.levelMin, 1, 7, defauts.levelMin);
+  let max = nombreDans(brut.levelMax, 1, 7, defauts.levelMax);
+  // Bornes inversées : on les remet dans l'ordre plutôt que de tout jeter, ce
+  // qui donnerait une fourchette vide et donc une pile vide.
+  if (min > max) [min, max] = [max, min];
+  out.levelMin = min;
+  out.levelMax = max;
+  return out;
+}
+
+const CLE = 'padel_filters';
+const VERSION = 1;
+
+/**
+ * Relit les filtres du stockage. Ignore ceux d'un AUTRE utilisateur : sur un
+ * appareil partagé, hériter des critères du compte précédent donnerait une
+ * pile incompréhensible (cf. le même souci traité par cleanupOldUserData pour
+ * le niveau et l'historique).
+ */
+export function chargerFiltres(defauts, userId = null, storage = globalThis.localStorage) {
+  try {
+    const brut = JSON.parse(storage.getItem(CLE));
+    if (!brut || brut.v !== VERSION) return { ...defauts };
+    if ((brut.userId ?? null) !== (userId ?? null)) return { ...defauts };
+    return normaliserFiltres(brut.filtres, defauts);
+  } catch {
+    // JSON illisible, stockage indisponible (mode privé) : on repart des
+    // défauts. Silencieux à dessein — perdre ses filtres n'est pas un incident.
+    return { ...defauts };
+  }
+}
+
+export function sauverFiltres(filtres, userId = null, storage = globalThis.localStorage) {
+  try {
+    storage.setItem(CLE, JSON.stringify({ v: VERSION, userId: userId ?? null, filtres }));
+    return true;
+  } catch {
+    return false;
+  }
+}

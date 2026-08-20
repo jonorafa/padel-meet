@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { applyFilters, assouplirDunCran, elargirJusquaResultat } from './filters.js'
+import { applyFilters, assouplirDunCran, elargirJusquaResultat,
+         normaliserFiltres, chargerFiltres, sauverFiltres } from './filters.js'
 
 const joueur = (o = {}) => ({
   side: 'forehand', hand: 'right', style: 'all-court', motivation: 'fun',
@@ -82,4 +83,78 @@ test('aucun joueur du tout : on ne boucle pas, on signale l\'epuisement', () => 
   assert.equal(r.epuise, true)
   assert.deepEqual(r.filtres, { ...strict, side: 'any', hand: 'any', style: 'any',
     motivation: 'any', region: 'any', levelMin: 1, levelMax: 7, frequency: 0 })
+})
+
+// ─── Persistance ────────────────────────────────────────────────────────────
+
+/** Faux localStorage, y compris le cas « stockage indisponible » (mode privé). */
+function fauxStockage(initial = null, { casse = false } = {}) {
+  let valeur = initial
+  return {
+    getItem: () => { if (casse) throw new Error('stockage indisponible'); return valeur },
+    setItem: (_, v) => { if (casse) throw new Error('stockage indisponible'); valeur = v },
+    lire: () => valeur,
+  }
+}
+
+test('normaliser : une valeur inconnue retombe sur le defaut, sans tout jeter', () => {
+  const r = normaliserFiltres({ side: 'diagonale', hand: 'left', style: 'aggressive' }, large)
+  assert.equal(r.side, 'any', 'valeur inventee -> defaut')
+  assert.equal(r.hand, 'left', 'les champs valides sont conserves')
+  assert.equal(r.style, 'aggressive')
+})
+
+test('normaliser : bornes de niveau inversees remises dans l\'ordre', () => {
+  // Les jeter donnerait une fourchette vide, donc une pile vide sans explication.
+  const r = normaliserFiltres({ levelMin: 6, levelMax: 2 }, large)
+  assert.deepEqual([r.levelMin, r.levelMax], [2, 6])
+})
+
+test('normaliser : valeurs hors bornes ou non numeriques ignorees', () => {
+  const r = normaliserFiltres({ levelMin: 0, levelMax: 99, frequency: 'beaucoup' }, large)
+  assert.deepEqual([r.levelMin, r.levelMax, r.frequency], [1, 7, 0])
+})
+
+test('normaliser : entree absente ou non-objet -> defauts', () => {
+  for (const brut of [null, undefined, 'x', 42, []]) {
+    assert.deepEqual(normaliserFiltres(brut, large), large)
+  }
+})
+
+test('un aller-retour stockage restitue les filtres', () => {
+  const st = fauxStockage()
+  const f = { ...large, hand: 'left', levelMin: 3, levelMax: 5, region: 'Israël' }
+  assert.equal(sauverFiltres(f, 'user-1', st), true)
+  assert.deepEqual(chargerFiltres(large, 'user-1', st), f)
+})
+
+test('les filtres d\'un AUTRE utilisateur ne sont pas herites', () => {
+  const st = fauxStockage()
+  sauverFiltres({ ...large, hand: 'left' }, 'user-1', st)
+  assert.deepEqual(chargerFiltres(large, 'user-2', st), large,
+    'sur un appareil partage, on repart des defauts')
+  assert.deepEqual(chargerFiltres(large, null, st), large, 'idem pour un invite')
+})
+
+test('stockage illisible ou indisponible : defauts, jamais d\'exception', () => {
+  assert.deepEqual(chargerFiltres(large, 'u', fauxStockage('{pas du json')), large)
+  assert.deepEqual(chargerFiltres(large, 'u', fauxStockage(null, { casse: true })), large)
+  assert.equal(sauverFiltres(large, 'u', fauxStockage(null, { casse: true })), false,
+    'echec signale sans faire planter l\'app')
+})
+
+test('un format d\'une version anterieure est ignore', () => {
+  const st = fauxStockage(JSON.stringify({ v: 0, userId: 'u', filtres: { hand: 'left' } }))
+  assert.deepEqual(chargerFiltres(large, 'u', st), large)
+})
+
+test('des filtres stockes corrompus ne peuvent pas vider la pile en silence', () => {
+  // Le scenario qui motive tout ce garde-fou.
+  const st = fauxStockage(JSON.stringify({
+    v: 1, userId: 'u', filtres: { side: 'nawak', levelMin: 9, levelMax: 9, frequency: 99 },
+  }))
+  const f = chargerFiltres(large, 'u', st)
+  const joueurs = [joueur()]
+  assert.equal(applyFilters(joueurs, f).length, 1,
+    'apres normalisation, un joueur normal doit toujours ressortir')
 })

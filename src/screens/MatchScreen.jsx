@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { computeBadges } from '../lib/badges';
 import { compterPersonnesNonLues } from '../lib/unread';
-import { applyFilters, elargirJusquaResultat } from '../lib/filters';
+import { applyFilters, elargirJusquaResultat, chargerFiltres, sauverFiltres } from '../lib/filters';
 import { RADIUS } from '../components/tokens';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
@@ -1031,10 +1031,21 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
   const userRegion = profile ? regionToCountry(profile) : 'any';
   const [showPrefs, setShowPrefs]   = useState(false);
   const [matchPlayer, setMatchPlayer] = useState(null);
-  const [filters, setFilters] = useState({
+  // Filtres RELUS du stockage : ils repartaient jusqu'ici aux valeurs par
+  // défaut à chaque ouverture de l'app, et tout réglage était perdu.
+  // `chargerFiltres` valide ce qu'il relit et ignore les filtres d'un autre
+  // compte (appareil partagé) — cf. src/lib/filters.js.
+  const defautsFiltres = useMemo(() => ({
     side: 'any', style: 'any', motivation: 'any', hand: 'any',
     region: userRegion, levelMin: 1, levelMax: 7, frequency: 0,
-  });
+  }), [userRegion]);
+  const [filters, setFilters] = useState(() => chargerFiltres(defautsFiltres, profile?.id ?? null));
+
+  // Sauvegarde à chaque changement. L'échec (mode privé, quota) est silencieux
+  // et non bloquant : perdre ses filtres n'est pas un incident, planter si.
+  useEffect(() => {
+    sauverFiltres(filters, profile?.id ?? null);
+  }, [filters, profile?.id]);
 
   if (matchPlayer) {
     return (
