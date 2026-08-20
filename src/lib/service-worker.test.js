@@ -29,6 +29,13 @@ function fauxCaches(initial = {}) {
         async put(req, res) { c.set(typeof req === 'string' ? req : req.url, res) },
         async addAll(reqs) { for (const r of reqs) c.set(typeof r === 'string' ? r : r.url, 'shell') },
         async keys() { return [...c.keys()] },
+        // Lecture DANS ce cache précis, à ne pas confondre avec caches.match
+        // ci-dessous qui balaie tous les caches — c'est cette confusion qui a
+        // causé le bug de repli sur un ancien build.
+        async match(req) {
+          const url = typeof req === 'string' ? req : req.url
+          return c.get(url)
+        },
       }
     },
     async keys() { return [...magasin.keys()] },
@@ -103,6 +110,37 @@ test('activate purge les shells des builds precedents mais epargne le cache d\'a
   assert.ok(restants.includes(SHELL), 'le shell du build courant doit survivre')
   assert.ok(!restants.includes('padel-meet-shell-ancien1'), 'les shells precedents doivent etre purges')
   assert.ok(!restants.includes('padel-meet-shell-ancien2'), 'les shells precedents doivent etre purges')
+  // Cette assertion manquait : le décor contenait bien 'padel-meet-v2' mais
+  // rien ne vérifiait sa suppression. En production il a survécu avec 175
+  // entrées, dont un index.html d'un build révolu.
+  assert.ok(!restants.includes('padel-meet-v2'),
+    'le cache historique, sans le prefixe shell, doit etre purge lui aussi')
+})
+
+test('le repli hors-ligne sert le shell COURANT, jamais celui d\'un cache perime', async () => {
+  // Reproduit la panne constatee : un ancien cache detient un index.html
+  // pointant vers les chunks d'un build revolu. caches.match() balayant tous
+  // les caches, le repli ramenait cet ancien shell et relançait une version
+  // perimee de l'app — d'ou l'ecran blanc tant qu'on ne rechargeait pas.
+  const caches = fauxCaches({
+    'padel-meet-v2': { '/index.html': 'ANCIEN_SHELL' },
+    [SHELL]:         { '/index.html': 'SHELL_COURANT' },
+  })
+  const { handlers } = chargerSW({
+    caches,
+    fetchImpl: async () => { throw new Error('reseau indisponible') },
+  })
+  let repondu
+  // Objet simple et non `new Request(..., { mode: 'navigate' })` : le
+  // constructeur de Node refuse ce mode, réservé aux navigations réelles du
+  // navigateur. Le SW ne lit que url/method/mode.
+  handlers.fetch({
+    request: { url: 'https://exemple.test/app', method: 'GET', mode: 'navigate' },
+    respondWith: (p) => { repondu = p },
+    waitUntil: () => {},
+  })
+  assert.equal(await repondu, 'SHELL_COURANT',
+    'le repli doit lire le cache du build courant, pas le premier cache venu')
 })
 
 test('un asset hache va dans le cache commun, une icone dans le cache du build', async () => {

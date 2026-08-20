@@ -63,9 +63,12 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((names) =>
       Promise.all(
         names
-          // Le cache d'assets est délibérément épargné (noms hachés, immuables).
-          // On ne supprime que les shells des builds précédents.
-          .filter((n) => n.startsWith('padel-meet-shell-') && n !== SHELL_CACHE)
+          // Tout cache de l'app SAUF le shell courant et le cache d'assets.
+          // Filtrer sur le préfixe 'padel-meet-shell-' ne suffisait pas : le
+          // cache historique 'padel-meet-v2' ne le porte pas et survivait donc
+          // indéfiniment — 175 entrées dont un index.html d'un build révolu,
+          // constaté en production.
+          .filter((n) => n.startsWith('padel-meet-') && n !== SHELL_CACHE && n !== ASSETS_CACHE)
           .map((n) => caches.delete(n))
       )
     ).then(() => self.clients.claim())
@@ -95,8 +98,13 @@ function fetchAvecDelai(request, delaiMs = 8000) {
 // absente du cache, ce que le navigateur traite comme une erreur réseau — soit
 // une page d'erreur au lieu du repli attendu.
 function replierSurLeShell() {
-  return caches.match('/index.html').then((cache) =>
-    cache || new Response(
+  // caches.open(SHELL_CACHE).match et NON caches.match : ce dernier interroge
+  // TOUS les caches de l'origine et renvoie la première correspondance. Il
+  // ramenait donc l'index.html du cache historique, pointant vers des chunks
+  // d'un ancien build — eux aussi encore en cache. Le repli relançait ainsi
+  // une version périmée de l'app entière au lieu de la version courante.
+  return caches.open(SHELL_CACHE).then((cache) => cache.match('/index.html')).then((reponse) =>
+    reponse || new Response(
       '<!doctype html><meta charset="utf-8"><title>Hors ligne</title>' +
       '<body style="font-family:sans-serif;text-align:center;padding:48px 24px">' +
       '<h1 style="color:#1F5C3F">Padel Meet</h1><p>Connexion indisponible. ' +
@@ -104,6 +112,14 @@ function replierSurLeShell() {
       { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     )
   );
+}
+
+// Cache de destination d'une URL : /assets/* porte un hachage de contenu et va
+// dans le cache commun ; le reste (icônes, manifest) suit la vie du build.
+// Utilisé pour l'écriture ET pour la lecture, afin que les deux ne puissent
+// jamais diverger.
+function cachePour(url) {
+  return caches.open(url.pathname.startsWith('/assets/') ? ASSETS_CACHE : SHELL_CACHE);
 }
 
 self.addEventListener('fetch', (event) => {
@@ -142,16 +158,15 @@ self.addEventListener('fetch', (event) => {
           const copy = response.clone();
           // /assets/* porte un hachage de contenu → cache commun, jamais purgé.
           // Le reste (icônes, manifest) suit la vie du build.
-          const cible = url.pathname.startsWith('/assets/') ? ASSETS_CACHE : SHELL_CACHE;
-          caches.open(cible).then((cache) => cache.put(request, copy));
+          cachePour(url).then((cache) => cache.put(request, copy));
           return response;
         }
         // Réponse reçue mais inexploitable (404 typiquement, quand un onglet
         // ouvert avant un déploiement réclame un chunk que le serveur ne sert
         // plus) : le cache d'assets détient encore ce fichier, on s'en sert
         // plutôt que de laisser remonter une erreur de chargement de module.
-        return caches.match(request).then((cache) => cache || response);
+        return cachePour(url).then((cache) => cache.match(request)).then((c) => c || response);
       })
-      .catch(() => caches.match(request))
+      .catch(() => cachePour(url).then((cache) => cache.match(request)))
   );
 });
