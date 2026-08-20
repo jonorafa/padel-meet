@@ -40,7 +40,18 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
           // Plafond en vw calibré sur la largeur mesurée de Pinyon Script
           // (4,055 × la taille de police) pour tenir sur une ligne jusqu'aux
           // écrans de 320 px, tout en gardant 92 px au-delà de 484 px.
+          //
+          // Ce calibrage portait sur la CHASSE, or en cursive l'encre déborde
+          // de sa chasse : mesuré au getBBox() d'un SVG, le trait de sortie du
+          // « t » final de « Meet » dépasse de 21,1 % de la taille de police
+          // vers la droite. Le titre occupant déjà toute la largeur
+          // disponible, ce trait tombait hors cadre et le « t » apparaissait
+          // tranché net (signalé sur mobile, reproduit ici).
+          // Les marges négatives rendent au titre les 32 px de padding
+          // latéral : la place gagnée accueille le débordement d'encre sans
+          // rapetisser le mot, le texte restant centré sur sa chasse.
           fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 'min(92px, 19vw)', lineHeight: 0.9,
+          marginLeft: -24, marginRight: -24,
           color: COURT.green, animation: 'inkBleed 1.6s ease-out', whiteSpace: 'nowrap',
         }}>
           Padel Meet
