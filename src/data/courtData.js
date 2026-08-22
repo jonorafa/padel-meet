@@ -672,9 +672,9 @@ export const DAILY_TIPS = [
  *   5.5 – 7.0  Expert / Pro
  *
  * Barème des réponses techniques (4 niveaux) :
- *   1.0 = Débutant   |   3.0 = Intermédiaire   |   5.5 = Avancé   |   7.0 = Expert compétition
+ *   1.0 = Débutant   |   2.0 = Intermédiaire   |   3.5 = Avancé   |   7.0 = Expert compétition
  *
- * 10 questions tech | valeurs {1, 3, 5.5, 7} | moyenne pure
+ * 10 questions tech | valeurs {1, 2, 3.5, 7} | moyenne pure
  * Q1 Bandeja · Q2 Sorties de vitre · Q3 Régularité · Q4 Vibora
  * Q5 Puissance · Q6 Lecture tactique · Q7 Placement · Q8 Mental
  * Q9 Précision balle · Q10 Smash par 3 / par 4
@@ -726,7 +726,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, je découvre encore le geste',           en: 'Rarely, still learning the move',            he: 'לעיתים רחוקות, עדיין לומד את התנועה',   value: 1   },
       { fr: 'Occasionnellement, une fois sur trois',           en: 'Occasionally, about one in three',           he: 'מדי פעם, בערך שליש מהפעמים',            value: 2   },
-      { fr: 'Souvent, coup de routine fiable',                 en: 'Often, a reliable routine shot',              he: 'לעיתים קרובות, מכה שאני שולט בה בביטחון', value: 3.5 },
+      { fr: 'Ça passe souvent, mais pas à tous les coups',                 en: 'It works often, but not every time',              he: 'לעיתים קרובות, מכה שאני שולט בה בביטחון', value: 3.5 },
       { fr: 'Je la maîtrise parfaitement, direction et effet au choix', en: 'Fully mastered, direction and spin at will', he: 'שליטה מלאה, כיוון וספין כרצוני', value: 7 },
     ]},
 
@@ -736,7 +736,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Je ne la connais pas encore',                     en: "I don't know it yet",                        he: 'עוד לא מכיר אותה',                      value: 1   },
       { fr: 'En apprentissage, timing incertain',              en: 'Still learning, timing is inconsistent',     he: 'עדיין לומד, התזמון לא עקבי',            value: 2   },
-      { fr: 'Je la place avec intention',                      en: 'I place it with intent',                     he: 'אני שם אותה איפה שאני רוצה',            value: 3.5 },
+      { fr: 'Elle passe, mais je ne choisis pas où',                      en: "It lands, but I don't choose where",                     he: 'אני שם אותה איפה שאני רוצה',            value: 3.5 },
       { fr: 'Maîtrise totale, croisée ou à la ligne',          en: 'Total mastery, cross or line',               he: 'שליטה מלאה, אלכסונית או קווית',         value: 7   },
     ]},
 
@@ -747,7 +747,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, le rebond me surprend',                 en: 'Rarely, the bounce catches me off guard',    he: 'לעיתים רחוקות, הקפיצה מפתיעה אותי',     value: 1   },
       { fr: 'Je récupère la balle, mais loin du filet',        en: 'I get the ball back, but far from the net',  he: 'אני מחזיר את הכדור, אבל רחוק מהרשת',    value: 2   },
-      { fr: "Je renvoie assez fort pour empêcher l'attaque",   en: 'I return hard enough to stop their attack',  he: 'אני מחזיר חזק מספיק כדי למנוע התקפה',   value: 3.5 },
+      { fr: "Je la remets, sans pouvoir en faire grand-chose",   en: 'I get it back, without doing much with it',  he: 'אני מחזיר חזק מספיק כדי למנוע התקפה',   value: 3.5 },
       { fr: 'Je place le renvoi pour créer une ouverture',     en: 'I place the return to create an opening',    he: 'אני ממקם את ההחזרה כדי ליצור פתח',      value: 7   },
     ]},
 
@@ -757,7 +757,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Non, je perds le point',                          en: 'No, I lose the point',                       he: 'לא, אני מפסיד את הנקודה',               value: 1   },
       { fr: 'Je la renvoie, mais trop haute',                  en: 'I get it back, but too high',                he: 'אני מחזיר אותו, אבל גבוה מדי',          value: 2   },
-      { fr: 'Je la renvoie basse, difficile à attaquer',       en: 'I return it low, hard to attack',            he: 'אני מחזיר אותו נמוך, קשה לתקוף',        value: 3.5 },
+      { fr: 'Je la remets en jeu, mais je subis le point',       en: "I get it back in play, but I'm stuck defending the point",            he: 'אני מחזיר אותו נמוך, קשה לתקוף',        value: 3.5 },
       { fr: 'Je transforme la double vitre en point gagnant',  en: 'I turn the corner double-glass into a winner', he: 'אני הופך את כפל הזכוכית לנקודה מנצחת', value: 7   },
     ]},
 
@@ -767,7 +767,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Je le rate souvent, trop puissant',               en: 'I often miss it, too powerful',              he: 'אני לרוב מפספס, חזק מדי',               value: 1   },
       { fr: 'Je le renvoie, mais la balle reste haute',        en: 'I return it, but the ball stays high',       he: 'אני מחזיר אותו, אבל הכדור נשאר גבוה',   value: 2   },
-      { fr: "Je le renvoie bas, l'adversaire doit relancer",   en: 'I return it low, forcing them to lift',      he: 'אני מחזיר נמוך, היריב חייב להרים',      value: 3.5 },
+      { fr: "Je la remets basse, mais je n'enchaîne pas derrière",   en: "I return it low, but I can't follow up after",      he: 'אני מחזיר נמוך, היריב חייב להרים',      value: 3.5 },
       { fr: 'Je contre-attaque directement dessus',            en: 'I counter-attack straight off it',           he: 'אני יוצא להתקפת נגד ישירות',            value: 7   },
     ]},
 
@@ -777,7 +777,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, la balle reste courte',                 en: 'Rarely, the ball stays short',               he: 'לעיתים רחוקות, הכדור נשאר קצר',         value: 1   },
       { fr: 'Parfois profond, mais sans direction précise',    en: 'Sometimes deep, but without precise direction', he: 'לפעמים עמוק, אבל בלי כיוון מדויק',   value: 2   },
-      { fr: "Profond et placé, ça complique son jeu",          en: 'Deep and placed, it complicates their game', he: 'עמוק וממוקם, זה מסבך את המשחק שלו',     value: 3.5 },
+      { fr: "Souvent profond, mais je ne choisis pas où ça tombe",          en: "Often deep, but I don't choose where it lands", he: 'עמוק וממוקם, זה מסבך את המשחק שלו',     value: 3.5 },
       { fr: 'Je choisis systématiquement où ça retombe',       en: 'I consistently choose where it lands',       he: 'אני בוחר באופן עקבי איפה הוא נוחת',     value: 7   },
     ]},
 
@@ -788,7 +788,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מסמש',                      value: 1   },
       { fr: 'Ça sort parfois par le côté, sans le vouloir',    en: 'It sometimes exits the side, unintentionally', he: 'לפעמים יוצא מהצד, בלי כוונה',          value: 2   },
-      { fr: 'Je vise le par 3 et je le réussis souvent',       en: 'I aim for the par 3 and often land it',      he: 'אני מכוון לפר 3 ולרוב מצליח',           value: 3.5 },
+      { fr: 'Je tente le par 3, ça passe une fois sur deux',       en: 'I go for the par 3, it lands about half the time',      he: 'אני מכוון לפר 3 ולרוב מצליח',           value: 3.5 },
       { fr: 'Je choisis le par 3 selon la situation',          en: 'I choose the par 3 based on the situation',  he: 'אני בוחר פר 3 לפי המצב',                value: 7   },
     ]},
 
@@ -798,7 +798,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Je ne smashe pas encore',                         en: "I can't smash yet",                          he: 'אני עדיין לא מסמש',                      value: 1   },
       { fr: 'Ça sort parfois par le fond, sans le vouloir',    en: 'It sometimes exits the back, unintentionally', he: 'לפעמים יוצא מאחור, בלי כוונה',         value: 2   },
-      { fr: 'Je vise le par 4 et je le réussis souvent',       en: 'I aim for the par 4 and often land it',      he: 'אני מכוון לפר 4 ולרוב מצליח',           value: 3.5 },
+      { fr: 'Je tente le par 4, ça passe une fois sur deux',       en: 'I go for the par 4, it lands about half the time',      he: 'אני מכוון לפר 4 ולרוב מצליח',           value: 3.5 },
       { fr: 'Je choisis le par 4 selon la situation',          en: 'I choose the par 4 based on the situation',  he: 'אני בוחר פר 4 לפי המצב',                value: 7   },
     ]},
 
@@ -809,7 +809,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, je réagis en retard',                   en: 'Rarely, I react too late',                   he: 'לעיתים רחוקות, אני מגיב מאוחר',         value: 1   },
       { fr: 'Je devine parfois la zone, pas le coup',          en: 'I sometimes guess the zone, not the shot',   he: 'לפעמים מנחש את האזור, לא את המכה',      value: 2   },
-      { fr: "J'anticipe le coup et j'ajuste ma position",      en: 'I read the shot and adjust my position',     he: 'אני צופה את המכה ומתאים את מיקומי',     value: 3.5 },
+      { fr: "Je vois venir le coup, mais je bouge trop tard",      en: 'I see the shot coming, but I react too late',     he: 'אני צופה את המכה ומתאים את מיקומי',     value: 3.5 },
       { fr: "J'anticipe l'adversaire ET je couvre mon partenaire", en: 'I read the opponent AND cover my partner', he: 'אני צופה את היריב וגם מכסה את השותף', value: 7   },
     ]},
 
@@ -819,7 +819,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, direction aléatoire',                   en: 'Rarely, random direction',                    he: 'לעיתים רחוקות, כיוון אקראי',            value: 1   },
       { fr: 'Je vise une zone, pas un point précis',           en: 'I aim for a zone, not a precise spot',       he: 'אני מכוון לאזור, לא לנקודה מדויקת',     value: 2   },
-      { fr: "Je place la balle loin de l'adversaire",          en: 'I place the ball away from the opponent',    he: 'אני ממקם את הכדור רחוק מהיריב',         value: 3.5 },
+      { fr: "Je vise, mais ça ne part pas toujours où je veux",          en: "I aim, but it doesn't always go where I want",    he: 'אני ממקם את הכדור רחוק מהיריב',         value: 3.5 },
       { fr: 'Je vise directement ses pieds ou un point faible', en: 'I aim straight at their feet or a weak spot', he: 'אני מכוון ישר לרגליו או לנקודה חלשה',  value: 7   },
     ]},
 
@@ -829,7 +829,7 @@ export const QUIZ_QUESTIONS = [
     options: [
       { fr: 'Rarement, je reste bloqué au fond',               en: 'Rarely, I stay stuck at the back',           he: 'לעיתים רחוקות, נשאר תקוע מאחור',        value: 1   },
       { fr: "Parfois, si l'occasion est facile",               en: "Sometimes, when it's an easy chance",       he: 'לפעמים, כשההזדמנות קלה',                value: 2   },
-      { fr: 'Régulièrement, je remonte activement',            en: 'Regularly, I actively move up',              he: 'באופן קבוע, אני מתקדם באופן פעיל',      value: 3.5 },
+      { fr: 'Je monte, mais pas toujours au bon moment',            en: 'I move up, but not always at the right time',              he: 'באופן קבוע, אני מתקדם באופן פעיל',      value: 3.5 },
       { fr: 'Je remonte même après une défense difficile',     en: 'I move up even after a tough defensive shot', he: 'אני מתקדם גם אחרי הגנה קשה',            value: 7   },
     ]},
 
