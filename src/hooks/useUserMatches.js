@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { initialsAvatar } from '../components/CourtUI'
+import { Sentry } from '../sentry'
 
 /**
  * Retourne la liste des matches (likes mutuels) de l'utilisateur,
@@ -34,7 +35,16 @@ export function useUserMatches() {
         .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
 
-      if (error || !matchRows || !isMounted) return
+      // `error` était vérifié mais sans action : une requête en échec sortait
+      // ici SANS jamais appeler setLoading(false) — l'écran Messages restait
+      // bloqué en chargement indéfiniment. Même famille de bug que le
+      // blocage d'auth déjà corrigé ailleurs.
+      if (error) {
+        Sentry.captureException(error)
+        if (isMounted) { setMatches([]); setLoading(false) }
+        return
+      }
+      if (!matchRows || !isMounted) return
 
       // Masque les conversations avec des utilisateurs bloqués (dans les 2 sens)
       const { data: blockRows } = await supabase
