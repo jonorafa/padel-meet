@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { COURT, TYPE } from '../components/CourtUI'
+import { COURT } from '../components/CourtUI'
 import { RADIUS } from './tokens'
 import { usePrefs }        from '../context/PrefsContext'
 import { useAuth }         from '../context/AuthContext'
@@ -162,13 +162,13 @@ export default function StatsSection() {
               </defs>
               <path d="M50 8 C62 30 82 40 82 72 a32 32 0 0 1-64 0 C18 52 30 44 38 30 C40 44 50 46 50 38 C48 28 50 18 50 8 Z" fill="url(#sfstat)" />
             </svg>
-            <div style={valStyle}>{streak > 0 ? streak : '—'}</div>
-          </div>
-          {streak > 0 && (
-            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: TYPE.micro, color: stone, marginTop: 6 }}>
-              {streak} {L.jours}
+            <div style={valStyle}>
+              {streak > 0 ? streak : '—'}
+              {streak > 0 && (
+                <span style={{ fontSize: 14, marginInlineStart: 4 }}>{L.jours}</span>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Niveau actuel */}
