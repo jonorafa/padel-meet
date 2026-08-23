@@ -487,7 +487,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
         <div style={{ width: 160, height: 5, borderRadius: 3, background: border, margin: '0 auto 8px', overflow: 'hidden' }}>
           <div style={{ width: `${completionPct}%`, height: '100%', background: COURT.green, borderRadius: 3, transition: 'width 0.3s' }} />
         </div>
-        <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic' }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone }}>
           {t.onlyRequired}
         </div>
       </div>
@@ -762,7 +762,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             {/* La limite affichée vient de la constante partagée avec la
                 validation : impossible d'annoncer une durée et d'en refuser
                 une autre. */}
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 10, lineHeight: 1.4 }}>
               {t.videoHint.replace('20 s', `${MAX_VIDEO_SECONDS} s`).replace('20s', `${MAX_VIDEO_SECONDS}s`).replace('20 שניות', `${MAX_VIDEO_SECONDS} שניות`)}
             </div>
 
