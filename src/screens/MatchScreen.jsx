@@ -486,7 +486,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
   if (prefs.hand && prefs.hand !== 'any')
     seekChips.push({ icon: '🤚', label: prefs.hand === 'left' ? t.leftHand : t.rightHand, color: COURT.green });
   if (prefs.side && prefs.side !== 'any')
-    seekChips.push({ icon: <PadelBall size={12} shadow={false} />, label: prefs.side === 'forehand' ? t.forehand : t.backhand, color: COURT.green });
+    seekChips.push({ icon: <PadelBall size={12} shadow={false} />, label: `${t.side} ${prefs.side === 'forehand' ? t.forehand : t.backhand}`, color: COURT.green });
   if (prefs.style && prefs.style !== 'any')
     seekChips.push({ icon: <LightningIcon size={12} color={COURT.rust} />, label: seekStyleMap[prefs.style] || prefs.style, color: COURT.rust });
   if (prefs.motivation && prefs.motivation !== 'any')
@@ -647,7 +647,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         {seekChips.length > 0 && chipsTiennent && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
             <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-              {lang === 'en' ? 'Looking for' : lang === 'he' ? 'מחפש' : 'Cherche'}
+              {lang === 'en' ? 'Looking for player' : lang === 'he' ? 'מחפש שחקן' : 'Cherche joueur'}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
               {seekChips.slice(0, 4).map((c, i) => (
