@@ -880,7 +880,7 @@ export function Achievements({ badges, dark, lang }) {
           <div style={{ height: 5, background: `${COURT.cream}25`, borderRadius: 3, marginTop: 10, overflow: 'hidden' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: COURT.gold, borderRadius: 3 }} />
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: `${COURT.cream}b0`, marginTop: 5, textAlign: 'right' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: `${COURT.cream}b0`, marginTop: 5, textAlign: lang === 'he' ? 'left' : 'right' }}>
             {b.on ? '100%' : `${b.progress.cur} / ${b.progress.max}`}
           </div>
           <div style={{

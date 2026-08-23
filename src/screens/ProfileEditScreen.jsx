@@ -588,7 +588,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               />
               <p style={{
                 fontFamily: 'Mulish', fontSize: TYPE.micro, color: muted,
-                textAlign: 'right', margin: '4px 0 0',
+                textAlign: lang === 'he' ? 'left' : 'right', margin: '4px 0 0',
               }}>
                 {currentBio.length}/280
               </p>

@@ -1738,7 +1738,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               background: scoreResult === 'teammate' ? `${COURT.gold}25` : 'transparent',
               border: `0.5px solid ${COURT.gold}`,
               color: scoreResult === 'teammate' ? COURT.ink : COURT.gold,
-              fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer', textAlign: 'left',
+              fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
             }}>
               {lang === 'en' ? '🤝 Teammate — we both won' : lang === 'he' ? '🤝 שותף — שנינו ניצחנו' : '🤝 Coéquipier — on a tous les deux gagné'}
             </button>
@@ -1916,7 +1916,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       </div>
                     )}
 
-                    <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 6, textAlign: 'right' }}>{m.time}</div>
+                    <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 6, textAlign: rtl ? 'left' : 'right' }}>{m.time}</div>
                   </div>
                 );
               })()
@@ -4246,7 +4246,14 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
             fontFamily: 'Mulish', fontSize: 13, color: stone,
             marginBottom: 8, fontWeight: 600,
           }}>{t.levelRange || 'Plage de niveau'}</div>
-          <div style={{
+          {/* dir="ltr" explicite : RangeBar positionne ses poignées en pixels
+              physiques (clientX - rect.left), toujours min à gauche / max à
+              droite, quel que soit `lang` — comme PadelSlider. Sans ce dir,
+              `justifyContent: space-between` inversait l'ordre MIN/MAX en
+              hébreu (dir hérité de l'écran), désynchronisant les libellés
+              du curseur physiquement fixe juste en dessous : MIN se
+              retrouvait au-dessus de la poignée MAX, et inversement. */}
+          <div dir="ltr" style={{
             background: dark ? COURT.darkCard : '#FBF9F4',
             border: `0.5px solid ${dark ? COURT.darkBorder : `${COURT.green}25`}`,
             borderRadius: 12, padding: '14px 16px 10px',
@@ -4411,7 +4418,7 @@ function ScheduleMatchSheet({ lang, dark, onClose, onProposalSent, initialPartne
                     display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
                     background: isSel ? `${COURT.green}15` : bg,
                     border: `0.5px solid ${isSel ? COURT.green : border}`,
-                    borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                    borderRadius: 10, cursor: 'pointer', textAlign: rtl ? 'right' : 'left',
                   }}>
                     <div style={{ width: 38, height: 38, borderRadius: 19, flexShrink: 0, background: `url(${m.player.photo}) center/cover`, border: isSel ? `2px solid ${COURT.green}` : `0.5px solid ${border}` }} />
                     <div style={{ flex: 1, minWidth: 0 }}>

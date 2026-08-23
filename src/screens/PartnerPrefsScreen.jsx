@@ -285,7 +285,12 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
           <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8, fontWeight: 600 }}>
             {t.levelRange}
           </div>
-          <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '14px 16px 10px' }}>
+          {/* dir="ltr" explicite : RangeBar positionne ses poignées en pixels
+              physiques, toujours min a gauche / max a droite, quel que soit
+              `lang` — comme PadelSlider. Sans ce dir, l'ordre MIN/MAX
+              s'inversait en hebreu et desynchronisait les libelles du
+              curseur physiquement fixe en dessous. */}
+          <div dir="ltr" style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '14px 16px 10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 3 }}>MIN</div>

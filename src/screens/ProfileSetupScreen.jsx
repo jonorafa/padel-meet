@@ -83,7 +83,7 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            <div style={{ textAlign: 'left' }}>
+            <div style={{ textAlign: rtl ? 'right' : 'left' }}>
               <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.cream, fontWeight: 700 }}>
                 Top{' '}
                 <span style={{ color: COURT.gold }}>{topPct}%</span>
@@ -104,7 +104,7 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
             marginTop: 18,
             background: `${COURT.greenDeep}AA`, border: `0.5px solid ${COURT.gold}30`,
             borderRadius: 12, padding: '14px 18px',
-            textAlign: 'left',
+            textAlign: rtl ? 'right' : 'left',
           }}>
             <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13.5, color: COURT.cream, lineHeight: 1.55 }}>
               {summary.sentence1}
