@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { COURT, PadelBall, Ornament, BottomSheet, initialsAvatar,
+import { COURT, TYPE, PadelBall, Ornament, BottomSheet, initialsAvatar,
   LightningIcon, HourglassIcon, AlertIcon, XIcon } from './CourtUI'
 import { RADIUS } from './tokens'
 import { supabase } from '../lib/supabase'
@@ -72,7 +72,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
           <div style={{ fontFamily: ff_serif, fontSize: 17, color: ink, fontWeight: 500 }}>
             {pending.otherPlayer?.name || t.opponent}
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.12em' }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.12em' }}>
             {t.scoreSubmittedByThem} · {formatTimeRemaining(pending.expiresAt, lang)}
           </div>
         </div>
@@ -193,7 +193,7 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
           <div style={{ fontFamily: ff_serif, fontSize: 14, color: ink }}>
             {t.waitingConfirmFrom} <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.green }}>{pending.otherPlayer?.name}</span>
           </div>
-          <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.1em', marginTop: 2 }}>
+          <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.1em', marginTop: 2 }}>
             {pending.score} · {t.expiresIn} {formatTimeRemaining(pending.expiresAt, lang)}
           </div>
         </div>

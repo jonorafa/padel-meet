@@ -7,12 +7,14 @@ import { initialsAvatar } from '../components/CourtUI'
  * Retourne l'historique des matchs de l'utilisateur connecté.
  * Retourne un tableau vide si la DB est vide (jamais de faux matchs).
  */
-export function useMatchHistory() {
+export function useMatchHistory(lang) {
   const { user } = useAuth()
   const [history, setHistory] = useState([])
 
   useEffect(() => {
     if (!user) return
+
+    const adversaireParDefaut = lang === 'he' ? 'יריב' : lang === 'en' ? 'Opponent' : 'Adversaire'
 
     const fetchHistory = async () => {
       const { data, error } = await supabase
@@ -31,7 +33,7 @@ export function useMatchHistory() {
           delta: m.elo_delta,
           player: {
             id:    m.opponent?.id,
-            name:  m.opponent?.name     || 'Adversaire',
+            name:  m.opponent?.name     || adversaireParDefaut,
             photo: m.opponent?.photo_url || initialsAvatar(m.opponent?.name || m.opponent_id),
           },
         })))
@@ -40,7 +42,7 @@ export function useMatchHistory() {
     }
 
     fetchHistory()
-  }, [user?.id])
+  }, [user?.id, lang])
 
   return history
 }

@@ -15,7 +15,7 @@ import { Sentry } from '../sentry'
  * accusés de lecture (UPDATE read_at) — pour faire disparaître le rond vert
  * quand le destinataire ouvre la conversation depuis un autre device.
  */
-export function useUserMatches() {
+export function useUserMatches(lang) {
   const { user } = useAuth()
   const [matches, setMatches] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -27,6 +27,8 @@ export function useUserMatches() {
 
     let isMounted = true
     let channel = null
+
+    const joueurParDefaut = lang === 'he' ? 'שחקן' : lang === 'en' ? 'Player' : 'Joueur'
 
     const fetchMatches = async () => {
       const { data: matchRows, error } = await supabase
@@ -102,7 +104,7 @@ export function useUserMatches() {
             unreadCount: unreadCount || 0,
             player: {
               id:       otherId,
-              name:     otherProfile?.name     || 'Joueur',
+              name:     otherProfile?.name     || joueurParDefaut,
               photo:    otherProfile?.photo_url || initialsAvatar(otherProfile?.name || otherId),
               // `online` n'est plus exposé ici : le statut live vient de PresenceContext
               // (useOnline(player.id)). `lastSeen` reste utile pour l'échelle progressive.
@@ -160,7 +162,7 @@ export function useUserMatches() {
       isMounted = false
       if (channel) supabase.removeChannel(channel)
     }
-  }, [user?.id])
+  }, [user?.id, lang])
 
   return { matches, loading }
 }

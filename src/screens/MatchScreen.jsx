@@ -321,7 +321,7 @@ function StatBox({ label, value, color, dark, compact = false, mini = false }) {
       borderRadius: 12, padding: mini ? '5px 8px' : compact ? '7px 10px' : '9px 12px', minWidth: 0,
     }}>
       <div style={{
-        fontFamily: 'Mulish', fontSize: 10, fontWeight: 600,
+        fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600,
         color: dark ? COURT.darkMuted : COURT.stone,
         letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -553,7 +553,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
           {compat != null && (
             <div style={{ flexShrink: 0, textAlign: 'center' }}>
               <CompatRing size={56} value={compat} stroke={COURT.rust} txt={COURT.rust} track={`${COURT.rust}20`} rtl={lang === 'he'} />
-              <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, marginTop: 2 }}>
+              <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, marginTop: 2 }}>
                 {lang === 'en' ? 'Compatibility' : lang === 'he' ? 'התאמה' : 'Compatibilité'}
               </div>
             </div>
@@ -646,7 +646,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
             le plus étroit qu'on vise). */}
         {seekChips.length > 0 && chipsTiennent && (
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '20'}` }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 10, color: stone, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
               {lang === 'en' ? 'Looking for' : lang === 'he' ? 'מחפש' : 'Cherche'}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -749,7 +749,7 @@ function EmptyStack({ t, lang, onReset, onElargir, dark }) {
 function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
   // ── Données réelles ──
   const { profile: me } = useAuth();
-  const { players: allPlayers, loading: playersLoading, refetch } = usePlayers();
+  const { players: allPlayers, loading: playersLoading, refetch } = usePlayers(lang);
   const { recordSwipe } = useSwipes();
 
   const matched = useMemo(() => {
@@ -2078,7 +2078,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
   // ce qui ne cassait pas que l'italique — dir="ltr" était forcé sur tout
   // l'en-tête « Messages » quel que soit `lang`.
   const rtl = lang === 'he';
-  const { matches, loading: matchesLoading } = useUserMatches();
+  const { matches, loading: matchesLoading } = useUserMatches(lang);
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const bg    = dark ? COURT.darkBg   : COURT.cream;
   const border= dark ? COURT.darkBorder : `${COURT.green}25`;
@@ -2282,9 +2282,9 @@ function StatsSkeleton({ dark }) {
 // ─── Matches / Stats Screen ──────────────────────────────────────────────────
 function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onSchedule, statsSignal = 0 }) {
   const { profile } = useAuth();
-  const history = useMatchHistory();
+  const history = useMatchHistory(lang);
   const { stats } = usePlayerStats();
-  const { matches: myMatches } = useUserMatches();
+  const { matches: myMatches } = useUserMatches(lang);
   const [tab, setTab] = useState('history');
 
   // Ouverture directe des stats depuis le menu "Mes statistiques" (signal incrémental)
@@ -2357,7 +2357,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
                 <div style={{ width: 5, height: 44, borderRadius: 3, background: m.result === 'win' ? COURT.green : COURT.rust, flexShrink: 0 }} />
                 {p?.photo && <div style={{ width: 40, height: 40, borderRadius: 20, background: `url(${p.photo}) center/cover`, flexShrink: 0 }} />}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500 }}>{p?.name || 'Adversaire'}</div>
+                  <div style={{ fontFamily: ff_serif, fontSize: 16, color: ink, fontWeight: 500 }}>{p?.name}</div>
                   <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone,}}>
                     {m.date instanceof Date ? m.date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : lang === 'he' ? 'he-IL' : 'en-GB') : ''}
                   </div>
@@ -2765,7 +2765,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const { user, profile, signOut, saveProfile }      = useAuth();
   const { lang, dark, level, confidence, setLang, toggleDark, setLevel } = usePrefs();
   const navigate = useNavigate();
-  const matchHistory = useMatchHistory();
+  const matchHistory = useMatchHistory(lang);
   const fileInputRef = useRef(null);
   const [uploading, setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState(null);
@@ -2792,7 +2792,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const [unblockingId, setUnblockingId] = useState(null);
 
   // ── Fetch partenaires pour l'évaluation depuis le menu ─────────────────────
-  const { matches: evalMatches } = useUserMatches();
+  const { matches: evalMatches } = useUserMatches(lang);
   const { blockedProfiles, unblockUser } = useBlocks();
 
   const sendMenuEval = async (computedLevel) => {
@@ -3204,7 +3204,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               ].map((s, i) => (
                 <div key={i} style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <div style={{
-                    fontFamily: 'Mulish', fontSize: 10, fontWeight: 600, color: stone,
+                    fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 600, color: stone,
                     letterSpacing: '0.04em', textTransform: 'uppercase', textAlign: 'center',
                   }}>{s.label}</div>
                   <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.green, lineHeight: 1 }}>{s.value}</div>
@@ -4347,7 +4347,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
 // Remplace le Live Score Tracker : choisir partenaire + date → proposition envoyée
 function ScheduleMatchSheet({ lang, dark, onClose, onProposalSent, initialPartnerId }) {
   const { user } = useAuth();
-  const { partners: userMatches } = useMatchPartnersQuick();  // ⚡ Quick load sans messages
+  const { partners: userMatches } = useMatchPartnersQuick(lang);  // ⚡ Quick load sans messages
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [propDate,  setPropDate]  = useState('');
   const [propTime,  setPropTime]  = useState('');
@@ -4626,7 +4626,7 @@ export default function MainApp() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   // Total des messages non lus toutes conversations confondues → badge rouge onglet Chat
-  const { matches: chatMatches } = useUserMatches();
+  const { matches: chatMatches } = useUserMatches(lang);
   // Compte des PERSONNES, pas des messages : cinq messages non lus d'un même
   // interlocuteur affichent « 1 ». Cf. src/lib/unread.js pour le détail.
   const chatUnread = compterPersonnesNonLues(chatMatches);

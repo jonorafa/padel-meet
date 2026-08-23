@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { COURT, BadgeRow, PadelBall, LightningIcon } from './CourtUI'
+import { COURT, TYPE, BadgeRow, PadelBall, LightningIcon } from './CourtUI'
 import { PhotoLightbox } from './PhotoLightbox'
 import { VideoLightbox } from './VideoLightbox'
 import { LevelBlock } from './LevelBlock'
@@ -263,7 +263,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               fontFamily: 'Spectral, serif', fontSize: 28, fontWeight: 800,
               color: ink, margin: 0, lineHeight: 1,
             }}>
-              {player.name || player.username || 'Joueur'}
+              {player.name || player.username || (lang === 'he' ? 'שחקן' : lang === 'en' ? 'Player' : 'Joueur')}
             </h2>
             <BadgeRow badges={badgeResults} dark={dark} t={t} />
           </div>
@@ -362,7 +362,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                   fontFamily: 'Spectral, serif', fontSize: 20, fontWeight: 800,
                   color: COURT.green, margin: '0 0 4px',
                 }}>{value}</p>
-                <p style={{ fontFamily: 'Mulish', fontSize: 10, color: muted, margin: 0, fontWeight: 600 }}>{label}</p>
+                <p style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: muted, margin: 0, fontWeight: 600 }}>{label}</p>
               </div>
             ))}
           </div>

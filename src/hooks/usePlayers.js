@@ -6,11 +6,12 @@ import { useBlocks } from './useBlocks'
 import { initialsAvatar } from '../components/CourtUI'
 import { regionToCountry, profileSubRegion } from '../data/courtData'
 
-function transformDBProfile(p) {
+function transformDBProfile(p, lang) {
   const matchesPlayed = p.matches_played || 0
+  const nomParDefaut = lang === 'he' ? 'שחקן' : lang === 'en' ? 'Player' : 'Joueur'
   return {
     id: p.id,                   // UUID string
-    name: p.name || 'Joueur',
+    name: p.name || nomParDefaut,
     age: p.age || 28,
     height: p.height ?? null,   // cm, optionnel — purement informatif
     // Extrait vidéo : la vignette permet d'afficher la carte sans charger la
@@ -55,7 +56,7 @@ function transformDBProfile(p) {
  * - Retourne [] si la DB est vide (jamais de faux joueurs)
  * - Gère la présence en ligne via Supabase Realtime
  */
-export function usePlayers() {
+export function usePlayers(lang) {
   const { user, profile } = useAuth()
   const { onlineSet } = usePresence()
   const { blockedIds } = useBlocks()
@@ -75,7 +76,7 @@ export function usePlayers() {
         .order('created_at', { ascending: false })
         .limit(50)
       if (!error && profiles && profiles.length > 0) {
-        setPlayers(profiles.map(p => transformDBProfile(p)))
+        setPlayers(profiles.map(p => transformDBProfile(p, lang)))
       } else {
         setPlayers([])
       }
@@ -106,11 +107,11 @@ export function usePlayers() {
         !blockedIds.has(p.id) &&
         (!myCountry || regionToCountry(p) === myCountry)
       )
-      setPlayers(fresh.map(p => transformDBProfile(p)))
+      setPlayers(fresh.map(p => transformDBProfile(p, lang)))
     } else {
       setPlayers([])
     }
-  }, [user?.id, myCountry, blockedIds])
+  }, [user?.id, myCountry, blockedIds, lang])
 
   useEffect(() => {
     fetchAll()

@@ -10,13 +10,15 @@ import { initialsAvatar } from '../components/CourtUI'
  * Pas de messages, pas de unread counts → ultra rapide, affichage immédiat.
  * Utilisé par ScheduleMatchSheet pour afficher "Avec qui ?"
  */
-export function useMatchPartnersQuick() {
+export function useMatchPartnersQuick(lang) {
   const { user } = useAuth()
   const [partners, setPartners] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
+
+    const joueurParDefaut = lang === 'he' ? 'שחקן' : lang === 'en' ? 'Player' : 'Joueur'
 
     let isMounted = true
 
@@ -59,7 +61,7 @@ export function useMatchPartnersQuick() {
           matchId: m.id,
           player: {
             id:    otherId,
-            name:  otherProfile?.name || 'Joueur',
+            name:  otherProfile?.name || joueurParDefaut,
             photo: otherProfile?.photo_url || initialsAvatar(otherProfile?.name || otherId),
           },
         }
@@ -74,7 +76,7 @@ export function useMatchPartnersQuick() {
     fetchPartners()
 
     return () => { isMounted = false }
-  }, [user?.id])
+  }, [user?.id, lang])
 
   return { partners, loading }
 }
