@@ -15,7 +15,7 @@ function ScaleInput({ q, lang, dark, onSubmit }) {
         min={q.scaleMin} max={q.scaleMax} step={1}
         value={val}
         onChange={setVal}
-        dark={dark}
+        dark={dark} lang={lang}
         bigValue
         suffix={`/${q.scaleMax}`}
         leftLabel={q.scaleMinLabel?.[lang] || q.scaleMinLabel?.fr}
@@ -24,7 +24,7 @@ function ScaleInput({ q, lang, dark, onSubmit }) {
       <button onClick={() => onSubmit(scaleToLevel(val))} style={{
         padding: '15px 0', width: '100%', borderRadius: 999,
         background: COURT.green, color: COURT.cream, border: 'none', cursor: 'pointer',
-        fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 17,
+        fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 17,
       }}>
         {lang === 'he' ? 'המשך' : lang === 'en' ? 'Continue' : 'Continuer'}
       </button>

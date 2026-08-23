@@ -72,7 +72,7 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
           transform: `translateY(${visible ? 0 : 12}px)`,
           transition: 'all 0.8s ease 0.6s',
         }}>
-          <ThinButton variant="green" onClick={onStart} full>
+          <ThinButton variant="green" onClick={onStart} lang={lang} full>
             {t.cta_level}
           </ThinButton>
           {onSkip && (

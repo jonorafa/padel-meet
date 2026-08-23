@@ -546,7 +546,7 @@ function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
                 borderLeft: `4px solid ${isCorrect ? COURT.green : COURT.red}`,
               }}>
                 <div style={{
-                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: 'italic',
+                  fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
                   fontWeight: 700, fontSize: 16,
                   color: isCorrect ? COURT.green : COURT.red, marginBottom: 4,
                 }}>{isCorrect ? L.mascotCheer : L.mascotWrong}</div>

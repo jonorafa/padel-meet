@@ -115,7 +115,7 @@ export function PadelSlider({
   value, onChange,
   dark = false,
   leftLabel, rightLabel,
-  bigValue = false, suffix = '',
+  bigValue = false, suffix = '', lang,
 }) {
   const stone = dark ? '#7C8B81' : '#6F7B70';
   return (
@@ -126,7 +126,7 @@ export function PadelSlider({
           fontSize: TYPE.giant, lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
         }}>
           {value}
-          {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: 'italic', fontFamily: 'Spectral, serif' }}>{suffix}</span>}
+          {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic', fontFamily: 'Spectral, serif' }}>{suffix}</span>}
         </div>
       )}
       <input
@@ -252,7 +252,7 @@ export function SectionHeading({ children, italic = true }) {
   );
 }
 
-export function ThinButton({ children, onClick, variant = 'cream', icon, style = {}, full = false }) {
+export function ThinButton({ children, onClick, variant = 'cream', icon, style = {}, full = false, lang }) {
   const isCream = variant === 'cream';
   const bg = _darkMode
     ? (isCream ? COURT.darkCard : COURT.green)
@@ -268,7 +268,7 @@ export function ThinButton({ children, onClick, variant = 'cream', icon, style =
       padding: '14px 20px', background: bg, color,
       border, borderRadius: 10,
       fontFamily: 'Spectral, serif',
-      fontSize: 16, fontStyle: 'italic',
+      fontSize: 16, fontStyle: lang === 'he' ? 'normal' : 'italic',
       letterSpacing: '0.02em', cursor: 'pointer',
       transition: 'all 0.3s ease',
       ...style,
@@ -528,7 +528,7 @@ export function OnlineDot({ online }) {
 }
 
 // ─── Bottom Sheet ───
-export function BottomSheet({ children, onClose, title, dark }) {
+export function BottomSheet({ children, onClose, title, dark, lang }) {
   const bg = dark ? COURT.darkCard : COURT.cream;
   const border = dark ? COURT.darkBorder : `${COURT.green}30`;
   const [dragY, setDragY] = useState(0);
@@ -631,7 +631,7 @@ export function BottomSheet({ children, onClose, title, dark }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
             }}>
               <div style={{
-                fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic',
                 fontSize: 22, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500,
                 flex: 1, minWidth: 0,
               }}>{title}</div>
@@ -820,7 +820,7 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
 }
 
 // ─── Trophées cliquables avec bulle de progression (auto-fermeture 3,5s) ───
-export function Achievements({ badges, dark }) {
+export function Achievements({ badges, dark, lang }) {
   const [open,   setOpen]   = useState(null);
   const [tipPos, setTipPos] = useState(null); // { left, bottom, arrowLeft } en px viewport
   const timer   = useRef();
@@ -871,10 +871,10 @@ export function Achievements({ badges, dark }) {
           animation:   'bubbleIn 0.25s ease',
           pointerEvents: 'none',
         }}>
-          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontWeight: 600, fontSize: 14, color: COURT.gold }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontWeight: 600, fontSize: 14, color: COURT.gold }}>
             {b.label}
           </div>
-          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 12, lineHeight: 1.4, marginTop: 3 }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 12, lineHeight: 1.4, marginTop: 3 }}>
             {b.desc}
           </div>
           <div style={{ height: 5, background: `${COURT.cream}25`, borderRadius: 3, marginTop: 10, overflow: 'hidden' }}>
@@ -1155,7 +1155,7 @@ export function GlossaryCard({ termKey, lang, dark, onClose }) {
           <div style={{
             fontFamily: 'Spectral, serif',
             fontSize: 22, fontWeight: 600, color: COURT.green,
-            fontStyle: 'italic',
+            fontStyle: lang === 'he' ? 'normal' : 'italic',
           }}>
             {entry.term[lang] || entry.term.fr}
           </div>
@@ -1180,7 +1180,7 @@ export function GlossaryCard({ termKey, lang, dark, onClose }) {
         {/* Définition */}
         <div style={{
           fontFamily: 'Spectral, serif',
-          fontStyle: 'italic', fontSize: 15,
+          fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 15,
           color: ink, lineHeight: 1.6,
         }}>
           {entry.def[lang] || entry.def.fr}

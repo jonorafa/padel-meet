@@ -378,7 +378,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
                     fontFamily: 'Spectral, serif',
-                    fontSize: 17, fontWeight: 700, fontStyle: 'italic',
+                    fontSize: 17, fontWeight: 700, fontStyle: lang === 'he' ? 'normal' : 'italic',
                     color: '#fff', margin: '0 0 3px', lineHeight: 1.2,
                   }}>{completionTitle}</p>
                   <p style={{
@@ -659,7 +659,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                 min={0} max={7} step={1}
                 value={formData.frequency}
                 onChange={(v) => handleInputChange('frequency', v)}
-                dark={dark}
+                dark={dark} lang={lang}
                 leftLabel="0" rightLabel="7"
               />
             </div>

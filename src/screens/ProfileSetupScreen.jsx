@@ -56,7 +56,7 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             opacity: s >= 2 ? 1 : 0, transform: `scale(${s >= 2 ? 1 : 0.6})`, transition: 'all 0.7s cubic-bezier(.2,.8,.2,1)',
           }}>
-            <div style={{ fontFamily: ff, fontStyle: 'italic', fontSize: level != null ? 88 : 44, color: COURT.cream, fontWeight: 400, lineHeight: 1 }}>
+            <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: level != null ? 88 : 44, color: COURT.cream, fontWeight: 400, lineHeight: 1 }}>
               {level != null ? level.toFixed(1) : '—'}
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
                 <span style={{ color: COURT.gold }}>{topPct}%</span>
                 {' '}{lang === 'en' ? 'of players' : lang === 'he' ? 'מהשחקנים' : 'des joueurs'}
               </div>
-              <div style={{ fontFamily: ff, fontStyle: 'italic', fontSize: TYPE.micro, color: `${COURT.cream}80` }}>
+              <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: TYPE.micro, color: `${COURT.cream}80` }}>
                 {regionLabel}
               </div>
             </div>
@@ -106,11 +106,11 @@ export default function ResultScreen({ t, lang, level, answers, onContinue }) {
             borderRadius: 12, padding: '14px 18px',
             textAlign: 'left',
           }}>
-            <div style={{ fontFamily: ff, fontStyle: 'italic', fontSize: 13.5, color: COURT.cream, lineHeight: 1.55 }}>
+            <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13.5, color: COURT.cream, lineHeight: 1.55 }}>
               {summary.sentence1}
             </div>
             {summary.sentence2 && (
-              <div style={{ fontFamily: ff, fontStyle: 'italic', fontSize: 13, color: `${COURT.cream}90`, lineHeight: 1.55, marginTop: 6 }}>
+              <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: `${COURT.cream}90`, lineHeight: 1.55, marginTop: 6 }}>
                 {summary.sentence2}
               </div>
             )}

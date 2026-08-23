@@ -408,7 +408,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                     color: muted, marginBottom: 2, fontWeight: 600,
                   }}>{label}</div>
                   <div style={{
-                    fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                    fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
                     fontSize: 16, fontWeight: mine === '—' ? 400 : 600,
                     color: mine === '—' ? muted : COURT.green,
                   }}>{mine}</div>
@@ -419,7 +419,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
                     color: muted, marginBottom: 2, fontWeight: 600,
                   }}>{label}</div>
                   <div style={{
-                    fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                    fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
                     fontSize: 16, fontWeight: seeks == null ? 400 : 600,
                     color: seeks == null ? muted : COURT.rust,
                   }}>

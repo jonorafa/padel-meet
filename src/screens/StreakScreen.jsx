@@ -164,7 +164,7 @@ export default function StreakScreen({ onClose }) {
               {L.rewardTitle}
             </div>
             <div style={{
-              fontFamily: 'Spectral, serif', fontStyle: 'italic',
+              fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 13.5, color: dark ? COURT.darkMuted : '#5A5A52', lineHeight: 1.6,
             }}>
               {L.rewardDesc}

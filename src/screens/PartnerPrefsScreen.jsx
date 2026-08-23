@@ -139,7 +139,7 @@ function RangeBar({ min, max, step, valueMin, valueMax, onChange, dark }) {
 }
 
 // ─── ChipRow ──────────────────────────────────────────────────────────────────
-function ChipRow({ label, value, options, onChange, stone, dark }) {
+function ChipRow({ label, value, options, onChange, stone, dark, lang }) {
   return (
     <div style={{ marginBottom: 18 }}>
       <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8, fontWeight: 600 }}>
@@ -157,7 +157,7 @@ function ChipRow({ label, value, options, onChange, stone, dark }) {
                 background: active ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
                 color: active ? COURT.cream : (dark ? COURT.darkText : COURT.ink),
                 border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : `${COURT.green}40`)}`,
-                fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
+                fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14,
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
             >
@@ -230,7 +230,7 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
       {/* ── Scrollable body ── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 24px 40px' }}>
 
-        <ChipRow label={t.hand} value={prefs.hand} stone={stone} dark={dark}
+        <ChipRow label={t.hand} value={prefs.hand} stone={stone} dark={dark} lang={lang}
           onChange={(v) => setPrefs(p => ({ ...p, hand: v }))}
           options={[
             { value: 'any',   label: t.any },
@@ -239,7 +239,7 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
           ]}
         />
 
-        <ChipRow label={t.side} value={prefs.side} stone={stone} dark={dark}
+        <ChipRow label={t.side} value={prefs.side} stone={stone} dark={dark} lang={lang}
           onChange={(v) => setPrefs(p => ({ ...p, side: v }))}
           options={[
             { value: 'any',      label: t.any },
@@ -248,7 +248,7 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
           ]}
         />
 
-        <ChipRow label={t.style} value={prefs.style} stone={stone} dark={dark}
+        <ChipRow label={t.style} value={prefs.style} stone={stone} dark={dark} lang={lang}
           onChange={(v) => setPrefs(p => ({ ...p, style: v }))}
           options={[
             { value: 'any',        label: t.any },
@@ -258,7 +258,7 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
           ]}
         />
 
-        <ChipRow label={t.motivation} value={prefs.motivation} stone={stone} dark={dark}
+        <ChipRow label={t.motivation} value={prefs.motivation} stone={stone} dark={dark} lang={lang}
           onChange={(v) => setPrefs(p => ({ ...p, motivation: v }))}
           options={[
             { value: 'any',     label: t.any },
@@ -268,7 +268,7 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
           ]}
         />
 
-        <ChipRow label={t.region} value={prefs.region} stone={stone} dark={dark}
+        <ChipRow label={t.region} value={prefs.region} stone={stone} dark={dark} lang={lang}
           onChange={(v) => setPrefs(p => ({ ...p, region: v }))}
           // Options DÉRIVÉES de SUB_REGIONS, jamais réécrites à la main : cette
           // liste proposait « Eilat », qui n'existe dans aucune sous-région de

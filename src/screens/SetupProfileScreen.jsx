@@ -160,7 +160,7 @@ function compressToJpeg(file) {
 }
 
 // ─── Chip group ───────────────────────────────────────────────────────────────
-function ChipGroup({ value, onChange, options, dark }) {
+function ChipGroup({ value, onChange, options, dark, lang }) {
   return (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
       {options.map(opt => {
@@ -172,7 +172,7 @@ function ChipGroup({ value, onChange, options, dark }) {
             color:      active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
             border:     `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '60'}`,
             borderRadius: 10, cursor: 'pointer',
-            fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
+            fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14,
             transition: 'all 0.2s',
           }}>
             {opt.label}
@@ -211,7 +211,7 @@ function CourtHalfSVG({ side, active }) {
   )
 }
 
-function CourtSidePicker({ value, onChange, dark, leftLabel, rightLabel }) {
+function CourtSidePicker({ value, onChange, dark, leftLabel, rightLabel, lang }) {
   const sides = [
     { v: 'forehand', label: leftLabel,  side: 'left'  },
     { v: 'backhand', label: rightLabel, side: 'right' },
@@ -231,7 +231,7 @@ function CourtSidePicker({ value, onChange, dark, leftLabel, rightLabel }) {
           }}>
             <CourtHalfSVG side={s.side} active={active} />
             <span style={{
-              fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 18,
+              fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 18,
               color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
               fontWeight: active ? 600 : 400,
             }}>
@@ -487,7 +487,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
         <div style={{ width: 160, height: 5, borderRadius: 3, background: border, margin: '0 auto 8px', overflow: 'hidden' }}>
           <div style={{ width: `${completionPct}%`, height: '100%', background: COURT.green, borderRadius: 3, transition: 'width 0.3s' }} />
         </div>
-        <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic' }}>
+        <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic' }}>
           {t.onlyRequired}
         </div>
       </div>
@@ -552,7 +552,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               value={hand}
               onChange={setHand}
               options={[{ v: 'left', label: t.left }, { v: 'right', label: t.right }]}
-              dark={dark}
+              dark={dark} lang={lang}
             />
           </div>
         </div>
@@ -587,7 +587,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               onChange={setSide}
               leftLabel={t.forehand}
               rightLabel={t.backhand}
-              dark={dark}
+              dark={dark} lang={lang}
             />
           </div>
 
@@ -604,7 +604,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                 { v: 'defensive',  label: t.defensive  },
                 { v: 'all-court',  label: t.allcourt   },
               ]}
-              dark={dark}
+              dark={dark} lang={lang}
             />
           </div>
 
@@ -621,7 +621,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                 { v: 'improve', label: t.improve },
                 { v: 'compete', label: t.compete },
               ]}
-              dark={dark}
+              dark={dark} lang={lang}
             />
           </div>
 
@@ -634,7 +634,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               value={frequency}
               onChange={setFrequency}
               options={[1, 2, 3, 4, 5].map(n => ({ v: n, label: `${n} ${t.perWeek}` }))}
-              dark={dark}
+              dark={dark} lang={lang}
             />
           </div>
 
@@ -661,7 +661,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                   >
                     <span style={{ fontSize: 22 }}>{flag}</span>
                     <span style={{
-                      fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 16,
+                      fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 16,
                       color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
                       fontWeight: active ? 600 : 400,
                     }}>{v}</span>
@@ -680,7 +680,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               value={city}
               onChange={setCity}
               options={(SUB_REGIONS[region] || []).map(c => ({ v: c, label: c }))}
-              dark={dark}
+              dark={dark} lang={lang}
             />
           </div>
         </div>
@@ -741,7 +741,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             {uploadError ? (
               <div style={{
                 marginTop: 6, fontFamily: 'Mulish', fontSize: 13,
-                color: '#e53e3e', fontStyle: 'italic',
+                color: '#e53e3e', fontStyle: lang === 'he' ? 'normal' : 'italic',
                 textAlign: 'center', maxWidth: 260,
               }}>
                 {uploadError}
@@ -762,7 +762,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             {/* La limite affichée vient de la constante partagée avec la
                 validation : impossible d'annoncer une durée et d'en refuser
                 une autre. */}
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic', marginBottom: 10, lineHeight: 1.4 }}>
               {t.videoHint.replace('20 s', `${MAX_VIDEO_SECONDS} s`).replace('20s', `${MAX_VIDEO_SECONDS}s`).replace('20 שניות', `${MAX_VIDEO_SECONDS} שניות`)}
             </div>
 
@@ -804,7 +804,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                   background: dark ? COURT.darkCard : COURT.cream,
                   border: `0.5px solid ${COURT.green}60`,
                   color: dark ? COURT.darkText : COURT.green,
-                  fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
+                  fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14,
                   cursor: videoUploading ? 'wait' : 'pointer', opacity: videoUploading ? 0.6 : 1,
                 }}
               >
@@ -832,7 +832,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             {videoError && (
               <div style={{
                 marginTop: 8, fontFamily: 'Mulish', fontSize: 13,
-                color: '#e53e3e', fontStyle: 'italic', lineHeight: 1.4,
+                color: '#e53e3e', fontStyle: lang === 'he' ? 'normal' : 'italic', lineHeight: 1.4,
               }}>
                 {videoError}
               </div>

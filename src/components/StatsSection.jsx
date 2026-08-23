@@ -165,7 +165,7 @@ export default function StatsSection() {
             <div style={valStyle}>{streak > 0 ? streak : '—'}</div>
           </div>
           {streak > 0 && (
-            <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: TYPE.micro, color: stone, marginTop: 6 }}>
+            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: TYPE.micro, color: stone, marginTop: 6 }}>
               {streak} {L.jours}
             </div>
           )}
@@ -177,7 +177,7 @@ export default function StatsSection() {
           {currentLevel != null ? (
             <div style={valStyle}>{currentLevel.toFixed(1)}</div>
           ) : (
-            <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 4, lineHeight: 1.4 }}>
+            <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 4, lineHeight: 1.4 }}>
               {lang === 'he' ? 'לא הוערך' : lang === 'en' ? 'Not evaluated' : 'Non évalué'}
             </div>
           )}
@@ -217,7 +217,7 @@ export default function StatsSection() {
             transition: 'width 0.8s ease',
           }} />
         </div>
-        <div style={{ fontFamily: ff_italic, fontStyle: 'italic', fontSize: 12.5, color: stone, marginTop: 8 }}>
+        <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 12.5, color: stone, marginTop: 8 }}>
           {L.confianceSub}
         </div>
       </div>
@@ -309,7 +309,7 @@ export default function StatsSection() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="2" strokeLinecap="round" style={{ marginTop: 2, flexShrink: 0 }}>
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              <p style={{ fontFamily: 'Mulish', fontStyle: 'italic', fontSize: 12, color: stone, lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontFamily: 'Mulish', fontStyle: rtl ? 'normal' : 'italic', fontSize: 12, color: stone, lineHeight: 1.5, margin: 0 }}>
                 {L.modalNote}
               </p>
             </div>

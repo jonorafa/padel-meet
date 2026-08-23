@@ -80,7 +80,7 @@ function LangButton({ code, flag, label, onSelect }) {
 
 
 // ─── Preferences Chips ─────────────────────────────────────────────────────
-function Chips({ value, onChange, options, dark }) {
+function Chips({ value, onChange, options, dark, lang }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
       {options.map(opt => {
@@ -92,7 +92,7 @@ function Chips({ value, onChange, options, dark }) {
             color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
             border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '60'}`,
             borderRadius: 999, cursor: 'pointer',
-            fontFamily: 'Spectral, serif', fontStyle: 'italic',
+            fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic',
             fontSize: 14, transition: 'all 0.2s',
           }}>
             {opt.icon && <span style={{ display: 'inline-flex' }}>{opt.icon}</span>}
@@ -212,7 +212,7 @@ function PrefGroup({ label, children, dark }) {
 }
 
 // ─── Preferences (Bottom Sheet) ────────────────────────────────────────────
-function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
+function PreferencesSheet({ t, lang, initial, onApply, onClose, dark }) {
   const [side, setSide]             = useState(initial.side || 'any');
   const [style, setStyle]           = useState(initial.style || 'any');
   const [motivation, setMotivation] = useState(initial.motivation || 'any');
@@ -225,23 +225,23 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
   const reset = () => { setSide('any'); setStyle('any'); setMotivation('any'); setHand('any'); setRegion('any'); setLevelMin(1); setLevelMax(7); setFrequency(0); };
 
   return (
-    <BottomSheet onClose={onClose} title={t.setProfile} dark={dark}>
+    <BottomSheet onClose={onClose} title={t.setProfile} dark={dark} lang={lang}>
       <PrefGroup label={t.side} dark={dark}>
-        <Chips dark={dark} value={side} onChange={setSide} options={[
+        <Chips dark={dark} lang={lang} value={side} onChange={setSide} options={[
           { v: 'any', label: t.anySide },
           { v: 'forehand', label: t.forehand, icon: '◐' },
           { v: 'backhand', label: t.backhand, icon: '◑' },
         ]} />
       </PrefGroup>
       <PrefGroup label={t.hand} dark={dark}>
-        <Chips dark={dark} value={hand} onChange={setHand} options={[
+        <Chips dark={dark} lang={lang} value={hand} onChange={setHand} options={[
           { v: 'any', label: t.anySide },
           { v: 'right', label: t.rightHand },
           { v: 'left', label: t.leftHand },
         ]} />
       </PrefGroup>
       <PrefGroup label={t.playerStyle} dark={dark}>
-        <Chips dark={dark} value={style} onChange={setStyle} options={[
+        <Chips dark={dark} lang={lang} value={style} onChange={setStyle} options={[
           { v: 'any', label: t.anyStyle },
           { v: 'aggressive', label: t.aggressive, icon: '▲' },
           { v: 'defensive', label: t.defensive, icon: '▽' },
@@ -249,7 +249,7 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
         ]} />
       </PrefGroup>
       <PrefGroup label={t.motivation} dark={dark}>
-        <Chips dark={dark} value={motivation} onChange={setMotivation} options={[
+        <Chips dark={dark} lang={lang} value={motivation} onChange={setMotivation} options={[
           { v: 'any', label: t.anyMot },
           { v: 'fun', label: t.fun },
           { v: 'improve', label: t.improve },
@@ -257,7 +257,7 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
         ]} />
       </PrefGroup>
       <PrefGroup label={t.region} dark={dark}>
-        <Chips dark={dark} value={region} onChange={setRegion} options={[
+        <Chips dark={dark} lang={lang} value={region} onChange={setRegion} options={[
           { v: 'any',     label: t.anySide },
           { v: 'France',  label: '🇫🇷 France', icon: '' },
           { v: 'Israël',  label: '🇮🇱 Israël', icon: '' },
@@ -290,12 +290,12 @@ function PreferencesSheet({ t, initial, onApply, onClose, dark }) {
           background: dark ? COURT.darkCard : COURT.cream,
           color: dark ? COURT.darkMuted : COURT.stone,
           border: `0.5px solid ${dark ? COURT.darkBorder : COURT.stone + '50'}`,
-          borderRadius: 10, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, cursor: 'pointer',
+          borderRadius: 10, fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14, cursor: 'pointer',
         }}>{t.reset}</button>
         <button onClick={() => { onApply({ side, style, motivation, hand, region, levelMin, levelMax, frequency }); onClose(); }} style={{
           flex: 2, padding: '14px', background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.green}`, borderRadius: 10,
-          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15, cursor: 'pointer',
+          fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 15, cursor: 'pointer',
           letterSpacing: '0.04em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
           <PadelBall size={18} shadow={false} />{t.saveAndSwipe}
@@ -690,7 +690,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
         <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke={COURT.cream} strokeWidth="1.5" strokeLinecap="round">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
-        <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 22, color: COURT.cream, letterSpacing: '0.06em', fontWeight: 500 }}>
+        <div style={{ fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 22, color: COURT.cream, letterSpacing: '0.06em', fontWeight: 500 }}>
           Passer
         </div>
       </div>
@@ -739,8 +739,8 @@ function EmptyStack({ t, lang, onReset, onElargir, dark }) {
       <div style={{ animation: 'bounceY 2s ease-in-out infinite', marginBottom: 20 }}><PadelBall size={50} /></div>
       <div style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontSize: 20, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>{t.closedClub}</div>
       <p style={{ fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, maxWidth: 240, margin: '12px 0 24px' }}>{t.closedHint}</p>
-      <ThinButton variant="green" onClick={onElargir}>{t.widenFilters}</ThinButton>
-      <ThinButton variant="cream" onClick={onReset} style={{ marginTop: 10, padding: '10px 20px', fontSize: 14 }}>{t.refreshStack}</ThinButton>
+      <ThinButton variant="green" onClick={onElargir} lang={lang}>{t.widenFilters}</ThinButton>
+      <ThinButton variant="cream" onClick={onReset} lang={lang} style={{ marginTop: 10, padding: '10px 20px', fontSize: 14 }}>{t.refreshStack}</ThinButton>
     </div>
   );
 }
@@ -1435,7 +1435,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           </div>
         </div>
         <div style={{ fontFamily: 'Spectral, serif', fontSize: 24, color, letterSpacing: '0.06em', marginBottom: 4 }}>{pending.score}</div>
-        <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
+        <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginBottom: pending.isSubmitter ? 0 : 10 }}>
           {label} · {pending.isSubmitter
             ? (lang === 'en' ? 'Awaiting confirmation…' : lang === 'he' ? 'ממתין לאישור…' : 'En attente de confirmation…')
             : (lang === 'en' ? `${player?.name} asks you to confirm` : lang === 'he' ? `${player?.name} מבקש את אישורך` : `${player?.name} demande votre confirmation`)}
@@ -1493,10 +1493,10 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
   const renderLockedCard = () => (
     <div style={{ margin: '4px 0', background: card, border: `1px solid ${COURT.rust}40`, borderRadius: 14, padding: '14px', width: '100%', textAlign: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}><LockIcon size={24} color={COURT.rust} /></div>
-      <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: COURT.rust, fontStyle: 'italic', marginBottom: 4 }}>
+      <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: COURT.rust, fontStyle: rtl ? 'normal' : 'italic', marginBottom: 4 }}>
         {lang === 'en' ? 'Match unrecordable' : lang === 'he' ? 'לא ניתן לרשום את המשחק' : 'Match inenregistrable'}
       </div>
-      <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
+      <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>
         {lang === 'en' ? '3 consecutive rejections — no score can be submitted for this match.' : lang === 'he' ? '3 דחיות רצופות — לא ניתן להגיש תוצאה למשחק זה.' : '3 désaccords consécutifs — aucun score ne peut être enregistré pour ce match.'}
       </div>
     </div>
@@ -1675,7 +1675,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       {/* ── Sheet Proposer un match ─────────────────────────────────────────── */}
       {sheet === 'proposal' && (
         <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>
             {lang === 'en' ? 'Propose a match' : lang === 'he' ? 'הצע משחק' : 'Proposer un match'}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -1686,7 +1686,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           </div>
           <input placeholder={lang === 'en' ? 'Court / location (optional)' : lang === 'he' ? 'מגרש / מיקום (אופציונלי)' : 'Club / terrain (optionnel)'}
             value={propPlace} onChange={e => setPropPlace(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, outline: 'none' }} />
+            style={{ padding: '8px 12px', borderRadius: 8, border: `0.5px solid ${border}`, background: bg, color: ink, fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, outline: 'none' }} />
           <button onClick={sendProposal} disabled={propSending || !propDate || !propTime} style={{
             padding: '10px', borderRadius: 10, background: COURT.green, border: 'none',
             color: COURT.cream, fontFamily: 'Mulish', fontSize: 13, cursor: 'pointer', opacity: (!propDate || !propTime) ? 0.4 : 1,
@@ -1699,7 +1699,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
       {/* ── Sheet Entrer un score ───────────────────────────────────────────── */}
       {sheet === 'score' && (
         <div style={{ padding: '14px 16px', borderBottom: `0.5px solid ${border}`, background: card, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontStyle: 'italic' }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 16, color: ink, fontStyle: rtl ? 'normal' : 'italic' }}>
             {lang === 'en' ? 'Submit a score' : lang === 'he' ? 'הגש תוצאה' : 'Soumettre un score'}
           </div>
 
@@ -1707,7 +1707,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
           {scoreDateBlocked && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 12px', background: `${COURT.gold}18`, border: `0.5px solid ${COURT.gold}60`, borderRadius: 8 }}>
               <span style={{ flexShrink: 0, display: 'flex' }}><HourglassIcon size={18} color={COURT.gold} /></span>
-              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: ink }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: ink }}>
                 {lang === 'en'
                   ? `Match scheduled for ${latestAcceptedProposal?.metadata?.date} — submit the score after the match.`
                   : lang === 'he'
@@ -1818,7 +1818,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             )}
           </div>
           {scoreError && <div style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.rust }}>{scoreError}</div>}
-          <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone }}>
             {lang === 'en' ? `${player?.name} will need to confirm the score.` : lang === 'he' ? `${player?.name} יצטרך לאשר את התוצאה.` : `${player?.name} devra confirmer le score. Anti-spam activé.`}
           </div>
           <button onClick={sendScore} disabled={scoreSending || !scoreText.trim() || scoreDateBlocked} style={{
@@ -1862,7 +1862,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                       {m.metadata?.date} {lang === 'en' ? 'at' : lang === 'he' ? 'ב' : 'à'} {m.metadata?.time}
                     </div>
                     {m.metadata?.place && (
-                      <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
+                      <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: stone, marginTop: 2 }}>📍 {m.metadata.place}</div>
                     )}
 
                     {/* Boutons Accept/Decline (uniquement pour l'autre joueur, pas encore répondu) */}
@@ -1927,7 +1927,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                 borderRadius: m.from === 'me' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                 background: m.from === 'me' ? COURT.green : (dark ? '#243020' : '#EDE9DF'),
                 color: m.from === 'me' ? COURT.cream : ink,
-                fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
+                fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 15,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
               }}>
                 {m.text[lang] || m.text.fr}
@@ -1970,7 +1970,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             flex: 1, padding: '11px 16px', borderRadius: 24,
             background: dark ? COURT.darkCard : '#EDE9DF',
             border: `0.5px solid ${border}`,
-            fontFamily: 'Spectral, serif', fontStyle: 'italic',
+            fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
             fontSize: 15, color: ink, outline: 'none',
           }}
         />
@@ -2010,7 +2010,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
               <div style={{ fontFamily: 'Spectral, serif', fontSize: 17, color: dark ? COURT.darkText : COURT.ink, fontWeight: 500 }}>
                 {lang === 'en' ? `Evaluate ${player?.name}` : lang === 'he' ? `העריך את ${player?.name}` : `Évaluer ${player?.name}`}
               </div>
-              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13, color: dark ? COURT.darkMuted : COURT.stone }}>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: dark ? COURT.darkMuted : COURT.stone }}>
                 {lang === 'en' ? 'Answer as if rating their level' : lang === 'he' ? 'ענה לפי הרמה שלו/ה' : 'Répondez en pensant à son niveau'}
               </div>
             </div>
@@ -2074,6 +2074,10 @@ function ReadReceipt({ read }) {
 
 // ─── Chat Screen ─────────────────────────────────────────────────────────────
 function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0, onStartMatch }) {
+  // `rtl` manquait ici : ScreenHeader plus bas recevait rtl={false} en dur,
+  // ce qui ne cassait pas que l'italique — dir="ltr" était forcé sur tout
+  // l'en-tête « Messages » quel que soit `lang`.
+  const rtl = lang === 'he';
   const { matches, loading: matchesLoading } = useUserMatches();
   const [activeMatch, setActiveMatch] = useState(null); // { matchId, player }
   const bg    = dark ? COURT.darkBg   : COURT.cream;
@@ -2087,7 +2091,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
       <div style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 56, paddingBottom: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 32px 100px' }}>
         <div style={{ textAlign: 'center', maxWidth: 280 }}>
           <div style={{ fontSize: 44, marginBottom: 16 }}>💬</div>
-          <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: ink, fontStyle: 'italic', fontWeight: 500, marginBottom: 10 }}>
+          <div style={{ fontFamily: 'Spectral, serif', fontSize: 22, color: ink, fontStyle: lang === 'he' ? 'normal' : 'italic', fontWeight: 500, marginBottom: 10 }}>
             {lang === 'en' ? 'Your matches, your chats' : lang === 'he' ? 'ההתאמות שלך, הצ׳אטים שלך' : 'Tes matchs, tes conversations'}
           </div>
           <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, lineHeight: 1.6, marginBottom: 28 }}>
@@ -2101,7 +2105,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
             padding: '14px 28px', borderRadius: 12,
             background: COURT.green, color: COURT.cream,
             border: `0.5px solid ${COURT.gold}50`, cursor: 'pointer',
-            fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 16,
+            fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 16,
           }}>
             {lang === 'en' ? 'Join the club' : lang === 'he' ? 'הצטרף למועדון' : 'Rejoindre le club'}
           </button>
@@ -2130,14 +2134,14 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
       {/* rtl={false} explicite : cet écran n'a pas de dir="rtl" sur son
           conteneur racine (contrairement aux 3 autres) — pré-existant, hors
           périmètre de ce chantier, pas corrigé silencieusement ici. */}
-      <ScreenHeader eyebrow={t.atClub} title={t.chat} notifCount={notifCount} onShowNotifs={onShowNotifs} dark={dark} rtl={false} />
+      <ScreenHeader eyebrow={t.atClub} title={t.chat} notifCount={notifCount} onShowNotifs={onShowNotifs} dark={dark} rtl={rtl} />
 
       {matchesLoading || matches === null ? (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: stone }}>
           <div style={{ width: 24, height: 24, margin: '0 auto', borderRadius: '50%', border: `2px solid ${COURT.green}30`, borderTopColor: COURT.green, animation: 'spin 0.7s linear infinite' }} />
         </div>
       ) : matches.length === 0 ? (
-        <div style={{ padding: '40px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noChats}</div>
+        <div style={{ padding: '40px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 15 }}>{t.noChats}</div>
       ) : matches.map((m, i) => (
         <ChatListRow
           key={m.matchId}
@@ -2156,7 +2160,7 @@ function ChatScreen({ t, lang, dark, onOpenDetail, isGuest, onGuestAction, onSho
         padding: '10px 16px', borderRadius: 24,
         background: COURT.green, color: COURT.cream,
         border: `0.5px solid ${COURT.gold}50`,
-        fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
+        fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 13,
         cursor: 'pointer', boxShadow: '0 4px 16px rgba(15,61,41,0.25)',
         display: 'flex', alignItems: 'center', gap: 6,
         animation: 'fadeUp 0.6s ease 1s both',
@@ -2207,7 +2211,7 @@ function ChatListRow({ match, index, ink, stone, border, bg, lang, onOpen }) {
             <div style={{
               flex: 1, minWidth: 0,
               fontFamily: 'Spectral, serif',
-              fontStyle: 'italic',
+              fontStyle: lang === 'he' ? 'normal' : 'italic',
               fontSize: 13,
               color: hasUnread ? ink : stone,
               fontWeight: hasUnread ? 700 : 400,
@@ -2329,7 +2333,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
             flex: 1, padding: '10px', borderRadius: 8, border: 'none', cursor: 'pointer',
             background: tab === tb.id ? COURT.green : 'transparent',
             color: tab === tb.id ? COURT.cream : stone,
-            fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14,
+            fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 14,
             transition: 'all 0.25s',
           }}>{tb.label}</button>
         ))}
@@ -2400,7 +2404,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
           {myMatches && myMatches.length > 0 && (
             <div style={{ marginTop: 32 }}>
               <div style={{ marginBottom: 14 }}>
-                <SectionHeading>
+                <SectionHeading italic={!rtl}>
                   {lang === 'fr' ? 'Joue contre eux' : lang === 'he' ? 'שחק נגדם' : 'Play against them'}
                 </SectionHeading>
               </div>
@@ -2458,7 +2462,7 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
           {/* ════ PROCHAIN MATCH ════ */}
           <div style={{ marginTop: 32 }}>
             <div style={{ marginBottom: 14 }}>
-              <SectionHeading>
+              <SectionHeading italic={!rtl}>
                 {lang === 'fr' ? 'Prochain match' : lang === 'he' ? 'המשחק הבא' : 'Next match'}
               </SectionHeading>
             </div>
@@ -2502,12 +2506,12 @@ function MatchesScreen({ t, lang, level, dark, onShowNotifs, notifCount = 0, onS
           <div style={{ padding: '0 20px 20px' }}>
             <div style={{ background: card, border: `0.5px solid ${border}`, borderRadius: 12, padding: '16px 16px 20px' }}>
               <div style={{ marginBottom: 18 }}>
-                <SectionHeading>{t.trophiesTitle || 'Trophées'}</SectionHeading>
+                <SectionHeading italic={!rtl}>{t.trophiesTitle || 'Trophées'}</SectionHeading>
               </div>
               {/* `Icon` et `progress` viennent de computeBadges (badges.jsx) —
                   seuls le libellé et la description restent définis ici, ils
                   sont propres à cet écran. */}
-              <Achievements dark={dark} badges={[
+              <Achievements dark={dark} lang={lang} badges={[
                 {
                   ...badgeResults[0], label: trophies[0].label, on: trophies[0].unlocked,
                   desc: lang === 'fr' ? 'Joue ton 1er match pour débloquer ce trophée' : lang === 'en' ? 'Play your first match to unlock' : 'שחק את המשחק הראשון שלך',
@@ -2560,7 +2564,7 @@ function LikesReceivedSheet({ t, lang, dark, userId, onClose, onOpenDetail }) {
   }, [userId]);
 
   return (
-    <BottomSheet onClose={onClose} title={t.likesReceived || 'Likes reçus'} dark={dark}>
+    <BottomSheet onClose={onClose} title={t.likesReceived || 'Likes reçus'} dark={dark} lang={lang}>
       <div style={{ padding: '8px 20px 24px', minHeight: 160 }}>
         {loading && (
           <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 14, color: stone }}>…</div>
@@ -2669,7 +2673,7 @@ function ContactSheet({ dark, lang, onClose }) {
   const title = lang === 'fr' ? 'Nous contacter' : lang === 'en' ? 'Contact us' : 'צור קשר';
 
   return (
-    <BottomSheet onClose={onClose} title={title} dark={dark}>
+    <BottomSheet onClose={onClose} title={title} dark={dark} lang={lang}>
       <div style={{ padding: '8px 20px 36px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {sent ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
@@ -3119,7 +3123,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           </div>
           {uploadError && (
             <div style={{
-              marginTop: 6, fontFamily: ff_italic, fontStyle: 'italic',
+              marginTop: 6, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 13, color: COURT.rust,
             }}>{uploadError}</div>
           )}
@@ -3138,7 +3142,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                   }}>
                     {lang === 'en' ? 'Level' : lang === 'he' ? 'רמה' : 'Niveau'}
                   </div>
-                  <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 40, color: COURT.green, lineHeight: 1 }}>
+                  <div style={{ fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 40, color: COURT.green, lineHeight: 1 }}>
                     {level.toFixed(1)}
                   </div>
                 </div>
@@ -3215,7 +3219,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
 
         {/* ════ MON PROFIL ════ */}
         <div style={{ marginBottom: 14 }}>
-          <SectionHeading>
+          <SectionHeading italic={!rtl}>
             {lang === 'fr' ? 'Mon profil' : lang === 'en' ? 'My profile' : 'הפרופיל שלי'}
           </SectionHeading>
         </div>
@@ -3352,7 +3356,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Langue' : lang==='en' ? 'Language' : 'שפה'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 Français · English · עברית
               </div>
             </div>
@@ -3397,7 +3401,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Aide & support' : lang==='en' ? 'Help & support' : 'עזרה ותמיכה'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Nous contacter' : lang==='en' ? 'Contact us' : 'צור קשר'}
               </div>
             </div>
@@ -3416,7 +3420,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? 'Confidentialité' : lang==='en' ? 'Privacy' : 'פרטיות'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'Politique de confidentialité' : lang==='en' ? 'Privacy policy' : 'מדיניות פרטיות'}
               </div>
             </div>
@@ -3435,7 +3439,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ fontFamily:ff_serif, fontSize: 19, color:ink, fontStyle: rtl ? 'normal' : 'italic' }}>
                 {lang==='fr' ? "Conditions d'utilisation" : lang==='en' ? 'Terms of use' : 'תנאי שימוש'}
               </div>
-              <div style={{ fontFamily:ff_italic, fontStyle:'italic', fontSize: 13, color:stone, marginTop:1 }}>
+              <div style={{ fontFamily:ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color:stone, marginTop:1 }}>
                 {lang==='fr' ? 'CGU & règles de la communauté' : lang==='en' ? 'Terms & community rules' : 'תנאים וכללי קהילה'}
               </div>
             </div>
@@ -3560,7 +3564,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
         <BottomSheet
           onClose={() => setShowMenu(false)}
           title={lang === 'fr' ? 'Menu' : lang === 'en' ? 'Menu' : 'תפריט'}
-          dark={dark}
+          dark={dark} lang={lang}
         >
           <div style={{ padding: '4px 20px 32px' }}>
             {[
@@ -3660,7 +3664,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
         <BottomSheet
           onClose={() => setShowBlockedPlayers(false)}
           title={lang === 'fr' ? 'Joueurs bloqués' : lang === 'en' ? 'Blocked players' : 'שחקנים חסומים'}
-          dark={dark}
+          dark={dark} lang={lang}
         >
           <div style={{ padding: '4px 20px 32px' }}>
             {(!blockedProfiles || blockedProfiles.length === 0) ? (
@@ -3718,7 +3722,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
         <BottomSheet
           onClose={() => setShowEvalPicker(false)}
           title={lang === 'fr' ? 'Choisir un joueur' : lang === 'en' ? 'Choose a player' : 'בחר שחקן'}
-          dark={dark}
+          dark={dark} lang={lang}
         >
           <div style={{ padding: '4px 20px 32px' }}>
             {(!evalMatches || evalMatches.length === 0) ? (
@@ -3833,7 +3837,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><StarIcon size={40} color={COURT.gold} filled /></div>
-                <div style={{ fontFamily: ff_serif, fontSize: 18, color: COURT.green, fontWeight: 700, fontStyle: 'italic' }}>
+                <div style={{ fontFamily: ff_serif, fontSize: 18, color: COURT.green, fontWeight: 700, fontStyle: rtl ? 'normal' : 'italic' }}>
                   {lang === 'fr' ? 'Évaluation envoyée !' : lang === 'en' ? 'Rating sent!' : 'הערכה נשלחה!'}
                 </div>
                 <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 6 }}>
@@ -3850,7 +3854,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
         <BottomSheet
           onClose={() => setShowLangPicker(false)}
           title={lang === 'fr' ? 'Langue' : lang === 'en' ? 'Language' : 'שפה'}
-          dark={dark}
+          dark={dark} lang={lang}
         >
           <div style={{ padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
@@ -3884,7 +3888,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
         <BottomSheet
           onClose={() => setShowCountry(false)}
           title={lang === 'fr' ? 'Mon pays' : lang === 'en' ? 'My country' : 'המדינה שלי'}
-          dark={dark}
+          dark={dark} lang={lang}
         >
           <div style={{ padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4 }}>
@@ -3966,7 +3970,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               </div>
             </div>
             {/* Titre */}
-            <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, fontStyle: 'italic', color: dark ? COURT.darkText : COURT.ink, textAlign: 'center', marginBottom: 12, lineHeight: 1.4 }}>
+            <div style={{ fontFamily: 'Spectral, serif', fontSize: 20, fontStyle: rtl ? 'normal' : 'italic', color: dark ? COURT.darkText : COURT.ink, textAlign: 'center', marginBottom: 12, lineHeight: 1.4 }}>
               {lang==='fr' ? 'Réévaluation mensuelle' : lang==='en' ? 'Monthly re-evaluation' : 'הערכה חודשית'}
             </div>
             {/* Message principal */}
@@ -4001,7 +4005,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 style={{
                   flex: 1, padding: '14px', borderRadius: 12,
                   background: 'transparent', border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green + '50'}`,
-                  fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
+                  fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 15,
                   color: dark ? COURT.darkText : COURT.green, cursor: 'pointer',
                 }}
               >
@@ -4012,7 +4016,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                 style={{
                   flex: 1, padding: '14px', borderRadius: 12,
                   background: COURT.green, border: `0.5px solid ${COURT.gold}60`,
-                  fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
+                  fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic', fontSize: 15,
                   color: COURT.cream, cursor: 'pointer',
                 }}
               >
@@ -4081,7 +4085,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <div style={{ textAlign: 'center', padding: 32 }}>
                 <Ornament width={50} style={{ margin: '0 auto 16px', display: 'block' }} />
                 <div style={{
-                  fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                  fontFamily: 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
                   fontSize: 14, color: dark ? COURT.darkMuted : COURT.stone, marginBottom: 12,
                 }}>
                   {lang === 'fr' ? 'Niveau mis à jour' : lang === 'en' ? 'Level updated' : 'הרמה עודכנה'}
@@ -4092,7 +4096,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
                   animation: 'levelPop 0.8s cubic-bezier(.2,.9,.3,1.4)',
                 }}>
                   {reEvalDone.toFixed(1)}
-                  <span style={{ fontSize: 28, color: dark ? COURT.darkMuted : COURT.stone, fontStyle: 'italic', fontFamily: 'Spectral, serif' }}>/7.0</span>
+                  <span style={{ fontSize: 28, color: dark ? COURT.darkMuted : COURT.stone, fontStyle: rtl ? 'normal' : 'italic', fontFamily: 'Spectral, serif' }}>/7.0</span>
                 </div>
               </div>
             </div>
@@ -4165,7 +4169,7 @@ function PartnerPrefsSheet({ t, lang, dark, initial, onSave, onClose }) {
   };
 
   return (
-    <BottomSheet onClose={onClose} title={t.partnerPrefsTitle || 'Le partenaire idéal'} dark={dark}>
+    <BottomSheet onClose={onClose} title={t.partnerPrefsTitle || 'Le partenaire idéal'} dark={dark} lang={lang}>
       <div style={{ padding: '8px 20px 20px' }}>
         <p style={{
           fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
@@ -4301,9 +4305,9 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
   };
 
   return (
-    <BottomSheet onClose={onClose} title={t.notifications} dark={dark}>
+    <BottomSheet onClose={onClose} title={t.notifications} dark={dark} lang={lang}>
       {notifications.length === 0 ? (
-        <div style={{ padding: '32px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15 }}>{t.noNotifs}</div>
+        <div style={{ padding: '32px 24px', textAlign: 'center', color: stone, fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 15 }}>{t.noNotifs}</div>
       ) : notifications.map((n) => {
         const from = n.fromPlayer;
         return (
@@ -4321,7 +4325,7 @@ function NotificationsPanel({ t, lang, notifications, onClose, onMarkRead, dark 
               </div>
             )}
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 14, color: ink, lineHeight: 1.4 }}>{n.text[lang] || n.text.fr}</div>
+              <div style={{ fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 14, color: ink, lineHeight: 1.4 }}>{n.text[lang] || n.text.fr}</div>
               <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginTop: 2 }}>{n.time}</div>
             </div>
             {!n.read && <div style={{ width: 8, height: 8, borderRadius: 4, background: COURT.green, flexShrink: 0 }} />}
@@ -4385,7 +4389,7 @@ function ScheduleMatchSheet({ lang, dark, onClose, onProposalSent, initialPartne
     <BottomSheet
       onClose={onClose}
       title={lang === 'en' ? 'Schedule a match' : lang === 'he' ? 'תזמן משחק' : 'Planifier un match'}
-      dark={dark}
+      dark={dark} lang={lang}
     >
       <div style={{ padding: '4px 20px 28px' }}>
 
@@ -4642,7 +4646,7 @@ export default function MainApp() {
           background: COURT.green, color: COURT.cream,
           border: `0.5px solid ${COURT.gold}`, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
-          fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 13,
+          fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 13,
           boxShadow: '0 2px 8px rgba(15,61,41,0.25)', animation: 'notifPop 0.4s ease',
         }}>
           <PadelBall size={14} shadow={false} />

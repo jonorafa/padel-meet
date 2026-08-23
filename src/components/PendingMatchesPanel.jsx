@@ -294,7 +294,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
   const hasContent = pendingToConfirm.length > 0 || pendingAwaitingConfirmation.length > 0
 
   return (
-    <BottomSheet onClose={onClose} title={t.pendingMatches} dark={dark}>
+    <BottomSheet onClose={onClose} title={t.pendingMatches} dark={dark} lang={lang}>
       <div style={{ padding: '16px 20px 24px', minHeight: 200 }}>
         {/* Section : Scores à confirmer */}
         {pendingToConfirm.length > 0 && (
@@ -449,7 +449,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
                 </span>
                 <span style={{
                   fontFamily: 'Spectral, serif',
-                  fontSize: 22, color: stone, fontStyle: 'italic',
+                  fontSize: 22, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic',
                 }}>
                   /7
                 </span>

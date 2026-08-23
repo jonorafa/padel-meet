@@ -66,7 +66,7 @@ export default function EvolutionChart() {
   return (
     <div dir={rtl ? 'rtl' : 'ltr'}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <SectionHeading>{t.evolutionTitle}</SectionHeading>
+        <SectionHeading italic={!rtl}>{t.evolutionTitle}</SectionHeading>
         <div style={{ display: 'flex', gap: 4 }}>
           {[['1M', '1M'], ['3M', '3M'], ['6M', '6M'], ['1Y', '1Y'], ['all', t.periodAll || 'Tout']].map(([key, lbl]) => (
             <button key={key} onClick={() => { setEvoPeriod(key); setTouchIdx(null); }} style={{
