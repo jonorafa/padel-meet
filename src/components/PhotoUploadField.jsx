@@ -144,6 +144,7 @@ export function PhotoUploadField({
                   setPreview(null)
                   if (inputRef.current) inputRef.current.value = ''
                 }}
+                aria-label="Retirer la photo"
                 style={{
                   position: 'absolute', top: 8, right: 8,
                   background: COURT.red, color: '#fff', border: 'none',

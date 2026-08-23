@@ -277,6 +277,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
         {/* Bouton fermer */}
         <button
           onClick={onClose}
+          aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'}
           style={{
             width: 40, height: 40, borderRadius: 12, border: `0.5px solid ${border}`,
             background: card, color: ink, cursor: 'pointer', flexShrink: 0,

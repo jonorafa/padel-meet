@@ -384,7 +384,7 @@ function Node({ icon, state, pulse, dark, onClick }) {
 }
 
 // ─── Moteur de quizz ────────────────────────────────────────────────────────
-function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
+function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
   const questions = chapter.questions
   const [qIndex,       setQIndex]       = useState(0)
   const [selected,     setSelected]     = useState(null)
@@ -450,7 +450,7 @@ function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
         <>
           {/* ── Barre de progression + fermeture ── */}
           <div style={{ padding: '16px 18px 10px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <button onClick={onClose} style={{
+            <button onClick={onClose} aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'} style={{
               background: 'none', border: 'none', cursor: 'pointer', fontSize: 26,
               color: stone, lineHeight: 1, padding: 2,
             }}>×</button>

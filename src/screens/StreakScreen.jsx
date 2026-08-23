@@ -69,6 +69,7 @@ export default function StreakScreen({ onClose }) {
       <div style={{ padding: '18px 22px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button
           onClick={onClose}
+          aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: stone, fontSize: 24, lineHeight: 1, transform: rtl ? 'scaleX(-1)' : 'none', padding: 0 }}
         >‹</button>
         <span style={{ fontFamily: 'Mulish', fontSize: 13, fontWeight: 600, color: stone }}>

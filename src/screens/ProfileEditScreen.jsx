@@ -312,6 +312,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
       }}>
         <button
           onClick={onClose}
+          aria-label={lang === 'he' ? 'חזור' : lang === 'en' ? 'Back' : 'Retour'}
           style={{
             width: 40, height: 40, borderRadius: 10, border: `0.5px solid ${border}`,
             background: card, color: ink, cursor: 'pointer',
@@ -328,6 +329,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
         </h1>
         <button
           onClick={onClose}
+          aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'}
           style={{
             width: 40, height: 40, borderRadius: 10, border: `0.5px solid ${border}`,
             background: card, color: ink, cursor: 'pointer',

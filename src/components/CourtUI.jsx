@@ -1161,6 +1161,7 @@ export function GlossaryCard({ termKey, lang, dark, onClose }) {
           </div>
           <button
             onClick={onClose}
+            aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'}
             style={{
               width: 28, height: 28, borderRadius: 14,
               background: `${COURT.green}18`, border: 'none', cursor: 'pointer',

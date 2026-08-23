@@ -192,6 +192,7 @@ export default function StatsSection() {
             {/* Icône info — cliquable */}
             <button
               onClick={() => setShowConfModal(true)}
+              aria-label={lang === 'he' ? 'מידע על מדד האמינות' : lang === 'en' ? 'About the confidence rate' : "En savoir plus sur l'indice de confiance"}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                 display: 'flex', alignItems: 'center', marginBottom: 10,

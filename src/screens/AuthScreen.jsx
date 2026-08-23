@@ -167,6 +167,7 @@ export default function AuthScreen() {
       {/* Bouton retour vers l'écran langue */}
       <button
         onClick={() => navigate('/')}
+        aria-label={lang === 'he' ? 'חזור' : lang === 'en' ? 'Back' : 'Retour'}
         style={{
           position: 'absolute', top: 18, left: 18,
           background: 'none', border: 'none', cursor: 'pointer',

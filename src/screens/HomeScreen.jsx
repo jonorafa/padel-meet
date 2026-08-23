@@ -181,7 +181,7 @@ export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0, o
 
         {/* Cloche notifs */}
         {notifCount > 0 && (
-          <button onClick={onShowNotifs} style={{
+          <button onClick={onShowNotifs} aria-label={lang === 'he' ? 'התראות' : lang === 'en' ? 'Notifications' : 'Notifications'} style={{
             background: 'none', border: 'none', cursor: 'pointer', position: 'relative', padding: 4,
           }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"

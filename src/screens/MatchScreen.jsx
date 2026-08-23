@@ -1507,7 +1507,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{ paddingTop: 'max(52px, env(safe-area-inset-top, 0px))', padding: `max(52px, env(safe-area-inset-top, 0px)) 16px 12px`, borderBottom: `0.5px solid ${border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4, flexShrink: 0 }}>
+        <button onClick={onBack} aria-label={lang === 'he' ? 'חזור' : lang === 'en' ? 'Back' : 'Retour'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4, flexShrink: 0 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
             <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
           </svg>
@@ -1795,7 +1795,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
                   </div>
                   {/* Supprimer set (seulement si > 1 set) */}
                   {sets.length > 1 && (
-                    <button onClick={() => setSets(prev => prev.filter((_, j) => j !== i))} style={{
+                    <button onClick={() => setSets(prev => prev.filter((_, j) => j !== i))} aria-label={lang === 'he' ? 'הסר סט' : lang === 'en' ? 'Remove set' : 'Retirer ce set'} style={{
                       width: 24, height: 24, borderRadius: 12, border: `0.5px solid ${border}`,
                       background: 'transparent', color: stone, cursor: 'pointer', fontSize: 14,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
@@ -1974,7 +1974,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             fontSize: 15, color: ink, outline: 'none',
           }}
         />
-        <button onClick={sendMessage} disabled={!input.trim()} style={{
+        <button onClick={sendMessage} disabled={!input.trim()} aria-label={lang === 'he' ? 'שלח הודעה' : lang === 'en' ? 'Send message' : 'Envoyer le message'} style={{
           width: 44, height: 44, borderRadius: 22, background: COURT.green,
           border: 'none', cursor: 'pointer', color: COURT.cream,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -2001,7 +2001,7 @@ function ActiveChat({ matchId, player, onBack, onOpenDetail, t, lang, dark }) {
             borderBottom: `0.5px solid ${border}`,
             zIndex: 201, display: 'flex', alignItems: 'center', gap: 10,
           }}>
-            <button onClick={() => setEvalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
+            <button onClick={() => setEvalOpen(false)} aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
               </svg>
@@ -2992,7 +2992,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {/* Série de jours */}
-          <button onClick={onOpenStreak} style={{
+          <button onClick={onOpenStreak} aria-label={lang === 'he' ? 'רצף ימים' : lang === 'en' ? 'Streak' : 'Série de jours'} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             // Fond BLANC et non COURT.cream : le cream est exactement la
             // couleur de la page (#F5F1E8), le rond n'avait donc aucun
@@ -3007,7 +3007,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             border: `1px solid ${border}`,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><FlameSVG size={16} animated={false} /></button>
-          <button onClick={() => setShowEditProfile(true)} style={{
+          <button onClick={() => setShowEditProfile(true)} aria-label={lang === 'he' ? 'ערוך פרופיל' : lang === 'en' ? 'Edit profile' : 'Modifier le profil'} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             // Fond BLANC et non COURT.cream : le cream est exactement la
             // couleur de la page (#F5F1E8), le rond n'avait donc aucun
@@ -3028,7 +3028,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </button>
-          <button onClick={() => setShowMenu(true)} style={{
+          <button onClick={() => setShowMenu(true)} aria-label={lang === 'he' ? 'תפריט' : lang === 'en' ? 'Menu' : 'Menu'} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             // Fond BLANC et non COURT.cream : le cream est exactement la
             // couleur de la page (#F5F1E8), le rond n'avait donc aucun
@@ -3050,7 +3050,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <button onClick={onShowNotifs} style={{
+          <button onClick={onShowNotifs} aria-label={lang === 'he' ? 'התראות' : lang === 'en' ? 'Notifications' : 'Notifications'} style={{
             position: 'relative', width: 36, height: 36, borderRadius: 18,
             // Fond BLANC et non COURT.cream : le cream est exactement la
             // couleur de la page (#F5F1E8), le rond n'avait donc aucun
@@ -3782,7 +3782,7 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
             borderBottom: `0.5px solid ${border}`,
             zIndex: 51, display: 'flex', alignItems: 'center', gap: 10,
           }}>
-            <button onClick={() => { setShowMenuEvalQuiz(false); setEvalTarget(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
+            <button onClick={() => { setShowMenuEvalQuiz(false); setEvalTarget(null); }} aria-label={lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'} style={{ background: 'none', border: 'none', cursor: 'pointer', color: COURT.green, padding: 4 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
               </svg>

@@ -101,8 +101,8 @@ export function PhotoGallery({
         {/* Navigation arrows */}
         {photos.length > 1 && (
           <>
-            <button onClick={handlePrevious} style={{ ...navBtnStyle, left: 10 }}>‹</button>
-            <button onClick={handleNext} style={{ ...navBtnStyle, right: 10 }}>›</button>
+            <button onClick={handlePrevious} aria-label="Photo précédente" style={{ ...navBtnStyle, left: 10 }}>‹</button>
+            <button onClick={handleNext} aria-label="Photo suivante" style={{ ...navBtnStyle, right: 10 }}>›</button>
           </>
         )}
 
@@ -122,6 +122,7 @@ export function PhotoGallery({
             {!isPrimary && photos.length > 1 && (
               <button
                 onClick={(e) => handleSetPrimary(currentPhoto.id, e)}
+                aria-label="Définir comme photo principale"
                 style={{
                   background: COURT.green, color: COURT.cream, border: 'none',
                   padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
@@ -131,6 +132,7 @@ export function PhotoGallery({
             )}
             <button
               onClick={(e) => handleDeletePhoto(currentPhoto.id, e)}
+              aria-label="Supprimer cette photo"
               style={{
                 background: COURT.red, color: '#fff', border: 'none',
                 padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
@@ -148,6 +150,7 @@ export function PhotoGallery({
             <button
               key={photo.id}
               onClick={() => setCurrentIndex(index)}
+              aria-label={`Voir la photo ${index + 1}`}
               style={{
                 flexShrink: 0, width: 58, height: 58, borderRadius: 8,
                 overflow: 'hidden', padding: 0, background: 'none',
