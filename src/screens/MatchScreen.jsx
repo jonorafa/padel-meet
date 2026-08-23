@@ -1011,7 +1011,12 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
               </svg>
             </CircBtn>
             <CircBtn onClick={() => decide('right')} color={COURT.green} large dark={dark}>
-              <PadelBall size={22} shadow={false} />
+              {/* La balle (viewBox 100×100) est dessinée à cy=48, quasi
+                  centrée, mais remplit presque tout le cercle du bouton à
+                  cette taille — la couture basse touche visuellement le bord
+                  et se lit comme une coupure. Léger décalage vers le haut
+                  pour rendre un peu d'air sous la balle. */}
+              <PadelBall size={22} shadow={false} style={{ transform: 'translateY(-1.5px)' }} />
             </CircBtn>
           </>
         )}
