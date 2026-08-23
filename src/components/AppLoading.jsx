@@ -1,5 +1,21 @@
 import { COURT, PadelBall } from './CourtUI'
 
+// AppLoading est monté AVANT que les contextes soient garantis prêts
+// (ProtectedRoute pendant la résolution de session, Suspense pendant le
+// chargement à la demande) : pas d'accès à usePrefs()/I18N. La langue vit
+// dans localStorage['padel_lang'] (PrefsContext.jsx), lisible indépendamment
+// — protégé, un stockage indisponible retombe sur le français.
+function lireLangue() {
+  try { return localStorage.getItem('padel_lang') || 'fr' }
+  catch { return 'fr' }
+}
+
+const STRINGS = {
+  fr: { loading: 'Chargement…', reload: 'Recharger' },
+  en: { loading: 'Loading…',    reload: 'Reload' },
+  he: { loading: 'טוען…',       reload: 'טען מחדש' },
+}
+
 /**
  * Écran d'attente commun au démarrage.
  *
@@ -12,8 +28,12 @@ import { COURT, PadelBall } from './CourtUI'
  * offre une porte de sortie si l'attente s'éternise malgré tout.
  */
 export function AppLoading({ dark = false }) {
+  const lang = lireLangue()
+  const L = STRINGS[lang] || STRINGS.fr
+  const rtl = lang === 'he'
+
   return (
-    <div style={{
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{
       position: 'absolute', inset: 0,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 18,
@@ -23,10 +43,13 @@ export function AppLoading({ dark = false }) {
         <PadelBall size={44} />
       </div>
       <div style={{
-        fontFamily: 'Spectral, serif', fontStyle: 'italic', fontSize: 15,
+        // Mulish n'a pas d'italique dessiné : romain en hébreu plutôt qu'une
+        // inclinaison synthétique (même règle que dans le reste de l'app).
+        fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+        fontStyle: rtl ? 'normal' : 'italic', fontSize: 15,
         color: dark ? COURT.darkMuted : COURT.stone,
       }}>
-        Chargement…
+        {L.loading}
       </div>
       {/* N'apparaît qu'au bout de 6s (cf. l'animation) : inutile de proposer
           un rechargement pendant une attente normale, indispensable si le
@@ -41,7 +64,7 @@ export function AppLoading({ dark = false }) {
           fontFamily: 'Mulish, sans-serif', fontSize: 13, cursor: 'pointer',
         }}
       >
-        Recharger
+        {L.reload}
       </button>
     </div>
   )

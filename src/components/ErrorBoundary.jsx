@@ -15,6 +15,51 @@ const CHUNK_ERROR_RE = /failed to fetch dynamically imported module|importing a 
 const CHUNK_RELOAD_KEY = 'padel_chunk_reload_ts'
 const CHUNK_RELOAD_WINDOW_MS = 10_000 // si l'erreur revient DANS ce délai après un rechargement, ce n'est pas un chunk périmé — on arrête d'insister
 
+// ErrorBoundary est un composant classe, hors de tout contexte React (il
+// enveloppe l'app depuis main.jsx) : pas d'accès à usePrefs()/I18N. La langue
+// vit dans localStorage['padel_lang'] (PrefsContext.jsx), lisible
+// indépendamment — protégé, un stockage indisponible retombe sur le français.
+function lireLangue() {
+  try { return localStorage.getItem('padel_lang') || 'fr' }
+  catch { return 'fr' }
+}
+
+const STRINGS = {
+  fr: {
+    title: 'Une erreur est survenue',
+    hint: 'Rechargez la page pour réessayer.',
+    reported: 'Le problème a été signalé automatiquement.',
+    back: '← Retour',
+    reload: "Recharger l'app",
+    details: '▾ Détails techniques',
+    detailsOpen: '▴ Détails techniques',
+    copy: "📋 Copier l'erreur",
+    copied: '✓ Copié !',
+  },
+  en: {
+    title: 'Something went wrong',
+    hint: 'Reload the page to try again.',
+    reported: 'The issue has been reported automatically.',
+    back: '← Back',
+    reload: 'Reload app',
+    details: '▾ Technical details',
+    detailsOpen: '▴ Technical details',
+    copy: '📋 Copy error',
+    copied: '✓ Copied!',
+  },
+  he: {
+    title: 'אירעה שגיאה',
+    hint: 'טען מחדש את הדף.',
+    reported: 'התקלה דווחה אוטומטית.',
+    back: 'חזרה',
+    reload: 'טען מחדש את האפליקציה',
+    details: '▾ פרטים טכניים',
+    detailsOpen: '▴ פרטים טכניים',
+    copy: '📋 העתק שגיאה',
+    copied: '✓ הועתק!',
+  },
+}
+
 /**
  * ErrorBoundary — attrape les erreurs React non gérées et affiche
  * un écran de secours plutôt qu'un écran blanc.
@@ -27,7 +72,7 @@ const CHUNK_RELOAD_WINDOW_MS = 10_000 // si l'erreur revient DANS ce délai apr�
 export class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { hasError: false, error: null, errorInfo: null, copied: false }
+    this.state = { hasError: false, error: null, errorInfo: null, copied: false, detailsOpen: false }
   }
 
   static getDerivedStateFromError(error) {
@@ -69,7 +114,7 @@ export class ErrorBoundary extends Component {
   }
 
   handleReset() {
-    this.setState({ hasError: false, error: null, errorInfo: null, copied: false })
+    this.setState({ hasError: false, error: null, errorInfo: null, copied: false, detailsOpen: false })
     this.props.onReset?.()
   }
 
@@ -93,13 +138,21 @@ export class ErrorBoundary extends Component {
     const ink   = dark ? COURT.darkText : COURT.ink
     const stone = dark ? COURT.darkMuted: COURT.stone
 
+    const lang = lireLangue()
+    const L = STRINGS[lang] || STRINGS.fr
+    const rtl = lang === 'he'
+    // Mulish n'a pas d'italique dessiné : en hébreu on garde le romain plutôt
+    // qu'une inclinaison synthétique (même règle que dans le reste de l'app).
+    const ff = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
+    const fs = rtl ? 'normal' : 'italic'
+
     const errorText = [
       this.state.error?.message || String(this.state.error),
       this.state.errorInfo?.componentStack?.split('\n').slice(0, 6).join('\n'),
     ].filter(Boolean).join('\n\n')
 
     return (
-      <div style={{
+      <div dir={rtl ? 'rtl' : 'ltr'} style={{
         position: 'fixed', inset: 0,
         background: bg,
         display: 'flex', flexDirection: 'column',
@@ -111,47 +164,72 @@ export class ErrorBoundary extends Component {
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎾</div>
 
         <h1 style={{
-          fontFamily: 'Spectral, serif',
+          fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontSize: 22, fontWeight: 700, color: ink, margin: '0 0 10px',
         }}>
-          Une erreur est survenue
+          {L.title}
         </h1>
 
         <p style={{
-          fontFamily: 'Spectral, serif', fontStyle: 'italic',
-          fontSize: 15, color: stone, margin: '0 0 16px', maxWidth: 280,
+          fontFamily: ff, fontStyle: fs,
+          fontSize: 15, color: stone, margin: '0 0 6px', maxWidth: 280,
         }}>
-          Rechargez la page pour réessayer.
+          {L.hint}
         </p>
 
-        {/* Error detail — always visible for debugging */}
+        {/* Le joueur n'a rien à faire de la trace React : ce qui le rassure,
+            c'est de savoir que le problème est remonté (Sentry le reçoit déjà
+            via captureException). Le détail reste accessible d'un clic pour
+            qu'un testeur puisse l'envoyer. */}
+        <p style={{
+          fontFamily: 'Mulish, sans-serif',
+          fontSize: TYPE.micro, color: stone, margin: '0 0 16px', maxWidth: 280,
+        }}>
+          {L.reported}
+        </p>
+
         {errorText && (
           <div style={{ width: '100%', maxWidth: 340, marginBottom: 16 }}>
-            <pre style={{
-              fontFamily: 'monospace', fontSize: TYPE.micro, color: COURT.red,
-              background: `${COURT.red}10`,
-              border: `1px solid ${COURT.red}30`,
-              borderRadius: 8, padding: '8px 12px',
-              overflowX: 'auto',
-              textAlign: 'left', whiteSpace: 'pre-wrap',
-              userSelect: 'text', WebkitUserSelect: 'text',
-              marginBottom: 8,
-            }}>
-              {errorText}
-            </pre>
-            {navigator.clipboard && (
-              <button
-                onClick={() => this.handleCopy()}
-                style={{
-                  padding: '8px 16px', borderRadius: 8,
-                  background: this.state.copied ? COURT.green : 'transparent',
-                  color: this.state.copied ? COURT.cream : stone,
-                  border: `0.5px solid ${stone}`,
-                  fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
-                }}
-              >
-                {this.state.copied ? '✓ Copié !' : '📋 Copier l\'erreur'}
-              </button>
+            <button
+              onClick={() => this.setState(s => ({ detailsOpen: !s.detailsOpen }))}
+              aria-expanded={this.state.detailsOpen}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: stone, fontFamily: 'Mulish, sans-serif', fontSize: TYPE.micro,
+                padding: '4px 0', marginBottom: this.state.detailsOpen ? 8 : 0,
+              }}
+            >
+              {this.state.detailsOpen ? L.detailsOpen : L.details}
+            </button>
+            {this.state.detailsOpen && (
+              <>
+                <pre dir="ltr" style={{
+                  fontFamily: 'monospace', fontSize: TYPE.micro, color: COURT.red,
+                  background: `${COURT.red}10`,
+                  border: `1px solid ${COURT.red}30`,
+                  borderRadius: 8, padding: '8px 12px',
+                  overflowX: 'auto',
+                  textAlign: 'left', whiteSpace: 'pre-wrap',
+                  userSelect: 'text', WebkitUserSelect: 'text',
+                  marginBottom: 8,
+                }}>
+                  {errorText}
+                </pre>
+                {navigator.clipboard && (
+                  <button
+                    onClick={() => this.handleCopy()}
+                    style={{
+                      padding: '8px 16px', borderRadius: 8,
+                      background: this.state.copied ? COURT.green : 'transparent',
+                      color: this.state.copied ? COURT.cream : stone,
+                      border: `0.5px solid ${stone}`,
+                      fontFamily: 'Mulish', fontSize: 12, cursor: 'pointer',
+                    }}
+                  >
+                    {this.state.copied ? L.copied : L.copy}
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
@@ -164,11 +242,11 @@ export class ErrorBoundary extends Component {
                 padding: '12px 24px', borderRadius: 12,
                 background: 'transparent', color: stone,
                 border: `0.5px solid ${stone}`,
-                fontFamily: 'Spectral, serif', fontStyle: 'italic',
+                fontFamily: ff, fontStyle: fs,
                 fontSize: 15, cursor: 'pointer',
               }}
             >
-              ← Retour
+              {L.back}
             </button>
           )}
           <button
@@ -177,12 +255,12 @@ export class ErrorBoundary extends Component {
               padding: '14px 32px', borderRadius: 12,
               background: COURT.green, color: COURT.cream,
               border: `0.5px solid ${COURT.gold}50`,
-              fontFamily: 'Spectral, serif', fontStyle: 'italic',
+              fontFamily: ff, fontStyle: fs,
               fontSize: 16, cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(15,61,41,0.2)',
             }}
           >
-            Recharger l'app
+            {L.reload}
           </button>
         </div>
       </div>
