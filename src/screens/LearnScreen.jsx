@@ -527,23 +527,32 @@ function QuizFlow({ chapter, dark, L, tr, rtl, onClose, onComplete }) {
             </div>
           </div>
 
-          {/* ── Options de réponse ── */}
+          {/* ── Options de réponse + feedback ──
+              Un seul conteneur défilant, pas deux frères `flex: 1` : avec
+              deux flex:1 côte à côte, chacun reçoit rigidement 50% de la
+              hauteur QUEL QUE SOIT son contenu (flex:1 = flex-basis:0%, donc
+              aucun rapport avec le contenu réel). Avant réponse, la moitié de
+              l'écran restait vide sous les options (réservée au feedback
+              pourtant absent) ; après réponse, les options — encore visibles
+              et cliquables en apparence — se retrouvaient compressées dans
+              l'autre moitié. Introduit par 518b2bf en séparant les deux blocs
+              pour sortir le bouton du flux ; le bouton étant depuis
+              `position: fixed` (toujours visible), cette séparation n'a plus
+              de raison d'être — un seul flex:1 suffit, le feedback s'insère
+              simplement à la suite dans le flux normal. */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px' }}>
             {q.options.map(opt => (
               <button key={opt.id} onClick={() => pick(opt.id)} style={optStyle(opt.id)}>
                 {tr(opt.text)}
               </button>
             ))}
-          </div>
-
-          {/* ── Feedback message ── */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px' }}>
             {answered && (
               <div style={{
                 marginTop: 20,
                 padding: '16px', borderRadius: 14,
                 background: isCorrect ? `${COURT.green}15` : `${COURT.red}10`,
-                borderLeft: `4px solid ${isCorrect ? COURT.green : COURT.red}`,
+                borderLeft: rtl ? 'none' : `4px solid ${isCorrect ? COURT.green : COURT.red}`,
+                borderRight: rtl ? `4px solid ${isCorrect ? COURT.green : COURT.red}` : 'none',
               }}>
                 <div style={{
                   fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
