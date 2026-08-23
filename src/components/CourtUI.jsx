@@ -1055,13 +1055,17 @@ export function CompatRing({ size = 54, value = 90, stroke = COURT.gold, txt = C
         {label && (
           <>
             <path id={pathId} d={arc} fill="none" />
-            {/* RTL : on inverse les caractères de la chaîne so qu'ils se lisent
-                droite→gauche le long de l'arc gauche→droite (effet visuel correct) */}
+            {/* RTL : direction + unicodeBidi natifs plutôt qu'un reverse() manuel
+                caractère par caractère — celui-ci inversait aussi les runs LTR
+                imbriqués (ex: "90%" devenait "%09") et cassait lecteurs d'écran
+                et copier-coller, les caractères étant réellement dans le désordre
+                dans le DOM. L'algorithme bidi du navigateur gère nativement le
+                texte mixte hébreu/latin/chiffres. */}
             <text fill={txt} textAnchor="middle" style={{
               fontFamily: 'Mulish', fontSize: labelSize, letterSpacing: '0.01em',
             }}>
-              <textPath href={`#${pathId}`} startOffset="50%">
-                {rtl ? [...label].reverse().join('') : label}
+              <textPath href={`#${pathId}`} startOffset="50%" direction={rtl ? 'rtl' : 'ltr'} unicodeBidi="plaintext">
+                {label}
               </textPath>
             </text>
           </>
