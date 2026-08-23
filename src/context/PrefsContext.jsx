@@ -5,13 +5,31 @@ import { Sentry } from '../sentry'
 const PrefsContext = createContext({})
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Accès sécurisé à localStorage. `PrefsProvider` enveloppe toute l'app
+// (main.jsx) et plusieurs de ses lectures s'exécutaient directement dans des
+// initialiseurs `useState`, donc au tout premier montage — si localStorage
+// lève (Safari navigation privée, quota plein, cookies désactivés, contexte
+// sandboxé comme certaines WebView intégrées), PrefsProvider plante et
+// l'app entière part en écran blanc, avant même que React ait pu afficher
+// quoi que ce soit. Même famille de bug que l'écran blanc WhatsApp déjà
+// corrigé côté service worker/auth — celui-ci n'avait pas encore été traité.
+function lireStockage(cle, defaut = null) {
+  try { return localStorage.getItem(cle) ?? defaut }
+  catch (err) { Sentry.captureException(err); return defaut }
+}
+function ecrireStockage(cle, valeur) {
+  try { localStorage.setItem(cle, valeur); return true }
+  catch (err) { Sentry.captureException(err); return false }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Historique de niveau — chaque (ré)évaluation ajoute un point { level, date }.
 // Stocké en localStorage (cohérent avec level/confidence). Sert à tracer la
 // vraie courbe d'évolution dans StatsSection, au lieu d'une courbe fabriquée.
 // ─────────────────────────────────────────────────────────────────────────────
 function loadLevelHistory() {
   try {
-    const raw = localStorage.getItem('padel_level_history')
+    const raw = lireStockage('padel_level_history')
     const arr = raw ? JSON.parse(raw) : null
     if (Array.isArray(arr) && arr.length > 0) return arr
   } catch (err) {
@@ -20,10 +38,10 @@ function loadLevelHistory() {
   }
   // Amorçage : si un niveau existe déjà mais aucun historique, on démarre la
   // série avec ce niveau (sinon la courbe n'aurait aucun point de référence).
-  const lvl = parseFloat(localStorage.getItem('padel_level'))
+  const lvl = parseFloat(lireStockage('padel_level'))
   if (!isNaN(lvl)) {
     const seed = [{ level: lvl, date: new Date().toISOString() }]
-    localStorage.setItem('padel_level_history', JSON.stringify(seed))
+    ecrireStockage('padel_level_history', JSON.stringify(seed))
     return seed
   }
   return []
@@ -34,7 +52,7 @@ function loadLevelHistory() {
 // part d'une ardoise propre (pas d'historique du user précédent).
 function cleanupOldUserData() {
   try {
-    const storedUserId = localStorage.getItem('padel_user_id')
+    const storedUserId = lireStockage('padel_user_id')
     const currentUserId = sessionStorage.getItem('current_user_id')
     if (storedUserId && currentUserId && storedUserId !== currentUserId) {
       // User a changé → nettoie les données du précédent
@@ -43,7 +61,7 @@ function cleanupOldUserData() {
       localStorage.removeItem('padel_level_history')
     }
     if (currentUserId) {
-      localStorage.setItem('padel_user_id', currentUserId)
+      ecrireStockage('padel_user_id', currentUserId)
     }
   } catch (err) {
     // Ne pas bloquer l'app, mais ne pas ignorer non plus : si ce nettoyage
@@ -54,15 +72,15 @@ function cleanupOldUserData() {
 }
 
 export function PrefsProvider({ children }) {
-  const [lang,       _setLang]       = useState(() => localStorage.getItem('padel_lang') || 'fr')
-  const [dark,       _setDark]       = useState(() => localStorage.getItem('padel_dark') === 'true')
+  const [lang,       _setLang]       = useState(() => lireStockage('padel_lang', 'fr'))
+  const [dark,       _setDark]       = useState(() => lireStockage('padel_dark') === 'true')
   const [level,      _setLevel]      = useState(() => {
     cleanupOldUserData() // nettoie avant de charger
-    const v = parseFloat(localStorage.getItem('padel_level'))
+    const v = parseFloat(lireStockage('padel_level'))
     return isNaN(v) ? null : v  // null = quiz non effectué
   })
   const [confidence, _setConfidence] = useState(() => {
-    const v = parseFloat(localStorage.getItem('padel_confidence'))
+    const v = parseFloat(lireStockage('padel_confidence'))
     return isNaN(v) ? 50 : v
   })
   const [levelHistory, _setLevelHistory] = useState(() => {
@@ -76,9 +94,9 @@ export function PrefsProvider({ children }) {
     document.body.style.background = dark ? '#121A15' : '#1a1a18'
   }, [dark])
 
-  const setLang       = (l) => { _setLang(l);       localStorage.setItem('padel_lang',       l)           }
-  const setDark       = (d) => { _setDark(d);       localStorage.setItem('padel_dark',       String(d))   }
-  const setConfidence = (c) => { _setConfidence(c); localStorage.setItem('padel_confidence', String(c))   }
+  const setLang       = (l) => { _setLang(l);       ecrireStockage('padel_lang',       l)           }
+  const setDark       = (d) => { _setDark(d);       ecrireStockage('padel_dark',       String(d))   }
+  const setConfidence = (c) => { _setConfidence(c); ecrireStockage('padel_confidence', String(c))   }
 
   // Ajoute un point à l'historique de niveau (dédoublonné : on n'enregistre que
   // si le niveau diffère réellement du dernier point connu).
@@ -97,7 +115,7 @@ export function PrefsProvider({ children }) {
   // setLevel enregistre AUSSI un point d'historique → la courbe devient réelle.
   const setLevel = (l) => {
     _setLevel(l)
-    localStorage.setItem('padel_level', l === null ? '' : String(l))
+    ecrireStockage('padel_level', l === null ? '' : String(l))
     recordLevelPoint(l)
   }
 
