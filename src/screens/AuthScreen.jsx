@@ -60,8 +60,12 @@ export default function AuthScreen() {
   const handleConsentChange = (checked) => {
     setConsentChecked(checked)
     if (checked) {
-      localStorage.setItem('padel_consent_ts', new Date().toISOString())
-      localStorage.setItem('padel_consent_version', CONSENT_VERSION)
+      try {
+        localStorage.setItem('padel_consent_ts', new Date().toISOString())
+        localStorage.setItem('padel_consent_version', CONSENT_VERSION)
+      } catch (err) {
+        Sentry.captureException(err)
+      }
     }
   }
 

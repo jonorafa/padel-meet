@@ -5,12 +5,35 @@ import { Sentry } from '../sentry'
 
 const AuthContext = createContext({})
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Accès sécurisé à localStorage/sessionStorage — même motif que PrefsContext.jsx
+// (point 1 de l'audit). `AuthProvider` enveloppe toute l'app (main.jsx), et
+// `isGuest` se lit dans un initialiseur `useState`, donc au tout premier
+// montage : si le stockage lève (Safari navigation privée, quota plein,
+// WebView sandboxée), le provider plante avant même le premier rendu.
+function lireStockage(cle, defaut = null) {
+  try { return localStorage.getItem(cle) ?? defaut }
+  catch (err) { Sentry.captureException(err); return defaut }
+}
+function lireSessionStockage(cle, defaut = null) {
+  try { return sessionStorage.getItem(cle) ?? defaut }
+  catch (err) { Sentry.captureException(err); return defaut }
+}
+function ecrireSessionStockage(cle, valeur) {
+  try { sessionStorage.setItem(cle, valeur) }
+  catch (err) { Sentry.captureException(err) }
+}
+function retirerSessionStockage(cle) {
+  try { sessionStorage.removeItem(cle) }
+  catch (err) { Sentry.captureException(err) }
+}
+
 export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null)
   const [profile, setProfile] = useState(null)
   const [photos,  setPhotos]  = useState([])
   const [loading, setLoading] = useState(true)
-  const [isGuest, setIsGuest] = useState(() => sessionStorage.getItem('padel-guest') === 'true')
+  const [isGuest, setIsGuest] = useState(() => lireSessionStockage('padel-guest') === 'true')
   // true quand l'utilisateur arrive via un lien « mot de passe oublié »
   // → l'écran Auth affiche le formulaire « nouveau mot de passe » au lieu de rediriger
   const [recovery, setRecovery] = useState(false)
@@ -61,8 +84,8 @@ export function AuthProvider({ children }) {
         // events du prochain utilisateur sur un appareil partagé.
         if (event === 'SIGNED_IN') identifyUser(session.user.id)
         // User signed in — exit guest mode automatically
-        sessionStorage.removeItem('padel-guest')
-        sessionStorage.setItem('current_user_id', session.user.id)
+        retirerSessionStockage('padel-guest')
+        ecrireSessionStockage('current_user_id', session.user.id)
         setIsGuest(false)
         // ⚠️ On repasse loading=true AVANT de charger le profil. Sinon, à la
         // reconnexion d'un user existant, il existe une fenêtre où user est
@@ -72,7 +95,7 @@ export function AuthProvider({ children }) {
         setLoading(true)
         loadProfile(session.user.id)
       } else {
-        sessionStorage.removeItem('current_user_id')
+        retirerSessionStockage('current_user_id')
         setProfile(null);
         setLoading(false)
       }
@@ -83,17 +106,21 @@ export function AuthProvider({ children }) {
 
   // Nettoie le localStorage des données utilisateur quand on change d'utilisateur
   useEffect(() => {
-    const stored = localStorage.getItem('padel_user_id')
-    const current = user?.id || null
-    if (stored && stored !== current && !current) {
-      // Utilisateur précédent n'est plus connecté
-      localStorage.removeItem('padel_level')
-      localStorage.removeItem('padel_confidence')
-      localStorage.removeItem('padel_level_history')
-      localStorage.removeItem('padel_user_id')
-    }
-    if (current) {
-      localStorage.setItem('padel_user_id', current)
+    try {
+      const stored = localStorage.getItem('padel_user_id')
+      const current = user?.id || null
+      if (stored && stored !== current && !current) {
+        // Utilisateur précédent n'est plus connecté
+        localStorage.removeItem('padel_level')
+        localStorage.removeItem('padel_confidence')
+        localStorage.removeItem('padel_level_history')
+        localStorage.removeItem('padel_user_id')
+      }
+      if (current) {
+        localStorage.setItem('padel_user_id', current)
+      }
+    } catch (err) {
+      Sentry.captureException(err)
     }
   }, [user?.id])
 
@@ -200,11 +227,11 @@ export function AuthProvider({ children }) {
 
   /** Mode invité — aucun compte, accès lecture seule */
   const enterAsGuest = () => {
-    sessionStorage.setItem('padel-guest', 'true')
+    ecrireSessionStockage('padel-guest', 'true')
     setIsGuest(true)
   }
   const exitGuest = () => {
-    sessionStorage.removeItem('padel-guest')
+    retirerSessionStockage('padel-guest')
     setIsGuest(false)
   }
 
@@ -216,9 +243,13 @@ export function AuthProvider({ children }) {
         .eq('id', user.id)
     }
     // Nettoie les données utilisateur du localStorage
-    localStorage.removeItem('padel_level')
-    localStorage.removeItem('padel_confidence')
-    localStorage.removeItem('padel_level_history')
+    try {
+      localStorage.removeItem('padel_level')
+      localStorage.removeItem('padel_confidence')
+      localStorage.removeItem('padel_level_history')
+    } catch (err) {
+      Sentry.captureException(err)
+    }
     resetUser()
     await supabase.auth.signOut()
   }
@@ -253,8 +284,8 @@ export function AuthProvider({ children }) {
       // exactement ce que la migration 022 visait à éliminer. Les deux champs
       // tombent à null ensemble, ce que la contrainte consent_coherence
       // (migration 024) vérifie côté base.
-      accepted_terms_at: profile?.accepted_terms_at ?? localStorage.getItem('padel_consent_ts') ?? null,
-      consent_version: profile?.consent_version ?? localStorage.getItem('padel_consent_version') ?? null,
+      accepted_terms_at: profile?.accepted_terms_at ?? lireStockage('padel_consent_ts'),
+      consent_version: profile?.consent_version ?? lireStockage('padel_consent_version'),
       updated_at: new Date().toISOString(),
     }
     const { data, error } = await supabase
@@ -272,8 +303,12 @@ export function AuthProvider({ children }) {
     if (data) {
       if (isFirstProfile) track('signup', { method: 'google' })
       setProfile(data)
-      localStorage.removeItem('padel_consent_ts')
-      localStorage.removeItem('padel_consent_version')
+      try {
+        localStorage.removeItem('padel_consent_ts')
+        localStorage.removeItem('padel_consent_version')
+      } catch (err) {
+        Sentry.captureException(err)
+      }
     }
     return { data, error: null }
   }
