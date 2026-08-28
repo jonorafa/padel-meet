@@ -33,7 +33,7 @@ export default function LegalScreen({ doc = 'privacy' }) {
   const ffTitle = rtl ? 'Mulish, sans-serif' : 'Spectral, serif'
 
   const h1 = { fontFamily: ffTitle, fontSize: 26, fontWeight: 800, color: ink, margin: '0 0 4px' }
-  const h2 = { fontFamily: ffTitle, fontSize: 18, fontWeight: 800, color: COURT.green, margin: '22px 0 8px' }
+  const h2 = { fontFamily: ffTitle, fontSize: 18, fontWeight: 800, color: dark ? COURT.greenOnDark : COURT.green, margin: '22px 0 8px' }
   const dateStyle = { fontFamily: 'Mulish', fontSize: 12, color: muted, marginBottom: 8 }
   const p  = { fontFamily: 'Mulish', fontSize: 14, lineHeight: 1.65, color: ink, margin: '0 0 10px' }
   const li = { ...p, margin: '0 0 6px' }
@@ -99,6 +99,14 @@ export default function LegalScreen({ doc = 'privacy' }) {
           stabilité : ce transfert hors UE est encadré par les <b>clauses contractuelles types</b> de la
           Commission européenne et le Data Privacy Framework. Nous <b>ne vendons pas</b> tes données et ne
           les partageons pas à des fins publicitaires.
+        </p>
+        <p style={p}>
+          Nous utilisons également un outil de <b>mesure d'audience</b> (PostHog, hébergé dans
+          l'Union européenne) pour comprendre comment l'application est utilisée : nombre d'inscriptions,
+          de questionnaires de niveau terminés, de matchs organisés. Seuls des <b>événements explicites</b>{' '}
+          sont envoyés — ni capture automatique de page, ni enregistrement de session, donc aucun contenu
+          de tes messages ni de ton profil. Base légale : <b>intérêt légitime</b> (art. 6.1.f RGPD),
+          à savoir comprendre et améliorer le service.
         </p>
 
         <h2 style={h2}>Conservation</h2>
@@ -184,6 +192,13 @@ export default function LegalScreen({ doc = 'privacy' }) {
           the EU is governed by the European Commission&rsquo;s <b>standard contractual clauses</b> and the
           Data Privacy Framework. We <b>do not sell</b> your data and do not share it for advertising
           purposes.
+        </p>
+        <p style={p}>
+          We also use an <b>analytics</b> tool (PostHog, hosted in the European Union) to understand how
+          the application is used: number of sign-ups, completed level questionnaires, matches arranged.
+          Only <b>explicit events</b> are sent — no automatic page capture and no session recording, so
+          none of your messages or profile content. Legal basis: <b>legitimate interest</b>{' '}
+          (art. 6.1.f GDPR), namely understanding and improving the service.
         </p>
 
         <h2 style={h2}>Retention</h2>
@@ -272,6 +287,16 @@ export default function LegalScreen({ doc = 'privacy' }) {
           למעקב אחר תקלות (Sentry, ארצות הברית) לצורך יציבות: העברה זו אל מחוץ לאיחוד האירופי מוסדרת באמצעות{' '}
           <b>סעיפים חוזיים סטנדרטיים</b> של הנציבות האירופית ובאמצעות ה-Data Privacy Framework. אנו{' '}
           <b>איננו מוכרים</b> את המידע שלך ואיננו משתפים אותו למטרות פרסום.
+        </p>
+        {/* À FAIRE RELIRE : « מדידת קהל » pour « mesure d'audience ». Le terme
+            courant en hébreu est plutôt « אנליטיקס » (translittération) ;
+            « מדידת קהל » est un calque du français. À confirmer par un
+            locuteur natif, comme les trois autres termes de ce fichier. */}
+        <p style={p}>
+          אנו משתמשים גם בכלי <b>למדידת קהל</b> (PostHog, מאוחסן באיחוד האירופי) כדי להבין כיצד נעשה שימוש
+          באפליקציה: מספר ההרשמות, שאלוני הרמה שהושלמו, והמשחקים שאורגנו. נשלחים <b>אירועים מפורשים</b>{' '}
+          בלבד — ללא לכידה אוטומטית של דפים וללא הקלטת סשן, ולפיכך אין העברה של תוכן ההודעות או הפרופיל
+          שלך. הבסיס החוקי: <b>אינטרס לגיטימי</b> (סעיף 6.1.f ל-GDPR), קרי הבנת השירות ושיפורו.
         </p>
 
         <h2 style={h2}>שמירת מידע</h2>
