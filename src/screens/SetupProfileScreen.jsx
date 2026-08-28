@@ -557,135 +557,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           </div>
         </div>
 
-        {/* ── Bloc 2 : Ton jeu ── */}
-        <div style={{
-          background: dark ? `${COURT.darkCard}80` : `${COURT.cream}40`,
-          border: `0.5px solid ${border}`,
-          borderRadius: 12, padding: 16, marginBottom: 14,
-        }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
-          }}>
-            <div style={{
-              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-            }}>
-              {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
-            </div>
-            {playComplete && (
-              <div style={{ fontSize: 16 }}>✓</div>
-            )}
-          </div>
-
-          {/* Preferred side */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8 }}>
-              {t.side}
-            </div>
-            <CourtSidePicker
-              value={side}
-              onChange={setSide}
-              leftLabel={t.forehand}
-              rightLabel={t.backhand}
-              dark={dark} lang={lang}
-            />
-          </div>
-
-          {/* Play style */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
-              {t.style}
-            </div>
-            <ChipGroup
-              value={style}
-              onChange={setStyle}
-              options={[
-                { v: 'aggressive', label: t.aggressive },
-                { v: 'defensive',  label: t.defensive  },
-                { v: 'all-court',  label: t.allcourt   },
-              ]}
-              dark={dark} lang={lang}
-            />
-          </div>
-
-          {/* Motivation */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
-              {t.motivation}
-            </div>
-            <ChipGroup
-              value={motivation}
-              onChange={setMotivation}
-              options={[
-                { v: 'fun',     label: t.fun     },
-                { v: 'improve', label: t.improve },
-                { v: 'compete', label: t.compete },
-              ]}
-              dark={dark} lang={lang}
-            />
-          </div>
-
-          {/* Frequency */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
-              {t.frequency}
-            </div>
-            <ChipGroup
-              value={frequency}
-              onChange={setFrequency}
-              options={[1, 2, 3, 4, 5].map(n => ({ v: n, label: `${n} ${t.perWeek}` }))}
-              dark={dark} lang={lang}
-            />
-          </div>
-
-          {/* Region */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8 }}>
-              {t.region}
-            </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              {[{ v: 'France', flag: '🇫🇷' }, { v: 'Israël', flag: '🇮🇱' }].map(({ v, flag }) => {
-                const active = region === v
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => { setRegion(v); setCity(SUB_REGIONS[v][0]) }}
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
-                      background: active ? COURT.green : (dark ? '#1a2820' : COURT.cream),
-                      border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    <span style={{ fontSize: 22 }}>{flag}</span>
-                    <span style={{
-                      fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 16,
-                      color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
-                      fontWeight: active ? 600 : 400,
-                    }}>{v}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* City */}
-          <div>
-            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
-              {t.subRegion}
-            </div>
-            <ChipGroup
-              value={city}
-              onChange={setCity}
-              options={(SUB_REGIONS[region] || []).map(c => ({ v: c, label: c }))}
-              dark={dark} lang={lang}
-            />
-          </div>
-        </div>
-
-        {/* ── Bloc 3 : Ta photo ── */}
+        {/* ── Bloc 2 : Photo & vidéo ── */}
         <div style={{
           background: dark ? `${COURT.darkCard}80` : `${COURT.cream}40`,
           border: `0.5px solid ${border}`,
@@ -842,6 +714,134 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm,video/*"
               style={{ display: 'none' }}
               onChange={e => { handleVideoUpload(e.target.files?.[0]); e.target.value = '' }}
+            />
+          </div>
+        </div>
+
+        {/* ── Bloc 3 : Ton jeu ── */}
+        <div style={{
+          background: dark ? `${COURT.darkCard}80` : `${COURT.cream}40`,
+          border: `0.5px solid ${border}`,
+          borderRadius: 12, padding: 16, marginBottom: 14,
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
+          }}>
+            <div style={{
+              fontFamily: 'Mulish', fontSize: 16, fontWeight: 600, color: ink, letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}>
+              {lang === 'en' ? 'Your game' : lang === 'he' ? 'המשחק שלך' : 'Ton jeu'}
+            </div>
+            {playComplete && (
+              <div style={{ fontSize: 16 }}>✓</div>
+            )}
+          </div>
+
+          {/* Preferred side */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8 }}>
+              {t.side}
+            </div>
+            <CourtSidePicker
+              value={side}
+              onChange={setSide}
+              leftLabel={t.forehand}
+              rightLabel={t.backhand}
+              dark={dark} lang={lang}
+            />
+          </div>
+
+          {/* Play style */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
+              {t.style}
+            </div>
+            <ChipGroup
+              value={style}
+              onChange={setStyle}
+              options={[
+                { v: 'aggressive', label: t.aggressive },
+                { v: 'defensive',  label: t.defensive  },
+                { v: 'all-court',  label: t.allcourt   },
+              ]}
+              dark={dark} lang={lang}
+            />
+          </div>
+
+          {/* Motivation */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
+              {t.motivation}
+            </div>
+            <ChipGroup
+              value={motivation}
+              onChange={setMotivation}
+              options={[
+                { v: 'fun',     label: t.fun     },
+                { v: 'improve', label: t.improve },
+                { v: 'compete', label: t.compete },
+              ]}
+              dark={dark} lang={lang}
+            />
+          </div>
+
+          {/* Frequency */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
+              {t.frequency}
+            </div>
+            <ChipGroup
+              value={frequency}
+              onChange={setFrequency}
+              options={[1, 2, 3, 4, 5].map(n => ({ v: n, label: `${n} ${t.perWeek}` }))}
+              dark={dark} lang={lang}
+            />
+          </div>
+
+          {/* Region */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 8 }}>
+              {t.region}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {[{ v: 'France', flag: '🇫🇷' }, { v: 'Israël', flag: '🇮🇱' }].map(({ v, flag }) => {
+                const active = region === v
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => { setRegion(v); setCity(SUB_REGIONS[v][0]) }}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
+                      background: active ? COURT.green : (dark ? '#1a2820' : COURT.cream),
+                      border: `0.5px solid ${active ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <span style={{ fontSize: 22 }}>{flag}</span>
+                    <span style={{
+                      fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 16,
+                      color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
+                      fontWeight: active ? 600 : 400,
+                    }}>{v}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* City */}
+          <div>
+            <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
+              {t.subRegion}
+            </div>
+            <ChipGroup
+              value={city}
+              onChange={setCity}
+              options={(SUB_REGIONS[region] || []).map(c => ({ v: c, label: c }))}
+              dark={dark} lang={lang}
             />
           </div>
         </div>
