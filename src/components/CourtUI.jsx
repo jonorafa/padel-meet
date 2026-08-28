@@ -1112,9 +1112,20 @@ export function renderWithGlossary(text, lang, onTermClick) {
           onClick={e => { e.stopPropagation(); onTermClick(match.key); }}
           style={{
             color: COURT.green,
-            borderBottom: `1.5px dotted ${COURT.green}`,
             cursor: 'pointer',
             fontStyle: 'normal',
+            // text-decoration + text-underline-offset plutôt que borderBottom :
+            // un border-bottom colle au bas de la boîte de ligne du span (qui
+            // suit le line-height généreux du paragraphe), pas aux jambages du
+            // mot — sur les questions à gros line-height, le pointillé se
+            // retrouvait visuellement loin de « bandeja » et proche de la
+            // ligne suivante. text-underline-offset donne un contrôle direct
+            // en pixels, indépendant du line-height du parent.
+            textDecorationLine: 'underline',
+            textDecorationStyle: 'dotted',
+            textDecorationColor: COURT.green,
+            textDecorationThickness: '1.5px',
+            textUnderlineOffset: '2px',
           }}
         >{part}</span>
       );
