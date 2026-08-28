@@ -1,7 +1,16 @@
 import { useState, useCallback, useMemo } from 'react';
-import { COURT, Ornament, PadelSlider, GlossaryCard, renderWithGlossary } from '../components/CourtUI';
+import { COURT, Ornament, PadelSlider, GlossaryCard, renderWithGlossary, BottomSheet, LangButton } from '../components/CourtUI';
 import { QUIZ_QUESTIONS, GLOSSARY, computeLevel, scaleToLevel } from '../data/courtData';
+import { usePrefs } from '../context/PrefsContext';
 import { track } from '../analytics';
+
+// Langues proposées par le sélecteur du quiz — même trio et mêmes drapeaux
+// que le BottomSheet « Langue » du profil, pour rester cohérent.
+const LANGS = [
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'he', flag: '🇮🇱', label: 'עברית' },
+];
 
 // ─── Groupe 1 « ressenti » : curseur 1-10 ────────────────────────────────────
 // Composant à part, monté avec `key={q.id}` par l'appelant : remonter le
@@ -104,6 +113,11 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
   const [answers, setAnswers]   = useState({});
   const [animDir, setAnimDir]   = useState('in');
   const [glossaryKey, setGlossaryKey] = useState(null); // terme ouvert dans le tooltip
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  // `lang` continue d'arriver en prop (4 sites d'appel le passent déjà) ; seul
+  // setLang vient du contexte, pour pouvoir changer de langue sans modifier la
+  // signature du composant ni les 4 appelants.
+  const { setLang } = usePrefs();
   // Mode « évaluer un partenaire » → on retire les ancres objectives (selfOnly) :
   // on ne connaît pas l'ancienneté/fréquence de quelqu'un d'autre, on ne juge
   // que ce qu'on l'a vu jouer (les 10 questions techniques).
@@ -192,6 +206,23 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
         </svg>
       </button>
 
+      {/* Drapeau de la langue courante — permet d'en changer à tout moment
+          pendant le quiz. Placé en miroir du bouton retour (à droite en LTR,
+          à gauche en RTL) pour ne jamais se superposer à lui. */}
+      <button
+        onClick={() => setShowLangPicker(true)}
+        aria-label={lang === 'he' ? 'שנה שפה' : lang === 'en' ? 'Change language' : 'Changer de langue'}
+        style={{
+          position: 'absolute', top: 18, [rtl ? 'left' : 'right']: 18,
+          width: 36, height: 36, borderRadius: 18,
+          background: bg, border: `0.5px solid ${border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', zIndex: 5, padding: 0, fontSize: 18, lineHeight: 1,
+        }}
+      >
+        {(LANGS.find(l => l.code === lang) || LANGS[0]).flag}
+      </button>
+
       {/* Barre de progression */}
       <div style={{ position: 'absolute', top: 60, left: 70, right: 70, height: 1.5, background: `${COURT.green}25`, borderRadius: 2, overflow: 'hidden' }}>
         <div style={{ width: `${progress}%`, height: '100%', background: COURT.green, transition: 'width 0.5s ease' }} />
@@ -272,6 +303,28 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
           dark={dark}
           onClose={() => setGlossaryKey(null)}
         />
+      )}
+
+      {/* Choix de la langue — les réponses déjà données sont conservées :
+          elles sont indexées par q.id, indépendant de la langue. */}
+      {showLangPicker && (
+        <BottomSheet
+          onClose={() => setShowLangPicker(false)}
+          title={lang === 'he' ? 'שפה' : lang === 'en' ? 'Language' : 'Langue'}
+          dark={dark} lang={lang}
+        >
+          <div style={{ padding: '16px 24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {LANGS.map(({ code, flag, label }) => (
+              <LangButton
+                key={code}
+                code={code}
+                flag={flag}
+                label={label}
+                onSelect={(c) => { setLang(c); setShowLangPicker(false); }}
+              />
+            ))}
+          </div>
+        </BottomSheet>
       )}
     </div>
   );

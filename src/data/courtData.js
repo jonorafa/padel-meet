@@ -17,11 +17,26 @@ export function getGreeting(lang = 'fr') {
   return isDay ? G.day : G.eve;
 }
 
-// Sous-régions par pays — utilisé à l'inscription et dans le filtrage
+// Sous-régions par pays — bucket GROSSIER utilisé pour le filtrage de
+// recherche (PartnerPrefsScreen, MatchScreen) et le score de compatibilité
+// (compatibility.js, via profileSubRegion). Volontairement INCHANGÉ : deux
+// joueurs à quelques villes d'écart doivent toujours matcher sur « Centre ».
+// Distinct de ISRAEL_CITIES ci-dessous, qui sert la ville affichée/saisie à
+// l'inscription — les deux se rejoignent via VILLE_VERS_SOUS_REGION.
 export const SUB_REGIONS = {
   'France': ['Paris', 'Marseille'],
   'Israël': ['Centre', 'Sud', 'Nord'],
 };
+
+// Villes proposées à l'inscription (Israël) — remplace l'ancien choix direct
+// Centre/Sud/Nord, trop abstrait pour un joueur qui saisit son profil. Un
+// champ libre complète ces 6 chips pour qui n'habite aucune d'elles.
+// Orthographe alignée sur les clés de VILLE_VERS_SOUS_REGION ci-dessous (pas
+// la graphie française phonétique) : c'est ce qui permet à une ville choisie
+// ici de retomber sur le bon bucket SUB_REGIONS pour le matching.
+export const ISRAEL_CITIES = [
+  'Tel Aviv', 'Raanana', 'Herzliya', 'Holon', 'Rishon LeZion', 'Ramat HaSharon',
+];
 
 // Ville → sous-région.
 //
@@ -38,7 +53,7 @@ const VILLE_VERS_SOUS_REGION = {
   'Tel Aviv': 'Centre', 'Herzliya': 'Centre', 'Raanana': 'Centre',
   'Netanya': 'Centre', 'Petah Tikva': 'Centre', 'Ramat Gan': 'Centre',
   'Rishon LeZion': 'Centre', 'Holon': 'Centre', 'Bat Yam': 'Centre',
-  'Kfar Saba': 'Centre', 'Rehovot': 'Centre',
+  'Kfar Saba': 'Centre', 'Rehovot': 'Centre', 'Ramat HaSharon': 'Centre',
   // Nord
   'Haïfa': 'Nord', 'Haifa': 'Nord', 'Tibériade': 'Nord', 'Nazareth': 'Nord',
   'Akko': 'Nord', 'Nahariya': 'Nord',

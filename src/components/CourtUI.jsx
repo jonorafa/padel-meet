@@ -661,6 +661,37 @@ export function BottomSheet({ children, onClose, title, dark, lang }) {
   );
 }
 
+// ─── Bouton de choix de langue (ligne d'un BottomSheet « Langue ») ───
+export function LangButton({ code, flag, label, onSelect }) {
+  const [hovered, setHovered] = useState(false);
+  const dark = isDark();
+  const card = dark ? COURT.darkCard : '#F7F3EA';
+  const border = dark ? COURT.darkBorder : `${COURT.green}50`;
+  const ink = dark ? COURT.darkText : COURT.ink;
+
+  return (
+    <button
+      onClick={() => onSelect(code)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
+        background: hovered ? COURT.green : card,
+        border: `0.5px solid ${hovered ? COURT.green : border}`,
+        transition: 'all 0.2s',
+      }}
+    >
+      <span style={{ fontSize: 28 }}>{flag}</span>
+      <span style={{
+        fontFamily: 'Mulish, sans-serif',
+        fontSize: 20, fontWeight: 500,
+        color: hovered ? COURT.cream : ink,
+      }}>{label}</span>
+    </button>
+  );
+}
+
 // ─── Nav icons ───
 const NAV_ICONS = {
   home: (active) => (

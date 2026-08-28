@@ -3,7 +3,7 @@ import { COURT, PadelBall, Ornament } from '../components/CourtUI'
 import { useAuth }   from '../context/AuthContext'
 import { supabase }  from '../lib/supabase'
 import { Sentry }    from '../sentry'
-import { SUB_REGIONS } from '../data/courtData'
+import { SUB_REGIONS, ISRAEL_CITIES } from '../data/courtData'
 import { prepareVideo, MAX_VIDEO_SECONDS, buildVideoPaths, safeExtFromFilename, storageContentType } from '../lib/video'
 
 // ─── Labels i18n ─────────────────────────────────────────────────────────────
@@ -42,6 +42,7 @@ const L = {
     perWeek:     '× / sem.',
     region:      'Région',
     subRegion:   'Où habites-tu ?',
+    otherCity:   'Autre ville',
     submit:      'Entrer au club',
     required:    'Ton nom est le seul champ obligatoire.',
     uploadError: "Échec de l'envoi de la photo. Réessaie.",
@@ -81,6 +82,7 @@ const L = {
     perWeek:     '× / week',
     region:      'Region',
     subRegion:   'Where do you live?',
+    otherCity:   'Other city',
     submit:      'Enter the club',
     required:    'Your name is the only required field.',
     uploadError: 'Photo upload failed. Please try again.',
@@ -120,6 +122,7 @@ const L = {
     perWeek:     '× / שבוע',
     region:      'אזור',
     subRegion:   'איפה אתה גר?',
+    otherCity:   'עיר אחרת',
     submit:      'כניסה למועדון',
     required:    'השם שלך הוא השדה היחיד הנדרש.',
     uploadError: 'העלאת התמונה נכשלה. נסה שוב.',
@@ -271,7 +274,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
   const [motivation,      setMotivation]      = useState('fun')
   const [frequency,       setFrequency]       = useState(2)
   const [region,          setRegion]          = useState('Israël')
-  const [city,            setCity]            = useState(SUB_REGIONS['Israël'][0])
+  const [city,            setCity]            = useState(ISRAEL_CITIES[0])
   const [uploading,       setUploading]       = useState(false)
   const [submitting,      setSubmitting]      = useState(false)
   const [formError,       setFormError]       = useState('')
@@ -303,6 +306,10 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
     fontSize: 15, color: ink, outline: 'none',
     WebkitAppearance: 'none',
   }
+
+  // Villes proposées en chips : les 6 villes israéliennes, ou les sous-régions
+  // pour la France (inchangé — la France n'a pas de liste de villes dédiée).
+  const villesProposees = region === 'Israël' ? ISRAEL_CITIES : (SUB_REGIONS[region] || [])
 
   // ── Avatar upload ────────────────────────────────────────────────────────
   // Upload vers le bucket `profile-photos` (le seul qui existe) au chemin
@@ -811,7 +818,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                   <button
                     key={v}
                     type="button"
-                    onClick={() => { setRegion(v); setCity(SUB_REGIONS[v][0]) }}
+                    onClick={() => { setRegion(v); setCity(v === 'Israël' ? ISRAEL_CITIES[0] : SUB_REGIONS[v][0]) }}
                     style={{
                       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       padding: '14px 10px', borderRadius: 12, cursor: 'pointer',
@@ -832,16 +839,26 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
             </div>
           </div>
 
-          {/* City */}
+          {/* City — en Israël : 6 villes + champ libre pour les autres.
+              Le champ libre n'écrase pas le matching : profileSubRegion()
+              retombe sur la sous-région via VILLE_VERS_SOUS_REGION, et rend
+              null pour une ville inconnue — compatibility.js s'abstient alors
+              au lieu de deviner, exactement comme pour un profil français. */}
           <div>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 6 }}>
               {t.subRegion}
             </div>
             <ChipGroup
-              value={city}
+              value={villesProposees.includes(city) ? city : null}
               onChange={setCity}
-              options={(SUB_REGIONS[region] || []).map(c => ({ v: c, label: c }))}
+              options={villesProposees.map(c => ({ v: c, label: c }))}
               dark={dark} lang={lang}
+            />
+            <input
+              value={villesProposees.includes(city) ? '' : city}
+              onChange={e => setCity(e.target.value)}
+              placeholder={t.otherCity}
+              style={{ ...inputStyle, marginTop: 8 }}
             />
           </div>
         </div>

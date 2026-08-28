@@ -8,8 +8,8 @@ import { RADIUS } from '../components/tokens';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
-  SkeletonCard, MatchFlash, BottomSheet,
-  isDark, initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, CompatRing,
+  SkeletonCard, MatchFlash, BottomSheet, LangButton,
+  initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, CompatRing,
   LightningIcon, HourglassIcon, AlertIcon, LockIcon, StarIcon, TrendUpIcon, BellIcon,
 } from '../components/CourtUI';
 import { FlameSVG } from '../components/FlameSVG';
@@ -44,37 +44,6 @@ import LearnScreen           from './LearnScreen';
 import { tickStreak }        from '../hooks/useStreak';
 const StatsSection = lazy(() => import('../components/StatsSection'));
 import QuizScreen           from './ScoreScreen';
-
-// ─── Composant bouton de langue ─────────────────────────────────────────────
-function LangButton({ code, flag, label, onSelect }) {
-  const [hovered, setHovered] = useState(false);
-  const dark = isDark();
-  const card = dark ? COURT.darkCard : '#F7F3EA';
-  const border = dark ? COURT.darkBorder : `${COURT.green}50`;
-  const ink = dark ? COURT.darkText : COURT.ink;
-
-  return (
-    <button
-      onClick={() => onSelect(code)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '16px 18px', borderRadius: 12, cursor: 'pointer',
-        background: hovered ? COURT.green : card,
-        border: `0.5px solid ${hovered ? COURT.green : border}`,
-        transition: 'all 0.2s',
-      }}
-    >
-      <span style={{ fontSize: 28 }}>{flag}</span>
-      <span style={{
-        fontFamily: 'Mulish, sans-serif',
-        fontSize: 20, fontWeight: 500,
-        color: hovered ? COURT.cream : ink,
-      }}>{label}</span>
-    </button>
-  );
-}
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -2980,15 +2949,15 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   // dégagent la nav du bas. En cumuler ici en ajoutait 100 de plus, laissant
   // un vide défilable après le dernier lien.
   return (
-    // paddingTop tenant compte de l'encoche, comme les autres écrans de ce
-    // fichier. Un 56 fixe plaçait le haut des ronds d'action à 70px du bord
-    // (mesuré) : sur un iPhone à encoche, où safe-area-inset-top vaut ~59px,
-    // il ne restait que 11px sous la barre d'état et le contour supérieur des
-    // ronds se retrouvait mangé — signalé depuis le navigateur de WhatsApp,
-    // qui ajoute encore sa propre barre par-dessus. La valeur plancher passe
-    // aussi de 56 à 80 : les ronds descendent sur TOUS les appareils, y compris
-    // ceux sans encoche où ils frôlaient le bord.
-    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(80px, calc(env(safe-area-inset-top, 0px) + 40px))', overflow: 'auto' }}>
+    // paddingTop aligné sur le reste du fichier : max(56px, safe-area + 16px),
+    // la même formule que l'en-tête de l'onglet Trouver (ligne ~867).
+    // Il était monté à max(80px, safe-area + 40px) pour dégager le contour des
+    // ronds d'action, mangé sous la barre d'état — mais la vraie cause était
+    // ailleurs (bordure 0.5px invisible sur un arc, corrigée depuis en 1px
+    // avec un fond blanc). Ces 40px laissaient ~99px de vide sur un iPhone à
+    // encoche : une large bande crème avant « Bonjour ». 16px suffisent, comme
+    // le prouvent les autres écrans qui l'utilisent déjà.
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{ position: 'absolute', inset: 0, background: bg, paddingTop: 'max(56px, calc(env(safe-area-inset-top, 0px) + 16px))', overflow: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 24px 16px' }}>
         <div>
           {/* Salutation selon l'heure : Bonjour (4h–17h) / Bonsoir (17h–4h) */}
