@@ -1,0 +1,12 @@
+# Configuration du projet Supabase (CLI).
+#
+# Ce fichier n'existait pas : la fonction notify-support avait donc été
+# déployée avec verify_jwt = false (valeur constatée via l'API de gestion),
+# ce qui la rendait appelable sans aucun jeton par n'importe qui.
+project_id = "gwwygfybxrlpgpxznsog"
+
+[functions.notify-support]
+# true = Supabase rejette toute requête sans JWT valide AVANT d'exécuter la
+# fonction. Le contrôle refait dans index.ts est une seconde barrière, pas
+# un remplacement.
+verify_jwt = true
