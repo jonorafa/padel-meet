@@ -52,7 +52,7 @@ export default function WelcomeScreen({ t, lang, onStart, onSkip, dark }) {
           // rapetisser le mot, le texte restant centré sur sa chasse.
           fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 'min(92px, 19vw)', lineHeight: 0.9,
           marginLeft: -24, marginRight: -24,
-          color: COURT.green, animation: 'inkBleed 1.6s ease-out', whiteSpace: 'nowrap',
+          color: dark ? COURT.greenOnDark : COURT.green, animation: 'inkBleed 1.6s ease-out', whiteSpace: 'nowrap',
         }}>
           Padel Meet
         </div>

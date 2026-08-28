@@ -360,7 +360,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               }}>
                 <p style={{
                   fontFamily: 'Spectral, serif', fontSize: 20, fontWeight: 800,
-                  color: COURT.green, margin: '0 0 4px',
+                  color: dark ? COURT.greenOnDark : COURT.green, margin: '0 0 4px',
                 }}>{value}</p>
                 <p style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: muted, margin: 0, fontWeight: 600 }}>{label}</p>
               </div>
@@ -380,13 +380,13 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
               <div />
               <div style={{
                 fontFamily: 'Mulish', fontSize: 13, fontWeight: 700,
-                color: COURT.green,
+                color: dark ? COURT.greenOnDark : COURT.green,
               }}>
                 {myGameLabel}
               </div>
               <div style={{
                 fontFamily: 'Mulish', fontSize: 13, fontWeight: 700,
-                color: COURT.rust,
+                color: dark ? COURT.rustOnDark : COURT.rust,
               }}>
                 {seekingLabel}
               </div>
@@ -532,7 +532,7 @@ export function DetailedProfileModal({ playerId, onClose = () => {}, dark = fals
             {(modSheet === 'blocked' || modSheet === 'reported') && (
               <div style={{
                 fontFamily: 'Spectral, serif', fontSize: 18, fontWeight: 700,
-                color: COURT.green, textAlign: 'center', padding: '12px 0',
+                color: dark ? COURT.greenOnDark : COURT.green, textAlign: 'center', padding: '12px 0',
               }}>
                 {modSheet === 'blocked' ? ML.blockedMsg : ML.reportedMsg}
               </div>

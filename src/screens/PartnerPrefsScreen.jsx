@@ -208,7 +208,7 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
           width: 36, height: 36, borderRadius: 18,
           background: bg, border: `0.5px solid ${border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', color: COURT.green, zIndex: 5,
+          cursor: 'pointer', color: dark ? COURT.greenOnDark : COURT.green, zIndex: 5,
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: rtl ? 'scaleX(-1)' : 'none' }}>
             <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
@@ -294,13 +294,13 @@ export default function PartnerPrefsScreen({ lang, dark, onDone, onBack }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 3 }}>MIN</div>
-                <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
+                <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 26, color: dark ? COURT.greenOnDark : COURT.green, lineHeight: 1 }}>
                   {Number.isInteger(prefs.levelMin) ? prefs.levelMin : prefs.levelMin.toFixed(1)}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 3 }}>MAX</div>
-                <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 26, color: COURT.green, lineHeight: 1 }}>
+                <div style={{ fontFamily: ff, fontStyle: rtl ? 'normal' : 'italic', fontSize: 26, color: dark ? COURT.greenOnDark : COURT.green, lineHeight: 1 }}>
                   {Number.isInteger(prefs.levelMax) ? prefs.levelMax : prefs.levelMax.toFixed(1)}
                 </div>
               </div>

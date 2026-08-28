@@ -51,7 +51,7 @@ function TipOfTheDay({ lang, dark }) {
         <BookIcon color={COURT.green} size={20} />
         <span style={{
           fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
-          letterSpacing: '0.08em', color: COURT.green,
+          letterSpacing: '0.08em', color: dark ? COURT.greenOnDark : COURT.green,
         }}>
           {labels.eyebrow}
         </span>
@@ -167,7 +167,7 @@ export default function HomeScreen({ lang, dark, onShowNotifs, notifCount = 0, o
         <div>
           <div style={{
             fontFamily: 'Mulish', fontSize: TYPE.micro, fontWeight: 700,
-            letterSpacing: TRACK.caps, textTransform: 'uppercase', color: COURT.green,
+            letterSpacing: TRACK.caps, textTransform: 'uppercase', color: dark ? COURT.greenOnDark : COURT.green,
             marginBottom: 4,
           }}>
             {lang === 'he' ? 'פאדל מיט' : 'Padel Meet'}

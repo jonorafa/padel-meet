@@ -5,11 +5,23 @@ import { GLOSSARY } from '../data/courtData';
 export const COURT = {
   green: '#1F5C3F',
   greenDeep: '#0F3D29',
+  // Fond de pastille (nœud « en cours » du parcours Apprendre). Sert de FOND,
+  // pas de texte — ne pas l'éclaircir pour des raisons de contraste de texte,
+  // c'est greenOnDark ci-dessous qui joue ce rôle.
   greenLight: '#2A7A52',
+  // Vert lisible SUR fond sombre. #1F5C3F donne 2.25:1 sur darkBg (#121A15)
+  // et 1.98:1 sur darkCard (#1A2820) — très en dessous du seuil AA de 4.5.
+  // #7FBF9B : 8.30:1 sur darkBg, 7.32:1 sur darkCard → AA et AAA sur les deux.
+  greenOnDark: '#7FBF9B',
   // Rouille/corail (ex-"purple" — le nom ne décrivait pas la vraie teinte,
   // renommé sans changer la valeur). Sert au concept "défaite/négatif" dans
   // un match, distinct de `red` qui reste réservé à "erreur/danger".
   rust: '#C05050',
+  // Idem pour le rouille : #C05050 tombe à 3.80:1 sur darkBg et 3.36:1 sur
+  // darkCard. #E89494 : 7.68:1 et 6.78:1 → AA partout, AAA sur darkBg, et
+  // aligné sur le poids visuel du gold (7.88) pour que les deux accents se
+  // valent en mode sombre.
+  rustOnDark: '#E89494',
   cream: '#F5F1E8',
   creamDark: '#EBE4D2',
   gold: '#C9A961',
@@ -123,7 +135,7 @@ export function PadelSlider({
       {bigValue && (
         <div style={{
           textAlign: 'center', fontFamily: 'Spectral, serif',
-          fontSize: TYPE.giant, lineHeight: 1, color: COURT.green, fontWeight: 400, marginBottom: 4,
+          fontSize: TYPE.giant, lineHeight: 1, color: dark ? COURT.greenOnDark : COURT.green, fontWeight: 400, marginBottom: 4,
         }}>
           {value}
           {suffix && <span style={{ fontSize: 28, color: stone, fontStyle: lang === 'he' ? 'normal' : 'italic', fontFamily: 'Spectral, serif' }}>{suffix}</span>}
@@ -279,7 +291,7 @@ export function ThinButton({ children, onClick, variant = 'cream', icon, style =
 }
 
 export function HeritageTag({ children, color }) {
-  const c = color || (_darkMode ? COURT.greenLight : COURT.green);
+  const c = color || (_darkMode ? COURT.greenOnDark : COURT.green);
   const bg = _darkMode ? COURT.darkCard : COURT.cream;
   return (
     <span style={{
@@ -741,7 +753,7 @@ const NAV_ICONS = {
 export function ScreenHeader({ eyebrow, title, notifCount = 0, onShowNotifs, dark, rtl = false, children, paddingTop = '56px' }) {
   const ink    = dark ? COURT.darkText   : COURT.ink;
   const border = dark ? COURT.darkBorder : `${COURT.green}30`;
-  const accent = dark ? COURT.greenLight : COURT.green;
+  const accent = dark ? COURT.greenOnDark : COURT.green;
   const ff     = rtl ? 'Mulish, sans-serif' : 'Spectral, serif';
 
   return (
@@ -789,7 +801,7 @@ export function ScreenHeader({ eyebrow, title, notifCount = 0, onShowNotifs, dar
 export function BottomNav({ active, onChange, t, chatCount, dark }) {
   const bg = dark ? COURT.darkCard : COURT.cream;
   const border = dark ? COURT.darkBorder : `${COURT.green}40`;
-  const activeColor = dark ? COURT.greenLight : COURT.green;
+  const activeColor = dark ? COURT.greenOnDark : COURT.green;
   const inactiveColor = dark ? COURT.darkMuted : COURT.stone;
 
   const items = [
@@ -1142,7 +1154,10 @@ export function renderWithGlossary(text, lang, onTermClick) {
           key={i}
           onClick={e => { e.stopPropagation(); onTermClick(match.key); }}
           style={{
-            color: COURT.green,
+            // renderWithGlossary est une fonction utilitaire, pas un composant :
+            // aucune prop `dark` ne lui parvient. On lit l'état module-level,
+            // comme HeritageTag plus haut dans ce fichier.
+            color: _darkMode ? COURT.greenOnDark : COURT.green,
             cursor: 'pointer',
             fontStyle: 'normal',
             // text-decoration + text-underline-offset plutôt que borderBottom :
@@ -1154,7 +1169,7 @@ export function renderWithGlossary(text, lang, onTermClick) {
             // en pixels, indépendant du line-height du parent.
             textDecorationLine: 'underline',
             textDecorationStyle: 'dotted',
-            textDecorationColor: COURT.green,
+            textDecorationColor: _darkMode ? COURT.greenOnDark : COURT.green,
             textDecorationThickness: '1.5px',
             textUnderlineOffset: '2px',
           }}
@@ -1200,7 +1215,7 @@ export function GlossaryCard({ termKey, lang, dark, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div style={{
             fontFamily: 'Spectral, serif',
-            fontSize: 22, fontWeight: 600, color: COURT.green,
+            fontSize: 22, fontWeight: 600, color: dark ? COURT.greenOnDark : COURT.green,
             fontStyle: lang === 'he' ? 'normal' : 'italic',
           }}>
             {entry.term[lang] || entry.term.fr}
@@ -1212,7 +1227,7 @@ export function GlossaryCard({ termKey, lang, dark, onClose }) {
               width: 28, height: 28, borderRadius: 14,
               background: `${COURT.green}18`, border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: COURT.green,
+              color: dark ? COURT.greenOnDark : COURT.green,
             }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">

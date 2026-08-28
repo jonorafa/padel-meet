@@ -50,7 +50,7 @@ export default function LanguageScreen() {
           // disponibles sur un écran de 320 px (iPhone SE) — il débordait.
           // Voir le repli métrique « Pinyon Fallback » dans index.css.
           fontFamily: 'Pinyon Script, Pinyon Fallback, cursive', fontSize: 'min(72px, 20vw)', lineHeight: 0.9,
-          color: COURT.green, textAlign: 'center', whiteSpace: 'nowrap',
+          color: dark ? COURT.greenOnDark : COURT.green, textAlign: 'center', whiteSpace: 'nowrap',
           animation: 'inkReveal 1.4s ease-out',
         }}>
           Padel Meet

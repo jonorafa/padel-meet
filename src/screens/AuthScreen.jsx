@@ -189,7 +189,7 @@ export default function AuthScreen() {
           <Ornament width={70} style={{ display: 'block', margin: '0 auto 8px' }} />
           <div style={{
             fontFamily: 'Pinyon Script, Pinyon Fallback, cursive',
-            fontSize: 56, color: COURT.green, lineHeight: 1, whiteSpace: 'nowrap',
+            fontSize: 56, color: dark ? COURT.greenOnDark : COURT.green, lineHeight: 1, whiteSpace: 'nowrap',
           }}>
             Padel Meet
           </div>
@@ -222,12 +222,12 @@ export default function AuthScreen() {
                 I have read and accept the{' '}
                 <span
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/terms') }}
-                  style={{ textDecoration: 'underline', color: COURT.green }}
+                  style={{ textDecoration: 'underline', color: dark ? COURT.greenOnDark : COURT.green }}
                 >Terms</span>
                 {' '}and{' '}
                 <span
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/privacy') }}
-                  style={{ textDecoration: 'underline', color: COURT.green }}
+                  style={{ textDecoration: 'underline', color: dark ? COURT.greenOnDark : COURT.green }}
                 >Privacy Policy</span>
               </>
             ) : lang === 'he' ? (
@@ -235,12 +235,12 @@ export default function AuthScreen() {
                 קראתי ואני מסכים/ה ל
                 <span
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/terms') }}
-                  style={{ textDecoration: 'underline', color: COURT.green }}
+                  style={{ textDecoration: 'underline', color: dark ? COURT.greenOnDark : COURT.green }}
                 >תנאי השימוש</span>
                 {' '}ול
                 <span
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/privacy') }}
-                  style={{ textDecoration: 'underline', color: COURT.green }}
+                  style={{ textDecoration: 'underline', color: dark ? COURT.greenOnDark : COURT.green }}
                 >מדיניות הפרטיות</span>
               </>
             ) : (
@@ -248,12 +248,12 @@ export default function AuthScreen() {
                 J'ai lu et j'accepte les{' '}
                 <span
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/terms') }}
-                  style={{ textDecoration: 'underline', color: COURT.green }}
+                  style={{ textDecoration: 'underline', color: dark ? COURT.greenOnDark : COURT.green }}
                 >CGU</span>
                 {' '}et la{' '}
                 <span
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate('/privacy') }}
-                  style={{ textDecoration: 'underline', color: COURT.green }}
+                  style={{ textDecoration: 'underline', color: dark ? COURT.greenOnDark : COURT.green }}
                 >Politique de confidentialité</span>
               </>
             )}

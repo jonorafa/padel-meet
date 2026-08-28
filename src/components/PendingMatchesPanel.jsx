@@ -104,7 +104,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
       {awaitingRejectConfirm ? (
         /* Confirmation inline du rejet — remplace le confirm() natif */
         <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: `${COURT.rust}10`, border: `0.5px solid ${COURT.rust}40` }}>
-          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: COURT.rust, marginBottom: 8, textAlign: 'center' }}>
+          <div style={{ fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic', fontSize: 13, color: dark ? COURT.rustOnDark : COURT.rust, marginBottom: 8, textAlign: 'center' }}>
             {lang === 'en' ? 'Confirm rejection?' : lang === 'he' ? 'אשר דחייה?' : 'Confirmer le refus ?'}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -139,7 +139,7 @@ function ScoreToConfirmCard({ pending, t, lang, dark, onConfirm, onReject, busy,
             style={{
               flex: 1, padding: '10px 12px',
               background: dark ? COURT.darkBg : 'transparent',
-              color: COURT.rust, border: `0.5px solid ${COURT.rust}60`,
+              color: dark ? COURT.rustOnDark : COURT.rust, border: `0.5px solid ${COURT.rust}60`,
               borderRadius: 8, fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
               fontSize: 13, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.5 : 1,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -191,7 +191,7 @@ function ScoreAwaitingCard({ pending, t, lang, dark }) {
         }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: ff_serif, fontSize: 14, color: ink }}>
-            {t.waitingConfirmFrom} <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: COURT.green }}>{pending.otherPlayer?.name}</span>
+            {t.waitingConfirmFrom} <span style={{ fontStyle: rtl ? 'normal' : 'italic', color: dark ? COURT.greenOnDark : COURT.green }}>{pending.otherPlayer?.name}</span>
           </div>
           <div style={{ fontFamily: 'Mulish', fontSize: TYPE.micro, color: stone, letterSpacing: '0.1em', marginTop: 2 }}>
             {pending.score} · {t.expiresIn} {formatTimeRemaining(pending.expiresAt, lang)}
@@ -300,7 +300,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
         {pendingToConfirm.length > 0 && (
           <>
             <div style={{
-              fontFamily: 'Mulish', fontSize: 13, color: COURT.green,
+              fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.greenOnDark : COURT.green,
               fontWeight: 600, marginBottom: 12,
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
@@ -311,7 +311,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
               <div style={{
                 padding: '8px 12px', borderRadius: 8, marginBottom: 10,
                 background: `${COURT.rust}12`, border: `0.5px solid ${COURT.rust}40`,
-                fontFamily: 'Mulish', fontSize: 12, color: COURT.rust,
+                fontFamily: 'Mulish', fontSize: 12, color: dark ? COURT.rustOnDark : COURT.rust,
                 display: 'flex', alignItems: 'center', gap: 7,
               }}>
                 <AlertIcon size={14} color={COURT.rust} />
@@ -387,7 +387,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             border: `0.5px solid ${COURT.rust}60`,
             borderRadius: 8,
             fontFamily: ff_italic, fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 13, color: COURT.rust,
+            fontSize: 13, color: dark ? COURT.rustOnDark : COURT.rust,
           }}>
             {error}
           </div>
@@ -406,7 +406,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
             <div style={{ textAlign: 'center' }}>
               {/* PadelBall plutôt que 🎾 : l'app a déjà sa propre balle tracée */}
               <div style={{ marginBottom: 12 }}><PadelBall size={48} /></div>
-              <p style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: COURT.green, margin: '0 0 6px' }}>
+              <p style={{ fontFamily: 'Spectral, serif', fontSize: 20, color: dark ? COURT.greenOnDark : COURT.green, margin: '0 0 6px' }}>
                 {t.evalThanks}
               </p>
             </div>
@@ -443,7 +443,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
                 <span style={{
                   fontFamily: 'Spectral, serif',
                   fontSize: 72, lineHeight: 1,
-                  color: COURT.green, fontWeight: 600,
+                  color: dark ? COURT.greenOnDark : COURT.green, fontWeight: 600,
                 }}>
                   {evalProposedLevel % 1 === 0 ? evalProposedLevel.toFixed(1) : evalProposedLevel}
                 </span>
@@ -457,7 +457,7 @@ export function PendingMatchesPanel({ t, lang, dark, onClose }) {
 
               {/* Label de description */}
               <div style={{
-                fontFamily: 'Mulish', fontSize: 13, color: COURT.green,
+                fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.greenOnDark : COURT.green,
                 marginBottom: 20,
               }}>
                 {getLevelLabel(evalProposedLevel, t)}

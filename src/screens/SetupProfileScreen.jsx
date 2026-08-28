@@ -525,7 +525,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
           {/* Full name — seul champ obligatoire du formulaire */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontFamily: 'Mulish', fontSize: 13, color: stone, marginBottom: 4 }}>
-              {t.fullName} <span style={{ color: COURT.rust }}>*</span>
+              {t.fullName} <span style={{ color: dark ? COURT.rustOnDark : COURT.rust }}>*</span>
             </div>
             <input
               value={fullName}
@@ -612,7 +612,7 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
               onClick={() => fileRef.current?.click()}
               style={{
                 marginTop: 8, background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'Mulish', fontSize: 13, color: COURT.green, textDecoration: 'underline',
+                fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.greenOnDark : COURT.green, textDecoration: 'underline',
               }}
             >
               {avatar ? t.changePhoto : t.photo}
@@ -663,13 +663,13 @@ export default function SetupProfileScreen({ lang, dark, level, onDone }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
                   <button onClick={() => videoRef.current?.click()} style={{
                     background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                    fontFamily: 'Mulish', fontSize: 13, color: COURT.green, textDecoration: 'underline',
+                    fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.greenOnDark : COURT.green, textDecoration: 'underline',
                   }}>{t.changeVideo}</button>
                   <button
                     onClick={() => { setVideoUrl(''); setVideoPoster(''); setVideoPath(''); setVideoError('') }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                      fontFamily: 'Mulish', fontSize: 13, color: COURT.rust, textDecoration: 'underline',
+                      fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.rustOnDark : COURT.rust, textDecoration: 'underline',
                     }}>{t.removeVideo}</button>
                 </div>
               </div>

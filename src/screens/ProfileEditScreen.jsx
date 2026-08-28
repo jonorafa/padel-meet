@@ -523,7 +523,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
                       disabled={uploadingVideo}
                       style={{
                         padding: '9px 14px', borderRadius: 10, cursor: uploadingVideo ? 'wait' : 'pointer',
-                        background: 'transparent', color: COURT.rust, border: `0.5px solid ${COURT.rust}60`,
+                        background: 'transparent', color: dark ? COURT.rustOnDark : COURT.rust, border: `0.5px solid ${COURT.rust}60`,
                         fontFamily: 'Mulish', fontSize: 13, fontWeight: 600,
                       }}
                     >
@@ -682,7 +682,7 @@ export function ProfileEditScreen({ onClose = () => {}, dark = false }) {
               padding: '12px 14px', borderRadius: 10,
               background: `${COURT.green}18`, border: `1px solid ${COURT.green}50`,
             }}>
-              <p style={{ fontFamily: 'Mulish', fontSize: 13, color: COURT.green, margin: 0 }}>
+              <p style={{ fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.greenOnDark : COURT.green, margin: 0 }}>
                 {t.profileUpdated}
               </p>
             </div>

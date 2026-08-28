@@ -328,7 +328,7 @@ export default function LearnScreen({ lang = 'fr', dark = false, onClose }) {
               )}
               {!completed && unlocked && (
                 <div style={{
-                  fontFamily: 'Mulish', fontSize: 13, color: COURT.green, marginTop: 4, fontWeight: 700,
+                  fontFamily: 'Mulish', fontSize: 13, color: dark ? COURT.greenOnDark : COURT.green, marginTop: 4, fontWeight: 700,
                 }}>{isCurrent ? L.start : L.review}</div>
               )}
             </div>
@@ -436,7 +436,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
       border: `1.5px solid ${border}`, transition: 'all 0.15s', boxSizing: 'border-box',
     }
     if (!answered) return base
-    if (optId === q.correct) return { ...base, background: `${COURT.green}1A`, border: `1.5px solid ${COURT.green}`, color: COURT.green }
+    if (optId === q.correct) return { ...base, background: `${COURT.green}1A`, border: `1.5px solid ${COURT.green}`, color: dark ? COURT.greenOnDark : COURT.green }
     if (optId === selected)  return { ...base, background: `${COURT.red}14`,   border: `1.5px solid ${COURT.red}`,   color: COURT.red }
     return { ...base, opacity: 0.55 }
   }
@@ -640,7 +640,7 @@ function QuizFlow({ chapter, lang, dark, L, tr, rtl, onClose, onComplete }) {
           </div>
           <div style={{
             fontFamily: rtl ? 'Mulish' : 'Spectral, serif', fontStyle: rtl ? 'normal' : 'italic',
-            fontSize: 16, color: COURT.green, marginBottom: 32,
+            fontSize: 16, color: dark ? COURT.greenOnDark : COURT.green, marginBottom: 32,
           }}>
             {earned === 3 ? L.perfect : earned === 2 ? L.good : L.keep}
           </div>

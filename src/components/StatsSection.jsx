@@ -206,7 +206,7 @@ export default function StatsSection() {
               </svg>
             </button>
           </div>
-          <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 20, color: COURT.green }}>
+          <div style={{ fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic', fontSize: 20, color: dark ? COURT.greenOnDark : COURT.green }}>
             {confScore}%
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function StatsSection() {
             {/* Titre */}
             <div style={{
               fontFamily: ff_serif, fontStyle: rtl ? 'normal' : 'italic',
-              fontSize: 20, color: COURT.green, marginBottom: 18, lineHeight: 1.3,
+              fontSize: 20, color: dark ? COURT.greenOnDark : COURT.green, marginBottom: 18, lineHeight: 1.3,
             }}>
               {L.modalTitle}
             </div>
@@ -272,7 +272,7 @@ export default function StatsSection() {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
-                <div style={{ fontFamily: 'Mulish', fontWeight: 700, fontSize: 12.5, color: COURT.green, letterSpacing: '0.05em' }}>
+                <div style={{ fontFamily: 'Mulish', fontWeight: 700, fontSize: 12.5, color: dark ? COURT.greenOnDark : COURT.green, letterSpacing: '0.05em' }}>
                   {L.modalPeerTitle}
                 </div>
               </div>
