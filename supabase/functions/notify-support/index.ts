@@ -173,11 +173,15 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        // TODO(domaine) : remplacer par contact@<domaine> une fois SPF+DKIM
-        // vérifiés dans Resend. onboarding@resend.dev est le domaine bac à
-        // sable partagé : il ne peut écrire qu'à l'adresse du compte Resend.
+        // TODO(domaine) : remplacer from par contact@<domaine> ET to par
+        // padelmeet.il@gmail.com une fois SPF+DKIM vérifiés dans Resend.
+        // onboarding@resend.dev est le domaine bac à sable partagé : il ne
+        // peut écrire QU'à l'adresse propriétaire du compte Resend — testé
+        // en direct le 2026-08-29, padelmeet.il@gmail.com y était rejeté
+        // avec un 403 (Resend validation_error), transformé en 500 générique
+        // côté client. jonathanbens10@gmail.com est cette adresse compte.
         from: 'Padel Meet <onboarding@resend.dev>',
-        to:   'padelmeet.il@gmail.com',
+        to:   'jonathanbens10@gmail.com',
         subject: `[Padel Meet] ${sanitizeHeader(type)} de ${sanitizeHeader(name)}`,
         html,
         reply_to: email, // validé par EMAIL_RE ci-dessus
