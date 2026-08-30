@@ -8,7 +8,7 @@ import { RADIUS } from '../components/tokens';
 import {
   COURT, TYPE, PadelBall, PadelRacket, FloatingBalls, Ornament,
   ThinButton, BottomNav, ScreenHeader, NotifBadge, SectionHeading,
-  SkeletonCard, MatchFlash, BottomSheet, LangButton,
+  SkeletonCard, MatchFlash, BottomSheet, LangButton, ProfileNudge,
   initialsAvatar, Achievements, BadgeRow, BADGE_LABEL_KEY, CompatRing,
   LightningIcon, HourglassIcon, AlertIcon, LockIcon, StarIcon, TrendUpIcon, BellIcon,
 } from '../components/CourtUI';
@@ -715,7 +715,7 @@ function EmptyStack({ t, lang, onReset, onElargir, dark }) {
 }
 
 // ─── Swipe Stack ────────────────────────────────────────────────────────────
-function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
+function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch, dark, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0, profilManques = [], onCompleterProfil }) {
   // ── Données réelles ──
   const { profile: me } = useAuth();
   const { players: allPlayers, loading: playersLoading, refetch } = usePlayers(lang);
@@ -904,6 +904,15 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
         </button>
       </div>
 
+      {/* Profil incomplet : on le signale ici plutôt que de rediriger vers
+          l'onglet Profil au démarrage (cf. le useState de `tab` dans MainApp). */}
+      <ProfileNudge
+        manques={profilManques}
+        onOpen={onCompleterProfil}
+        dark={dark}
+        lang={lang}
+      />
+
       <div style={{ flex: 1, position: 'relative', margin: '0 16px 8px', minHeight: 0 }}>
         {stack === null ? (
           <div style={{ position: 'absolute', inset: 0 }}><SkeletonCard /></div>
@@ -995,7 +1004,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
 }
 
 // ─── Search flow ────────────────────────────────────────────────────────────
-function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0 }) {
+function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, isGuest, onGuestAction, onShowNotifs, notifCount = 0, profilManques = [], onCompleterProfil }) {
   const { profile } = useAuth();
   // Par défaut, on filtre automatiquement sur le pays de l'utilisateur.
   // L'isolation stricte est de toute façon garantie en amont (usePlayers).
@@ -1041,6 +1050,8 @@ function SearchFlow({ t, lang, dark, userLevel, onNavigateChat, onOpenDetail, is
         onGuestAction={onGuestAction}
         onShowNotifs={onShowNotifs}
         notifCount={notifCount}
+        profilManques={profilManques}
+        onCompleterProfil={onCompleterProfil}
       />
       {showPrefs && (
         <PreferencesSheet
@@ -4534,9 +4545,10 @@ export default function MainApp() {
   const { lang, dark: darkMode, level, confidence, setLevel, setConfidence } = usePrefs();
   const t = I18N[lang] || I18N.fr;
 
-  // Onglet Accueil supprimé : on s'ouvre sur Profil. Un invité ne peut pas
-  // ouvrir le Profil (bloqué dans handleTabChange) → il démarre sur Trouver.
-  const [tab, setTab] = useState(isGuest ? 'search' : 'profile');
+  // On s'ouvre TOUJOURS sur Trouver — la valeur du produit est là, pas dans
+  // un formulaire de profil. Un profil incomplet est signalé par le bandeau
+  // ProfileNudge en haut de Trouver, sans jamais imposer le détour.
+  const [tab, setTab] = useState('search');
   const [showNotifs,   setShowNotifs]   = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduleTargetId, setScheduleTargetId] = useState(null);
@@ -4618,8 +4630,21 @@ export default function MainApp() {
 
   const bellProps = { onShowNotifs: () => setShowNotifs(true), notifCount: unreadCount };
 
+  // Ce qui manque au profil, pour le bandeau en haut de Trouver. On ne
+  // retient que les 3 champs qui pèsent réellement sur la mise en relation :
+  // sans photo on se fait passer, sans niveau le score de compatibilité est
+  // aveugle, sans bio l'autre n'a rien à lire pour se décider.
+  // Les invités n'ont pas de profil à compléter — le bandeau les enverrait
+  // vers un écran que handleTabChange leur bloque de toute façon.
+  const profilManques = isGuest ? [] : [
+    !profile?.photo_url && (lang === 'he' ? 'תמונה' : lang === 'en' ? 'Photo' : 'Photo'),
+    profile?.level == null && (lang === 'he' ? 'רמה' : lang === 'en' ? 'Level' : 'Niveau'),
+    !(profile?.bio_fr || profile?.bio_en || profile?.bio_he) &&
+      (lang === 'he' ? 'תיאור' : lang === 'en' ? 'Bio' : 'Bio'),
+  ].filter(Boolean);
+
   const screens = {
-    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} {...bellProps} />,
+    search:  <SearchFlow    t={t} lang={lang} dark={darkMode} userLevel={level} onNavigateChat={() => setTab('chat')} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} profilManques={profilManques} onCompleterProfil={() => setTab('profile')} {...bellProps} />,
     home:    <HomeScreen    lang={lang} dark={darkMode} onOpenLearn={() => setShowLearn(true)} {...bellProps} />,
     chat:    <ChatScreen    t={t} lang={lang} dark={darkMode} onOpenDetail={setDetailPlayerId} isGuest={isGuest} onGuestAction={onGuestAction} onStartMatch={() => setShowSchedule(true)} {...bellProps} />,
     trophy:  <MatchesScreen t={t} lang={lang} level={level} dark={darkMode} statsSignal={statsSignal} onSchedule={(id) => { setScheduleTargetId(id || null); setShowSchedule(true); }} {...bellProps} />,

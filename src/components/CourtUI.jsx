@@ -704,6 +704,52 @@ export function LangButton({ code, flag, label, onSelect }) {
   );
 }
 
+// ─── Bandeau d'incitation à compléter le profil ──────────────────────────────
+// Remplace la redirection automatique vers l'onglet Profil au démarrage :
+// l'app s'ouvre désormais toujours sur Trouver (la valeur du produit), et ce
+// bandeau signale un profil incomplet sans jamais forcer le détour.
+// `manques` est la liste déjà traduite de ce qui manque ; le bandeau ne
+// s'affiche pas si elle est vide.
+export function ProfileNudge({ manques, onOpen, dark, lang }) {
+  if (!manques || manques.length === 0) return null;
+  const rtl = lang === 'he';
+  const ink = dark ? COURT.darkText : COURT.ink;
+
+  const titre = lang === 'he' ? 'הפרופיל שלך חלקי'
+    : lang === 'en' ? 'Your profile is incomplete'
+    : 'Ton profil est incomplet';
+  const action = lang === 'he' ? 'להשלים' : lang === 'en' ? 'Complete' : 'Compléter';
+
+  return (
+    <div dir={rtl ? 'rtl' : 'ltr'} style={{
+      flexShrink: 0, margin: '0 22px 10px',
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 12px', borderRadius: 10,
+      background: dark ? `${COURT.gold}14` : `${COURT.gold}1F`,
+      border: `0.5px solid ${COURT.gold}${dark ? '55' : '80'}`,
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontFamily: 'Mulish, sans-serif', fontSize: TYPE.micro,
+          fontWeight: 700, color: ink, marginBottom: 1,
+        }}>{titre}</div>
+        <div style={{
+          fontFamily: 'Mulish, sans-serif', fontSize: TYPE.micro,
+          color: dark ? COURT.darkMuted : COURT.stone,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>{manques.join(' · ')}</div>
+      </div>
+      <button className="tap" onClick={onOpen} style={{
+        flexShrink: 0, padding: '7px 14px', borderRadius: 999,
+        background: COURT.green, color: COURT.cream, border: 'none',
+        fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
+        fontStyle: rtl ? 'normal' : 'italic',
+        fontSize: TYPE.micro, cursor: 'pointer', whiteSpace: 'nowrap',
+      }}>{action}</button>
+    </div>
+  );
+}
+
 // ─── Nav icons ───
 const NAV_ICONS = {
   home: (active) => (
