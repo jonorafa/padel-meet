@@ -355,3 +355,30 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* ─── États pressés / focus sur les composants tappables ──────────────────────
+   Tous les styles de l'app sont en ligne : il n'y avait donc AUCUN :active ni
+   :focus-visible nulle part, et un appui ne produisait aucun retour visuel.
+   Cette classe se pose sur les composants partagés (ThinButton, CircBtn,
+   BottomNav, LangButton, Chips).
+
+   ⚠️ La règle :hover ci-dessous est SANS EFFET sur ces 5 composants : ils
+   posent tous `background` en style en ligne, qui l'emporte sur une règle de
+   feuille de style. Elle est conservée pour d'éventuels futurs usages de
+   `.tap` sur un élément sans background en ligne — mais ne comptez pas
+   dessus ici. Vérifié à l'écran, pas déduit. `transform` et `outline`, eux,
+   ne sont jamais posés en ligne sur ces composants et s'appliquent bien. */
+.tap {
+  transition: transform .12s ease, filter .12s ease, background-color .18s ease;
+}
+.tap:active {
+  transform: scale(.97);
+  filter: brightness(.96);
+}
+.tap:focus-visible {
+  outline: 2px solid #C9A961;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .tap:hover { background-color: #0F3D29; }
+}

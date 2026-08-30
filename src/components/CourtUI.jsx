@@ -274,7 +274,7 @@ export function ThinButton({ children, onClick, variant = 'cream', icon, style =
     : COURT.cream;
   const border = _darkMode ? `0.5px solid ${COURT.darkBorder}` : `0.5px solid ${COURT.green}`;
   return (
-    <button onClick={onClick} style={{
+    <button className="tap" onClick={onClick} style={{
       width: full ? '100%' : 'auto',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
       padding: '14px 20px', background: bg, color,
@@ -683,6 +683,7 @@ export function LangButton({ code, flag, label, onSelect }) {
 
   return (
     <button
+      className="tap"
       onClick={() => onSelect(code)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -875,7 +876,7 @@ export function BottomNav({ active, onChange, t, chatCount, dark }) {
       {items.map(it => {
         const isActive = active === it.id;
         return (
-          <button key={it.id} onClick={() => {
+          <button key={it.id} className="tap" onClick={() => {
             if (navigator.vibrate) navigator.vibrate(8);
             onChange(it.id);
           }} style={{

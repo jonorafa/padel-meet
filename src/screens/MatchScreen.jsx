@@ -55,7 +55,7 @@ function Chips({ value, onChange, options, dark, lang }) {
       {options.map(opt => {
         const active = value === opt.v;
         return (
-          <button key={opt.v} onClick={() => onChange(opt.v)} style={{
+          <button key={opt.v} className="tap" onClick={() => onChange(opt.v)} style={{
             padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 6,
             background: active ? COURT.green : (dark ? COURT.darkCard : COURT.cream),
             color: active ? COURT.cream : (dark ? COURT.darkText : COURT.green),
@@ -680,7 +680,7 @@ function CircBtn({ children, onClick, color, large, dark }) {
   const s = large ? 52 : 42;     // ↓ taille réduite (avant: 64 / 52)
   const bg = dark ? COURT.darkCard : COURT.cream;
   return (
-    <button onClick={onClick} style={{
+    <button className="tap" onClick={onClick} style={{
       width: s, height: s, borderRadius: s / 2, background: bg, color,
       border: `0.5px solid ${color}80`, cursor: 'pointer',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
