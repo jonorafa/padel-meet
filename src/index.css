@@ -403,3 +403,19 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
     transition-duration: .01ms !important;
   }
 }
+
+/* ─── Zone tactile de 44px sans grossir le composant ──────────────────────────
+   La barre de recherche et le bouton Filtres font 40px de haut : c'est la bonne
+   taille visuelle dans cette rangée, mais 4px sous le minimum tactile de 44px
+   (Apple HIG / WCAG 2.5.8). Ce pseudo-élément étend la zone cliquable de 2px
+   au-dessus et en dessous, sans rien changer au rendu.
+   Un <input> n'accepte pas ::before — la barre de recherche passe par un
+   <label> conteneur à la place (cf. SwipeStack). */
+.hit44 {
+  position: relative;
+}
+.hit44::before {
+  content: '';
+  position: absolute;
+  inset: -2px 0;
+}

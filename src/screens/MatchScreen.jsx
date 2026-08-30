@@ -677,7 +677,7 @@ function PlayerCard({ p, dragX = 0, t, lang, dark }) {
 }
 
 function CircBtn({ children, onClick, color, large, dark }) {
-  const s = large ? 52 : 42;     // ↓ taille réduite (avant: 64 / 52)
+  const s = large ? 60 : 48;     // ≥44px : minimum tactile (Apple HIG / WCAG 2.5.8)
   const bg = dark ? COURT.darkCard : COURT.cream;
   return (
     <button className="tap" onClick={onClick} style={{
@@ -906,7 +906,11 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
         paddingTop="max(56px, calc(env(safe-area-inset-top, 0px) + 16px))"
       />
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '12px 22px 10px' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+        {/* <label> plutôt que <div> : un clic sur les 2px ajoutés en haut et en
+            bas donne le focus à l'input, ce qui porte la zone tactile à 44px
+            sans changer la hauteur visuelle (40px). Un <input> ne peut pas
+            porter de ::before, d'où ce conteneur. */}
+        <label style={{ position: 'relative', flex: 1, minWidth: 0, display: 'block', padding: '2px 0' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={stone} strokeWidth="1.6"
             style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -916,7 +920,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={lang === 'he' ? 'חפש...' : lang === 'en' ? 'Search...' : 'Chercher...'}
             style={{
-              paddingLeft: 28, paddingRight: 10, height: 30, width: '100%',
+              paddingLeft: 28, paddingRight: 10, height: 40, width: '100%',
               background: dark ? COURT.darkCard : COURT.cream,
               border: `0.5px solid ${searchQuery ? COURT.green : (dark ? COURT.darkBorder : COURT.green + '60')}`,
               borderRadius: 999,
@@ -926,11 +930,11 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
               boxSizing: 'border-box',
             }}
           />
-        </div>
-        <button onClick={onEditFilters} style={{
+        </label>
+        <button onClick={onEditFilters} className="hit44" style={{
           background: dark ? COURT.darkCard : COURT.cream,
           border: `0.5px solid ${dark ? COURT.darkBorder : COURT.green}`,
-          borderRadius: 999, padding: '0 12px', height: 30,
+          borderRadius: 999, padding: '0 12px', height: 40,
           fontFamily: rtl ? 'Mulish, sans-serif' : 'Spectral, serif',
           fontStyle: rtl ? 'normal' : 'italic', fontSize: TYPE.micro, color: dark ? COURT.greenOnDark : COURT.green, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
