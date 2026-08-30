@@ -2792,11 +2792,22 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   };
 
   // ─── Cooldown mensuel réévaluation ──────────────────────────────────────────
-  // ⚠️ TEMPORAIREMENT DÉSACTIVÉ pour permettre des tests internes répétés sans
-  // attendre le mois suivant. Rien n'est supprimé — repasser à `false` (ou
-  // retirer le `!EVAL_COOLDOWN_TESTING_DISABLED &&` ci-dessous) réactive le
-  // cooldown exactement comme avant.
-  const EVAL_COOLDOWN_TESTING_DISABLED = true;
+  // Désactivé UNIQUEMENT en développement local, pour enchaîner des tests sans
+  // attendre le mois suivant. `import.meta.env.DEV` vaut false dans tout build
+  // de production (Vite le remplace littéralement à la compilation), donc le
+  // cooldown est toujours actif pour les utilisateurs réels.
+  //
+  // Ce drapeau était figé à `true`, y compris en production : n'importe qui
+  // pouvait relancer son auto-évaluation en boucle jusqu'à tomber sur le
+  // niveau qui l'arrange, ce qui vidait le confidence rate de son sens.
+  //
+  // ⚠️ Ce garde-fou reste PUREMENT CLIENT. La base n'impose rien : la policy
+  // « Users can update own profile » autorise l'écriture de n'importe quelle
+  // colonne de son propre profil, et trg_protect_sensitive_profile_columns ne
+  // rétablit que is_admin, confidence_rate, matches_played et wins — ni `level`
+  // ni `last_self_eval_date`. Un appel REST direct contourne donc entièrement
+  // ce cooldown. Fermer cette voie demande une migration (cf. rapport).
+  const EVAL_COOLDOWN_TESTING_DISABLED = import.meta.env.DEV;
   const lastEvalRaw  = profile?.last_self_eval_date;
   const lastEvalDate = lastEvalRaw ? new Date(lastEvalRaw) : null;
   const today        = new Date();
