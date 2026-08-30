@@ -795,6 +795,16 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
   const top = displayStack?.[0];
 
   // Enregistre le swipe et détecte un match mutuel
+  // Framer Motion anime en JS (transformations inline) et ignore donc la
+  // media query prefers-reduced-motion posée dans index.css. On lit le
+  // réglage nous-mêmes pour la sortie de carte.
+  //
+  // On RÉDUIT la durée au lieu de supprimer l'animation : une carte qui
+  // disparaît d'un coup, sans transition, est plus déroutante qu'un mouvement
+  // bref — l'utilisateur perd le lien entre son geste et le résultat.
+  const prefersReducedMotion = typeof window !== 'undefined'
+    && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
   const decide = useCallback(async (dir) => {
     if (!top) return;
     // Mode invité : bloquer les likes
@@ -941,7 +951,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
               ? { x: drag.x, y: drag.y * 0.4, rotate: drag.x * 0.06, opacity: 1 }
               : { x: 0, y: 0, rotate: 0, opacity: 1 };
           const transition = isDeciding
-            ? { duration: 0.45, ease: [0.4, 0, 0.2, 1] }
+            ? { duration: prefersReducedMotion ? 0.05 : 0.45, ease: [0.4, 0, 0.2, 1] }
             : drag.active
               ? { duration: 0 }
               : { type: 'spring', stiffness: 500, damping: 30 };

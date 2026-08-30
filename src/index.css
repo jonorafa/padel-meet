@@ -382,3 +382,24 @@ input[type="range"] { -webkit-appearance: none; appearance: none; background: tr
 @media (hover: hover) {
   .tap:hover { background-color: #0F3D29; }
 }
+
+/* ─── Respect de « Réduire les animations » ───────────────────────────────────
+   Réglage système (macOS : Accessibilité → Affichage → Réduire les animations ;
+   iOS : Accessibilité → Mouvement). L'app en ignorait totalement l'existence :
+   flamme du streak, balle qui rebondit, apparitions en fondu, rotations de
+   chargement tournaient quel que soit le réglage.
+
+   On neutralise la DURÉE plutôt que de supprimer les animations : l'état final
+   est atteint immédiatement, donc rien ne disparaît de l'interface — seul le
+   mouvement s'arrête. iteration-count: 1 stoppe les boucles infinies.
+
+   ⚠️ Ne couvre PAS Framer Motion, qui anime en JS via des transformations
+   inline et ignore cette règle. Le swipe de carte est traité séparément dans
+   MatchScreen.jsx (cf. prefersReducedMotion). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
