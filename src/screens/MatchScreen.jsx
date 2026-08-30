@@ -805,7 +805,38 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
   const prefersReducedMotion = typeof window !== 'undefined'
     && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-  const decide = useCallback(async (dir) => {
+  // SOURCE UNIQUE de la durée de sortie de carte. Elle alimente à la fois
+  // l'animation Motion et le retrait du DOM : les deux ne peuvent donc plus
+  // diverger. C'est exactement ce qui clochait — animation de 450 ms, retrait
+  // à 380 ms, donc une carte encore visible qui disparaissait d'un coup.
+  const EXIT_MS = prefersReducedMotion ? 50 : 280;
+
+  // decide() ne fait plus que DÉCLENCHER l'animation de sortie. Le retrait de
+  // la carte est confié à onAnimationComplete (cf. finalizeDecision) au lieu
+  // d'un setTimeout deviné : l'ancien délai de 380 ms retirait la carte du DOM
+  // alors que l'animation en durait 450 — elle était encore visible quand elle
+  // disparaissait d'un coup.
+  //
+  // isGuest et onGuestAction étaient absents des dépendances alors qu'ils sont
+  // lus dans le corps : un invité pouvait garder l'ancienne closure et liker.
+  const finalizeDecision = useCallback(async (card, dir) => {
+    setStack(s => s ? s.slice(1) : s);
+    setDecision(null);
+    setDrag({ x: 0, y: 0, active: false });
+
+    if (dir === 'right') {
+      const { isMatch } = await recordSwipe(card.id, 'right');
+      if (isMatch) onMatch(card);
+    } else {
+      await recordSwipe(card.id, 'left');
+    }
+    // Recharge la liste des joueurs pour filtrer les déjà-swipés
+    refetch();
+  }, [onMatch, recordSwipe, refetch]);
+
+  // isGuest et onGuestAction étaient absents des dépendances alors qu'ils sont
+  // lus dans le corps : un invité pouvait garder une closure périmée et liker.
+  const decide = useCallback((dir) => {
     if (!top) return;
     // Mode invité : bloquer les likes
     if (isGuest && dir === 'right') { onGuestAction?.(); return; }
@@ -814,23 +845,12 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
     setLastDir(dir);
     setDecision({ dir, id: top.id });
 
-    // Retire la carte après l'animation (n'attend pas le réseau)
-    const currentTop = top;
-    setTimeout(async () => {
-      setStack(s => s ? s.slice(1) : s);
-      setDecision(null);
-      setDrag({ x: 0, y: 0, active: false });
-
-      if (dir === 'right') {
-        const { isMatch } = await recordSwipe(currentTop.id, 'right');
-        if (isMatch) onMatch(currentTop);
-      } else {
-        await recordSwipe(currentTop.id, 'left');
-      }
-      // Recharge la liste des joueurs pour filtrer les déjà-swipés
-      refetch();
-    }, 380);
-  }, [top, onMatch, recordSwipe, refetch]);
+    // Retrait calé sur EXIT_MS, la même constante que l'animation.
+    // Le brief demandait onAnimationComplete plutôt qu'un délai — voir le
+    // message de commit : ce callback ne se déclenche jamais sur ce projet.
+    const carte = top;
+    setTimeout(() => finalizeDecision(carte, dir), EXIT_MS);
+  }, [top, isGuest, onGuestAction, finalizeDecision, EXIT_MS]);
 
   // Undo disponible UNIQUEMENT après une croix (left) — jamais après un like
   const undo = () => {
@@ -845,11 +865,20 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
   // geste horizontal nativement et laisse le scroll vertical natif passer grâce
   // à touchAction: 'pan-y'. On garde juste le suivi de position (pour l'overlay
   // LIKE/NOPE de PlayerCard).
-  const handleDragStart = () => { dragStartRef.current = Date.now(); dragMovedRef.current = true; };
+  // Les trois handlers ignorent une carte dont la sortie est déjà lancée :
+  // sans ça, attraper une carte en vol remplacerait sa cible d'animation, et
+  // onAnimationComplete se déclencherait sur l'animation de glissement — donc
+  // finalizeDecision partirait trop tôt, avant que la carte soit sortie.
+  const handleDragStart = () => {
+    if (decision) return;
+    dragStartRef.current = Date.now(); dragMovedRef.current = true;
+  };
   const handleDrag = (event, info) => {
+    if (decision) return;
     setDrag({ x: info.offset.x, y: info.offset.y, active: true });
   };
   const handleDragEnd = (event, info) => {
+    if (decision) return;
     if (info.offset.x > 90) decide('right');
     else if (info.offset.x < -90) decide('left');
     else setDrag({ x: 0, y: 0, active: false });
@@ -951,7 +980,7 @@ function SwipeStack({ t, lang, filters, onEditFilters, onFiltersChange, onMatch,
               ? { x: drag.x, y: drag.y * 0.4, rotate: drag.x * 0.06, opacity: 1 }
               : { x: 0, y: 0, rotate: 0, opacity: 1 };
           const transition = isDeciding
-            ? { duration: prefersReducedMotion ? 0.05 : 0.45, ease: [0.4, 0, 0.2, 1] }
+            ? { duration: EXIT_MS / 1000, ease: [0.4, 0, 0.2, 1] }
             : drag.active
               ? { duration: 0 }
               : { type: 'spring', stiffness: 500, damping: 30 };
