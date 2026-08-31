@@ -11,6 +11,11 @@ import './index.css'
 // demande — le bundle initial ne contient que le shell + l'écran de langue.
 const AuthScreen     = lazy(() => import('./screens/AuthScreen'))
 const OnboardingFlow = lazy(() => import('./screens/OnboardingFlow'))
+// /g/:token — aperçu public d'une demande de partie, ouvert depuis un lien
+// WhatsApp par quelqu'un qui n'a souvent pas de compte. Volontairement HORS
+// de ProtectedRoute : exiger une session avant d'avoir montré la partie
+// perdrait exactement la personne qu'on essaie de faire venir.
+const GameRequestScreen = lazy(() => import('./screens/GameRequestScreen'))
 const MainApp        = lazy(() => import('./screens/MatchScreen'))
 const LegalScreen    = lazy(() => import('./screens/LegalScreen'))
 const AdminScreen    = lazy(() => import('./screens/AdminScreen'))
@@ -55,6 +60,7 @@ export default function App() {
           <Route path="/privacy"    element={<LegalScreen doc="privacy" />} />
           <Route path="/terms"      element={<LegalScreen doc="terms" />} />
           <Route path="/cgu"        element={<LegalScreen doc="terms" />} />
+          <Route path="/g/:token"   element={<GameRequestScreen />} />
 
           {/* Routes protégées */}
           <Route element={<ProtectedRoute />}>

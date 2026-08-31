@@ -19,6 +19,22 @@ import posthog from 'posthog-js';
 //   result_confirmed      → matchs réellement joués (pas juste matchés) et,
 //                           combiné à profiles.confidence_rate, confidence
 //                           rate moyen des utilisateurs actifs
+//
+// ── Concierge (demandes de partie par lien) ──────────────────────────────────
+// L'entonnoir complet, de la création du lien à la partie effectivement
+// complétée. La MÉTRIQUE DE DÉCISION est le rapport entre le dernier et le
+// premier : quel pourcentage de créateurs obtiennent réellement une partie
+// complète via Padel Meet. C'est ce chiffre qui dira s'il faut construire le
+// module « games » complet ou non — pas le volume de liens créés.
+//
+//   game_request_created   → une demande est créée dans l'app
+//   game_request_shared    → le lien est effectivement partagé (bouton Partager)
+//   game_link_opened       → quelqu'un ouvre /g/:token (souvent sans compte)
+//   game_join_interest     → un visiteur du lien manifeste son intérêt
+//   game_request_fulfilled → le créateur déclare sa partie complète
+//
+// game_link_opened est le seul de la série qui peut partir sans session : le
+// lien est fait pour être ouvert par quelqu'un qui n'a pas encore de compte.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const KEY = import.meta.env.VITE_POSTHOG_KEY;
