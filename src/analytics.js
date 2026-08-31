@@ -10,7 +10,11 @@ import posthog from 'posthog-js';
 //   signup              → point de départ des cohortes de rétention J7/J30
 //   quiz_completed       → taux de complétion du questionnaire de niveau
 //   swipe                → volume d'usage du mode découverte
-//   match_created         → nombre de matchs organisés
+//   match_created         → mises en relation mutuelles (deux swipes droite
+//                           réciproques). ⚠️ PAS le nombre de matchs joués ni
+//                           organisés : l'event part dans useSwipes.js dès la
+//                           connexion, avant toute partie. Pour les matchs
+//                           réellement joués, c'est result_confirmed.
 //   chat_first_message    → conversion match → conversation réelle
 //   result_confirmed      → matchs réellement joués (pas juste matchés) et,
 //                           combiné à profiles.confidence_rate, confidence
