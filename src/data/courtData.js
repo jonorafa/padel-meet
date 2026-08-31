@@ -695,20 +695,48 @@ export const DAILY_TIPS = [
  * Q9 Précision balle · Q10 Smash par 3 / par 4
  */
 // Conversion de la valeur brute d'un curseur (Groupe 1 « ressenti », 1-10)
-// vers l'échelle de niveau 0.5-7.0 utilisée par computeLevel. Appliquée AVANT
-// computeLevel (au moment où le composant construit `answers`), jamais dedans :
-// computeLevel reste agnostique de la provenance de la valeur (option ou curseur).
+// vers l'échelle de niveau 0.5-7.0. Appliquée À LA LECTURE des réponses, par
+// answerValue() ci-dessous — plus jamais à l'écriture.
 //
 // Courbe convexe (exposant 1.8), pas une droite : un 6-7/10 honnête (le gros
 // de la confiance déclarée par un amateur) doit peser BEAUCOUP moins qu'un
 // 9-10 franc, réservé aux joueurs qui n'ont normalement plus besoin de l'app.
 //   raw=1 → 0.5 | raw=6 → ≈2.76 | raw=8 → ≈4.63 | raw=10 → 7.0
-//
-// L'inverse exacte de cette formule vit dans generateLevelSummary()
-// (phraseKeyFor) pour reconstituer le bucket de résumé — toute modification
-// ici doit être répercutée là-bas, sinon les résumés de niveau se cassent.
 export function scaleToLevel(raw) {
   return 0.5 + 6.5 * Math.pow((raw - 1) / 9, 1.8);
+}
+
+// Barème des questions à choix. Vérifié : les 13 questions à choix (4-16)
+// utilisent EXACTEMENT ces quatre valeurs dans cet ordre. La RPC serveur
+// submit_level_quiz (migration 038) porte la même table — c'est le seul
+// endroit où une divergence reste possible, d'où le rappel des deux côtés.
+export const OPTION_VALUES = [1, 2, 3.5, 7];
+
+/**
+ * answerValue — SEULE conversion réponse brute → valeur de barème.
+ *
+ * `answers` ne contient que du BRUT dans toute l'app :
+ *   • questions à choix (4-19) → index d'option (0-3)
+ *   • curseurs (1-3)           → entier 1-10 tel que déplacé par l'utilisateur
+ *
+ * Rien n'est jamais pré-calculé au moment du clic. Auparavant, ScoreScreen
+ * stockait la valeur déjà convertie, ce qui obligeait generateLevelSummary à
+ * INVERSER scaleToLevel pour retrouver le cran d'origine — une formule miroir
+ * qui devait rester synchronisée à la main, exactement le genre de duplication
+ * qui a déjà produit des bugs de confiance dans ce projet.
+ *
+ * Renvoie null quand la réponse ne compte pas (bonus raté) : computeLevel
+ * l'ignore alors totalement, ni au numérateur ni au dénominateur.
+ */
+export function answerValue(q, raw) {
+  if (raw == null) return null;
+  if (q.inputType === 'scale') return scaleToLevel(raw);
+  const opt = q.options?.[raw];
+  if (!opt) return null;
+  // Bonus (17-19) : pas de `value`, seulement `correct`. Une bonne réponse
+  // vaut 7, une mauvaise ne compte pas du tout (neutre, jamais pénalisante).
+  if (opt.correct !== undefined) return opt.correct ? 7 : null;
+  return opt.value ?? null;
 }
 
 export const QUIZ_QUESTIONS = [
@@ -1085,8 +1113,11 @@ export function computeLevel(answers) {
   let sum = 0, wsum = 0;
 
   QUIZ_QUESTIONS.forEach(q => {
-    const v = answers[q.id];
-    if (v == null) return;            // question non répondue (ex. ancres en peer-éval)
+    // `answers` contient du BRUT (index d'option, ou 1-10 pour un curseur) :
+    // la valeur de barème est dérivée ici, jamais stockée. Miroir exact de la
+    // RPC submit_level_quiz (migration 038).
+    const v = answerValue(q, answers[q.id]);
+    if (v == null) return;            // non répondue, ou bonus raté (neutre)
     const w = q.weight ?? 1;          // technique = 1 ; ancres pondérées
     sum  += v * w;
     wsum += w;
@@ -1241,10 +1272,14 @@ export function generateLevelSummary(answers, lang) {
   // L'inverse doit suivre la courbe exacte de scaleToLevel (exposant 1.8) —
   // une inversion linéaire ici donnerait un bucket faux pour la plupart des
   // valeurs, puisque la conversion en amont n'est plus une droite.
+  // Les clés de PHRASES sont des VALEURS de barème (1 / 3 / 5.5 / 7). Pour un
+  // curseur, on bucketise directement le cran brut — `answers` le stocke tel
+  // quel depuis le refactor. L'ancienne version devait inverser scaleToLevel
+  // (1 + 9 * pow((val-0.5)/6.5, 1/1.8)) pour retrouver ce cran : formule
+  // miroir supprimée, avec le risque de désynchronisation qu'elle portait.
   const SCALE_IDS = new Set([1, 2, 3]);
-  const phraseKeyFor = (qId, val) => {
+  const phraseKeyFor = (qId, raw, val) => {
     if (!SCALE_IDS.has(qId)) return val;
-    const raw = 1 + 9 * Math.pow((val - 0.5) / 6.5, 1 / 1.8);
     return raw <= 3 ? 1 : raw <= 6 ? 3 : raw <= 8 ? 5.5 : 7;
   };
 
@@ -1281,7 +1316,8 @@ export function generateLevelSummary(answers, lang) {
   // « point fort/faible » de jeu et n'ont pas de phrase.
   const answered = QUIZ_QUESTIONS
     .filter(q => answers[q.id] != null && PHRASES[q.id])
-    .map(q => ({ id: q.id, val: answers[q.id] }));
+    .map(q => ({ id: q.id, raw: answers[q.id], val: answerValue(q, answers[q.id]) }))
+    .filter(a => a.val != null);
 
   if (answered.length === 0) return null;
 
@@ -1297,13 +1333,13 @@ export function generateLevelSummary(answers, lang) {
 
   const introKey = avg >= 5.5 ? 'high' : avg >= 3.5 ? 'mid' : avg >= 2 ? 'low' : 'begin';
 
-  const strongPhrase = PHRASES[topQ.id]?.[phraseKeyFor(topQ.id, topQ.val)]?.[l] ?? '';
-  const weakPhrase   = PHRASES[weakQ.id]?.[phraseKeyFor(weakQ.id, weakQ.val)]?.[l] ?? '';
+  const strongPhrase = PHRASES[topQ.id]?.[phraseKeyFor(topQ.id, topQ.raw, topQ.val)]?.[l] ?? '';
+  const weakPhrase   = PHRASES[weakQ.id]?.[phraseKeyFor(weakQ.id, weakQ.raw, weakQ.val)]?.[l] ?? '';
 
   // Sentence 1 : intro + strength + optional 2nd strength
   let s1 = `${intro[introKey]} ${strongPhrase}`;
   if (secondQ && secondQ.id !== topQ.id && secondQ.val >= 5.5) {
-    const s2phrase = PHRASES[secondQ.id]?.[phraseKeyFor(secondQ.id, secondQ.val)]?.[l] ?? '';
+    const s2phrase = PHRASES[secondQ.id]?.[phraseKeyFor(secondQ.id, secondQ.raw, secondQ.val)]?.[l] ?? '';
     if (s2phrase) s1 += `${conn.and}${s2phrase}`;
   }
   s1 = s1.charAt(0).toUpperCase() + s1.slice(1) + '.';

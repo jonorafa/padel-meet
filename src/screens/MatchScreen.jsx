@@ -2790,7 +2790,7 @@ function ContactSheet({ dark, lang, onClose }) {
 
 // ─── Profile Screen ──────────────────────────────────────────────────────────
 function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, notifCount = 0, onOpenStreak = () => {}, onOpenStats = () => {} }) {
-  const { user, profile, signOut, saveProfile }      = useAuth();
+  const { user, profile, signOut, saveProfile, refreshProfile } = useAuth();
   const { lang, dark, level, confidence, setLang, toggleDark, setLevel } = usePrefs();
   const navigate = useNavigate();
   const matchHistory = useMatchHistory(lang);
@@ -2810,6 +2810,10 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
   const [deleting, setDeleting] = useState(false);
   const [reEvalSaving, setReEvalSaving] = useState(false);
   const [reEvalDone, setReEvalDone] = useState(null);  // niveau confirmé après mise à jour
+  // Message d'échec de la RPC submit_level_quiz (cooldown serveur, réseau…).
+  // Sans lui, un refus serveur laissait l'utilisateur sur le quiz sans aucun
+  // retour — il n'y avait rien à afficher puisque le client écrivait seul.
+  const [reEvalError, setReEvalError] = useState(null);
   // ── Évaluer un partenaire depuis le menu ────────────────────────────────────
   const [showEvalPicker,   setShowEvalPicker]   = useState(false);
   const [evalTarget,       setEvalTarget]       = useState(null); // { id, name, photo, matchId }
@@ -4072,25 +4076,74 @@ function ProfileScreen({ t, setShowEditProfile, onOpenDetail, onShowNotifs, noti
           position: 'fixed', inset: 0, zIndex: 300,
           background: dark ? COURT.darkBg : COURT.cream,
         }}>
+          {/* Refus du serveur (cooldown, réseau) : le quiz reste ouvert et
+              l'utilisateur voit pourquoi, au lieu d'un écran qui ne réagit pas. */}
+          {reEvalError && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 310,
+              padding: 'max(56px, calc(env(safe-area-inset-top, 0px) + 16px)) 20px 14px',
+              background: dark ? COURT.darkCard : COURT.cream,
+              borderBottom: `0.5px solid ${dark ? COURT.rustOnDark : COURT.rust}60`,
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <div style={{
+                flex: 1, fontFamily: 'Mulish', fontSize: TYPE.micro,
+                color: dark ? COURT.rustOnDark : COURT.rust,
+              }}>{reEvalError}</div>
+              <button className="tap" onClick={() => { setReEvalError(null); setShowReEval(false); }} style={{
+                flexShrink: 0, padding: '7px 14px', borderRadius: 999,
+                background: COURT.green, color: COURT.cream, border: 'none',
+                fontFamily: 'Mulish', fontSize: TYPE.micro, cursor: 'pointer',
+              }}>
+                {lang === 'he' ? 'סגור' : lang === 'en' ? 'Close' : 'Fermer'}
+              </button>
+            </div>
+          )}
           {/* Quiz seul — pas d'éditeur de profil, pas de navigation */}
           <QuizScreen
             t={t} lang={lang} dark={dark}
-            onDone={async (computedLevel) => {
+            onDone={async (computedLevel, answers) => {
               setReEvalSaving(true);
-              // L'indice de confiance ne baisse JAMAIS : il n'est plus piloté ici.
-              // Il évolue uniquement côté serveur via submit_peer_evaluation (accord
-              // des pairs) et confirm_match_result (matchs de niveau similaire).
-              // On ne touche donc plus à confidence_rate lors de la ré-évaluation.
-              // Enregistre le niveau + un point d'historique IMMÉDIATEMENT (robuste
-              // même si la sauvegarde DB échoue : réseau coupé, etc.)
-              setLevel(computedLevel);
-              // Sauvegarde level + cooldown en une seule écriture DB
-              await saveProfile({
-                level: computedLevel,
-                last_self_eval_date: new Date().toISOString().slice(0, 10),
+              // Le niveau n'est plus écrit par le client : depuis la migration
+              // 038, le trigger de protection rétablit `level` et
+              // `last_self_eval_date` sur tout UPDATE venant d'`authenticated`.
+              // Un saveProfile ici ne ferait donc RIEN, en silence. Le calcul
+              // et le cooldown vivent côté serveur, dans submit_level_quiz.
+              //
+              // On envoie les réponses BRUTES (index d'option, cran 1-10) :
+              // le barème est appliqué par la RPC, qui est le miroir exact de
+              // computeLevel (cf. src/lib/computeLevel.test.js).
+              //
+              // Ce même handler sert aux DEUX cas : la réévaluation mensuelle
+              // et le rattrapage d'un joueur qui a sauté le quiz à
+              // l'inscription (bouton « Compléter mon évaluation », affiché
+              // quand level == null). La RPC les distingue elle-même et
+              // n'applique le cooldown qu'au second passage.
+              const { data: niveauServeur, error } = await supabase.rpc('submit_level_quiz', {
+                p_answers: answers,
+                p_quiz_version: 1,
               });
               setReEvalSaving(false);
-              setReEvalDone(computedLevel);
+              if (error) {
+                Sentry.captureException(error);
+                setReEvalError(
+                  error.message?.includes('cooldown_active')
+                    ? (lang === 'he' ? 'ניתן להעריך מחדש פעם בחודש בלבד.'
+                      : lang === 'en' ? 'You can only re-evaluate once a month.'
+                      : 'Tu ne peux te réévaluer qu\'une fois par mois.')
+                    : (lang === 'he' ? 'השמירה נכשלה. נסה שוב.'
+                      : lang === 'en' ? 'Saving failed. Please try again.'
+                      : 'Échec de l\'enregistrement. Réessaie.')
+                );
+                return;
+              }
+              // Le niveau affiché est celui RENVOYÉ par le serveur, pas celui
+              // calculé localement : en cas de divergence, c'est la base qui
+              // fait foi, et l'utilisateur voit ce qui est réellement stocké.
+              const niveau = Number(niveauServeur);
+              setLevel(niveau);
+              await refreshProfile();
+              setReEvalDone(niveau);
               // Ferme automatiquement après confirmation visuelle (1.6s)
               setTimeout(() => {
                 setReEvalDone(null);

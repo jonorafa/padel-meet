@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { COURT, Ornament, PadelSlider, GlossaryCard, renderWithGlossary, BottomSheet, LangButton } from '../components/CourtUI';
-import { QUIZ_QUESTIONS, GLOSSARY, computeLevel, scaleToLevel } from '../data/courtData';
+import { QUIZ_QUESTIONS, GLOSSARY, computeLevel } from '../data/courtData';
 import { usePrefs } from '../context/PrefsContext';
 import { track } from '../analytics';
 
@@ -30,7 +30,9 @@ function ScaleInput({ q, lang, dark, onSubmit }) {
         leftLabel={q.scaleMinLabel?.[lang] || q.scaleMinLabel?.fr}
         rightLabel={q.scaleMaxLabel?.[lang] || q.scaleMaxLabel?.fr}
       />
-      <button onClick={() => onSubmit(scaleToLevel(val))} style={{
+      {/* Envoie le cran BRUT (1-10). La conversion en valeur de barème
+          se fait à la lecture, dans answerValue() — voir courtData.js. */}
+      <button className="tap" onClick={() => onSubmit(val)} style={{
         padding: '15px 0', width: '100%', borderRadius: 999,
         background: COURT.green, color: COURT.cream, border: 'none', cursor: 'pointer',
         fontFamily: 'Spectral, serif', fontStyle: lang === 'he' ? 'normal' : 'italic', fontSize: 17,
@@ -73,7 +75,7 @@ function BonusGrid({ q, lang, dark, onPick }) {
         return (
           <button
             key={i}
-            onClick={() => pick(i, opt.correct ? 7 : undefined)}
+            onClick={() => pick(i, opt.correct ? i : undefined)}
             style={{
               borderRadius: 18, padding: '22px 14px', minHeight: 140,
               display: 'flex', flexDirection: 'column',
@@ -275,7 +277,7 @@ export default function QuizScreen({ t, lang, onDone, onBack, dark, playerFirstN
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto' }}>
             {q.options.map((opt, i) => (
-              <button key={i} onClick={() => advance(opt.value)} style={{
+              <button key={i} className="tap" onClick={() => advance(i)} style={{
                 textAlign: rtl ? 'right' : 'left', padding: '14px 16px',
                 background: dark ? COURT.darkCard : COURT.cream,
                 border: `0.5px solid ${border}`, borderRadius: 10, cursor: 'pointer',
